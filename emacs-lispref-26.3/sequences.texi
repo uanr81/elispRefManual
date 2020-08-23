@@ -1,0 +1,1761 @@
+@c -*-texinfo-*-
+@c This is part of the GNU Emacs Lisp Reference Manual.
+@c Copyright (C) 1990-1995, 1998-1999, 2001-2019 Free Software
+@c Foundation, Inc.
+@c See the file elisp.texi for copying conditions.
+@node Sequences Arrays Vectors
+@chapter Последовательности, Массивы, и векторы
+@cindex sequence
+
+  @dfn{Последовательности} - тип является объединением двух других Лисп типов: списков и массивов.
+  Другими словами, любой список представляет собой последовательность, и любой массив представляет
+  собой последовательность. Общее свойство, что все последовательности есть то, что каждый из них
+  является упорядоченной коллекцией элементов.
+
+  @dfn{Массивы} являются объектами с фиксированной длиной с местом для каждого из его элементов.
+  Все элементы доступны в постоянная время. Существуют четыре типа массивов: строки, векторы,
+  char-tables и bool-vectors.
+
+  Список представляет собой последовательность элементов, но это не единственный примитивный объект;
+  он состоит из cons-ячеек, по одной ячейки на элемент. Чтобы найти @var{n}-й элемент, нужно
+  просмотреть @var{n} количество ячеек, поэтому доступ к элементам, находящимся дальше от начала
+  списка занимает больше времени доступа. Но можно добавлять элементы в список или удалить элементы.
+
+  На следующей диаграмме показана взаимосвязь между этими типами:
+
+@example
+@group
+          _____________________________________________
+         |                                             |
+         |          Последовательности                 |
+         |  ______   ________________________________  |
+         | |      | |                                | |
+         | |Списки| |             Массивы            | |
+         | |      | |    ________       ________     | |
+         | |______| |   |        |     |        |    | |
+         |          |   | Векторы|     | Строки |    | |
+         |          |   |________|     |________|    | |
+         |          |  ____________   _____________  | |
+         |          | |            | |             | | |
+         |          | | Хеш-Таблицы| | Bool-vector | | |
+         |          | |____________| |_____________| | |
+         |          |________________________________| |
+         |_____________________________________________|
+@end group
+@end example
+
+@menu
+* Sequence Functions::    Функции, которые принимают любые последовательности.
+* Arrays::                Характеристики массивов в Emacs Lisp.
+* Array Functions::       Функции специально для массивов.
+* Vectors::               Специальные характеристики векторов Emacs Lisp.
+* Vector Functions::      Функции специально для векторов.
+* Char-Tables::           Как работать с Хеш-Таблицами.
+* Bool-Vectors::          Как работать с BOOL-Векторами.
+* Rings::                 Управление фиксированного размера кольца объектов.
+@end menu
+
+@node Sequence Functions
+@section Последовательности
+
+  В этом разделе описываются функции, которые принимают любой вид последовательности.
+
+@defun sequencep object
+Эта функция возвращает @code{t} если @var{object} список, вектор, строка, BOOL-вектор,
+или таблицей символов, @code{nil} в обратном случае. Смотрите также @code{seqp} ниже.
+@end defun
+
+@defun length sequence
+@cindex string length
+@cindex list length
+@cindex vector length
+@cindex sequence length
+@cindex bool-vector length
+@cindex char-table length
+@anchor{Definition of length}
+Эта функция возвращает количество элементов в @var{последовательности}. Функция сигнализирует
+об ошибке @code{wrong-type-argument}, если аргумент не является последовательностью
+или точечным списком; она сигнализирует об ошибке @code{circular-list}, если аргумент является
+циклическим списком. Для таблицы-символов, возвращаемое значение всегда  на единицу больше, чем
+максимальный код символа Emacs.
+
+Смотри безопасное определение длинны @xref{Definition of safe-length}, связанная 
+функция @code{safe-length}.
+
+@example
+@group
+(length '(1 2 3))
+    @result{} 3
+@end group
+@group
+(length ())
+    @result{} 0
+@end group
+@group
+(length "foobar")
+    @result{} 6
+@end group
+@group
+(length [1 2 3])
+    @result{} 3
+@end group
+@group
+(length (make-bool-vector 5 nil))
+    @result{} 5
+@end group
+@end example
+@end defun
+
+@noindent
+See also @code{string-bytes}, in @ref{Text Representations}.
+
+Если вам нужно вычислить ширину отображаемой строки на экране, вы должны использовать
+@code{string-width} (@pxref{Size of Displayed Text}), не @code{length},
+поскольку @code{length} только подсчитывает количество символов, но не
+учитывает ширину отображения каждого символа.
+
+@defun elt sequence index
+@anchor{Definition of elt}
+@cindex elements of sequences
+Эта функция возвращает элемент @var{sequence} с индексом @var{index}.
+Допустимые значения @var{index} представляют собой целые числа в диапазоне от 0 до длины на единицу
+одного меньше, чем длина @var{последовательности}. Если @var{последовательность} является списком,
+значения вне диапазона ведут себя как для @code{nth}. @xref{Definition of nth}. В противном случае,
+значения вне диапазона значений вызывают ошибку @code{args-out-of-range}.
+
+@example
+@group
+(elt [1 2 3 4] 2)
+     @result{} 3
+@end group
+@group
+(elt '(1 2 3 4) 2)
+     @result{} 3
+@end group
+@group
+;; @r{Мы используем @code{string}, чтобы чётко показать, какой символ возвращает @code{elt}.}
+(string (elt "1234" 2))
+     @result{} "3"
+@end group
+@group
+(elt [1 2 3 4] 4)
+     @error{} Аргумент вне лопустимого диапазона: [1 2 3 4], 4
+@end group
+@group
+(elt [1 2 3 4] -1)
+     @error{} Аргумент вне лопустимого диапазона: [1 2 3 4], -1
+@end group
+@end example
+
+Эта функция обобщает @code{aref} (@pxref{Array Functions}) и
+@code{nth} (@pxref{Definition of nth}).
+@end defun
+
+@defun copy-sequence seqr
+@cindex copying sequences
+Эта функция возвращает копию @var{seqr}, которая должна быть либо
+последовательностью или записью. Копия представляет собой объект того же типа, что и оригинал,
+и имеет те же элементы в том же порядке. Однако, если @var{seqr} пуст, как строка или вектор
+нулевой длины, значение, возвращаемое этой функцией может быть не копией, а пустым объектом
+того же типа и идентичным @var{seqr}.
+
+Сохранение нового элемента в копии не влияет на исходный @var{seqr}, и наоборот.
+Тем не менее, элементы копии не являются копиями; они идентичны (@code{eq}) элементам
+оригинала. Таким образом, изменения, сделанные в этих элементах, видны как в копии так и в
+оригинале.
+
+Если аргумент является строкой с текстовыми свойствами, список свойств в копии самявляется
+копией, а не совместно со списком свойств оригинала. Тем не менее, фактические значения
+свойств являются общими.
+@xref{Text Properties}.
+
+Эта функция не работает для точечных списков. Попытка скопировать циклический список
+может вызвать бесконечный цикл.
+
+Смотри также @code{append} в @ref{Building Lists}, @code{concat} в
+@ref{Creating Strings}, и @code{vconcat} в @ref{Vector Functions},
+другие способы копирования последовательностей.
+
+@example
+@group
+(setq bar '(1 2))
+     @result{} (1 2)
+@end group
+@group
+(setq x (vector 'foo bar))
+     @result{} [foo (1 2)]
+@end group
+@group
+(setq y (copy-sequence x))
+     @result{} [foo (1 2)]
+@end group
+
+@group
+(eq x y)
+     @result{} nil
+@end group
+@group
+(equal x y)
+     @result{} t
+@end group
+@group
+(eq (elt x 1) (elt y 1))
+     @result{} t
+@end group
+
+@group
+;; @r{Замена элемента одной последовательности.}
+(aset x 0 'quux)
+x @result{} [quux (1 2)]
+y @result{} [foo (1 2)]
+@end group
+
+@group
+;; @r{Изменение внутренней части общего элемента.}
+(setcar (aref x 1) 69)
+x @result{} [quux (69 2)]
+y @result{} [foo (69 2)]
+@end group
+@end example
+@end defun
+
+@defun reverse sequence
+@cindex string reverse
+@cindex list reverse
+@cindex vector reverse
+@cindex sequence reverse
+Эта функция создает новую последовательность, элементы которой являются элементами
+@var{sequence}, но в обратном порядке. Оригинальный аргумент @var{sequence} является
+@emph{not} не изменен. Обратите внимание, что таблица-символов не может быть отменена.
+
+@example
+@group
+(setq x '(1 2 3 4))
+     @result{} (1 2 3 4)
+@end group
+@group
+(reverse x)
+     @result{} (4 3 2 1)
+x
+     @result{} (1 2 3 4)
+@end group
+@group
+(setq x [1 2 3 4])
+     @result{} [1 2 3 4]
+@end group
+@group
+(reverse x)
+     @result{} [4 3 2 1]
+x
+     @result{} [1 2 3 4]
+@end group
+@group
+(setq x "xyzzy")
+     @result{} "xyzzy"
+@end group
+@group
+(reverse x)
+     @result{} "yzzyx"
+x
+     @result{} "xyzzy"
+@end group
+@end example
+@end defun
+
+@defun nreverse sequence
+@cindex reversing a string
+@cindex reversing a list
+@cindex reversing a vector
+  Эта функция меняет порядок элементов @var{sequence}. В отличие от @code{reverse}
+  оригинал @var{sequence} может быть изменен.
+
+  Для примера:
+
+@example
+@group
+(setq x '(a b c))
+     @result{} (a b c)
+@end group
+@group
+x
+     @result{} (a b c)
+(nreverse x)
+     @result{} (c b a)
+@end group
+@group
+;; @r{cons-ячейка, которая была первой в настоящее время последняя.}
+x
+     @result{} (a)
+@end group
+@end example
+
+  Чтобы избежать путаницы, мы обычно сохраняем результат @code{nreverse}в той же переменной,
+  которая содержала исходный список:
+
+@example
+(setq x (nreverse x))
+@end example
+
+  Here is the @code{nreverse} of our favorite example, @code{(a b c)},
+presented graphically:
+
+@smallexample
+@group
+@r{Исходный список:}                       @r{Реверсированный список:}
+ -------------        -------------        ------------
+| car  | cdr  |      | car  | cdr  |      | car | cdr  |
+|   a  |  nil |<--   |   b  |   o  |<--   |   c |   o  |
+|      |      |   |  |      |   |  |   |  |     |   |  |
+ -------------    |   --------- | -    |   -------- | -
+                  |             |      |            |
+                   -------------        ------------
+@end group
+@end smallexample
+
+  Для вектора, это даже проще, потому что вам не нужно SETQ:
+
+@example
+(setq x [1 2 3 4])
+     @result{} [1 2 3 4]
+(nreverse x)
+     @result{} [4 3 2 1]
+x
+     @result{} [4 3 2 1]
+@end example
+
+Обратите внимание, что в отличие от @code{reverse}, эта функция не работает со строками.
+Хотя вы можете изменить строковые данные с помощью @code{aset}, настоятельно рекомендуются
+использовать строки как неизменные.
+
+@end defun
+
+@defun sort sequence predicate
+@cindex stable sort
+@cindex sorting lists
+@cindex sorting vectors
+Эта функция сортирует @var{sequence} стабильно. Обратите внимание, что эта функция не
+работает для всех последовательностей; она может быть использована только для списков и
+векторов. Если @var{sequence} список, он модифицируется деструктивно. Эта функция
+возвращает отсортированный @var{sequence} и сравнивает элементы, используя @var{predicate}.
+Стабильная сортировки - это такая, при которой элементы с одинаковыми  ключами сортировки
+сохраняют свой относительный порядок до и после сортировки. Стабильность важна, когда
+для упорядочивания элементов по разным критериям используется последовательные сортировки.
+
+Аргумент @var{predicate} должен быть функцией, которая принимает два аргумента. Она
+вызывается с двумя элементами @var{sequence}. Для того, чтобы получить сортировку в
+возрастающем порядке, то @var{predicate} должен возвращать non-@code{nil}, если первый
+элемент ``less'' (меньше), чем второй, или @code{nil}, если нет.
+
+Функция @var{predicate} сравнения должна дать надежные результаты для любой пары аргументов,
+по крайней мере, в пределах одного вызова @code{сортировки}. Он должен быть @dfn{антисиммитричным};
+то есть, если @var{a} меньше @var{b}, @var{b} должно быть не менее @var{a}. Он должен быть
+@dfn{транзитивным}--- то есть, если @var{a} меньше @var{b} а @var{b} меньше @var{c}, то @var{a}
+должно быть меньше, чем @var{c}. Если вы используете функцию сравнения, которая не отвечает
+этим требованиям, то результат @code{sort} непредсказуем.
+
+Деструктивный аспект @code{sort} для списков состоит в том, что он перестраивает
+@var{последовательность} cons-ячеек, путем изменений их @sc{cdr}s. Неразрушающая функция
+сортировки будет создавать новые cons-ячейки для хранения элементов в их отсортированном
+порядке. Если вы хотите сделать отсортированную копию, не разрушая оригинал,
+скопируйте его сначала @code{copy-sequence}, а затем сортируйте.
+
+Сортировка не изменяет @sc{car}s cons-ячеек в @var{sequence}; cons-ячейка, которая
+первоначально содержала элемент @code{a} в @var{sequence}, всё ещё содержит @code{a} в
+@sc{car} после сортировки, но теперь она появляется в другом месте в списке из-за
+изменения @sc{cdr}s. Например:
+
+@example
+@group
+(setq nums '(1 3 2 6 5 4 0))
+     @result{} (1 3 2 6 5 4 0)
+@end group
+@group
+(sort nums '<)
+     @result{} (0 1 2 3 4 5 6)
+@end group
+@group
+nums
+     @result{} (1 2 3 4 5 6)
+@end group
+@end example
+
+@noindent
+@strong{Предупреждение}: Обратите внимание, что список в @code{nums} больше не
+содержит 0; это та же cons-ячейка, что и раньше, но это уже не первая в списке.
+Не предполагайте, что переменная, которая ранее содержала аргумент, теперь содержит весь
+отсортированный список! Вместо этого, сохраните результат @code{sort} и используйте его
+вдальнейшем. Чаще всего мы сохраним результат обратно в переменную, которая содержала
+первоначальный список:
+
+@example
+(setq nums (sort nums '<))
+@end example
+
+Для лучшего понимания того, что такое стабильная сортировка, рассмотрим следующий пример
+вектора. После сортировки все элементы, со значениями 8 в @code{car} сгруппированы
+в начале @code{vector}, но их относительный порядок сохраняется. Все элементы со значениями
+9 в @code{car} , сгруппированы в конце @code{vector}, но их относительный порядок также
+сохраняется:
+
+@example
+@group
+(setq
+  vector
+  (vector '(8 . "xxx") '(9 . "aaa") '(8 . "bbb") '(9 . "zzz")
+          '(9 . "ppp") '(8 . "ttt") '(8 . "eee") '(9 . "fff")))
+     @result{} [(8 . "xxx") (9 . "aaa") (8 . "bbb") (9 . "zzz")
+         (9 . "ppp") (8 . "ttt") (8 . "eee") (9 . "fff")]
+@end group
+@group
+(sort vector (lambda (x y) (< (car x) (car y))))
+     @result{} [(8 . "xxx") (8 . "bbb") (8 . "ttt") (8 . "eee")
+         (9 . "aaa") (9 . "zzz") (9 . "ppp") (9 . "fff")]
+@end group
+@end example
+
+@xref{Sorting}, ещё функции, которые выполняют сортировку.
+Смотри @code{documentation} в @ref{Accessing Documentation}, для полезного
+примера @code{sort}.
+@end defun
+
+@cindex sequence functions in seq
+@cindex seq library
+@cindex sequences, generalized
+  @file{seq.el} библиотека предоставляет следующие дополнительные макросы
+  и функции управления последовательностями, начинающиеся с префикса @code{seq-}. Для того,
+  чтобы использовать их, вы должны сначала загрузить библиотеку @file{seq}.
+
+  Все функции, определенные в этой библиотеке не имеют побочных эффектов; то есть, они не
+  изменяют никакую последовательность (список, вектор или строку), которые вы передаете в
+  качестве аргумента. Если не указано иное, то результатом является последовательность
+  того же типа, что и вход. Для тех функций, которые принимают предикат, то это должно
+  быть функцией одного аргумента.
+
+  Библиотека @file{seq.el} может быть расширена на работу с дополнительными типами
+  последовательных структур данных. Для этой цели все функции определяются с помощью
+  @code{cl-defgeneric}. @xref{Generic Functions}, для получения более подробной информации
+  об использовании @code{cl-defgeneric} для добавления расширений.
+
+@defun seq-elt sequence index
+  Эта функция возвращает элемент @var{sequence} по указанному @var{index}, который представляет
+  собой целое число, допустимое значение которого в диапазоне от нуля до на единицу меньше,
+  чем длина @var{sequence}. Для значений, не вошедших в допустимый диапазон для встроенных типов
+  последовательностей, @code{seq-elt} ведет себя как @code{elt}. Для получения дополнительной
+  информации см @ref{Definition of elt}.
+
+@example
+@group
+(seq-elt [1 2 3 4] 2)
+@result{} 3
+@end group
+@end example
+
+  @code{seq-elt} возвращает индексы, которые можно получить с помощью @code{setf}
+(@pxref{Setting Generalized Variables}).
+
+@example
+@group
+(setq vec [1 2 3 4])
+(setf (seq-elt vec 2) 5)
+vec
+@result{} [1 2 5 4]
+@end group
+@end example
+@end defun
+
+@defun seq-length sequence
+  Эта функция возвращает количество элементов в @var{sequence}. Для встроенных
+  типов последовательностей, @code{seq-length} ведет себя как @code{length}.
+@xref{Definition of length}.
+@end defun
+
+@defun seqp object
+  Эта функция возвращает non-@code{nil}, если @var{object} представляет собой последовательность
+  (список или массив), или какой-либо дополнительным типом последовательности определённой с
+  помощью библиотеки @file{seq.el} общих функций. Это расширяемый вариант @code{sequencep}.
+
+@example
+@group
+(seqp [1 2])
+@result{} t
+@end group
+@group
+(seqp 2)
+@result{} nil
+@end group
+@end example
+@end defun
+
+@defun seq-drop sequence n
+  Эта функция возвращает все, кроме первых @var{n} (целое число) элементов @var{sequence}.
+  Если @var{n} отрицательный или равен нулю, то результатом будет @var{sequence}.
+
+@example
+@group
+(seq-drop [1 2 3 4 5 6] 3)
+@result{} [4 5 6]
+@end group
+@group
+(seq-drop "привет мир" -4)
+@result{} "привет мир"
+@end group
+@end example
+@end defun
+
+@defun seq-take sequence n
+  Эта функция возвращает первые @var{n} (целое число) элементы @var{sequence}. Если @var{n}
+  отрицательный или равен нулю, то результат будет @code{nil}.
+
+@example
+@group
+(seq-take '(1 2 3 4) 3)
+@result{} (1 2 3)
+@end group
+@group
+(seq-take [1 2 3 4] 0)
+@result{} []
+@end group
+@end example
+@end defun
+
+@defun seq-take-while predicate sequence
+  Эта функция возвращает элементы @var{sequence} по порядку, останавливаясь перед первым, для
+  которого @var{predicate} возвращает @code{nil}.
+
+@example
+@group
+(seq-take-while (lambda (elt) (> elt 0)) '(1 2 3 -1 -2))
+@result{} (1 2 3)
+@end group
+@group
+(seq-take-while (lambda (elt) (> elt 0)) [-1 4 6])
+@result{} []
+@end group
+@end example
+@end defun
+
+@defun seq-drop-while predicate sequence
+  Эта функция возвращает элементы @var{sequence} по порядку, начиная с первого, для
+  которого @var{predicate} возвращает @code{nil}.
+
+@example
+@group
+(seq-drop-while (lambda (elt) (> elt 0)) '(1 2 3 -1 -2))
+@result{} (-1 -2)
+@end group
+@group
+(seq-drop-while (lambda (elt) (< elt 0)) [1 4 6])
+@result{} [1 4 6]
+@end group
+@end example
+@end defun
+
+@defun seq-do function sequence
+  Эта функция применяет по очереди @var{function} к каждому элементу @var{sequence}
+  (предположительно для побочных эффектов), и возвращает @var{sequence}.
+@end defun
+
+@defun seq-map function sequence
+  Эта функция возвращает результат применения @var{function} к каждому элементу @var{sequence}.
+  Возвращаемое значение представляет собой список.
+
+@example
+@group
+(seq-map #'1+ '(2 4 6))
+@result{} (3 5 7)
+@end group
+@group
+(seq-map #'symbol-name [foo bar])
+@result{} ("foo" "bar")
+@end group
+@end example
+@end defun
+
+@defun seq-map-indexed function sequence
+  Эта функция возвращает результат применения @var{function} к каждому элементу
+  @var{sequence} и его индекс в пределах @var{seq}. Возвращаемое значение
+  представляет собой список.
+
+@example
+@group
+(seq-map-indexed (lambda (elt idx)
+                   (list idx elt))
+                 '(a b c))
+@result{} ((0 a) (b 1) (c 2))
+@end group
+@end example
+@end defun
+
+@defun seq-mapn function &rest sequences
+  Эта функция возвращает результат применения @var{function} к каждому элементу @var{sequences}.
+  Арностью (подсодержимое) (@pxref{What Is a Function,subr-arity}) из @var{function} должно
+  соответствовать количеству последовательностей. Картирование останавливается в конце
+  самой короткой последовательности, а возвращаемое значение представляет собой список.
+
+@example
+@group
+(seq-mapn #'+ '(2 4 6) '(20 40 60))
+@result{} (22 44 66)
+@end group
+@group
+(seq-mapn #'concat '("moskito" "bite") ["bee" "sting"])
+@result{} ("moskitobee" "bitesting")
+@end group
+@end example
+@end defun
+
+@defun seq-filter predicate sequence
+@cindex filtering sequences
+  Эта функция возвращает список всех элементов в @var{sequence}, для которых
+  @var{predicate} возвращает non-@code{nil}.
+
+@example
+@group
+(seq-filter (lambda (elt) (> elt 0)) [1 -1 3 -3 5])
+@result{} (1 3 5)
+@end group
+@group
+(seq-filter (lambda (elt) (> elt 0)) '(-1 -3 -5))
+@result{} nil
+@end group
+@end example
+@end defun
+
+@defun seq-remove predicate sequence
+@cindex removing from sequences
+  Эта функция возвращает список всех элементов в @var{sequence}, для которых
+  @var{predicate} возвращает @code{nil}.
+
+@example
+@group
+(seq-remove (lambda (elt) (> elt 0)) [1 -1 3 -3 5])
+@result{} (-1 -3)
+@end group
+@group
+(seq-remove (lambda (elt) (< elt 0)) '(-1 -3 -5))
+@result{} nil
+@end group
+@end example
+@end defun
+
+@defun seq-reduce function sequence initial-value
+@cindex reducing sequences
+  Эта функция возвращает результат вызова @var{function} с @var{initial-value} и первым
+  элементом @var{sequence}, затем делает вызов @var{function} с полученным результатом и вторым
+  элементом @var{sequence}, а затем с этим результатом и третьим элементом @var{sequence} и т.д.
+  @var{function} должна быть функцией с двумя аргументами. Если @var{sequence} пуст, это
+  возвращает @var{initial-value} без вызова @var{function}.
+
+@example
+@group
+(seq-reduce #'+ [1 2 3 4] 0)
+@result{} 10
+@end group
+@group
+(seq-reduce #'+ '(1 2 3 4) 5)
+@result{} 15
+@end group
+@group
+(seq-reduce #'+ '() 3)
+@result{} 3
+@end group
+@end example
+@end defun
+
+@defun seq-some predicate sequence
+  Эта функция возвращает первое возможное non-@code{nil} значение при последовательном применении
+  функции @var{predicate} к каждому элементу последоательности @var{sequence}.
+
+@example
+@group
+(seq-some #'numberp ["abc" 1 nil])
+@result{} t
+@end group
+@group
+(seq-some #'numberp ["abc" "def"])
+@result{} nil
+@end group
+@group
+(seq-some #'null ["abc" 1 nil])
+@result{} t
+@end group
+@group
+(seq-some #'1+ [2 4 6])
+@result{} 3
+@end group
+@end example
+@end defun
+
+@defun seq-find predicate sequence &optional default
+  Эта функция возвращает первый элемент в @var{sequence}, для которого @var{predicate}
+  возвращает non-@code{nil}. Если ни один элемент не соответствует @var{predicate},
+  функция возвращает @var{default}.
+
+Обратите внимание, что эта функция имеет двусмысленность, если найденный элемент
+идентичен @var{default}, так как в этом случае не может быть известно, был
+ли найден элемент или нет.
+
+@example
+@group
+(seq-find #'numberp ["abc" 1 nil])
+@result{} 1
+@end group
+@group
+(seq-find #'numberp ["abc" "def"])
+@result{} nil
+@end group
+@end example
+@end defun
+
+@defun seq-every-p predicate sequence
+  Эта функция возвращает non-@code{nil}, если применение @var{predicate} к каждому
+  элементу @var{sequence} возвращает non-@code{nil}.
+
+@example
+@group
+(seq-every-p #'numberp [2 4 6])
+@result{} t
+@end group
+@group
+(seq-every-p #'numberp [2 4 "6"])
+@result{} nil
+@end group
+@end example
+@end defun
+
+@defun seq-empty-p sequence
+  Эта функция возвращает non-@code{nil} если @var{sequence} пуст.
+
+@example
+@group
+(seq-empty-p "not empty")
+@result{} nil
+@end group
+@group
+(seq-empty-p "")
+@result{} t
+@end group
+@end example
+@end defun
+
+@defun seq-count predicate sequence
+  Эта функция возвращает количество элементов в @var{sequence}, для
+  которых @var{predicate} возвращает non-@code{nil}.
+
+@example
+(seq-count (lambda (elt) (> elt 0)) [-1 2 0 3 -2])
+@result{} 2
+@end example
+@end defun
+
+@cindex sorting sequences
+@defun seq-sort function sequence
+  Эта функция возвращает копию @var{sequence}, отсортированную в соответствии с
+  @var{function}, функция двух аргументов, которая возвращает non-@code{nil}, если первый
+  аргумент должен сортироваться перед вторым.
+@end defun
+
+@defun seq-sort-by function predicate sequence
+  Эта функция аналогична @code{seq-sort}, но элементы @var{sequence} преобразуются
+  путем применения @var{function} на них перед тем, как сортируются.
+  @var{function} является функцией одного аргумента.
+
+@example
+(seq-sort-by #'seq-length #'> ["a" "ab" "abc"])
+@result{} ["abc" "ab" "a"]
+@end example
+@end defun
+
+
+@defun seq-contains sequence elt &optional function
+  Эта функция возвращает первый элемент @var{sequence}, равный @var{elt}. Если необязательный
+  аргумент @var{function} является non-@code{nil}, она является функцией двух аргументов
+  и будет использоваться вместо @code{equal}, которая используется по умолчанию.
+
+@example
+@group
+(seq-contains '(symbol1 symbol2) 'symbol1)
+@result{} symbol1
+@end group
+@group
+(seq-contains '(symbol1 symbol2) 'symbol3)
+@result{} nil
+@end group
+@end example
+
+@end defun
+
+@defun seq-set-equal-p sequence1 sequence2 &optional testfn
+Эта функция проверяет @var{sequence1} и @var{sequence2} содержат ли одни и те же
+элементы, независимо от порядка. Если необязательный аргумент @var{testfn}
+является non-@code{nil}, это функция двух аргументов которая будет использоваться
+вместо @code{equal} по умолчанию.
+
+@example
+@group
+(seq-set-equal-p '(a b c) '(c b a))
+@result{} t
+@end group
+@group
+(seq-set-equal-p '(a b c) '(c b))
+@result{} nil
+@end group
+@group
+(seq-set-equal-p '("a" "b" "c") '("c" "b" "a"))
+@result{} t
+@end group
+@group
+(seq-set-equal-p '("a" "b" "c") '("c" "b" "a") #'eq)
+@result{} nil
+@end group
+@end example
+
+@end defun
+
+@defun seq-position sequence elt &optional function
+  Эта функция возвращает индекс первого элемента в @var{sequence}, которая
+  равна @var{elt}. Если необязательный аргумент @var{function} является non-@code{nil},
+  она является функцией двух аргументов и используется вместо @code{equal} по умолчанию.
+
+@example
+@group
+(seq-position '(a b c) 'b)
+@result{} 1
+@end group
+@group
+(seq-position '(a b c) 'd)
+@result{} nil
+@end group
+@end example
+@end defun
+
+
+@defun seq-uniq sequence &optional function
+  Эта функция возвращает список элементов @var{sequence} без дубликатов. Если необязательный
+  аргумент @var{function} является non-@code{nil}, она является функцией двух аргументов
+  и используется вместо @code{equal} по умолчанию.
+
+@example
+@group
+(seq-uniq '(1 2 2 1 3))
+@result{} (1 2 3)
+@end group
+@group
+(seq-uniq '(1 2 2.0 1.0) #'=)
+@result{} (1 2)
+@end group
+@end example
+@end defun
+
+@defun seq-subseq sequence start &optional end
+@cindex sub-sequence
+  Эта функция возвращает подмножество @var{sequence} от @var{start} до @var{end}, оба целые
+  числа (@var{end} по умолчанию будет последним элементом). Если @var{start} или @var{end}
+  отрицателен, тогда рассчитывается с конца @var{sequence}.
+
+@example
+@group
+(seq-subseq '(1 2 3 4 5) 1)
+@result{} (2 3 4 5)
+@end group
+@group
+(seq-subseq '[1 2 3 4 5] 1 3)
+@result{} [2 3]
+@end group
+@group
+(seq-subseq '[1 2 3 4 5] -3 -1)
+@result{} [3 4]
+@end group
+@end example
+@end defun
+
+@defun seq-concatenate type &rest sequences
+  Эта функция возвращает последовательность типа @var{type}, выполненную
+  из конкатенации @var{sequences}. @var{type} может быть: @code{vector},
+  @code{list} или @code{string}.
+
+@example
+@group
+(seq-concatenate 'list '(1 2) '(3 4) [5 6])
+@result{} (1 2 3 4 5 6)
+@end group
+@group
+(seq-concatenate 'string "Привет " "мир")
+@result{} "Привет мир"
+@end group
+@end example
+@end defun
+
+@defun seq-mapcat function sequence &optional type
+  Эта функция возвращает результат применения @code{seq-concatenate} в результате
+  применения @var{function} к каждому элементу @var{sequence}. Результатом является
+  последовательность типа @var{type}, или список, если @var{type} является @code{nil}.
+
+@example
+@group
+(seq-mapcat #'seq-reverse '((3 2 1) (6 5 4)))
+@result{} (1 2 3 4 5 6)
+@end group
+@end example
+@end defun
+
+@defun seq-partition sequence n
+  Эта функция возвращает список элементов, сгруппированных в @var{sequence}
+  суб-последовательности длинной @var{n}. Последняя последовательность может
+  содержать меньше элементов, чем @var{n}. @var{n} должно быть целым числом.
+  Если @var{n} отрицательное число или 0, то возвращаемое значение @code{nil}.
+
+@example
+@group
+(seq-partition '(0 1 2 3 4 5 6 7) 3)
+@result{} ((0 1 2) (3 4 5) (6 7))
+@end group
+@end example
+@end defun
+
+@defun seq-intersection sequence1 sequence2 &optional function
+@cindex sequences, intersection of
+@cindex intersection of sequences
+  Эта функция возвращает список элементов, которые появляются как в @var{sequence1}
+      так и в @var{sequence2}. Если необязательный аргумент @var{function} является
+      non-@code{nil}, он является функцией двух аргументов, чтобы использовать для
+      сравнения элементов вместо @code{equal} по умолчанию.
+
+@example
+@group
+(seq-intersection [2 3 4 5] [1 3 5 6 7])
+@result{} (3 5)
+@end group
+@end example
+@end defun
+
+
+@defun seq-difference sequence1 sequence2 &optional function
+  Эта функция возвращает список элементов, которые появляются в @var{sequence1}, но не
+  в @var{sequence2}. Если необязательный аргумент @var{function} является non-@code{nil},
+  она является функцией двух аргументов, чтобы использовать для сравнения элементов
+  вместо @code{equal} по умолчанию.
+
+@example
+@group
+(seq-difference '(2 3 4 5) [1 3 5 6 7])
+@result{} (2 4)
+@end group
+@end example
+@end defun
+
+@defun seq-group-by function sequence
+  Эта функция разделяет элементы @var{sequence} на список, ключи которого являются результатом
+  применения @var{function} к каждому элементу @var{sequence}. Ключи сравниваются с
+  использованием @code{equal}.
+
+@example
+@group
+(seq-group-by #'integerp '(1 2.1 3 2 3.2))
+@result{} ((t 1 3 2) (nil 2.1 3.2))
+@end group
+@group
+(seq-group-by #'car '((a 1) (b 2) (a 3) (c 4)))
+@result{} ((b (b 2)) (a (a 1) (a 3)) (c (c 4)))
+@end group
+@end example
+@end defun
+
+@defun seq-into sequence type
+@cindex convert sequence to another type
+@cindex list to vector
+@cindex vector to list
+@cindex string to vector
+  Эта функция преобразует @var{sequence} последовательности в последовательность
+  типа @var{type}. @var{type} может быть один из следующих символов:
+  @code{vector}, @code{string} или @code{list}.
+
+@example
+@group
+(seq-into [1 2 3] 'list)
+@result{} (1 2 3)
+@end group
+@group
+(seq-into nil 'vector)
+@result{} []
+@end group
+@group
+(seq-into "hello" 'vector)
+@result{} [104 101 108 108 111]
+@end group
+@end example
+@end defun
+
+@defun seq-min sequence
+@cindex minimum value of sequence
+@cindex sequence minimum
+  Эта функция возвращает наименьший элемент @var{sequence}. Элементы @var{sequence}
+  должны быть числами или маркерами (@pxref{Markers}).
+
+@example
+@group
+(seq-min [3 1 2])
+@result{} 1
+@end group
+@group
+(seq-min "Hello")
+@result{} 72
+@end group
+@end example
+@end defun
+
+@defun seq-max sequence
+@cindex maximum value of sequence
+@cindex sequence maximum
+  Эта функция возвращает наибольший элемент @var{sequence}. Элементы @var{sequence}
+  должны быть числами или маркерами.
+
+@example
+@group
+(seq-max [1 3 2])
+@result{} 3
+@end group
+@group
+(seq-max "Hello")
+@result{} 111
+@end group
+@end example
+@end defun
+
+@defmac seq-doseq (var sequence) body@dots{}
+@cindex sequence iteration
+@cindex iteration over vector or string
+  Этот макрос подобен @code{dolist} (@pxref{Iteration, dolist}), за исключением того,
+  что @var{sequence} может быть списком, вектором или строкой. Это в первую очередь
+  полезно для побочных эффектов.
+@end defmac
+
+@anchor{seq-let}
+@defmac seq-let var-sequence val-sequence body@dots{}
+@cindex sequence destructuring
+  Этот макрос связывает переменные, определенные в @var{var-sequence} со значениями,
+  которые являются соответствующими элементами @var{val-sequence}. Это известно как
+  @dfn{деструктирующая привязка}. Элементы @var{var-sequence} сами могут включать в себя
+  последовательности, допускающие вложенную деструктуризации.
+
+Последовательность @var{var-sequence} также может включать в себя @code{&rest} маркер,
+за которым следует имя переменной, которая будет связана с остальной частью @var{val-sequence}.
+
+@example
+@group
+(seq-let [first second] [1 2 3 4]
+  (list first second))
+@result{} (1 2)
+@end group
+@group
+(seq-let (_ a _ b) '(1 2 3 4)
+  (list a b))
+@result{} (2 4)
+@end group
+@group
+(seq-let [a [b [c]]] [1 [2 [3]]]
+  (list a b c))
+@result{} (1 2 3)
+@end group
+@group
+(seq-let [a b &rest others] [1 2 3 4]
+  others)
+@end group
+@result{} [3 4]
+@end example
+
+@code{pcase} модели обеспечивают альтернативный объект связывания для уничтожения,
+см @ref{Destructuring with pcase Patterns}.
+@end defmac
+
+@defun seq-random-elt sequence
+  Эта функция возвращает элемент @var{sequence} взятым в случайном порядке.
+
+@example
+@group
+(seq-random-elt [1 2 3 4])
+@result{} 3
+(seq-random-elt [1 2 3 4])
+@result{} 2
+(seq-random-elt [1 2 3 4])
+@result{} 4
+(seq-random-elt [1 2 3 4])
+@result{} 2
+(seq-random-elt [1 2 3 4])
+@result{} 1
+@end group
+@end example
+
+  Если @var{sequence} пусто, то эта функция сигнализирует об ошибке.
+@end defun
+
+@node Arrays
+@section Массивы
+@cindex array
+
+  Объект @dfn{массив} имеет слоты, которые содержат другие Лисп объекты и называются элементами
+  массива. К любому элементу массива может быть получен доступ за одинаковое время. В
+  противоположность этому, время доступа к элементу списка пропорционален положению этого
+  элемента в списке.
+
+  Emacs определяет четыре типа массива, все одномерное:
+@dfn{строки} (@pxref{String Type}), @dfn{векторы} (@pxref{Vector
+Type}), @dfn{bool-векторы} (@pxref{Bool-Vector Type}), и
+@dfn{таблицы-символов} (@pxref{Char-Table Type}).  Векторы и char-tables
+могут содержать элементы любого типа, но строки могут содержать
+только символы, и bool-vectors может содержать только @code{t} и @code{nil}.
+
+  Все четыре вида массива разделяет эти характеристики:
+
+@itemize @bullet
+@item
+Первый элемент массива имеет нулевой индекс, второй элемент имеет индекс 1, и так далее.
+Это называется @dfn{zero-origin} индексации. Например, массив из четырех элементов имеют
+индексы 0, 1, 2, @w{и 3}.
+
+@item
+Длина массива фиксируется, как только вы создаете его; Вы не можете изменить длину
+существующего массива.
+
+@item
+Для целей оценки, массив является константой---i.e., он оценивает себе.
+
+@item
+На элементы массива можно ссылаться или изменять с помощью функций @code{aref} and @code{aset}
+соответственно (@pxref{Array Functions}).
+@end itemize
+
+    При создании массива, кроме полукокса-таблицы, необходимо указать его длину. Вы не
+    можете указать длину таблицы-символов, потому что длинна определяется диапазоном
+    кодов символов.
+
+  В принципе, если вам нужен массив текстовых символов, вы можете использовать либо
+  строку либо вектор. На практике мы всегда выбираем строки для таких приложений,
+  по четырем причинам:
+
+@itemize @bullet
+@item
+Они занимают одну четверть пространства вектора одних и тех же элементов.
+
+@item
+Строки печатаются таким образом, что показывает содержание более ясно в виде текста.
+
+@item
+Строки могут содержать свойство текста.  @xref{Text Properties}.
+
+@item
+Многие специализированные средства редактирования и I/O Emacs принимают только строки.
+Например, вы не можете вставить вектор символов в буфере, как вы можете вставить строку.
+@xref{Strings and Characters}.
+@end itemize
+
+  Напротив, для массива символов вводимых с клавиатуры (например, последовательности клавиш),
+  вектор может быть необходимым, поскольку многие вводимые с клавиатуры символы находятся
+  за пределами диапазона, который может поместиться в строке.  @xref{Key Sequence Input}.
+
+@node Array Functions
+@section Функции для работы с массивами
+
+  В этом разделе мы описываем функции, которые принимают все типы массивов.
+
+@defun arrayp object
+Эта функция возвращает @code{t} если @var{object} массив (то есть, является
+вектором, строкой, булевым-вектором или таблицей символов).
+
+@example
+@group
+(arrayp [a])
+     @result{} t
+(arrayp "asdf")
+     @result{} t
+(arrayp (syntax-table))    ;; @r{Таблица символов.}
+     @result{} t
+@end group
+@end example
+@end defun
+
+@defun aref arr index
+@cindex array elements
+Эта функция возвращает элемент массива @var{arr} с индексом @var{index}.
+Первый элемент имеет индекс нуль.
+
+@example
+@group
+(setq primes [2 3 5 7 11 13])
+     @result{} [2 3 5 7 11 13]
+(aref primes 4)
+     @result{} 11
+@end group
+@group
+(aref "abcdefg" 1)
+     @result{} 98           ; @r{@samp{b} is @acronym{ASCII} code 98.}
+@end group
+@end example
+
+Смотрите также функцию @code{elt} в @ref{Sequence Functions}.
+@end defun
+
+@defun aset array index object
+Эта функция устанавливает в элемент массива @var{array} с индексом  @var{index} знчение
+@var{object}. Она возвращает @var{object}.
+
+@example
+@group
+(setq w [foo bar baz])
+     @result{} [foo bar baz]
+(aset w 0 'fu)
+     @result{} fu
+w
+     @result{} [fu bar baz]
+@end group
+
+@group
+(setq x "asdfasfd")
+     @result{} "asdfasfd"
+(aset x 3 ?Z)
+     @result{} 90
+x
+     @result{} "asdZasfd"
+@end group
+@end example
+
+Если @var{array} является строкой и @var{object} не является символом,
+возникает ошибка @code{wrong-type-argument}. Функция преобразует
+однобайтовую строку в многобайтовую, если необходимо вставить символ.
+@end defun
+
+@defun fillarray array object
+Эта функция заполняет массив @var{array} объектами
+@var{object}, так что каждый элемент @var{array} является
+@var{object}. Она возвращает @var{array}.
+
+@example
+@group
+(setq a [a b c d e f g])
+     @result{} [a b c d e f g]
+(fillarray a 0)
+     @result{} [0 0 0 0 0 0 0]
+a
+     @result{} [0 0 0 0 0 0 0]
+@end group
+@group
+(setq s "Когда в ходе")
+     @result{} "Когда в ходе"
+(fillarray s ?-)
+     @result{} "------------------"
+@end group
+@end example
+
+Если @var{array} является строкой и @var{object} не символ,
+возникает ошибка @code{wrong-type-argument}.
+@end defun
+
+Общие функции последовательностей @code{copy-sequence} и @code{length}
+часто бывают полезны для объектов, известных как массивы.
+@xref{Sequence Functions}.
+
+@node Vectors
+@section Векторы
+@cindex vector (type)
+
+  @dfn{вектор} является массивом общего назначения, элементы которого могут быть
+  любые Лисп объекты.  (В отличии от этого, элементы строки могут быть только
+  символы @xref{Strings and Characters}.).  Векторы используются в Emacs для многих
+  целей: в качестве ключевых последовательностей (@pxref{Key Sequences}), как
+  символ-таблица поиска (@pxref{Creating Symbols}), как часть представления
+  байт скомпилированных функций (@pxref{Byte Compilation}), и многое другое.
+
+  Как и другие массивы, векторы используют нулевое происхождение индексации:
+  первый элемент имеет индекс 0.
+
+  Векторы печатаются в квадратных скобок, окружающих элементы. Таким образом, вектор,
+  элементы которого являются символы @code{a}, @code{b} и @code{a} печатается
+  @code{[a b a]}. Вы можете написать векторы таким же образом, на входе Лиспа.
+
+  Вектор, как строка или число, считается постоянным для оценки: результат
+  вычисления это тот же вектор. Это не оценивает или даже не проверяет
+  элементы вектора. @xref{Self-Evaluating Forms}.
+
+  Ниже приведены примеры, иллюстрирующие эти принципы:
+
+@example
+@group
+(setq avector [1 two '(three) "four" [five]])
+     @result{} [1 two (quote (three)) "four" [five]]
+(eval avector)
+     @result{} [1 two (quote (three)) "four" [five]]
+(eq avector (eval avector))
+     @result{} t
+@end group
+@end example
+
+@node Vector Functions
+@section Функции для работы с Векторами
+
+  Вот некоторые функции, относящиеся к векторам:
+
+@defun vectorp object
+Эта функция возвращает @code{t} если @var{object} вектор.
+
+@example
+@group
+(vectorp [a])
+     @result{} t
+(vectorp "asdf")
+     @result{} nil
+@end group
+@end example
+@end defun
+
+@defun vector &rest objects
+Эта функция создает и возвращает вектор, элементами
+которого являются аргументы, @var{objects}.
+
+@example
+@group
+(vector 'foo 23 [bar baz] "rats")
+     @result{} [foo 23 [bar baz] "rats"]
+(vector)
+     @result{} []
+@end group
+@end example
+@end defun
+
+@defun make-vector length object
+Эта функция возвращает новый вектор, состоящий из количества элементов
+@var{length}, каждый инициализируется @var{object}.
+
+@example
+@group
+(setq sleepy (make-vector 9 'Z))
+     @result{} [Z Z Z Z Z Z Z Z Z]
+@end group
+@end example
+@end defun
+
+@defun vconcat &rest sequences
+@cindex copying vectors
+Эта функция возвращает новый вектор, содержащий все элементы @var{sequences}.
+Аргументами @var{sequences} может быть собственно списки, векторы, строки
+или BOOL-векторы. Если @var{sequences} не задан, возвращается пустой вектор.
+
+Значение является либо пустым вектором, либо вновь созданным непустым вектором,
+который не @code{eq} не одному из существующих векторов.
+
+@example
+@group
+(setq a (vconcat '(A B C) '(D E F)))
+     @result{} [A B C D E F]
+(eq a (vconcat a))
+     @result{} nil
+@end group
+@group
+(vconcat)
+     @result{} []
+(vconcat [A B C] "aa" '(foo (6 7)))
+     @result{} [A B C 97 97 foo (6 7)]
+@end group
+@end example
+
+Функция @code{vconcat} также принимает в качестве аргументов байт-код функции объектов.
+Это специальная функция, которая позволяет легко получить ко всему содержимому
+объекта функции байт-кода.  @xref{Byte-Code Objects}.
+
+Для других функций конкатенации смотри: @code{mapconcat} в @ref{Mapping
+Functions}, @code{concat} в @ref{Creating Strings}, и @code{append}
+в @ref{Building Lists}.
+@end defun
+
+  Функция @code{append} также предоставляет способ для преобразования вектора
+  в список с теми же элементами:
+
+@example
+@group
+(setq avector [1 two (quote (three)) "four" [five]])
+     @result{} [1 two (quote (three)) "four" [five]]
+(append avector nil)
+     @result{} (1 two (quote (three)) "four" [five])
+@end group
+@end example
+
+@node Char-Tables
+@section Символ-Таблицы
+@cindex char-tables
+@cindex extra slots of char-table
+
+  Символ-Таблица очень схожа с вектором, за исключением того, что она индексируется
+  кодами символов.  Любой действительный код символа, без модификаторов, может быть
+  использован в качестве индекса в Символ-Таблицае. Вы можете получить доступ к
+  элементам Символ-Таблицы с помощью  @code{aref} и @code{aset}, как и для
+  любого массива. Кроме того, Символ-Таблица может иметь @dfn{доплнительные слоты}
+  для хранения дополнительных данных, не связанных с определенными
+  кодами символов. Как векторы, Символ-Таблица является константантой при оценке,
+  и может содержать элементы любого типа.
+
+@cindex subtype of char-table
+  Каждая Символ-Таблица имеет @dfn{подтип}, символ, который служит двум целям:
+
+@itemize @bullet
+@item
+Подтип обеспечивает легкий способ указать, для чего используется Символ-Таблица.
+Так, например, таблицы отображения - это Символ-Таблица с @code{display-table}
+в качестве подтипа, а таблицы синтаксиса - это Символ-Таблица c @code{syntax-table}
+в качестве подтипа. Подтип может быть запрошен с помощью функции
+@code{char-table-subtype}, описанной ниже.
+
+@item
+Подтип контролирует количество @dfn{доплнительных слотов} в Символ-Таблице.
+Это число определяется свойством подтипа символа @code{char-table-extra-slots}
+(@pxref{Symbol Properties}), чье значение должно быть целым числом в диапазоне
+от 0 до 10. Если подтип не имеет такого свойство символа, Символ-Таблица не
+имеет дополнительных слотов.
+@end itemize
+
+@cindex parent of char-table
+  Символ-Таблица может иметь @dfn{родителя}, который может быть еще одной Символ-Таблицей.
+  Если это  так, то всякий раз, когда символ Символ-Таблицы указывает на @code{nil}
+  для конкретного определённого символа @var{c}, наследуется значение, указанное в
+  родительском элементе. Другими словами, @code{(aref @var{Символ-Таблица} @var{c})}
+  возвращает значение из родительской @var{Символ-Таблицы} если сама @var{Символ-Таблица}
+  определяет @code{nil}.
+
+@cindex default value of char-table
+  Символ-Таблица может также иметь @dfn{значение по умолчанию}. Если это так, то
+  @code{(aref @var{Символ-Таблица} @var{c})} возвращает значение по умолчанию,
+  когда Символ-Таблица не указывает другое значение отличное от non-@code{nil}.
+
+@defun make-char-table subtype &optional init
+Возвращает вновь созданную Символ-Таблицу, с подтипом @var{subtype} (символ).
+Каждый элемент инициализируется @var{init}, который по умолчанию @code{nil}.
+Вы не можете изменить подтип Символ-Таблицы после её создания.
+
+Нет ни одного аргумента, чтобы указать длину Символ-Таблицы, потому что все
+Символ-Таблицы имеют место для любого действительного кода символа в качестве индекса.
+
+Если @var{subtype} имеет свойство символа @code{char-table-extra-slots}, который
+определяет количество дополнительных слотов в Символ-Таблице. Это должно быть целым
+числом от 0 до 10; в противном случае, @code{make-char-table} вызывает ошибку.
+Если @var{subtype} не имеет свойство символа @code{char-table-extra-slots}
+свойство (@pxref{Property Lists}), то Символ-Таблица не имеет дополнительных слотов.
+@end defun
+
+@defun char-table-p object
+Эта функция возвращает @code{t} если @var{object} является Символ-Таблицей
+и @code{nil} в обратном случае.
+@end defun
+
+@defun char-table-subtype char-table
+Эта функция возвращает символ подтипа @var{char-table}.
+@end defun
+
+Нет специальной функции для доступа к значениям по умолчанию в Символ-Таблице.
+Для этого используйте @code{char-table-range} (см. Ниже)
+
+@defun char-table-parent char-table
+Эта функция возвращает родительскую @var{char-table}. Родитель всегда либо
+@code{nil} или другая Символ-Таблица.
+@end defun
+
+@defun set-char-table-parent char-table new-parent
+Эта функция устанавливает в качестве родителя Символ-Таблицу @var{new-parent}
+для Символ-Таблицы @var{char-table}.
+@end defun
+
+@defun char-table-extra-slot char-table n
+Эта функция возвращает содержимое дополнительного слота @var{n}
+(считается от нуля) из @var{char-table}. Количество дополнительных
+слотов в Символ-Таблице определяется её подтипом.
+@end defun
+
+@defun set-char-table-extra-slot char-table n value
+Эта функция сохраняет @var{value} в дополнительный слот
+@var{n} (считается от нуля) из @var{char-table}.
+@end defun
+
+  Символ-Таблица может определять значение элемента для односимвольного кода;
+  она также может определять значения для всего набора символов.
+
+@defun char-table-range char-table range
+Это возвращает значение, указанное в @var{char-table} для диапазона
+символов @var{range}. Вот возможности @var{range}:
+
+@table @asis
+@item @code{nil}
+Относится к значению по умолчанию.
+
+@item @var{char}
+Относится к элементу для символа @var{char}
+(предположив @var{char} действительный код символа).
+
+@item @code{(@var{from} . @var{to})}
+Cons-ячейка ссылается на все символы в диапазоне
+@samp{[@var{from}..@var{to}]} включительно.
+@end table
+@end defun
+
+@defun set-char-table-range char-table range value
+Эта функция устанавливает значение в @var{char-table} для диапазона
+символов @var{range}. Вот возможности @var{range}:
+
+@table @asis
+@item @code{nil}
+Относится к значению по умолчанию.
+
+@item @code{t}
+Относится ко всему диапазону кодов символов.
+
+@item @var{char}
+Относится к элементу для символа @var{char}
+(предположив @var{char} действительный код символа).
+
+@item @code{(@var{from} . @var{to})}
+Cons-ячейка ссылается на все символы в диапазоне
+@samp{[@var{from}..@var{to}]} включительно.
+@end table
+@end defun
+
+@defun map-char-table function char-table
+Эта функция вызывает свой аргумент @var{function} для каждого элемента
+@var{char-table}, который имеет значение non-@code{nil}. Вызываемая функция
+@var{function} это функция с двумя аргументами, ключом и значением.
+Ключ является значением допустимо возможного @var{диапазона} аргумента
+@code{char-table-range} --- действительных символов или задаёться cons-ячейкой
+@code{(@var{от}. @var{до})}, определяющей диапазон символов, которые
+имеют одно и тоже значение. Значение - это то, что возвращает @var{key}
+@code{(char-table-range @var{char-table} @var{key})}.
+
+В целом, пары ключ-значение, передаваемые в @var{function} описывают все значения,
+хранящиеся в @var{char-table}.
+
+Возвращаемое значение всегда @code{nil}; чтобы сделать вызовы @code{map-char-table}
+полезными, @var{function} должна иметь побочные эффекты. Например, вот как
+исследовать элементы синтаксической таблицы:
+
+@example
+(let (accumulator)
+   (map-char-table
+    #'(lambda (key value)
+        (setq accumulator
+              (cons (list
+                     (if (consp key)
+                         (list (car key) (cdr key))
+                       key)
+                     value)
+                    accumulator)))
+    (syntax-table))
+   accumulator)
+@result{}
+(((2597602 4194303) (2)) ((2597523 2597601) (3))
+ ... (65379 (5 . 65378)) (65378 (4 . 65379)) (65377 (1))
+ ... (12 (0)) (11 (3)) (10 (12)) (9 (0)) ((0 8) (3)))
+@end example
+@end defun
+
+@node Bool-Vectors
+@section Булево-Векторы
+@cindex Bool-vectors
+
+  Булево-Вектор очень похож на вектор, за исключением того, что он хранит
+  только значение @code{t} и @code{nil}. Если вы попытаетесь сохранить
+  любое не-@code{nil} значение в элемент Булево-Вектора, результат будет
+  сохранён там как @code{t}. Как и у всех массивов, индексы Булево-Вектора
+  начинаются с 0, а длина не может быть изменена после того, как Булево-Вектор
+  был создан. Булево-Векторы при оценки являются константами.
+
+  Некоторые функции работают именно с Булево-Векторами; Помимо этого, вы
+  можете манипулировать ими теми же функциями, что и для других видов массивов.
+
+@defun make-bool-vector length initial
+Возвращает новый Булево-Вектор из @var{length} элементов,
+каждый из которых инициализируется @var{initial}.
+@end defun
+
+@defun bool-vector &rest objects
+Эта функция создает и возвращает Булев-Вектор, элементы
+которого являются переданные аргументы, @var{objects}.
+@end defun
+
+@defun bool-vector-p object
+Это возвращает @code{t} если @var{object} является
+Булево-Вектор и @code{nil} в другом случае.
+@end defun
+
+Есть также некоторые функции операций с наборами Булев-Вектора,
+описанные ниже:
+
+@defun bool-vector-exclusive-or a b &optional c
+Возвращает @dfn{поразрядное исключающее или} из Булево-Векторов @var{a} и @var{b}.
+Если необязательный аргумент @var{c} задан, то результат этой операции
+сохраняется в @var{c}. Все аргументы должны быть Булево-Векторами одинаковой длины.
+@end defun
+
+@defun bool-vector-union a b &optional c
+Возвращает @dfn{поразрядное или} из Булево-Векторов @var{a} и @var{b}. Если
+необязательный аргумент @var{c} задан, то результат этой операции сохраняется
+в @var{c}. Все аргументы должны быть Булево-Векторы одинаковой длины.
+@end defun
+
+@defun bool-vector-intersection a b &optional c
+Возвращает @dfn{поразрядное и} из Булево-Векторов @var{a} и @var{b}. Если
+необязательный аргумент @var{c} задан, то результат этой операции сохраняется
+в @var{c}. Все аргументы должны быть Булево-Векторы одинаковой длины.
+@end defun
+
+@defun bool-vector-set-difference a b &optional c
+Возвращает @dfn{установленную разность} из Булево-Векторов @var{a} и @var{b}. Если
+необязательный аргумент @var{c} задан, то результат этой операции сохраняется
+в @var{c}. Все аргументы должны быть Булево-Векторы одинаковой длины.
+@end defun
+
+@defun bool-vector-not a &optional b
+Возвращает @dfn{установленное дополнение} из Булево-Вектороа @var{a}. Если
+необязательный аргумент @var{b} задан, то результат этой операции сохраняется
+в @var{b}. Все аргументы должны быть Булево-Векторы одинаковой длины.
+@end defun
+
+@defun bool-vector-subsetp a b
+Возвращает @code{t} если каждое значение @code{t} в @var{a} также
+@code{t} в @var{b}, @code{nil} в другом случае. Все аргументы должны быть
+Булево-Векторы одинаковой длины.
+@end defun
+
+@defun bool-vector-count-consecutive a b i
+Возвращает количество последовательных элементов в @var{a} равной @var{b}
+начиная с @var{i}. @code{a} является Булево-Вектор, @var{b} является @code{t}
+или @code{nil} и @var{i} является индексом в @code{a}.
+@end defun
+
+@defun bool-vector-count-population a
+Возвращает количество элементов, которые @code{t} в Булево-Векторе @var{a}.
+@end defun
+
+  Печатная форма представляет до 8 логических значений как один символ:
+
+@example
+@group
+(bool-vector t nil t nil)
+     @result{} #&4"^E"
+(bool-vector)
+     @result{} #&0""
+@end group
+@end example
+
+Вы можете использовать @code{vconcat} для печати Булево-Вектора,
+как и другие векторы:
+
+@example
+@group
+(vconcat (bool-vector nil t nil t))
+     @result{} [nil t nil t]
+@end group
+@end example
+
+  Вот еще один пример создания, изучения и обновления Булево-Вектор:
+
+@example
+(setq bv (make-bool-vector 5 t))
+     @result{} #&5"^_"
+(aref bv 1)
+     @result{} t
+(aset bv 3 nil)
+     @result{} nil
+bv
+     @result{} #&5"^W"
+@end example
+
+@noindent
+Эти результаты имеют смысл, потому что двоичные коды control-_ и
+control-W являются 11111 и 10111 соответственно.
+
+@node Rings
+@section Управление Кольцом Объектов фиксированного размера
+
+@cindex ring data structure
+  @dfn{Кольцо (ring)} представляет собой структуру данных фиксированного размера,
+  которая поддерживает вставку, удаление, вращение, и по модулю проиндексирована
+  для справочного обхода. Эффективная кольцевая структура данных реализована в
+  пакете @code{Кольцо (ring)}. Она обеспечивает функции, перечисленные в этом разделе.
+
+  Обратите внимание, что некоторые из колец в Emacs, как кольцо уничтожения и
+  пометки, на самом деле реализованы в виде простых списков, а @emph{не} с
+  использованием пакета @code{кольцо (ring)}; Таким образом, следующие функции
+  не будут работать с ними.
+
+@defun make-ring size
+Это возвращает новое кольцо, способные удерживать объекты @var{size}.
+@var{size} должно быть целым числом.
+@end defun
+
+@defun ring-p object
+Это возвращает @code{t} если @var{object} это кольцо, @code{nil} в обратном случае.
+@end defun
+
+@defun ring-size ring
+Это возвращает максимальную емкость @var{ring}.
+@end defun
+
+@defun ring-length ring
+Это возвращает количество объектов, которые в настоящее время содержит @var{ring}.
+Значение никогда не будет превышать возвращаемый @code{ring-size}.
+@end defun
+
+@defun ring-elements ring
+Это возвращает список объектов в @var{ring}, в порядке, начиная с самых новых.
+@end defun
+
+@defun ring-copy ring
+Это возвращает новое кольцо, которое является копией @var{ring}. Новое кольцо
+содержит те же объекты (@code{eq}) как @var{ring}.
+@end defun
+
+@defun ring-empty-p ring
+Это возвращает @code{t} если @var{ring} пуст, @code{nil} в обратном случае.
+@end defun
+
+  Самый новый элемент в кольце всегда имеет индекс 0. Более высокие индексы
+  соответствуют более старым элементам. Индексы вычисляются по модулю длины
+  кольца. Индекс @minus{}1 соответствует самому старому элементу, @minus{}2
+  к следующему по возрасту, и так далее.
+
+@defun ring-ref ring index
+Это возвращает объект в @var{ring} найденный по индексу @var{index}. @var{index}
+может быть отрицательным или превышать длину кольца. Если @var{ring} пуст,
+@code{ring-ref} сигнализирует об ошибке.
+@end defun
+
+@defun ring-insert ring object
+Это вставляет @var{object} в @var{ring}, что делает его самым
+новым элементом и возвращает @var{object}.
+
+Если кольцо заполнено, при вставке удаляется самый старый элемент,
+чтобы освободить место для вставляемого элемента.
+@end defun
+
+@defun ring-remove ring &optional index
+Удаляет объект из @var{ring}, и возвращает этот объект. Аргумент
+@var{index} определяет элемент для удаления; если @var{index}
+указывает на @code{nil}, удаляется самый старый элемент.
+Если @var{ring} пусто, @code{ring-remove} сигнализирует об ошибке.
+@end defun
+
+@defun ring-insert-at-beginning ring object
+Это вставляет @var{object} в @var{ring}, рассматривая его как
+самый старый элемент. Возвращаемое значение не имеет значения.
+
+Если кольцо заполнено, эта функция удаляет самый новый элемент,
+чтобы освободить место для вставляемого элемента.
+@end defun
+
+@cindex fifo data structure
+  Если не превышать размер кольца, можно использовать кольцо в
+  качестве очереди ПервыйПришел - ПервыйОбслужен. Например:
+
+@lisp
+(let ((fifo (make-ring 5)))
+  (mapc (lambda (obj) (ring-insert fifo obj))
+        '(0 one "two"))
+  (list (ring-remove fifo) t
+        (ring-remove fifo) t
+        (ring-remove fifo)))
+     @result{} (0 t one t "two")
+@end lisp

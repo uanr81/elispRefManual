@@ -1,0 +1,3 @@
+texi2any --html --no-split /home/ub18/Документы/myProect/emacs/elispTexi/emacs-lispref-26.3/elisp.texi -o /home/ub18/Документы/myProect/emacs/DocElispFef/Texi/elisp.html
+
+firefox /home/ub18/Документы/myProect/emacs/DocElispFef/Texi/elisp.html &
