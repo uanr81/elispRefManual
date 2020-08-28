@@ -33,13 +33,13 @@
   Каждый примитивный тип имеет соответствующую функцию Lisp, которая проверяет,
   является ли объект членом этого типа.
 
-  Lisp в отличии от многих других языков, в том, что его объекты
+  Отличие Lisp от многих других языков, в том, что его объекты
   @dfn{self-typing (самотипирующие)}: примитивный тип каждого объекта неявен
   в самом объекте. Например, если объект является вектором, ничто не может
-  рассматривать как число; Lisp знает, что это вектор, а не число.
+  рассматривать его как число; Lisp знает, что это вектор, а не число.
 
   В большинстве языков, программист должен объявить тип данных каждой переменной,
-  и этот тип известен компилятору, но не представлены в данных. Такие заявления
+  и этот тип известен компилятору, но не представлен в данных. Такие заявления
   типов не существует в Emacs Lisp. Переменная Lisp может иметь любой тип значения,
   и она запоминает любое значение, которое вы в ней храните. (На самом деле,
   небольшое количество Emacs Lisp переменных может принимать только значение
@@ -54,7 +54,7 @@
 * Comments::                    Комментарии и правила их форматирования.
 * Programming Types::           Типы встречающиеся во всех системах Lisp.
 * Editing Types::               Типы специфичные для Emacs.
-* Circular Objects::            Синтаксис чтения для кольцевой структуры.
+* Circular Objects::            Синтаксис чтения для циклических структур.
 * Type Predicates::             Тесты, связь с типами.
 * Equality Predicates::         Проверка равенства между любыми двумя объектами.
 @end menu
@@ -64,7 +64,7 @@
 @cindex printed representation
 @cindex read syntax
 
-  @dfn{печатное представление} объекта является форматом выходного сигнала,
+  @dfn{Печатное представление (print)} объекта является форматом выходного сигнала,
   генерируемого лисповсим принтером (функция @code{prin1}) для этого объекта.
   Каждый тип данных имеет уникальное печатное представление. @dfn{чтение синтаксиса}
   объекта является форматом ввода, принятого лисповским читателем (функция @code{read})
@@ -506,20 +506,18 @@ escape-последовательность состоит из обратной
 @cindex hyper characters
 @cindex super characters
 @cindex alt characters
-  The X Window System defines three other
-@anchor{modifier bits}modifier bits that can be set
-in a character: @dfn{hyper}, @dfn{super} and @dfn{alt}.  The syntaxes
-for these bits are @samp{\H-}, @samp{\s-} and @samp{\A-}.  (Case is
-significant in these prefixes.)  Thus, @samp{?\H-\M-\A-x} represents
-@kbd{Alt-Hyper-Meta-x}.  (Note that @samp{\s} with no following @samp{-}
-represents the space character.)
+  Система X Window определяет три других бита @anchor{modifier bits} модификатора,
+  которые могут быть установлены в символе: @dfn{hyper}, @dfn{super} и @dfn{alt}.
+  Синтаксис для этих битов @samp{\H-}, @samp{\s-} and @samp{\A-}. (Важен регистр
+  в этих префиксах.) Таким образом, @samp{?\H-\M-\A-x} представляет
+  @kbd{Alt-Hyper-Meta-x}. (Обратите внимание, что @samp{\s} с не следующими (здесь
+  непонятно что имеет ввиду) @samp{-} не представляет собой символ пробела.)
 @tex
-Numerically, the bit values are @math{2^{22}} for alt, @math{2^{23}}
-for super and @math{2^{24}} for hyper.
+Численно битовые значения @math{2^{22}} для alt, @math{2^{23}} для super и
+@math{2^{24}} для гипер.
 @end tex
 @ifnottex
-Numerically, the
-bit values are 2**22 for alt, 2**23 for super and 2**24 for hyper.
+Численно битовые значения 2**22  для alt, 2**23 для super и 2**24 для hyper.
 @end ifnottex
 
 @node Symbol Type

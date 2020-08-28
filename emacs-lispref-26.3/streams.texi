@@ -273,37 +273,35 @@ useless-list
 @samp{()} и вернёт @code{nil}.
 
 @node Input Functions
-@section Input Functions
+@section Функции Ввода
 
-  This section describes the Lisp functions and variables that pertain
-to reading.
+  В этом разделе описаны функции и переменные Lisp, которые относятся к чтению.
 
-  In the functions below, @var{stream} stands for an input stream (see
-the previous section).  If @var{stream} is @code{nil} or omitted, it
-defaults to the value of @code{standard-input}.
+  В приведенных ниже функций, @var{поток} означает входной поток
+  (см. предыдущий раздел). Если @var{поток} @code{nil} или опущен,
+  то по умолчанию значению @code{standard-input} (стандартный ввод).
 
 @kindex end-of-file
-  An @code{end-of-file} error is signaled if reading encounters an
-unterminated list, vector, or string.
+  Сообщение @code{end-of-file} об ошибке выдаётся, если при чтении встречается
+  незаконченный список, вектор или строка.
 
 @defun read &optional stream
-This function reads one textual Lisp expression from @var{stream},
-returning it as a Lisp object.  This is the basic Lisp input function.
+Эта функция считывает одно текстовое выражение Lisp из @var{потока}, возвращая
+его как объект Lisp. Это основная функция ввода Lisp.
 @end defun
 
 @defun read-from-string string &optional start end
 @cindex string to object
-This function reads the first textual Lisp expression from the text in
-@var{string}.  It returns a cons cell whose @sc{car} is that expression,
-and whose @sc{cdr} is an integer giving the position of the next
-remaining character in the string (i.e., the first one not read).
+Эта функция читает первое текстовое выражение Lisp из текста в @var{string}.
+Она возвращает cons-ячейку, @sc{car} которой является этим выражением, а
+@sc{cdr} представляет собой целое число, задающего позицию следующего
+оставшегося символа в строке (то есть, первого не прочитанного).
 
-If @var{start} is supplied, then reading begins at index @var{start} in
-the string (where the first character is at index 0).  If you specify
-@var{end}, then reading is forced to stop just before that index, as if
-the rest of the string were not there.
+Если задан аргумент @var{start}, то чтение начинается с индекса @var{start}
+в строке (где первый символ с индексом 0). Если задан @var{end}, то считывание
+остановиться как раз перед этим индексом, как будто остальной строки там не было.
 
-For example:
+Например:
 
 @example
 @group
@@ -311,148 +309,156 @@ For example:
      @result{} ((setq x 55) . 11)
 @end group
 @group
-(read-from-string "\"A short string\"")
-     @result{} ("A short string" . 16)
+(read-from-string "\"Здесь короткая строка\"")
+     @result{} ("Здесь короткая строка" . 23)
 @end group
 
 @group
-;; @r{Read starting at the first character.}
-(read-from-string "(list 112)" 0)
-     @result{} ((list 112) . 10)
+;; @r{Читать, начиная с первого символа.}
+(read-from-string "(список 112)" 0)
+     @result{} ((list 112) . 12)
 @end group
 @group
-;; @r{Read starting at the second character.}
-(read-from-string "(list 112)" 1)
-     @result{} (list . 5)
+;; @r{Читать, начиная со второго символа.}
+(read-from-string "(список 112)" 1)
+     @result{} (список . 7)
 @end group
 @group
-;; @r{Read starting at the seventh character,}
-;;   @r{and stopping at the ninth.}
-(read-from-string "(list 112)" 6 8)
-     @result{} (11 . 8)
+;; @r{Читать, начиная с седьмого символа,}
+;;   @r{и остановиться на девятом.}
+(read-from-string "(список 112)" 6 8)
+     @result{} (к . 7)
+@end group
+@group
+;; @r{Читать, начиная с седьмого символа,}
+;;   @r{и остановиться на девятом.}
+(read-from-string "(списочек 112)" 6 8)
+     @result{} (че . 8)
 @end group
 @end example
 @end defun
 
 @defvar standard-input
-This variable holds the default input stream---the stream that
-@code{read} uses when the @var{stream} argument is @code{nil}.
-The default is @code{t}, meaning use the minibuffer.
+Эта переменная содержит входной поток по умолчанию --- поток, который
+использует @code{чтатель Lisp}, когда аргумент @var{потока} указывает на @code{nil}.
+По умолчанию @code{t}, то есть используется минибуфер.
 @end defvar
 
 @defvar read-circle
-If non-@code{nil}, this variable enables the reading of circular and
-shared structures.  @xref{Circular Objects}.  Its default value is
+Если эта переменная установлена в не-@code{nil}, позволяет чтение циклических
+и общих структур. @xref{Circular Objects}. Его значение по умолчанию
 @code{t}.
 @end defvar
 
 @cindex binary I/O in batch mode
-When reading or writing from the standard input/output streams of the
-Emacs process in batch mode, it is sometimes required to make sure any
-arbitrary binary data will be read/written verbatim, and/or that no
-translation of newlines to or from CR-LF pairs is performed.  This
-issue does not exist on POSIX hosts, only on MS-Windows and MS-DOS@.
-The following function allows you to control the I/O mode of any
-standard stream of the Emacs process.
+При чтении или записи из стандартного ввода/вывода потоков процесса Emacs
+в пакетном режиме, иногда требуется убедиться, что произвольные двоичные
+данные будут прочитаны/записаны дословно, и что учитывается присутствие
+пар CR-LF (перевод строки и/ или возврат корректки). Эта проблема не
+существует для POSIX хостов, только для MS-Windows и MS-DOS@. Следующая
+функция позволяет управлять режимом I/O любого стандартного потока процесса
+Emacs.
 
 @defun set-binary-mode stream mode
-Switch @var{stream} into binary or text I/O mode.  If @var{mode} is
-non-@code{nil}, switch to binary mode, otherwise switch to text mode.
-The value of @var{stream} can be one of @code{stdin}, @code{stdout},
-or @code{stderr}.  This function flushes any pending output data of
-@var{stream} as a side effect, and returns the previous value of I/O
-mode for @var{stream}.  On POSIX hosts, it always returns a
-non-@code{nil} value and does nothing except flushing pending output.
+Переключение потока @var{stream} в режим  двоичного или текстового
+ввода/вывода. Если @var{mode} является не-@code{nil}, переключиться в
+двоичный режиме, в противном случае перейти в текстовый режим. Значение
+потока @var{stream} может быть одним из @code{stdin}, @code{stdout} или
+@code{stderr}. Эта функция сбрасывает все ожидающие выходные данные
+потока @var{stream} в качестве побочного эффекта, и возвращает предыдущее
+значение режима ввода/вывода для потока @var{stream}. На POSIX хостах,
+всегда возвращается значение не-@code{nil} и не делается ничего, кроме
+сброса ожидающих данных.
 @end defun
 
 @node Output Streams
-@section Output Streams
+@section Выходные потоки
 @cindex stream (for printing)
 @cindex output stream
 
-  An output stream specifies what to do with the characters produced
-by printing.  Most print functions accept an output stream as an
-optional argument.  Here are the possible types of output stream:
+  Выходной поток указывает, что делать с символами, полученными при
+  печати. Большинство функций печати принимают выходной поток в качестве
+  необязательного аргумента. Вот возможные типы выходного потока:
 
 @table @asis
 @item @var{buffer}
 @cindex buffer output stream
-The output characters are inserted into @var{buffer} at point.
-Point advances as characters are inserted.
+Выходные символы вставляются в @var{buffer} в точке. Точка продвигается
+вперёд по мере вставки символов.
 
 @item @var{marker}
 @cindex marker output stream
-The output characters are inserted into the buffer that @var{marker}
-points into, at the marker position.  The marker position advances as
-characters are inserted.  The value of point in the buffer has no effect
-on printing when the stream is a marker, and this kind of printing
-does not move point (except that if the marker points at or before the
-position of point, point advances with the surrounding text, as
-usual).
+Выходные символы вставляются в буфер, в позицию  на который указывает
+@var{marker}. Зачение маркера увеличивается по мере вставки символов.
+Значение точки в буфере не имеет никакого эффекта на печать, когда
+поток является маркером, и этот вид печати не перемещает точку
+(кроме того, если маркер указывает на позицию точки или же на позицию
+до точки).
 
 @item @var{function}
 @cindex function output stream
-The output characters are passed to @var{function}, which is responsible
-for storing them away.  It is called with a single character as
-argument, as many times as there are characters to be output, and
-is responsible for storing the characters wherever you want to put them.
+Выходные символы передаются @var{function}, которая отвечает за их хранение.
+Она вызывается с одним символом в качестве аргумента, столько раз, сколько
+символов для вывода, и отвечает за сохранение символов в любом месте,
+где вы хотите их поместить.
 
 @item @code{t}
 @cindex @code{t} output stream
-The output characters are displayed in the echo area.
+Выходные символы отображаются в эхо-области.
 
 @item @code{nil}
 @cindex @code{nil} output stream
-@code{nil} specified as an output stream means to use the value of
-@code{standard-output} instead; that value is the @dfn{default output
-stream}, and must not be @code{nil}.
+@code{nil} в качестве выходного потока, указывает использовать значение
+@code{standard-output}; это значение является
+@dfn{потоком вывода по умолчанию}, и не должно быть @code{nil}.
 
 @item @var{symbol}
-A symbol as output stream is equivalent to the symbol's function
-definition (if any).
+Символ в качестве выходного потока эквивалентно определению
+символа функции (если таковые имеются).
 @end table
 
-  Many of the valid output streams are also valid as input streams.  The
-difference between input and output streams is therefore more a matter
-of how you use a Lisp object, than of different types of object.
+  Многие допустимые выходные потоки также действительны как входные
+  потоки. Таким образом, разница между входными и выходными потоками
+  больше зависит от того, как вы используете объект Lisp, чем
+  от типа объекта.
 
-  Here is an example of a buffer used as an output stream.  Point is
-initially located as shown immediately before the @samp{h} in
-@samp{the}.  At the end, point is located directly before that same
-@samp{h}.
+  Ниже приведен пример буфера, используемого в качестве выходного потока.
+  Точка изначально находится, как показано непосредственно перед первым @samp{а}
+  в @samp{файла}. В конце концов, точка расположена непосредственно перед
+  тем же @samp{а}.
 
 @cindex print example
 @example
 @group
----------- Buffer: foo ----------
-This is t@point{}he contents of foo.
----------- Buffer: foo ----------
+---------- Буфер: foo ----------
+Это полное содержимое ф@point{}айла foo.
+---------- Буфер: foo ----------
 @end group
 
-(print "This is the output" (get-buffer "foo"))
-     @result{} "This is the output"
+(print "Это то что на выходе" (get-buffer "foo"))
+     @result{} "Это то что на выходе"
 
 @group
----------- Buffer: foo ----------
-This is t
-"This is the output"
-@point{}he contents of foo.
----------- Buffer: foo ----------
+---------- Буфер: foo ----------
+Это полное содержимое ф
+"Это то что на выходе"
+@point{}айла foo.
+---------- Буфер: foo ----------
 @end group
 @end example
 
-  Now we show a use of a marker as an output stream.  Initially, the
-marker is in buffer @code{foo}, between the @samp{t} and the @samp{h} in
-the word @samp{the}.  At the end, the marker has advanced over the
-inserted text so that it remains positioned before the same @samp{h}.
-Note that the location of point, shown in the usual fashion, has no
-effect.
+  Теперь мы покажем использование маркера в качестве выходного потока.
+  Изначально маркер находиться в буфере @code{foo} между @samp{к} и
+  @samp{с} в слове @samp{текст}. В итоге, маркер продвинулся
+  вперед вставленного текста, таким образом, он по-прежнему позиционируется
+  перед тем же @samp{с}. Обратите внимание, что расположение точки, как
+  показано обычным способом, не изменилось.
 
 @example
 @group
----------- Buffer: foo ----------
-This is the @point{}output
----------- Buffer: foo ----------
+---------- Буфер: foo ----------
+@point{}Здесь текст для выхода 
+---------- Буфер: foo ----------
 @end group
 
 @group
@@ -461,41 +467,40 @@ This is the @point{}output
 @end group
 
 @group
-(print "More output for foo." m)
-     @result{} "More output for foo."
+(print "Ещё выход для foo." m)
+     @result{} "Ещё выход для foo."
 @end group
 
 @group
----------- Buffer: foo ----------
-This is t
-"More output for foo."
-he @point{}output
----------- Buffer: foo ----------
+---------- Буфер: foo ----------
+@point{}Здесь тек
+"Ещё выход для foo."
+cт для выхода
+---------- Буфер: foo ----------
 @end group
 
 @group
 m
-     @result{} #<marker at 34 in foo>
+     @result{} #<marker at 32 in foo>
 @end group
 @end example
 
-  The following example shows output to the echo area:
+  Следующий вывод в области эха примера показывает:
 
 @example
 @group
-(print "Echo Area output" t)
-     @result{} "Echo Area output"
----------- Echo Area ----------
+(print "Выход Эхо Область" t)
+     @result{} "Выход Эхо Область"
+---------- Эхо Область ----------
 "Echo Area output"
----------- Echo Area ----------
+---------- Эхо Область ----------
 @end group
 @end example
 
-  Finally, we show the use of a function as an output stream.  The
-function @code{eat-output} takes each character that it is given and
-conses it onto the front of the list @code{last-output} (@pxref{Building
-Lists}).  At the end, the list contains all the characters output, but
-in reverse order.
+  Наконец, мы покажем, использование функции в качестве выходного потока. Функция
+  @code{eat-output} принимает каждый заданный символ, и помещает его в начало
+  списка @code{last-output} (@pxref{Building Lists}). В конце концов, список
+  содержит все символы вывода, но в обратном порядке.
 
 @example
 @group
@@ -510,80 +515,78 @@ in reverse order.
 @end group
 
 @group
-(print "This is the output" #'eat-output)
-     @result{} "This is the output"
+(print "Это пример вывода" #'eat-output)
+     @result{} "Это пример вывода"
 @end group
 
 @group
 last-output
-     @result{} (10 34 116 117 112 116 117 111 32 101 104
-    116 32 115 105 32 115 105 104 84 34 10)
+     @result{} (10 34 1072 1076 1086 1074 1099 1074 32 1088 1077 1084 ...)
 @end group
 @end example
 
 @noindent
-Now we can put the output in the proper order by reversing the list:
+Теперь мы можем расположить вывод в правильном порядке, путем обращения списка:
 
 @example
 @group
 (concat (nreverse last-output))
      @result{} "
-\"This is the output\"
+\"Это пример вывода\"
 "
 @end group
 @end example
 
 @noindent
-Calling @code{concat} converts the list to a string so you can see its
-contents more clearly.
+Вызов @code{concat} преобразует список в строку,
+чтобы вы могли видеть его содержимое более четко.
 
 @cindex @code{stderr} stream, use for debugging
 @anchor{external-debugging-output}
 @defun external-debugging-output character
-This function can be useful as an output stream when debugging.  It
-writes @var{character} to the standard error stream.
+Эта функция может быть полезна в качестве выходного потока при
+отладке. Она записывает @var{character} в стандартный поток ошибок.
 
-For example
+Например
 @example
 @group
-(print "This is the output" #'external-debugging-output)
-@print{} This is the output
-@result{} "This is the output"
+(print "Это данные вывода" #'external-debugging-output)
+@print{} Это данные вывода
+@result{} "Это данные вывода"
 @end group
 @end example
 @end defun
 
 @node Output Functions
-@section Output Functions
+@section Функции Вывода
 
-  This section describes the Lisp functions for printing Lisp
-objects---converting objects into their printed representation.
+  В этом разделе описаны функции Lisp для печати Lisp объектов --- преобразование
+  объектов в их печатное представление.
 
 @cindex @samp{"} in printing
 @cindex @samp{\} in printing
 @cindex quoting characters in printing
 @cindex escape characters in printing
-  Some of the Emacs printing functions add quoting characters to the
-output when necessary so that it can be read properly.  The quoting
-characters used are @samp{"} and @samp{\}; they distinguish strings from
-symbols, and prevent punctuation characters in strings and symbols from
-being taken as delimiters when reading.  @xref{Printed Representation},
-for full details.  You specify quoting or no quoting by the choice of
-printing function.
+  Некоторые функции печати Emacs добавляют символы кавычек,
+  когда это необходимо, чтобы можно было правильно читать.
+  Используются символы цитирования @samp{"} и @samp{\};
+  они различают строки из символов, а также предотвращают
+  использование знаков препинания в строках и символах
+  в качестве разделителей при чтении. @xref{Printed Representation},
+  для получения полной информации. Вы указываете цитирование или
+  его отсутствие при выборе функции печати.
 
-  If the text is to be read back into Lisp, then you should print with
-quoting characters to avoid ambiguity.  Likewise, if the purpose is to
-describe a Lisp object clearly for a Lisp programmer.  However, if the
-purpose of the output is to look nice for humans, then it is usually
-better to print without quoting.
+  Если текст должен быть обратно считан в Lisp, то вы должны напечатать с
+  кавычками, чтобы избежать двусмысленности. Точно так же, если цель
+  состоит в том, чтобы описать объект Lisp явно для Lisp программиста.
+  Однако, если цель вывода хорошо выглядеть для людей, то,
+  как правило, лучше печатать без кавычек.
 
-  Lisp objects can refer to themselves.  Printing a self-referential
-object in the normal way would require an infinite amount of text, and
-the attempt could cause infinite recursion.  Emacs detects such
-recursion and prints @samp{#@var{level}} instead of recursively printing
-an object already being printed.  For example, here @samp{#0} indicates
-a recursive reference to the object at level 0 of the current print
-operation:
+  Объекты Lisp могут ссылаться на самих себя.  Обычная Печать такого объекта обычным
+  способом потребовало бы бесконечное количество текста, а попытка может привести к
+  бесконечной рекурсии. Emacs обнаруживает такую ​​рекурсию и печатает @samp{#@var{level}}
+  вместо рекурсивной печати уже напечатаного объекта. Например, здесь @samp{#0}
+  указывает на рекурсивную ссылку на объект на уровне 0 текущей операции печати:
 
 @example
 (setq foo (list nil))
@@ -592,90 +595,91 @@ operation:
      @result{} (#0)
 @end example
 
-  In the functions below, @var{stream} stands for an output stream.
-(See the previous section for a description of output streams.  Also
-@xref{external-debugging-output}, a useful stream value for debugging.)
-If @var{stream} is @code{nil} or omitted, it defaults to the value of
-@code{standard-output}.
+  В приведенных ниже функциях, @var{stream} обозначает выходной поток.
+  (В предыдущем разделе для описания выходных потоков. Благодаря
+  @xref{external-debugging-output}, полезное значение потока для отладки).
+  Если @var{stream} @code{nil} или опущен, то по умолчанию значениt
+  @code{standard-output}.
 
 @defun print object &optional stream
 @cindex Lisp printer
-The @code{print} function is a convenient way of printing.  It outputs
-the printed representation of @var{object} to @var{stream}, printing in
-addition one newline before @var{object} and another after it.  Quoting
-characters are used.  @code{print} returns @var{object}.  For example:
+@code{print} функция представляет собой удобный способ печати. Она
+выдает печатное представление @var{object} в @var{stream}, в
+дополнение печатая новую строку перед @var{object} и ещё одну
+после него.  Используются кавычки. @code{print} возвращает
+@var{object}. Например:
 
 @example
 @group
-(progn (print 'The\ cat\ in)
-       (print "the hat")
-       (print " came back"))
+(progn (print 'Наш\ кот\ в)
+       (print "любимой шляпе")
+       (print " уже вернулся"))
      @print{}
-     @print{} The\ cat\ in
+     @print{} Наш\ кот\ в
      @print{}
-     @print{} "the hat"
+     @print{} "любимой шляпе"
      @print{}
-     @print{} " came back"
-     @result{} " came back"
+     @print{} " уже вернулся"
+     @result{} " уже вернулся"
 @end group
 @end example
 @end defun
 
 @defun prin1 object &optional stream
-This function outputs the printed representation of @var{object} to
-@var{stream}.  It does not print newlines to separate output as
-@code{print} does, but it does use quoting characters just like
-@code{print}.  It returns @var{object}.
+Эта функция выводит печатное представление @var{object} в
+@var{stream}. Она не печатает пустые строки для разделения вывода,
+как это делает @code{print}, но использует символы кавычек точно так же,
+как @code{print}. Она возвращает @var{object}.
 
 @example
 @group
-(progn (prin1 'The\ cat\ in)
-       (prin1 "the hat")
-       (prin1 " came back"))
-     @print{} The\ cat\ in"the hat"" came back"
-     @result{} " came back"
+(progn (prin1 'Наш\ кот\ в)
+       (prin1 "любимой шляпе")
+       (prin1 " уже вернулся"))
+     @print{} Наш\ кот\ в"любимой шляпе"" уже вернулся"" уже вернулся"
+     @result{} " уже вернулся"
 @end group
 @end example
 @end defun
 
 @defun princ object &optional stream
-This function outputs the printed representation of @var{object} to
-@var{stream}.  It returns @var{object}.
+Эта функция выводит печатное представление @var{object} в @var{stream}.
+Она возвращает @var{object}.
 
-This function is intended to produce output that is readable by people,
-not by @code{read}, so it doesn't insert quoting characters and doesn't
-put double-quotes around the contents of strings.  It does not add any
-spacing between calls.
+Эта функция предназначена для создания вывода, доступного для чтения людьми,
+а не @code{read}, поэтому она не вставляет символы кавычек и не помещает в
+двойные кавычки содержимого строк. Она не добавляет интервал между вызовами.
 
 @example
 @group
 (progn
-  (princ 'The\ cat)
-  (princ " in the \"hat\""))
-     @print{} The cat in the "hat"
-     @result{} " in the \"hat\""
+  (princ 'Наш\ кот)
+  (princ " в любимой \"шляпе\""))
+     @print{} Наш кот в любимой "шляпе"
+     @result{} " в любимой \"шляпе\""
 @end group
 @end example
 @end defun
 
 @defun terpri &optional stream ensure
 @cindex newline in print
-This function outputs a newline to @var{stream}.  The name stands for
-``terminate print''.  If @var{ensure} is non-@code{nil} no newline is printed
-if @var{stream} is already at the beginning of a line.  Note in this
-case @var{stream} can not be a function and an error is signaled if
-it is.  This function returns @code{t} if a newline is printed.
+Эта функция выводит символ новой строки в @var{stream}. Название
+расшифровывается как ``завершить печать''. Если @var{ensure} является
+не-@code{nil}, новая строка не печатается, если @var{stream} уже в начале
+строки. Обратите внимание в этом случае @var{stream} не может быть
+функцией и сигнализируется ошибка, если это так. Эта функция возвращает
+@code{t}, если новая строка выводится.
 @end defun
 
 @defun write-char character &optional stream
-This function outputs @var{character} to @var{stream}.  It returns
+Эта функция выводит @var{character} в @var{stream}. Она возвращает
 @var{character}.
 @end defun
 
 @defun prin1-to-string object &optional noescape
 @cindex object to string
-This function returns a string containing the text that @code{prin1}
-would have printed for the same argument.
+Эта функция возвращает строку, содержащую текст, который
+@code{prin1} бы напечатала для того же аргумента.
 
 @example
 @group
@@ -688,9 +692,8 @@ would have printed for the same argument.
 @end group
 @end example
 
-If @var{noescape} is non-@code{nil}, that inhibits use of quoting
-characters in the output.  (This argument is supported in Emacs versions
-19 and later.)
+Если @var{noescape} является не-@code{nil}, это запрещает использование
+кавычек в выводе. (Этот аргумент поддерживается в Emacs версии 19 и более поздних версий).
 
 @example
 @group
@@ -703,63 +706,64 @@ characters in the output.  (This argument is supported in Emacs versions
 @end group
 @end example
 
-See @code{format}, in @ref{Formatting Strings}, for other ways to obtain
-the printed representation of a Lisp object as a string.
+См @code{format}, в @ref{Formatting Strings}, для других способов получить
+печатное представление объекта Lisp в виде строки.
 @end defun
 
 @defmac with-output-to-string body@dots{}
-This macro executes the @var{body} forms with @code{standard-output} set
-up to feed output into a string.  Then it returns that string.
+Этот макрос выполняет форму @var{body}  с @code{standard-output} настройкой
+для подачи вывода в строку. Затем он возвращает эту строку.
 
-For example, if the current buffer name is @samp{foo},
+Например, если имя текущего буфера @samp{foo},
 
 @example
 (with-output-to-string
-  (princ "The buffer is ")
+  (princ "Имя этого буфера ")
   (princ (buffer-name)))
 @end example
 
 @noindent
-returns @code{"The buffer is foo"}.
+returns @code{"Имя этого буфера foo"}.
 @end defmac
 
 @defun pp object &optional stream
-This function outputs @var{object} to @var{stream}, just like
-@code{prin1}, but does it in a prettier way.  That is, it'll
-indent and fill the object to make it more readable for humans.
+Эта функция выводит @var{object} в @var{stream}, так же, как @code{prin1},
+но делает это более красивым образом. То есть, будет отступ и заполнение
+объекта, чтобы сделать его более читабельным для людей.
 @end defun
 
-If you need to use binary I/O in batch mode, e.g., use the functions
-described in this section to write out arbitrary binary data or avoid
-conversion of newlines on non-POSIX hosts, see @ref{Input Functions,
-set-binary-mode}.
+Если вам нужно использовать двоичный I/O в пакетном режиме, например,
+используйте функции, описанные в этом разделе, чтобы записать произвольные
+двоичные данные или избегайте преобразования символов новой строки на не-POSIX
+хостах см @ref{Input Functions, set-binary-mode}.
 
 @node Output Variables
-@section Variables Affecting Output
+@section Переменные, влияющие на вывод
 @cindex output-controlling variables
 
 @defvar standard-output
-The value of this variable is the default output stream---the stream
-that print functions use when the @var{stream} argument is @code{nil}.
-The default is @code{t}, meaning display in the echo area.
+Значение этой переменной выходной поток по умолчанию --- поток, который
+используют функции печати, когда аргумент @var{stream} @code{nil}.
+По умолчанию @code{t}, то есть отображение в эхо-области.
 @end defvar
 
 @defvar print-quoted
-If this is non-@code{nil}, that means to print quoted forms using
-abbreviated reader syntax, e.g., @code{(quote foo)} prints as
-@code{'foo}, and @code{(function foo)} as @code{#'foo}.
+Если это переменная не-@code{nil}, это означает печать цитируемых форм с
+использованием сокращенного синтаксиса читателя, например, @code{(quote foo)}
+печатает как @code{'foo} и @code{(function foo)} как @code{#'foo}.
 @end defvar
 
 @defvar print-escape-newlines
 @cindex @samp{\n} in print
 @cindex escape characters
-If this variable is non-@code{nil}, then newline characters in strings
-are printed as @samp{\n} and formfeeds are printed as @samp{\f}.
-Normally these characters are printed as actual newlines and formfeeds.
+Если эта переменная не-@code{nil}, то символы новой строки в строках
+печатаются как @samp{\n} и печатается символ перевода страницы, как @samp{\f}.
+Обычно эти символы печатаются как фактические символы перевода строки и
+перевода страницы.
 
-This variable affects the print functions @code{prin1} and @code{print}
-that print with quoting.  It does not affect @code{princ}.  Here is an
-example using @code{prin1}:
+Эта переменная влияет на функции печати @code{prin1} и @code{print}, печать с
+экранированием. Это не влияет на @code{princ}. Ниже приведен пример
+использования @code{prin1}:
 
 @example
 @group
@@ -780,49 +784,48 @@ b"
 @end example
 
 @noindent
-In the second expression, the local binding of
-@code{print-escape-newlines} is in effect during the call to
-@code{prin1}, but not during the printing of the result.
+Во втором выражении, локальное связывание @code{print-escape-newlines}
+действует во время вызова @code{prin1}, но не во время печати результата.
 @end defvar
 
 @defvar print-escape-control-characters
-If this variable is non-@code{nil}, control characters in strings are
-printed as backslash sequences by the print functions @code{prin1} and
-@code{print} that print with quoting.  If this variable and
-@code{print-escape-newlines} are both non-@code{nil}, the latter takes
-precedences for newlines and formfeeds.
+Если эта переменная не-@code{nil}, управляющие символы в строках выводятся
+в виде последовательности с предшествующей обратной косой черты функцией
+печати @code{prin1} и выводятся заключёнными в кавычках функцией @code{print}.
+Если и эта переменная и переменная @code{print-escape-newlines} обе не-@code{nil},
+последняя принимает приоритет для символов переноса строк и символов перевода
+страниц.
 @end defvar
 
 @defvar print-escape-nonascii
-If this variable is non-@code{nil}, then unibyte non-@acronym{ASCII}
-characters in strings are unconditionally printed as backslash sequences
-by the print functions @code{prin1} and @code{print} that print with
-quoting.
+Если эта переменная не-@code{nil}, то однобайтовые не-@acronym{ASCII} символы  в
+строках безоговорочно печатаются с обратными косыми чертами последовательностей
+функцией печати @code{prin1} и в кавычках функцией @code{print}.
 
-Those functions also use backslash sequences for unibyte non-@acronym{ASCII}
-characters, regardless of the value of this variable, when the output
-stream is a multibyte buffer or a marker pointing into one.
+Эти функции также используют последовательности обратной косой черты для
+однобайтных не-@acronym{ASCII} символов, независимо от значения этой
+переменной, когда указанный выходной поток представляет собой
+многобайтовой буфер или маркер.
 @end defvar
 
 @defvar print-escape-multibyte
-If this variable is non-@code{nil}, then multibyte non-@acronym{ASCII}
-characters in strings are unconditionally printed as backslash sequences
-by the print functions @code{prin1} and @code{print} that print with
-quoting.
+Если эта переменная не-@code{nil}, то многобайтовые не-@acronym{ASCII} символы в
+строках безоговорочно печатаются как последовательности  с предшествующей
+обратной косой чертой функцией печати @code{prin1} и печатаются заключенными
+в кавычки функцией @code{print}.
 
-Those functions also use backslash sequences for multibyte
-non-@acronym{ASCII} characters, regardless of the value of this variable,
-when the output stream is a unibyte buffer or a marker pointing into
-one.
+Эти функции также используют последовательности обратной косой черты для многобайтовых
+не-@acronym{ASCII} символов, независимо от значения этой переменной, когда выходной
+поток представляет собой однобайтовый буфер или маркер.
 @end defvar
 
 @defvar print-length
 @cindex printing limits
-The value of this variable is the maximum number of elements to print in
-any list, vector or bool-vector.  If an object being printed has more
-than this many elements, it is abbreviated with an ellipsis.
+Значение этой переменной является максимальное количество элементов для печати в
+любой список, вектор или BOOL-вектор. Если печатаемый объект имеет большее количество
+элементов, превышенный вывод сокращается с многоточием.
 
-If the value is @code{nil} (the default), then there is no limit.
+Если значение @code{nil} (по умолчанию), то нет никаких ограничений.
 
 @example
 @group
@@ -838,57 +841,55 @@ If the value is @code{nil} (the default), then there is no limit.
 @end defvar
 
 @defvar print-level
-The value of this variable is the maximum depth of nesting of
-parentheses and brackets when printed.  Any list or vector at a depth
-exceeding this limit is abbreviated with an ellipsis.  A value of
-@code{nil} (which is the default) means no limit.
+Значение этой переменной определяет максимальную глубину вложенности круглых и
+квадратных скобок при печати. Любой список или вектор на глубине, превышающей
+этот предел, обозначается многоточием. Значение @code{nil} (значение по умолчанию)
+означает, что нет предела.
 @end defvar
 
 @defopt eval-expression-print-length
 @defoptx eval-expression-print-level
-These are the values for @code{print-length} and @code{print-level}
-used by @code{eval-expression}, and thus, indirectly, by many
-interactive evaluation commands (@pxref{Lisp Eval,, Evaluating
-Emacs-Lisp Expressions, emacs, The GNU Emacs Manual}).
+Эти значения @code{print-length} и @code{print-level}, используются для
+@code{eval-expression}, и, таким образом, косвенно, многими интерактивными
+командами оценки (@pxref{Lisp Eval,, Evaluating Emacs-Lisp Expressions, emacs, The GNU Emacs Manual}).
 @end defopt
 
-  These variables are used for detecting and reporting circular
-and shared structure:
+  Эти переменные используются для обнаружения цикличности
+  и составления отчетности общей структуры:
 
 @defvar print-circle
-If non-@code{nil}, this variable enables detection of circular and
-shared structure in printing.  @xref{Circular Objects}.
+Если не-@code{nil}, эта переменная позволяет обнаруживать циклическую
+и общую структуру при печати. @xref{Circular Objects}.
 @end defvar
 
 @defvar print-gensym
-If non-@code{nil}, this variable enables detection of uninterned symbols
-(@pxref{Creating Symbols}) in printing.  When this is enabled,
-uninterned symbols print with the prefix @samp{#:}, which tells the Lisp
-reader to produce an uninterned symbol.
+Если не-@code{nil}, эта переменная позволяет обнаруживать uninterned символы
+(@pxref{Creating Symbols}) при печати. Когда эта опция включена,
+uninterned символы печати с приставкой @samp{#:}, которая указывает читателю
+Lisp создать uninterned символ.
 @end defvar
 
 @defvar print-continuous-numbering
-If non-@code{nil}, that means number continuously across print calls.
-This affects the numbers printed for @samp{#@var{n}=} labels and
-@samp{#@var{m}#} references.
-Don't set this variable with @code{setq}; you should only bind it
-temporarily to @code{t} with @code{let}.  When you do that, you should
-also bind @code{print-number-table} to @code{nil}.
+Если не-@code{nil}, это означает, что число вызовов печати постоянно. Это влияет
+на количество отпечатанных для @samp{#@var{n}=} этикеток и ссылок @samp{#@var{m}#}.
+Не устанавливайте эту переменную используя @code{setq}; Вы должны только связать
+её временно @code{t} с @code{let}. Когда вы сделаете это, вы должны также
+привязать @code{print-number-table} к @code{nil}.
 @end defvar
 
 @defvar print-number-table
-This variable holds a vector used internally by printing to implement
-the @code{print-circle} feature.  You should not use it except
-to bind it to @code{nil} when you bind @code{print-continuous-numbering}.
+Эта переменная содержит вектор, используемый для внутренней печати для реализации
+функции @code{print-circle}. Вы не должны использовать её, за исключением привязки
+её к @code{nil}, когда вы связываете @code{print-continuous-numbering}.
 @end defvar
 
 @defvar float-output-format
-This variable specifies how to print floating-point numbers.  The
-default is @code{nil}, meaning use the shortest output
-that represents the number without losing information.
+Эта переменная определяет, как печатать числа с плавающей точкой. По умолчанию
+@code{nil}, то есть самый короткий вывод, который представляет собой
+число без потери информации.
 
-To control output format more precisely, you can put a string in this
-variable.  The string should hold a @samp{%}-specification to be used
-in the C function @code{sprintf}.  For further restrictions on what
-you can use, see the variable's documentation string.
+Для того, чтобы контролировать формат вывода более точно, вы можете поместить
+строку в эту переменную. Строка должна содержать @samp{%}-спецификации, которые
+будут использоваться в функции С @code{sprintf}. Дополнительные ограничения,
+которые вы можете использовать, смотрите в строке документации переменной.
 @end defvar
