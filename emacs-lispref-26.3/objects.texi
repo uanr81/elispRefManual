@@ -521,209 +521,211 @@ escape-последовательность состоит из обратной
 @end ifnottex
 
 @node Symbol Type
-@subsection Symbol Type
+@subsection Тип Символа
 
-  A @dfn{symbol} in GNU Emacs Lisp is an object with a name.  The
-symbol name serves as the printed representation of the symbol.  In
-ordinary Lisp use, with one single obarray (@pxref{Creating Symbols}),
-a symbol's name is unique---no two symbols have the same name.
+  @dfn{Символ} в GNU Emacs Lisp является объектом с именем.  Имя символа служит
+  его печатным представлением символа.  При обычном использовании Lisp, с одной
+  единственной obarray (@pxref{Creating Symbols}), имя символа является
+  уникальным --- нет двух символов с одинаковым именем.
 
-  A symbol can serve as a variable, as a function name, or to hold a
-property list.  Or it may serve only to be distinct from all other Lisp
-objects, so that its presence in a data structure may be recognized
-reliably.  In a given context, usually only one of these uses is
-intended.  But you can use one symbol in all of these ways,
-independently.
+  Символ может служить в качестве переменной, как имя функции, или для хранения
+  списка свойств.  Или он может служить только для того, чтобы быть отличным от
+  всех других объектов Lisp, так что его присутствие в структуре данных, может
+  быть надежно распознаются.  В данном контексте, как правило, только одно из
+  этих целей предполагается.  Но вы можете использовать один символ всеми этими
+  способами, независимо друг от друга.
 
-  A symbol whose name starts with a colon (@samp{:}) is called a
-@dfn{keyword symbol}.  These symbols automatically act as constants,
-and are normally used only by comparing an unknown symbol with a few
-specific alternatives.  @xref{Constant Variables}.
+  Символ, имя которого начинается с двоеточия (@samp{:}) называется
+  @dfn{символом ключевого слова}.  Эти символы автоматически действуют как
+  константы, и, как правило, используются только для сравнения неизвестного
+  символа с несколькими определенными альтернативами.  @xref{Constant Variables}.
 
 @cindex @samp{\} in symbols
 @cindex backslash in symbols
-  A symbol name can contain any characters whatever.  Most symbol names
-are written with letters, digits, and the punctuation characters
-@samp{-+=*/}.  Such names require no special punctuation; the characters
-of the name suffice as long as the name does not look like a number.
-(If it does, write a @samp{\} at the beginning of the name to force
-interpretation as a symbol.)  The characters @samp{_~!@@$%^&:<>@{@}?} are
-less often used but also require no special punctuation.  Any other
-characters may be included in a symbol's name by escaping them with a
-backslash.  In contrast to its use in strings, however, a backslash in
-the name of a symbol simply quotes the single character that follows the
-backslash.  For example, in a string, @samp{\t} represents a tab
-character; in the name of a symbol, however, @samp{\t} merely quotes the
-letter @samp{t}.  To have a symbol with a tab character in its name, you
-must actually use a tab (preceded with a backslash).  But it's rare to
-do such a thing.
+  Имя символа может содержать любые символы.  Большинство имен символов
+  написаны буквами, цифрами и знаками препинания @samp{-+=*\}.  Такие имена
+  не требуют специальной пунктуации; символов имени достаточно, если имя
+  не выглядит как число.  (Если это так, пишите @samp{\} в начале имени для
+  принудительной интерпретации как символа.)  Символы
+  @samp{_~!@@$%^&:<>@{@}?} реже используется, но также не требуют
+  специальной пунктуации.  Любые другие символы могут быть включены в имя
+  символа путем экранирования их обратной косой чертой.  В отличие от его
+  использования в строках, однако, обратный слэш во имени символа просто
+  цитирует один символ, который следует за обратной косой чертой. Например,
+  в строке, @samp{\t} представляет собой символ табуляции; в имени символа,
+  однако, @samp{\t} просто цитирует запись @samp{t}.  Для того, чтобы иметь
+  символ с символом табуляции в своём имени, вы должны фактически
+  использовать табуляцию (перед которой стоит обратная косая черта).  Но
+  такое встречается редко.
 
 @cindex CL note---case of letters
 @quotation
-@b{Common Lisp note:} In Common Lisp, lower case letters are always
-folded to upper case, unless they are explicitly escaped.  In Emacs
-Lisp, upper case and lower case letters are distinct.
+@b{Common Lisp note:}  В Common Lisp, строчные буквы всегда переводятся в
+в верхний регистр, если только они явно не экранированы.  В Emacs Lisp,
+строчные и прописные буквы различны.
 @end quotation
 
-  Here are several examples of symbol names.  Note that the @samp{+} in
-the fourth example is escaped to prevent it from being read as a number.
-This is not necessary in the sixth example because the rest of the name
-makes it invalid as a number.
+  Вот несколько примеров имен символов. Обратите внимание, что @samp{+}
+  в четвертом примере экранируется, чтобы предотвратить его от чтения как
+  число. Это не является необходимым в шестом примере, потому что
+  остальная часть имени делает его недействительным как число.
 
 @example
 @group
-foo                 ; @r{A symbol named @samp{foo}.}
-FOO                 ; @r{A symbol named @samp{FOO}, different from @samp{foo}.}
+foo                 ; @r{Символ с именем @samp{foo}.}
+FOO                 ; @r{Символ с именем @samp{FOO}, отличный от @samp{foo}.}
 @end group
 @group
-1+                  ; @r{A symbol named @samp{1+}}
-                    ;   @r{(not @samp{+1}, which is an integer).}
+1+                  ; @r{Символ с именем @samp{1+}}
+                    ;   @r{(не @samp{+1}, который является целым числом).}
 @end group
 @group
-\+1                 ; @r{A symbol named @samp{+1}}
-                    ;   @r{(not a very readable name).}
+\+1                 ; @r{Символ с именем @samp{+1}}
+                    ;   @r{(не очень читаемое имя).}
 @end group
 @group
-\(*\ 1\ 2\)         ; @r{A symbol named @samp{(* 1 2)} (a worse name).}
-@c the @'s in this next line use up three characters, hence the
-@c apparent misalignment of the comment.
-+-*/_~!@@$%^&=:<>@{@}  ; @r{A symbol named @samp{+-*/_~!@@$%^&=:<>@{@}}.}
-                    ;   @r{These characters need not be escaped.}
+\(*\ 1\ 2\)         ; @r{Символ c именем @samp{(* 1 2)} (неудачное имя).}
+@c the @'s в этой следующей строке использовать три символа,
+@c следовательно, кажущееся смещение комментария.
++-*/_~!@@$%^&=:<>@{@}  ; @r{Символ с именем @samp{+-*/_~!@@$%^&=:<>@{@}}.}
+                    ;   @r{Эти символы не нужно экранировать.}
 @end group
 @end example
 
 @cindex @samp{##} read syntax
 @ifinfo
-@c This uses "colon" instead of a literal ':' because Info cannot
-@c cope with a ':' in a menu.
+@c При этом используется "colon" вместо буквального ':' потому,
+@c что информация не может справиться с ':' в меню.
 @cindex @samp{#@var{colon}} read syntax
 @end ifinfo
 @ifnotinfo
 @cindex @samp{#:} read syntax
 @end ifnotinfo
-  As an exception to the rule that a symbol's name serves as its
-printed representation, @samp{##} is the printed representation for an
-interned symbol whose name is an empty string.  Furthermore,
-@samp{#:@var{foo}} is the printed representation for an uninterned
-symbol whose name is @var{foo}.  (Normally, the Lisp reader interns
-all symbols; @pxref{Creating Symbols}.)
+  В качестве исключения из правила, согласно которому имя символа служит
+  его печатным представлением, @samp{##}---это печатное представление для
+  интернированного символа, имя которого является пустой строкой. Кроме
+  того, @samp{#:@var{foo}} это печатное представление для uninterned
+  (здесь неясность неорганизованного) символа, имя которого @var{foo}.
+  (Как правило, читатель Lisp обрабатывает все символы;
+  @pxref{Creating Symbols}.)
 
 @node Sequence Type
-@subsection Sequence Types
+@subsection Тип Последовательность
 
-  A @dfn{sequence} is a Lisp object that represents an ordered set of
-elements.  There are two kinds of sequence in Emacs Lisp: @dfn{lists}
-and @dfn{arrays}.
+  @dfn{Последовательность} является объектом Lisp, который представляет
+  собой упорядоченный набор элементов.  Есть два вида последовательности
+  в Emacs Lisp: @dfn{списки} и @dfn{массивы}.
 
-  Lists are the most commonly-used sequences.  A list can hold
-elements of any type, and its length can be easily changed by adding
-or removing elements.  See the next subsection for more about lists.
+  Списки являются наиболее часто используемыми последовательностями. Список
+  может содержать элементы любого типа, и его длина может быть легко
+  изменена путем добавления или удаления элементов. Смотрите следующий
+  подраздел для получения дополнительной информации о списках.
 
-  Arrays are fixed-length sequences.  They are further subdivided into
-strings, vectors, char-tables and bool-vectors.  Vectors can hold
-elements of any type, whereas string elements must be characters, and
-bool-vector elements must be @code{t} or @code{nil}.  Char-tables are
-like vectors except that they are indexed by any valid character code.
-The characters in a string can have text properties like characters in
-a buffer (@pxref{Text Properties}), but vectors do not support text
-properties, even when their elements happen to be characters.
+  Массивы представляют собой последовательность фиксированной длины.  Они
+  подразделяются на строки, векторы, символ-таблицы и BOOL векторы.  Векторы
+  могут содержать элементы любого типа, в то время как строки должны
+  содержать только символы, и BOOL-векторы должны содержать лишь @code{t}
+  или @code{nil}.  Символ-таблицы похожи на векторы, за исключением того, что
+  они проиндексированы любым допустимым кодом символа.  Символы в строке
+  могут иметь свойства текста, такие как символы в буфере
+  (@pxref{Text Properties}), но векторы не поддерживают свойство текста,
+  даже если их элементы являются символами.
 
-  Lists, strings and the other array types also share important
-similarities.  For example, all have a length @var{l}, and all have
-elements which can be indexed from zero to @var{l} minus one.  Several
-functions, called sequence functions, accept any kind of sequence.
-For example, the function @code{length} reports the length of any kind
-of sequence.  @xref{Sequences Arrays Vectors}.
+  Списки, строки и другие типы массивов также имеют важное сходство.
+  Например, все они имеют длину @var{l}, и все они имеют элементы, которые
+  могут быть проиндексированы от нуля до @var{l} минус один.  Некоторые
+  функции, называемые функциями последовательности, принимают либой вид
+  последовательности. Например, функция @code{length} сообщает длину
+  любого вида последовательности.  @xref{Sequences Arrays Vectors}.
 
-  It is generally impossible to read the same sequence twice, since
-sequences are always created anew upon reading.  If you read the read
-syntax for a sequence twice, you get two sequences with equal contents.
-There is one exception: the empty list @code{()} always stands for the
-same object, @code{nil}.
+  Как правило, невозможно читать ту же последовательность дважды, так как
+  последовательности всегда создается заново при чтении.  Если вы дважды
+  прочитаете синтакс чтения для последовательности, вы получите две
+  последовательности с одинаковым содержимым. Существует одно исключение:
+  пустой список @code{()} всегда обозначает тот же объект, @code{nil}.
 
 @node Cons Cell Type
-@subsection Cons Cell and List Types
+@subsection Типы Cons-Ячейка и Список
 @cindex address field of register
 @cindex decrement field of register
 @cindex pointers
 
-  A @dfn{cons cell} is an object that consists of two slots, called
-the @sc{car} slot and the @sc{cdr} slot.  Each slot can @dfn{hold} any
-Lisp object.  We also say that the @sc{car} of this cons cell is
-whatever object its @sc{car} slot currently holds, and likewise for
-the @sc{cdr}.
+  @dfn{Cons-ячейка} это объект, который состоит из двух слотов, слот
+  @sc{car} и слот @sc{cdr}. Каждый слот может @dfn{содержать} любой
+  объект Lisp.  (здесь нужно отредактировать, непонятки) Мы также
+  говорим, что @sc{car} этой cons-ячейки является
+  любой объект, и слот @sc{car} в настоящее время имеет место, а также
+  для @sc{cdr}.
 
 @cindex list structure
-  A @dfn{list} is a series of cons cells, linked together so that the
-@sc{cdr} slot of each cons cell holds either the next cons cell or the
-empty list.  The empty list is actually the symbol @code{nil}.
-@xref{Lists}, for details.  Because most cons cells are used as part
-of lists, we refer to any structure made out of cons cells as a
-@dfn{list structure}.
+  @dfn{Список} это ряд cons-ячеек, связаных друг с другом, так что @sc{cdr}
+  слот каждой cons-ячейки имеет либо следующую cons-ячейку либо пустой
+  список. Пустой список на самом деле символ @code{nil}. @xref{Lists},
+  для деталей. Поскольку большинство cons-ячеек используются как часть
+  списков, мы называем любую структуру, изготовленную из cons-ячеек,
+  @dfn{структурой списка}.
 
 @cindex linked list
 @quotation
-A note to C programmers: a Lisp list thus works as a @dfn{linked list}
-built up of cons cells.  Because pointers in Lisp are implicit, we do
-not distinguish between a cons cell slot holding a value versus
-pointing to the value.
+Замечание для программистов C: список Lisp, таким образом, работает как
+@dfn{связаный список} состоящий из cons-ячеек.  Поскольку указатели в
+Lisp неявные, мы не делаем различия между слот cons-ячейки содержит значение
+и указывает на значение.
 @end quotation
 
 @cindex atoms
-  Because cons cells are so central to Lisp, we also have a word for
-an object which is not a cons cell.  These objects are called
-@dfn{atoms}.
+  Сons-ячейка занимает центральное место в Lisp, но также есть объекты,
+  который не являются cons-ячейкой.  Эти объекты называются
+  @dfn{атомами}.
 
 @cindex parenthesis
 @cindex @samp{(@dots{})} in lists
-  The read syntax and printed representation for lists are identical, and
-consist of a left parenthesis, an arbitrary number of elements, and a
-right parenthesis.  Here are examples of lists:
+  Синтаксис чтения и печатное представление списков идентичны и состоят
+  из левой круглой скобки, произвольного числа элементов, и правой скобки.
+  Вот примеры списков:
 
 @example
-(A 2 "A")            ; @r{A list of three elements.}
-()                   ; @r{A list of no elements (the empty list).}
-nil                  ; @r{A list of no elements (the empty list).}
-("A ()")             ; @r{A list of one element: the string @code{"A ()"}.}
-(A ())               ; @r{A list of two elements: @code{A} and the empty list.}
-(A nil)              ; @r{Equivalent to the previous.}
-((A B C))            ; @r{A list of one element}
-                     ;   @r{(which is a list of three elements).}
+(A 2 "A")            ; @r{Список из трех элементов.}
+()                   ; @r{Список без элементов (пустой список).}
+nil                  ; @r{Список без элементов (пустой список).}
+("A ()")             ; @r{Список из одного элемента: строка @code{"A ()"}}.
+(A ())               ; @r{Список из двух элементов: @code{A} и пустой список.}
+(A nil)              ; @r{Эквивалент к предыдущему.}
+((A B C))            ; @r{Список из одного элемента}
+                     ;   @r{(который представляет собой список из трех элементов).}
 @end example
 
-   Upon reading, each object inside the parentheses becomes an element
-of the list.  That is, a cons cell is made for each element.  The
-@sc{car} slot of the cons cell holds the element, and its @sc{cdr}
-slot refers to the next cons cell of the list, which holds the next
-element in the list.  The @sc{cdr} slot of the last cons cell is set to
-hold @code{nil}.
+   При чтении, каждый объект внутри скобок становится элементом списка.  То
+   есть, для каждого элемента создаётся cons-ячейка.  Слот @sc{car} из
+   cons-ячейки удерживает элемент, а её @sc{cdr} слот относится к следующей
+   cons-ячейки списка, которая содержит следующий элемент в списке. @sc{cdr}
+   слот последней cons-ячейки содержит @code{nil}.
 
-  The names @sc{car} and @sc{cdr} derive from the history of Lisp.  The
-original Lisp implementation ran on an @w{IBM 704} computer which
-divided words into two parts, the address and the
-decrement; @sc{car} was an instruction to extract the contents of
-the address part of a register, and @sc{cdr} an instruction to extract
-the contents of the decrement.  By contrast, cons cells are named
-for the function @code{cons} that creates them, which in turn was named
-for its purpose, the construction of cells.
+  Имена @sc{car} и @sc{cdr} вытекают из истории Lisp. Оригинальная
+  реализация Lisp исполнялась на @w{IBM 704} компьютере, который разделял
+  слово на две части, адрес и декремент; @sc{car} была инструкция для
+  извлечения содержимого адресной части регистра, и @sc{cdr} инструкция,
+  чтобы извлечь содержимое декремента. Напротив, cons-ячейки названы
+  в честь функции @code{cons}, которая создает их, в свою очередь, была
+  назван в честь своего назначения, конструирование ячеек.
 
 @menu
-* Box Diagrams::                Drawing pictures of lists.
-* Dotted Pair Notation::        A general syntax for cons cells.
-* Association List Type::       A specially constructed list.
+* Box Diagrams::                Рисование изображений списков.
+* Dotted Pair Notation::        Общий синтаксис для cons-ячейки.
+* Association List Type::       Специально построенный список.
 @end menu
 
 @node Box Diagrams
-@subsubsection Drawing Lists as Box Diagrams
+@subsubsection Схема Списка в Виде Прямоугольников
 @cindex box diagrams, for lists
 @cindex diagrams, boxed, for lists
 
-  A list can be illustrated by a diagram in which the cons cells are
-shown as pairs of boxes, like dominoes.  (The Lisp reader cannot read
-such an illustration; unlike the textual notation, which can be
-understood by both humans and computers, the box illustrations can be
-understood only by humans.)  This picture represents the three-element
-list @code{(rose violet buttercup)}:
+  Список можно проиллюстрировать диаграммой, в которой cons-ячейки показаны
+  в виде пар прямоугольников, как домино.  (Читатель Lisp не может прочитать
+  такую ​​иллюстрацию, в отличие от текстовой нотации, которая может быть
+  понята как людьми, так и компьютерами, прямоугольные иллюстрации могут
+  быть поняты только людьми.)  Эта картина представляет собой трёхэлементный
+  список @code{(роза фиалка лютик)}:
 
 @example
 @group
@@ -732,30 +734,31 @@ list @code{(rose violet buttercup)}:
     --- ---      --- ---      --- ---
      |            |            |
      |            |            |
-      --> rose     --> violet   --> buttercup
+      --> роза     --> фиалка   --> лютик
 @end group
 @end example
 
-  In this diagram, each box represents a slot that can hold or refer to
-any Lisp object.  Each pair of boxes represents a cons cell.  Each arrow
-represents a reference to a Lisp object, either an atom or another cons
-cell.
+  На этой диаграмме каждый прямоугольник представляет собой слот, который
+  может содержать или ссылаться на любой объект Lisp.  Каждая пара
+  прямоугольников представляет собой cons-ячейку.  Каждая стрелка
+  представляет собой ссылку на объект Lisp, атом или другую cons-ячейку.
 
-  In this example, the first box, which holds the @sc{car} of the first
-cons cell, refers to or holds @code{rose} (a symbol).  The second
-box, holding the @sc{cdr} of the first cons cell, refers to the next
-pair of boxes, the second cons cell.  The @sc{car} of the second cons
-cell is @code{violet}, and its @sc{cdr} is the third cons cell.  The
-@sc{cdr} of the third (and last) cons cell is @code{nil}.
+  В данном примере, первый прямоугольник, содержит @sc{car} первой
+  cons-ячейки, которая ссылается или содержит @code{роза} (символ).
+  Второй прямоугольник, содержит @sc{cdr} первой cons-ячейки, относится
+  к следующей паре прямоугольников, второй cons-ячейки. @sc{car} второй
+  cons-ячейки является @code{фиалка}, и его @sc{cdr} является третьей
+  cons-ячейкой. @sc{cdr} из третьей (и последней) cons-ячейки является
+  @code{nil}.
 
-  Here is another diagram of the same list, @code{(rose violet
-buttercup)}, sketched in a different manner:
+  Вот еще одна схема того же списка, @code{(роза фиалка лютик)},
+  набросанная по-другому:
 
 @smallexample
 @group
  ---------------       ----------------       -------------------
 | car   | cdr   |     | car    | cdr   |     | car       | cdr   |
-| rose  |   o-------->| violet |   o-------->| buttercup |  nil  |
+| роза  |   o-------->| фиалка |   o-------->| лютик     |  nil  |
 |       |       |     |        |       |     |           |       |
  ---------------       ----------------       -------------------
 @end group
@@ -763,12 +766,12 @@ buttercup)}, sketched in a different manner:
 
 @cindex @code{nil} as a list
 @cindex empty list
-  A list with no elements in it is the @dfn{empty list}; it is identical
-to the symbol @code{nil}.  In other words, @code{nil} is both a symbol
-and a list.
+  Список без элементов в нём --- это @dfn{пустой список}; он идентичен
+  символу @code{nil}. Другими словами, @code{nil} является одновременно
+  символом и списком.
 
-  Here is the list @code{(A ())}, or equivalently @code{(A nil)},
-depicted with boxes and arrows:
+  Вот список @code{(A ())}, или что то же самое @code{(A nil)}, изображен
+  прямоугольниками и стрелками:
 
 @example
 @group
@@ -781,9 +784,9 @@ depicted with boxes and arrows:
 @end group
 @end example
 
-  Here is a more complex illustration, showing the three-element list,
-@code{((pine needles) oak maple)}, the first element of which is a
-two-element list:
+  Вот более сложный рисунок, показывающий список из трех элементов,
+  @code{((сосна хвоя) дуб клён)}, первый элемент которого является
+  список из двух элементов:
 
 @example
 @group
@@ -792,93 +795,93 @@ two-element list:
     --- ---      --- ---      --- ---
      |            |            |
      |            |            |
-     |             --> oak      --> maple
+     |             --> дуб      --> клён
      |
      |     --- ---      --- ---
       --> |   |   |--> |   |   |--> nil
            --- ---      --- ---
             |            |
             |            |
-             --> pine     --> needles
+             --> сосна    --> хвоя
 @end group
 @end example
 
-  The same list represented in the second box notation looks like this:
+  Тот же список, представленный в другой нотации выглядит следующим образом:
 
 @example
 @group
  --------------       --------------       --------------
 | car   | cdr  |     | car   | cdr  |     | car   | cdr  |
-|   o   |   o------->| oak   |   o------->| maple |  nil |
+|   o   |   o------->| дуб   |   o------->| клён  |  nil |
 |   |   |      |     |       |      |     |       |      |
  -- | ---------       --------------       --------------
     |
     |
     |        --------------       ----------------
     |       | car   | cdr  |     | car     | cdr  |
-     ------>| pine  |   o------->| needles |  nil |
+     ------>| сосна |   o------->| хвоя    |  nil |
             |       |      |     |         |      |
              --------------       ----------------
 @end group
 @end example
 
 @node Dotted Pair Notation
-@subsubsection Dotted Pair Notation
+@subsubsection Нотация Точечной Пары
 @cindex dotted pair notation
 @cindex @samp{.} in lists
 
-  @dfn{Dotted pair notation} is a general syntax for cons cells that
-represents the @sc{car} and @sc{cdr} explicitly.  In this syntax,
-@code{(@var{a} .@: @var{b})} stands for a cons cell whose @sc{car} is
-the object @var{a} and whose @sc{cdr} is the object @var{b}.  Dotted
-pair notation is more general than list syntax because the @sc{cdr}
-does not have to be a list.  However, it is more cumbersome in cases
-where list syntax would work.  In dotted pair notation, the list
-@samp{(1 2 3)} is written as @samp{(1 .  (2 . (3 . nil)))}.  For
-@code{nil}-terminated lists, you can use either notation, but list
-notation is usually clearer and more convenient.  When printing a
-list, the dotted pair notation is only used if the @sc{cdr} of a cons
-cell is not a list.
+  @dfn{Нотация точечной пары} является общим синтаксисом cons-ячейки,
+  который представляет @sc{car} и @sc{cdr} явно. В  этом синтаксисе,
+  @code{(@var{a} .@: @var{b})} обозначает cons-ячейку, у которой @sc{car}
+  является объектом @var{a} и чья @sc{cdr} является объектом @var{b}.
+  Нотация точечной пары является более общей, чем синтаксис списка, потому
+  что @sc{cdr} не обязательно может быть списком.  Тем не менее, это более
+  громоздкий синтаксис в тех случаях, когда синтаксис списка будет работать.
+  В нотации точечной пары, список @samp{(1 2 3)} записывается в виде
+  @samp{(1 .  (2 . (3 . nil)))}.  Для списков заканчивающихся @code{nil}, вы
+  можете использовать любую нотацию, но нотация списка, как правило, более
+  ясна и удобна.  При печати списка, нотация точечной пары используется
+  только тогда, когда @sc{cdr} из cons-ячейки не список.
 
-  Here's an example using boxes to illustrate dotted pair notation.
-This example shows the pair @code{(rose . violet)}:
+  Вот пример c использованием прямоугольников для иллюстрации нотации
+  точечной пары.  Этот пример показывает пару @code{(роза . фиалка)}:
 
 @example
 @group
     --- ---
-   |   |   |--> violet
+   |   |   |--> фиалка
     --- ---
      |
      |
-      --> rose
+      --> роза
 @end group
 @end example
 
-  You can combine dotted pair notation with list notation to represent
-conveniently a chain of cons cells with a non-@code{nil} final @sc{cdr}.
-You write a dot after the last element of the list, followed by the
-@sc{cdr} of the final cons cell.  For example, @code{(rose violet
-. buttercup)} is equivalent to @code{(rose . (violet . buttercup))}.
-The object looks like this:
+  Вы можете комбинировать нотацию точечной пары и нотацию списка, для
+  удобного представления цепочки cons-ячеек с не-@code{nil} в @sc{cdr}
+  конечной cons-ячейки.   Вы пишете точку после @sc{car} последнего
+  элемента списка,  за которой  следует @sc{cdr} конечной cons-ячейки.
+  Например,  @code{(роза фиалка . лютик)} эквивалентно
+  @code{(роза . (фиалка . лютик))}. Объект выглядит следующим образом:
 
 @example
 @group
     --- ---      --- ---
-   |   |   |--> |   |   |--> buttercup
+   |   |   |--> |   |   |--> лютик
     --- ---      --- ---
      |            |
      |            |
-      --> rose     --> violet
+      --> роза     --> фиалка
 @end group
 @end example
 
-  The syntax @code{(rose .@: violet .@: buttercup)} is invalid because
-there is nothing that it could mean.  If anything, it would say to put
-@code{buttercup} in the @sc{cdr} of a cons cell whose @sc{cdr} is already
-used for @code{violet}.
+  Синтаксис @code{(роза .@: фиалка .@: лютик)} является недействительным,
+  потому что нет ничего, что это может означать.  Во всяком случае, это
+  указание поставить @code{лютик} в слот @sc{cdr} cons-ячейки которая
+  уже используются для @code{фиалка}.
 
-  The list @code{(rose violet)} is equivalent to @code{(rose . (violet))},
-and looks like this:
+  Список @code{(роза фиалка)} эквивалентно @code{(роза . (фиалка))}, и
+  выглядит следующим образом:
 
 @example
 @group
@@ -887,14 +890,15 @@ and looks like this:
     --- ---      --- ---
      |            |
      |            |
-      --> rose     --> violet
+      --> роза     --> фиалка
 @end group
 @end example
 
-  Similarly, the three-element list @code{(rose violet buttercup)}
-is equivalent to @code{(rose . (violet . (buttercup)))}.
+  Аналогичным образом, записи трёхэлементного списка
+  @code{(роза фиалка лютик)} и
+  @code{(роза . (фиалка . (лютик)))} эквивалентны.
 @ifnottex
-It looks like this:
+Похоже, что это:
 
 @example
 @group
@@ -903,7 +907,7 @@ It looks like this:
     --- ---      --- ---      --- ---
      |            |            |
      |            |            |
-      --> rose     --> violet   --> buttercup
+      --> роза     --> фиалка   --> лютик
 @end group
 @end example
 @end ifnottex
