@@ -3,4 +3,5 @@ texi2any --html --no-split /home/ub18/Документы/myProect/emacs/elispTex
 firefox /home/ub18/Документы/myProect/emacs/elispTexi/Proizvodnoe/elisp.html &
 
 Вопросы:
-objects.texi str 513 Тип Символа 
+objects.texi str 513 Тип Символа
+objects.texi str 635 
