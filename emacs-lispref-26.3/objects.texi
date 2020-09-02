@@ -1269,244 +1269,243 @@ nil                  ; @r{Список без элементов (пустой �
 @xref{Hash Tables}, для получения дополнительной информации о хэш-таблицах.
 
 @node Function Type
-@subsection Function Type
+@subsection Тип Функция
 
-  Lisp functions are executable code, just like functions in other
-programming languages.  In Lisp, unlike most languages, functions are
-also Lisp objects.  A non-compiled function in Lisp is a lambda
-expression: that is, a list whose first element is the symbol
-@code{lambda} (@pxref{Lambda Expressions}).
+  Lisp функция --- исполняемый код, так же как и функция в других языках
+  программирования.  В Lisp, в отличии от большинства языков, функция также
+  это Lisp объект.  Не-скомпилированая функция в Lisp является
+  лямбда-выражением: то есть, список первый элемент которого является
+  символом @code{lambda} (@pxref{Lambda Expressions}).
 
-  In most programming languages, it is impossible to have a function
-without a name.  In Lisp, a function has no intrinsic name.  A lambda
-expression can be called as a function even though it has no name; to
-emphasize this, we also call it an @dfn{anonymous function}
-(@pxref{Anonymous Functions}).  A named function in Lisp is just a
-symbol with a valid function in its function cell (@pxref{Defining
-Functions}).
+  В большинстве языков программирования, невозможно иметь функцию без имени.
+  В Lisp, функция не имеет собственного имени.  Лямбда-выражения может
+  быть вызвано как функция, даже если оно не имеет имени; чтобы подчеркнуть
+  это, мы называем его @dfn{анонимной функцией}
+  (@pxref{Anonymous Functions}).  Именованная функция Lisp --- просто символ
+  с действительной функцией в ячейки функции (@pxref{Defining Functions}).
 
-  Most of the time, functions are called when their names are written in
-Lisp expressions in Lisp programs.  However, you can construct or obtain
-a function object at run time and then call it with the primitive
-functions @code{funcall} and @code{apply}.  @xref{Calling Functions}.
+  В большинстве случаев функции вызываются, когда их имена записаны в Lisp
+  выражениях в программах Lisp.  Тем не менее, вы можете построить или
+  получить объект функции во время выполнения, а затем вызвать его с помощью
+  примитивных функций @code{funcall} и @code{apply}.
+  @xref{Calling Functions}.
 
 @node Macro Type
-@subsection Macro Type
+@subsection Тип Макрос
 
-  A @dfn{Lisp macro} is a user-defined construct that extends the Lisp
-language.  It is represented as an object much like a function, but with
-different argument-passing semantics.  A Lisp macro has the form of a
-list whose first element is the symbol @code{macro} and whose @sc{cdr}
-is a Lisp function object, including the @code{lambda} symbol.
+  @dfn{Lisp макрос} является определенная пользователем конструкция, которая
+  расширяет язык Lisp.  Она представлена как объект, очень похожий на
+  функцию, но с другой семантикой передачи аргументов.  Lisp макрос имеет
+  вид списка, первый элемент которого является символом @code{macro} и чей
+  @sc{cdr} является объектом функции Lisp, включая символ @code{lambda}.
 
-  Lisp macro objects are usually defined with the built-in
-@code{defmacro} macro, but any list that begins with @code{macro} is a
-macro as far as Emacs is concerned.  @xref{Macros}, for an explanation
-of how to write a macro.
+  Объекты Lisp макрос обычно определяются с помощью встроенного
+  @code{defmacro} макроса, но любой список, который начинается с
+  @code{macro}, является макросом для Emacs.  @xref{Macros}, чтобы узнать,
+  как написать макрос.
 
-  @strong{Warning}: Lisp macros and keyboard macros (@pxref{Keyboard
-Macros}) are entirely different things.  When we use the word ``macro''
-without qualification, we mean a Lisp macro, not a keyboard macro.
+  @strong{Предупреждение}: Lisp макрос и клавиатурный макрос
+  (@pxref{Keyboard Macros}) совершенно разные вещи. Когда мы используем
+  слово ``macro'' без уточнения, мы имеем в виду Lisp макрос, а не
+  клавиатурный макрос.
 
 @node Primitive Function Type
-@subsection Primitive Function Type
+@subsection Тип Примитивная Функция
 @cindex primitive function
 
-  A @dfn{primitive function} is a function callable from Lisp but
-written in the C programming language.  Primitive functions are also
-called @dfn{subrs} or @dfn{built-in functions}.  (The word ``subr'' is
-derived from ``subroutine''.)  Most primitive functions evaluate all
-their arguments when they are called.  A primitive function that does
-not evaluate all its arguments is called a @dfn{special form}
-(@pxref{Special Forms}).
+  @dfn{Примитивная функция} функция вызывается из Lisp но написано на языке
+  программирования Си.  Примитивные функции также называются
+  @dfn{subrs (вспомогательными)} или @dfn{встроенными функциями}.  (Слово
+  ``subr'' происходит от ``subroutine'' (подпрограмма).) Большинство
+  примитивных функций оценивает все свои аргументы, при их вызове.
+  Примитивная функция, которая не оценивает все свои аргументы называется
+  @dfn{специальной формой} (@pxref{Special Forms}).
 
-  It does not matter to the caller of a function whether the function is
-primitive.  However, this does matter if you try to redefine a primitive
-with a function written in Lisp.  The reason is that the primitive
-function may be called directly from C code.  Calls to the redefined
-function from Lisp will use the new definition, but calls from C code
-may still use the built-in definition.  Therefore, @strong{we discourage
-redefinition of primitive functions}.
+  Для вызывающей функции не имеет значения,является ли функция примитивной.
+  Однако, это имеет значение, если вы попытаетесь переопределить примитив с
+  помощью функции, написанной на Lisp.  Причина заключается в том, что
+  примитивная функция может быть вызвана непосредственно из кода C.  Вызов
+  переопределённой функцию из Lisp будет использовать новое определение, но
+  вызов из кода Cи может по-прежнему использовать встроенное определение.
+  Поэтому, @strong{мы не рекомендуем переопределять примитивные функции}.
 
-  The term @dfn{function} refers to all Emacs functions, whether written
-in Lisp or C@.  @xref{Function Type}, for information about the
-functions written in Lisp.
+  Термин @dfn{функция} относится ко всем функциям Emacs, будь то написаных
+  на Lisp или C@.  @xref{Function Type}, для получения информации о
+  функциях, написанных на Lisp.
 
-  Primitive functions have no read syntax and print in hash notation
-with the name of the subroutine.
+  Примитивные функции не имеют синтаксис для чтения и печатаются в
+  хэш-нотации с именем подпрограммы.
 
 @example
 @group
-(symbol-function 'car)          ; @r{Access the function cell}
-                                ;   @r{of the symbol.}
+(symbol-function 'car)          ; @r{Доступ к функции}
+                                ;   @r{ячейки символа.}
      @result{} #<subr car>
-(subrp (symbol-function 'car))  ; @r{Is this a primitive function?}
-     @result{} t                       ; @r{Yes.}
+(subrp (symbol-function 'car))  ; @r{Это примитивная функция?}
+     @result{} t                       ; @r{Да.}
 @end group
 @end example
 
 @node Byte-Code Type
-@subsection Byte-Code Function Type
+@subsection Тип Двоичная Функция
 
-@dfn{Byte-code function objects} are produced by byte-compiling Lisp
-code (@pxref{Byte Compilation}).  Internally, a byte-code function
-object is much like a vector; however, the evaluator handles this data
-type specially when it appears in a function call.  @xref{Byte-Code
-Objects}.
+@dfn{Объект двоичная функция} создаётся путём байт-компиляции кода Lisp
+(@pxref{Byte Compilation}).  Внутренне, объект двоичной функции очень похож
+на вектор; однако, оценщик обрабатывает этот тип данных особенно когда он
+появляется в вызове функции.  @xref{Byte-Code Objects}.
 
-The printed representation and read syntax for a byte-code function
-object is like that for a vector, with an additional @samp{#} before the
-opening @samp{[}.
+Синтаксис печатного представления и чтения для объекта двоичной функции
+аналогичен синтаксису вектора, с дополнительным @samp{#} перед открывающейся
+@samp{[}.
 
 @node Record Type
-@subsection Record Type
+@subsection Тип Запись
 
-  A @dfn{record} is much like a @code{vector}.  However, the first
-element is used to hold its type as returned by @code{type-of}.  The
-purpose of records is to allow programmers to create objects with new
-types that are not built into Emacs.
+  @dfn{Запись} очень похож на @code{вектор}.  Тем не менее, первый элемент
+  используется для хранения своего типа, возвращаемого @code{type-of}.
+  Назначение типа @dfn{запись}, позволить программистам создавать объекты с
+  новыми типами, которые не встроены в Emacs.
 
-  @xref{Records}, for functions that work with records.
+  @xref{Records}, функции для работы с объектами запись.
 
 @node Type Descriptors
-@subsection Type Descriptors
+@subsection Тип Дескриптор
 
-  A @dfn{type descriptor} is a @code{record} which holds information
-about a type.  Slot 1 in the record must be a symbol naming the type, and
-@code{type-of} relies on this to return the type of @code{record}
-objects.  No other type descriptor slot is used by Emacs; they are
-free for use by Lisp extensions.
+  @dfn{Тип дескриптор} является @code{объектом запись}, который содержит
+  информацию о типе.  Слот 1 в записи должен быть символом обозначающим тип
+  и @code{type-of} полагается на это, чтобы вернуть тип объектов
+  @code{запись}.  Emacs не использует другой тип слота дескриптора; они
+  свободны для использования расширениями Lisp.
 
-An example of a type descriptor is any instance of
-@code{cl-structure-class}.
+  Примером дескриптора типа является любой экземпляр
+  @code{cl-structure-class}.
 
 @node Autoload Type
-@subsection Autoload Type
+@subsection Тип Автозагрузка
 
-  An @dfn{autoload object} is a list whose first element is the symbol
-@code{autoload}.  It is stored as the function definition of a symbol,
-where it serves as a placeholder for the real definition.  The autoload
-object says that the real definition is found in a file of Lisp code
-that should be loaded when necessary.  It contains the name of the file,
-plus some other information about the real definition.
+  @dfn{Объект автозагрузки} --- это список, первым элементом которого
+  является символ @code{autoload}.  Он хранится как определение функции
+  символа, где он служит заполнителем для реального определения. Объект
+  автозагрузки сообщает, что реальное определение находится в файл Lisp
+  кода, который должен быть загружен в случае необходимости. Он содержит
+  имя файла, а также некоторую другую информацию о реальном определении.
 
-  After the file has been loaded, the symbol should have a new function
-definition that is not an autoload object.  The new definition is then
-called as if it had been there to begin with.  From the user's point of
-view, the function call works as expected, using the function definition
-in the loaded file.
+  После загрузки файла, символ должен иметь новое определение функции,
+  которое не является объектом автозагрузки.  Затем вызывается новое,
+  как если бы оно было изначально.  С точки зрения пользователя, вызов
+  функции работает как и ожидалось, используя определение функции в
+  загруженном файле.
 
-  An autoload object is usually created with the function
-@code{autoload}, which stores the object in the function cell of a
-symbol.  @xref{Autoload}, for more details.
+  Объект автозагрузка обычно создается с помощью функции @code{autoload},
+  которая соххранит объект в функциональной ячейки символа.
+  @xref{Autoload}, для деталей.
 
 @node Finalizer Type
-@subsection Finalizer Type
+@subsection Тип Финализатор
 
-  A @dfn{finalizer object} helps Lisp code clean up after objects that
-are no longer needed.  A finalizer holds a Lisp function object.
-When a finalizer object becomes unreachable after a garbage collection
-pass, Emacs calls the finalizer's associated function object.
-When deciding whether a finalizer is reachable, Emacs does not count
-references from finalizer objects themselves, allowing you to use
-finalizers without having to worry about accidentally capturing
-references to finalized objects themselves.
+  @dfn{Объект финализатор} помогает коду Lisp удалять объекты, которые
+  больше не нужны.  Финализатор содержит объект функции Lisp.  Когда объект
+  финализатора становится недоступным после сбора мусора, Emacs вызывает
+  связанный объект функции финализатора.  Решая, доступен ли финализатор,
+  Emacs не учитывает ссылки от самих объектов финализаторов, что позволяет
+  использовать финализаторы без необходимости беспокоиться о случайно
+  захваченной ссылки на сами финализаторы.
 
-Errors in finalizers are printed to @code{*Messages*}.  Emacs runs
-a given finalizer object's associated function exactly once, even
-if that function fails.
+  Ошибки в финализаторах печатаются на @code{*Messages*}.  Emacs выполняет
+  функцию, связанную с данным объектом финализатором, ровно один раз, даже
+  если эта функция не выполняется.
 
 @defun make-finalizer function
-Make a finalizer that will run @var{function}.  @var{function} will be
-called after garbage collection when the returned finalizer object
-becomes unreachable.  If the finalizer object is reachable only
-through references from finalizer objects, it does not count as
-reachable for the purpose of deciding whether to run @var{function}.
-@var{function} will be run once per finalizer object.
+Создаёт объект финализатор, который будет работать с @var{function}.
+@var{function} будет вызываться после сборки мусора, когда возвращённый
+объект финализатора становится недоступным.  Если объект финализатора
+доступен только через ссылку из объектов финализатора, он не считается
+достижимым с целью принятия решения, будет ли запущенна @var{function}.
+@var{function} будет выполняться один раз для каждого объекта финализатора.
 @end defun
 
 @node Editing Types
-@section Editing Types
+@section Типы Редактирования
 @cindex editing types
 
-  The types in the previous section are used for general programming
-purposes, and most of them are common to most Lisp dialects.  Emacs Lisp
-provides several additional data types for purposes connected with
-editing.
+  Типы в предыдущем разделе, используются для общих целей программирования,
+  и большинство из них являются общими для большинства Lisp диалектов. Emacs
+  Lisp предоставляет несколько дополнительных типов данных для целей,
+  связанных с редактированием.
 
 @menu
-* Buffer Type::         The basic object of editing.
-* Marker Type::         A position in a buffer.
-* Window Type::         Buffers are displayed in windows.
-* Frame Type::          Windows subdivide frames.
-* Terminal Type::       A terminal device displays frames.
-* Window Configuration Type::   Recording the way a frame is subdivided.
-* Frame Configuration Type::    Recording the status of all frames.
-* Process Type::        A subprocess of Emacs running on the underlying OS.
-* Thread Type::         A thread of Emacs Lisp execution.
-* Mutex Type::          An exclusive lock for thread synchronization.
-* Condition Variable Type::     Condition variable for thread synchronization.
-* Stream Type::         Receive or send characters.
-* Keymap Type::         What function a keystroke invokes.
-* Overlay Type::        How an overlay is represented.
-* Font Type::           Fonts for displaying text.
+* Buffer Type::         Основной объект редактирования.
+* Marker Type::         Позиция в буфере.
+* Window Type::         Буферы отображаются в окнах.
+* Frame Type::          Окна подразделяют  фреймы.
+* Terminal Type::       Терминальное устройство отображает кадры.
+* Window Configuration Type::   Запись способа разделения кадра.
+* Frame Configuration Type::    Запись состояния всех кадров.
+* Process Type::        Подпроцесс Emacs работает на базовой ОС.
+* Thread Type::         Поток исполнения Emacs Lisp.
+* Mutex Type::          Исключительная блокировка для синхронизации потоков.
+* Condition Variable Type::     Переменная Условие для синхронизации потоков.
+* Stream Type::         Получить или отправить символы.
+* Keymap Type::         Какую функцию вызывает нажатия клавиши.
+* Overlay Type::        Как представляется наложение.
+* Font Type::           Шрифты для отображения текста.
 @end menu
 
 @node Buffer Type
-@subsection Buffer Type
+@subsection Тип Буфер
 
-  A @dfn{buffer} is an object that holds text that can be edited
-(@pxref{Buffers}).  Most buffers hold the contents of a disk file
-(@pxref{Files}) so they can be edited, but some are used for other
-purposes.  Most buffers are also meant to be seen by the user, and
-therefore displayed, at some time, in a window (@pxref{Windows}).  But
-a buffer need not be displayed in any window.  Each buffer has a
-designated position called @dfn{point} (@pxref{Positions}); most
-editing commands act on the contents of the current buffer in the
-neighborhood of point.  At any time, one buffer is the @dfn{current
-buffer}.
+  @dfn{Буфер} представляет собой объект, содержащий текст, который может
+  быть отредактирован (@pxref{Buffers}).  Большинство буферов содержат
+  содержимое файла на диске (@pxref{Files}) таким образом они могут быть
+  отредактированы, но некоторые из них используются для других целей.
+  Большая часть буферов также предназначены, чтобы их видел пользователь,
+  и поэтому они отображается, в какой-то момент, в окне (@pxref{Windows}).
+  Но буфер можно не отображать в окне.  Каждый буфер имеет обозначенное
+  положение, называемое @dfn{точка} (@pxref{Positions}); большинство
+  команд редактирования действует на содержимом текущего буфера в
+  окрестностях точки. В любое время, один буфер является
+  @dfn{текущим буфером}.
 
-  The contents of a buffer are much like a string, but buffers are not
-used like strings in Emacs Lisp, and the available operations are
-different.  For example, you can insert text efficiently into an
-existing buffer, altering the buffer's contents, whereas inserting
-text into a string requires concatenating substrings, and the result
-is an entirely new string object.
+  Содержимое буфера очень похоже на строку, но буферы не используются, как
+  строки в Emacs Lisp, и доступные операции для них отличны.  Например, вы
+  можете эффективно вставить текст  в существующий буфер, изменяя содержимое
+  буфера, в то время как вставки текста в строку требуют конкатенаций
+  подстрок, и в результат получается совсем новый объект строки.
 
-  Many of the standard Emacs functions manipulate or test the
-characters in the current buffer; a whole chapter in this manual is
-devoted to describing these functions (@pxref{Text}).
+  Многие из стандартных функций Emacs манипулируют или проверяют символы в
+  текущем буфере; целая глава в этом руководстве посвящена описанию этих
+  функций (@pxref{Text}).
 
-  Several other data structures are associated with each buffer:
+  С каждым буфером связано несколько других структур данных:
 
 @itemize @bullet
 @item
-a local syntax table (@pxref{Syntax Tables});
+локальная таблица синтаксиса (@pxref{Syntax Tables});
 
 @item
-a local keymap (@pxref{Keymaps}); and,
+локальная раскладка (@pxref{Keymaps}); и,
 
 @item
-a list of buffer-local variable bindings (@pxref{Buffer-Local Variables}).
+список привязок локальных переменных буфера (@pxref{Buffer-Local Variables}).
 
 @item
-overlays (@pxref{Overlays}).
+наложения (@pxref{Overlays}).
 
 @item
-text properties for the text in the buffer (@pxref{Text Properties}).
+свойства текста для текста в буфере (@pxref{Text Properties}).
 @end itemize
 
 @noindent
-The local keymap and variable list contain entries that individually
-override global bindings or values.  These are used to customize the
-behavior of programs in different buffers, without actually changing the
-programs.
+Локальная раскладка и список переменных содержат записи, которые по
+отдельности индивидуально переопределяют глобальные привязки или значения.
+Они используются для настройки поведения программ в различных буферах,
+фактически не изменяя программы.
 
-  A buffer may be @dfn{indirect}, which means it shares the text
-of another buffer, but presents it differently.  @xref{Indirect Buffers}.
+  Буфер может быть @dfn{косвенным}, что означает, что он разделяет текст
+  другого буфера, но представляет его по-другому.  @xref{Indirect Buffers}.
 
-  Buffers have no read syntax.  They print in hash notation, showing the
-buffer name.
+  У буферов нет синтаксиса чтения.  Они печатаются в хэш-нотации, с
+  указанием имени буфера.
 
 @example
 @group
@@ -1516,16 +1515,16 @@ buffer name.
 @end example
 
 @node Marker Type
-@subsection Marker Type
+@subsection Тип Маркер
 
-  A @dfn{marker} denotes a position in a specific buffer.  Markers
-therefore have two components: one for the buffer, and one for the
-position.  Changes in the buffer's text automatically relocate the
-position value as necessary to ensure that the marker always points
-between the same two characters in the buffer.
+  @dfn{Маркер} обозначает положение в конкретном буфере.  Таким образом,
+  маркеры имеют два компонента: один для буфера, и один для позиции.
+  Изменения в тексте буфера автоматически перемещают значение позиции по
+  мере необходимости, чтобы маркер всегда указывал между одними и теми же
+  двумя символами в буфере.
 
-  Markers have no read syntax.  They print in hash notation, giving the
-current character position and the name of the buffer.
+  Маркеры не имеют не синтаксиса чтеие.  Они печатаются в хэш-нотации,
+  указывая текущую позицию символа и имя буфера.
 
 @example
 @group
@@ -1534,30 +1533,30 @@ current character position and the name of the buffer.
 @end group
 @end example
 
-@xref{Markers}, for information on how to test, create, copy, and move
-markers.
+@xref{Markers}, для получения информации о том, как тестировать, создавать,
+копировать и перемещать маркеры.
 
 @node Window Type
-@subsection Window Type
+@subsection Тип Окно
 
-  A @dfn{window} describes the portion of the terminal screen that Emacs
-uses to display a buffer.  Every window has one associated buffer, whose
-contents appear in the window.  By contrast, a given buffer may appear
-in one window, no window, or several windows.
+  @dfn{Окно} описывает часть экрана терминала, которое Emacs использует для
+  отображения буфера.  Каждое окно имеет один связанный с ним буфер,
+  содержимое которого отображается в окне.  В отличие от этого, данный буфер
+  может появиться в одном окне, без окна или в нескольких окнах.
 
-  Though many windows may exist simultaneously, at any time one window
-is designated the @dfn{selected window}.  This is the window where the
-cursor is (usually) displayed when Emacs is ready for a command.  The
-selected window usually displays the current buffer (@pxref{Current
-Buffer}), but this is not necessarily the case.
+  Хотя многие окна могут существовать одновременно, в любой момент времени
+  одно окно назначается @dfn{выбранное окно}.  Это окно, в котором (обычно)
+  отображается курсор, когда Emacs готов для выполнения команды.  Выбранное
+  окно обычно отображает текущий буфер (@pxref{Current Buffer}), но это не
+  обязательно так.
 
-  Windows are grouped on the screen into frames; each window belongs to
-one and only one frame.  @xref{Frame Type}.
+  Окна группируются на экране в фреймы; каждое окно принадлежит одному и
+  только одному фрейму.  @xref{Frame Type}.
 
-  Windows have no read syntax.  They print in hash notation, giving the
-window number and the name of the buffer being displayed.  The window
-numbers exist to identify windows uniquely, since the buffer displayed
-in any given window can change frequently.
+  Окна не предоставляют синтаксис чтения.  Они печатаются в хэш-нотации,
+  давая номер окна и имя отображаемого буфера.  Номера окон существует для
+  однозначной идентификации окна, так как буфер, отображаемый в любом
+  заданном окне, может часто меняться.
 
 @example
 @group
@@ -1566,18 +1565,18 @@ in any given window can change frequently.
 @end group
 @end example
 
-  @xref{Windows}, for a description of the functions that work on windows.
+  @xref{Windows}, для описания функций, которые работают с окнами.
 
 @node Frame Type
-@subsection Frame Type
+@subsection Тип Фрейм
 
-  A @dfn{frame} is a screen area that contains one or more Emacs
-windows; we also use the term ``frame'' to refer to the Lisp object
-that Emacs uses to refer to the screen area.
+  @dfn{Фрейм} это область экрана, которая содержит один или несколько окон
+  Emacs; мы также используем термин ``frame'' для обозначения объекта Lisp,
+  который Emacs использует для обозначения области экрана.
 
-  Frames have no read syntax.  They print in hash notation, giving the
-frame's title, plus its address in core (useful to identify the frame
-uniquely).
+  У фрейма нет синтаксиса чтения.  Они печатаются в хэш-нотации, давая
+  название фрейма, а также его адрес в ядре (полезно для уникальной
+  идентификации фрейма).
 
 @example
 @group
@@ -1586,17 +1585,17 @@ uniquely).
 @end group
 @end example
 
-  @xref{Frames}, for a description of the functions that work on frames.
+  @xref{Frames}, для описания функций, работы с фреймами.
 
 @node Terminal Type
-@subsection Terminal Type
+@subsection Тип Терминал
 @cindex terminal type
 
-  A @dfn{terminal} is a device capable of displaying one or more
-Emacs frames (@pxref{Frame Type}).
+  @dfn{Терминал} является устройством, способным отображать один или
+  несколько фреймов Emacs (@pxref{Frame Type}).
 
-  Terminals have no read syntax.  They print in hash notation giving
-the terminal's ordinal number and its TTY device file name.
+  Терминалы не имеет синтаксиса чтения.  Они печатаются в хэш-нотации с
+  указанием порядкового номера терминала и его имени файла устройства TTY.
 
 @example
 @group
@@ -1605,50 +1604,49 @@ the terminal's ordinal number and its TTY device file name.
 @end group
 @end example
 
-@c FIXME: add an xref to where terminal-related primitives are described.
+@c ИСПРАВТЕ МЕНЯ: добавте внешнюю ссылку, если терминал связанн с
+@c описанием примитивов.
 
 @node Window Configuration Type
-@subsection Window Configuration Type
+@subsection Тип Конфигурация Окна
 @cindex window layout in a frame
 
-  A @dfn{window configuration} stores information about the positions,
-sizes, and contents of the windows in a frame, so you can recreate the
-same arrangement of windows later.
+  @dfn{Конфигурация окна} хранит информацию о позиции, размерах и
+  содержимого окна в фрейме, так что вы можете воссоздать то же расположение
+  окон позже.
 
-  Window configurations do not have a read syntax; their print syntax
-looks like @samp{#<window-configuration>}.  @xref{Window
-Configurations}, for a description of several functions related to
-window configurations.
+  Конфигурация окна не имеют синтаксис чтения; их синтаксис печати выглядит
+  @samp{#<window-configuration>}.  @xref{Window Configurations}, для
+  описания нескольких функций, связанных с оконными конфигурациями.
 
 @node Frame Configuration Type
-@subsection Frame Configuration Type
+@subsection Тип Конфигурация Фрейма
 @cindex screen layout
 @cindex window layout, all frames
 
-  A @dfn{frame configuration} stores information about the positions,
-sizes, and contents of the windows in all frames.  It is not a
-primitive type---it is actually a list whose @sc{car} is
-@code{frame-configuration} and whose @sc{cdr} is an alist.  Each alist
-element describes one frame, which appears as the @sc{car} of that
-element.
+  @dfn{Конфигурация фрейма} хранит информацию о позиции, размерах и
+  содержимого всех окон во фрейме.  Это не примитивный тип --- это на
+  самом деле список, чей @sc{car} является @code{frame-configuration} а
+  @sc{cdr} является креном.  Каждый элемент ALIST описывает один фрейм,
+  который появляется как @sc{car} этого элемента.
 
-  @xref{Frame Configurations}, for a description of several functions
-related to frame configurations.
+  @xref{Frame Configurations}, для описания нескольких функций, связанных
+  с конфигурацией фреймов.
 
 @node Process Type
-@subsection Process Type
+@subsection Тип Процесс
 
-  The word @dfn{process} usually means a running program.  Emacs itself
-runs in a process of this sort.  However, in Emacs Lisp, a process is a
-Lisp object that designates a subprocess created by the Emacs process.
-Programs such as shells, GDB, ftp, and compilers, running in
-subprocesses of Emacs, extend the capabilities of Emacs.
-  An Emacs subprocess takes textual input from Emacs and returns textual
-output to Emacs for further manipulation.  Emacs can also send signals
-to the subprocess.
+  Слово @dfn{процесс} обычно означает запущенную программу.  Сам Emacs
+  запускается в процессе такого рода.  Однако, в Emacs Lisp, процесс
+  является объектом Lisp, что обозначает подпроцесс, созданный в процессе
+  Emacs.  Такие программы, как shells, GDB, ftp, и компиляторы, работающие в
+  подпроцессах Emacs, расширяют возможности Emacs.  Подпроцесс Emacs
+  принимает текстовый ввод из Emacs и возвращает текстовый вывод в Emacs
+  для дальнейших манипуляций.  Emacs также может посылать сигналы
+  подпроцессу.
 
-  Process objects have no read syntax.  They print in hash notation,
-giving the name of the process:
+  У объекта типа процесс нет синтаксиса чтения.  Они печатаются в
+  хэш-нотации,  печатая имя процесса:
 
 @example
 @group
@@ -1657,17 +1655,18 @@ giving the name of the process:
 @end group
 @end example
 
-@xref{Processes}, for information about functions that create, delete,
-return information about, send input or signals to, and receive output
-from processes.
+@xref{Processes}, для получения информации о функциях, которые могут
+создавать, удалять, возвращать информацию, отправлять входные данные или
+сигналы и получать выходные данные от процессов.
 
 @node Thread Type
-@subsection Thread Type
+@subsection Тип Поток
 
-  A @dfn{thread} in Emacs represents a separate thread of Emacs Lisp
-execution.  It runs its own Lisp program, has its own current buffer,
-and can have subprocesses locked to it, i.e.@: subprocesses whose
-output only this thread can accept.  @xref{Threads}.
+  @dfn{Поток} в Emacs представляет собой отдельный поток выполнения
+  Emacs Lisp.  Он запускаетсвою собственную программу на Lisp, имеет свой
+  собственный текущий буфер, и может иметь заблокированные подпроцессы,
+  то есть @: подпроцессы, вывод которых может принимать только этот поток.
+  @xref{Threads}.
 
   Thread objects have no read syntax.  They print in hash notation,
 giving the name of the thread (if it has been given a name) or its
