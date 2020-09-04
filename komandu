@@ -1,3 +1,9 @@
+cd /home/ub18/Документы/myProect/emacs/elispTexi/emacs-lispref-26.3
+
+make
+
+cd ..
+
 texi2any --html --no-split /home/ub18/Документы/myProect/emacs/elispTexi/emacs-lispref-26.3/elisp.texi -o /home/ub18/Документы/myProect/emacs/elispTexi/Proizvodnoe/elisp.html
 
 firefox /home/ub18/Документы/myProect/emacs/elispTexi/Proizvodnoe/elisp.html &
@@ -6,3 +12,6 @@ firefox /home/ub18/Документы/myProect/emacs/elispTexi/Proizvodnoe/elisp
 objects.texi str 513 Тип Символа
 objects.texi str 635
 objects.texi str 1378
+objects.texi 1666
+objects.texi 1774
+objects.texi 1843
