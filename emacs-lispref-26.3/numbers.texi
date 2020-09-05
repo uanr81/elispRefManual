@@ -4,38 +4,41 @@
 @c Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Numbers
-@chapter Numbers
+@chapter Числа
 @cindex integers
 @cindex numbers
 
-  GNU Emacs supports two numeric data types: @dfn{integers} and
-@dfn{floating-point numbers}.  Integers are whole numbers such as
-@minus{}3, 0, 7, 13, and 511.  Floating-point numbers are numbers with
-fractional parts, such as @minus{}4.5, 0.0, and 2.71828.  They can
-also be expressed in exponential notation: @samp{1.5e2} is the same as
-@samp{150.0}; here, @samp{e2} stands for ten to the second power, and
-that is multiplied by 1.5.  Integer computations are exact, though
-they may overflow.  Floating-point computations often involve rounding
-errors, as the numbers have a fixed amount of precision.
+  GNU Emacs поддерживает два числовых типов данных: @dfn{Целое число} и
+  @dfn{Число с плавающей точкой}.  Целые числа --- это такие как @minus{}3,
+  0, 7, 13 и 511.  Числа с плавающей точкой являются числами с дробными
+  частями, такими как @minus{}4.5, 0.0, и 2,71828.  Они также могут быть
+  выражены в экспоненциальной форме: число @samp{150.0} можно выразить как
+  @samp{1.5e2}, где @samp{e2} означает десять до второй степени, и
+  умножается на 1,5.  Целочисленные вычисления являются точными, хотя они
+  могут переполняться.  Вычисления с плавающей запятой часто связаны с
+  ошибками округления, так как числа имеют фиксированную точность.
 
 @menu
-* Integer Basics::            Representation and range of integers.
-* Float Basics::              Representation and range of floating point.
-* Predicates on Numbers::     Testing for numbers.
-* Comparison of Numbers::     Equality and inequality predicates.
-* Numeric Conversions::       Converting float to integer and vice versa.
-* Arithmetic Operations::     How to add, subtract, multiply and divide.
-* Rounding Operations::       Explicitly rounding floating-point numbers.
-* Bitwise Operations::        Logical and, or, not, shifting.
-* Math Functions::            Trig, exponential and logarithmic functions.
-* Random Numbers::            Obtaining random integers, predictable or not.
+* Integer Basics::            Представление и диапазон целых чисел.
+* Float Basics::              Представление и диапазон с плавающей точкой.
+* Predicates on Numbers::     Проверка чисел.
+* Comparison of Numbers::     Предикаты равенства и неравенства.
+* Numeric Conversions::       Преобразование числа с плавающей точкой в
+                              ​​целое и наоборот.
+* Arithmetic Operations::     Сложение, вычитание, умножение и деление.
+* Rounding Operations::       Явное округления чисел с плавающей точкой.
+* Bitwise Operations::        Логическиое и, или, не, смещение.
+* Math Functions::            Тригонометрические, экспоненциальные и
+                              логарифмические функции.
+* Random Numbers::            Получение случайных чисел, предсказуемых
+                              или нет.
 @end menu
 
 @node Integer Basics
-@section Integer Basics
+@section Целое Число Основы
 
-  The range of values for an integer depends on the machine.  The
-minimum range is @minus{}536,870,912 to 536,870,911 (30 bits; i.e.,
+  Диапазон значений для целого зависит от машины.  Минимальный диапазон
+  @minus{}536,870,912 до 536,870,911 (30 бит; i.e.,
 @ifnottex
 @minus{}2**29
 @end ifnottex
@@ -49,23 +52,24 @@ to
 @tex
 @math{2^{29}-1}),
 @end tex
-but many machines provide a wider range.  Many examples in this
-chapter assume the minimum integer width of 30 bits.
+но многие машины обеспечивают более широкий диапазон. Многие примеры в этой
+главе предполагают минимальную ширину целого числа, равное 30 бит.
 @cindex overflow
 
-  The Lisp reader reads an integer as a sequence of digits with optional
-initial sign and optional final period.  An integer that is out of the
-Emacs range is treated as a floating-point number.
+  Lisp читатель считывает целое число в виде последовательности цифр с
+  необязательным начальным знаком и дополнительной конечной точкой.
+  Целое число, которое находится вне указанного диапазона Emacs,
+  рассматривается как число с плавающей точкой.
 
 @example
- 1               ; @r{The integer 1.}
- 1.              ; @r{The integer 1.}
-+1               ; @r{Also the integer 1.}
--1               ; @r{The integer @minus{}1.}
+ 1               ; @r{Целочисленное 1.}
+ 1.              ; @r{Целочисленное 1.}
++1               ; @r{Также целочисленное 1.}
+-1               ; @r{Целочисленное @minus{}1.}
  9000000000000000000
-                 ; @r{The floating-point number 9e18.}
- 0               ; @r{The integer 0.}
--0               ; @r{The integer 0.}
+                 ; @r{Число с плавающей точкой 9e18.}
+ 0               ; @r{Целочисленное 0.}
+-0               ; @r{Целочисленное 0.}
 @end example
 
 @cindex integers in specific radix
@@ -74,14 +78,16 @@ Emacs range is treated as a floating-point number.
 @cindex hex numbers
 @cindex octal numbers
 @cindex reading numbers in hex, octal, and binary
-  The syntax for integers in bases other than 10 uses @samp{#}
-followed by a letter that specifies the radix: @samp{b} for binary,
-@samp{o} for octal, @samp{x} for hex, or @samp{@var{radix}r} to
-specify radix @var{radix}.  Case is not significant for the letter
-that specifies the radix.  Thus, @samp{#b@var{integer}} reads
-@var{integer} in binary, and @samp{#@var{radix}r@var{integer}} reads
-@var{integer} in radix @var{radix}.  Allowed values of @var{radix} run
-from 2 to 36.  For example:
+  Синтаксис для целых чисел, отличных от используемого основания 10,
+  использует @samp{#} с последующей буквой, которая указывает систему
+  счисления: @samp{b} для двоичной, @samp{o} для восьмеричной, @samp{x}
+  для шестнадцатеричной или @samp{@var{система счисления}r} для указания
+  основания @var{системы счисления}.  Для буквы, определяющей основание
+  системы счисления, регистр не имеет значения.  Таким образом,
+  @samp{#b@var{целочисленное}} читает @var{целочисленное} в двоичной
+  системе, и @samp{#@var{система счисления}r@var{целочисленное}} читает
+  @var{целочисленное} в натальной @var{системе счисления}.  Допустимые
+  значения @var{систем счисления} от 2 до 36. Например:
 
 @example
 #b101100 @result{} 44
@@ -90,147 +96,149 @@ from 2 to 36.  For example:
 #24r1k @result{} 44
 @end example
 
-  To understand how various functions work on integers, especially the
-bitwise operators (@pxref{Bitwise Operations}), it is often helpful to
-view the numbers in their binary form.
+  Чтобы понять, как различные функции работают с целыми числами, особенно
+  побитовые операторы (@pxref{Bitwise Operations}), часто бывает полезно
+  просмотреть числа в двоичном виде.
 
-  In 30-bit binary, the decimal integer 5 looks like this:
+  В 30-разрядным двоичном формате, десятичное число 5 выглядит следующим
+  образом:
 
 @example
-0000...000101 (30 bits total)
+0000...000101 (всего 30 бит)
 @end example
 
 @noindent
-(The @samp{...} stands for enough bits to fill out a 30-bit word; in
-this case, @samp{...} stands for twenty 0 bits.  Later examples also
-use the @samp{...} notation to make binary integers easier to read.)
+(@samp{...} означает достаточно битов, чтобы заполнить 30-разрядное слово;
+в этом случае, @samp{...} стоит из двадцати бит со значением 0.  В более
+поздних примерах также используется @samp{...} обозначение, чтобы двоичные
+числа было легче читать.)
 
-  The integer @minus{}1 looks like this:
+  Целочисленное @minus{}1 выглядит следующим образом:
 
 @example
-1111...111111 (30 bits total)
+1111...111111 (всего 30 бит)
 @end example
 
 @noindent
 @cindex two's complement
-@minus{}1 is represented as 30 ones.  (This is called @dfn{two's
-complement} notation.)
+@minus{}1 представляется как 30 единиц 1.  (Это обозначение называется
+@dfn{двойное дополнение}.)
 
-  Subtracting 4 from @minus{}1 returns the negative integer @minus{}5.
-In binary, the decimal integer 4 is 100.  Consequently,
-@minus{}5 looks like this:
-
-@example
-1111...111011 (30 bits total)
-@end example
-
-  In this implementation, the largest 30-bit binary integer is
-536,870,911 in decimal.  In binary, it looks like this:
+  Вычитание 4 из @minus{}1 возвращает отрицательное целое число @minus{}5.
+  В двоичной системе десятичной целое число 4 равно 100. Следовательно,
+  @minus{}5 выглядит следующим образом:
 
 @example
-0111...111111 (30 bits total)
+1111...111011 (всего 30 бит)
 @end example
 
-  Since the arithmetic functions do not check whether integers go
-outside their range, when you add 1 to 536,870,911, the value is the
-negative integer @minus{}536,870,912:
+  В этом реализации наибольшее 30-разрядное двоичное целое число 536,870,911
+  в десятичной системе. В двоичном формате, это выглядит следующим образом:
+
+@example
+0111...111111 (всего 30 бит)
+@end example
+
+  Поскольку арифметические функции не проверяют, выходят ли целые числа за
+  пределы своего диапазона, при добавлении 1 к 536,870,911, значение
+  будет отрицательным целым числом @minus{}536,870,912:
 
 @example
 (+ 1 536870911)
      @result{} -536870912
-     @result{} 1000...000000 (30 bits total)
+     @result{} 1000...000000 (всего 30 бит)
 @end example
 
-  Many of the functions described in this chapter accept markers for
-arguments in place of numbers.  (@xref{Markers}.)  Since the actual
-arguments to such functions may be either numbers or markers, we often
-give these arguments the name @var{number-or-marker}.  When the argument
-value is a marker, its position value is used and its buffer is ignored.
+  Многие из функций, описанных в этой главе, принимают маркеры в качестве
+  аргументов вместо чисел.  (@xref{Markers}.)  Поскольку фактическими
+  аргументами таких функций могут числа или маркеры, мы часто даем этим
+  аргументам имя @var{число-или-макркер}.  Когда значение аргумента является
+  маркером, используется его значение позиции, а его буфер игнорируется.
 
 @cindex largest Lisp integer
 @cindex maximum Lisp integer
 @defvar most-positive-fixnum
-The value of this variable is the largest integer that Emacs Lisp can
-handle.  Typical values are
+Значение этой переменной наибольшее целое число, которое может обработать
+Emacs Lisp.  Типичные значения
 @ifnottex
 2**29 @minus{} 1
 @end ifnottex
 @tex
 @math{2^{29}-1}
 @end tex
-on 32-bit and
+для 32-бит и
 @ifnottex
 2**61 @minus{} 1
 @end ifnottex
 @tex
 @math{2^{61}-1}
 @end tex
-on 64-bit platforms.
+для 64-бит платформ.
 @end defvar
 
 @cindex smallest Lisp integer
 @cindex minimum Lisp integer
 @defvar most-negative-fixnum
-The value of this variable is the smallest integer that Emacs Lisp can
-handle.  It is negative.  Typical values are
+Значение этой переменной является наименьшим целым числом, которое может
+обрабатывать Emacs Lisp.  Это отрицательное число.  Типичные значения
 @ifnottex
 @minus{}2**29
 @end ifnottex
 @tex
 @math{-2^{29}}
 @end tex
-on 32-bit and
+для 32-бит и
 @ifnottex
 @minus{}2**61
 @end ifnottex
 @tex
 @math{-2^{61}}
 @end tex
-on 64-bit platforms.
+для 64-бит платформ.
 @end defvar
 
-  In Emacs Lisp, text characters are represented by integers.  Any
-integer between zero and the value of @code{(max-char)}, inclusive, is
-considered to be valid as a character.  @xref{Character Codes}.
+  В Emacs Lisp, текстовые символы представлены целыми числами. Любое целое
+  число между нулем и значением @code{(max-char)} включительно, считаются
+  допустимыми в качестве символа.  @xref{Character Codes}.
 
 @node Float Basics
-@section Floating-Point Basics
+@section Плавающая Точка Основы
 
 @cindex @acronym{IEEE} floating point
-  Floating-point numbers are useful for representing numbers that are
-not integral.  The range of floating-point numbers is
-the same as the range of the C data type @code{double} on the machine
-you are using.  On all computers currently supported by Emacs, this is
-double-precision @acronym{IEEE} floating point.
+  Числа с плавающей точкой используются для представления чисел, которые не
+  являются целочисленными.  Диапазон чисел с плавающей точкой является таким
+  же, как диапазон типа данных С @code{double} на компьютере, который вы
+  используете.  На всех компьютерах, поддерживаемых в настоящее время Emacs,
+  это числа с плавающей точкой двойной точности @acronym{IEEE}.
 
-  The read syntax for floating-point numbers requires either a decimal
-point, an exponent, or both.  Optional signs (@samp{+} or @samp{-})
-precede the number and its exponent.  For example, @samp{1500.0},
-@samp{+15e2}, @samp{15.0e+2}, @samp{+1500000e-3}, and @samp{.15e4} are
-five ways of writing a floating-point number whose value is 1500.
-They are all equivalent.  Like Common Lisp, Emacs Lisp requires at
-least one digit after any decimal point in a floating-point number;
-@samp{1500.} is an integer, not a floating-point number.
+  Синтаксис чтения для чисел с плавающей точкой требует либо десятичной
+  точки, либо показателя степени, или обоих.  Необязательные знаки
+  (@samp{+} или @samp{-}) предшествуют числу и его показателю.  Например,
+  @samp{1500.0}, @samp{+15e2}, @samp{15.0e+2}, @samp{+1500000e-3}, и
+  @samp{.15e4} представляют пять способов записи числа с плавающей точкой,
+  значение которого 1500.  Все они эквивалентны.  Как Common Lisp,
+  Emacs Lisp требует, по крайней мере, наличие одной цифры после десятичной
+  точки в числе с плавающей точкой; @samp{1500.} представляет собой целое
+  число, а не число с плавающей точкой.
 
-  Emacs Lisp treats @code{-0.0} as numerically equal to ordinary zero
-with respect to @code{equal} and @code{=}.  This follows the
-@acronym{IEEE} floating-point standard, which says @code{-0.0} and
-@code{0.0} are numerically equal even though other operations can
-distinguish them.
+  Emacs Lisp считает @code{-0.0}, как численно равным обычному нулю
+  относительно операций @code{equal} и @code{=}. Это соответствует стандарту
+  с плавающей точкой @acronym{IEEE}, который говорит, что @code{-0.0} и
+  @code{0.0} численно равны, хотя другие операции могут различать их.
 
 @cindex positive infinity
 @cindex negative infinity
 @cindex infinity
 @cindex NaN
-  The @acronym{IEEE} floating-point standard supports positive
-infinity and negative infinity as floating-point values.  It also
-provides for a class of values called NaN, or ``not a number'';
-numerical functions return such values in cases where there is no
-correct answer.  For example, @code{(/ 0.0 0.0)} returns a NaN@.
-Although NaN values carry a sign, for practical purposes there is no other
-significant difference between different NaN values in Emacs Lisp.
+  @acronym{IEEE} стандарт с плавающей точкой поддерживает положительную
+  и отрицательную бесконечности в качестве значений с плавающей точкой.  Он
+  также предусматривает класс значений, называемых NaN или ``не число'';
+  Числовые функции возвращают такие значения в тех случаях, когда нет
+  правильного ответа.  Например, @code{(/ 0.0 0.0)} возвращает NaN@.  Хотя
+  значения NaN имеют знак, для практических целей, нет никакой существенной
+  разницы между разными значениями NaN в Emacs Lisp.
 
-Here are read syntaxes for these special floating-point values:
+Вот синтаксисы чтения для этих специальных значений с плавающей точкой:
 
 @table @asis
 @item infinity
@@ -239,35 +247,35 @@ Here are read syntaxes for these special floating-point values:
 @samp{0.0e+NaN} and @samp{-0.0e+NaN}
 @end table
 
-  The following functions are specialized for handling floating-point
-numbers:
+  Следующие функции специализированы для обработки чисел с плавающей точкой:
 
 @defun isnan x
-This predicate returns @code{t} if its floating-point argument is a NaN,
-@code{nil} otherwise.
+Этот предикат возвращает @code{t}, если его аргумент с плавающей точкой
+является NaN, @code{nil} иначе.
 @end defun
 
 @defun frexp x
-This function returns a cons cell @code{(@var{s} . @var{e})},
-where @var{s} and @var{e} are respectively the significand and
-exponent of the floating-point number @var{x}.
+Эта функция возвращает cons-ячейку @code{(@var{s} . @var{e})}, где @var{s}
+и @var{e} являются соответственно мантисса и экспонента числа с плавающей
+точкой @var{x}.
 
-If @var{x} is finite, then @var{s} is a floating-point number between 0.5
-(inclusive) and 1.0 (exclusive), @var{e} is an integer, and
+Если @var{x} конечное, то @var{s} представляет собой число с плавающей
+точкой в ​​диапазоне от 0,5 (включительно) и 1,0 (исключительного), @var{e}
+представляет собой целое число, и
 @ifnottex
 @var{x} = @var{s} * 2**@var{e}.
 @end ifnottex
 @tex
 @math{x = s 2^e}.
 @end tex
-If @var{x} is zero or infinity, then @var{s} is the same as @var{x}.
-If @var{x} is a NaN, then @var{s} is also a NaN@.
-If @var{x} is zero, then @var{e} is 0.
+Если @var{x} равен нулю или бесконечности, то @var{s} совпадает с @var{x}.
+Если @var{x} является NaN, то @var{s} также NaN@.
+Если @var{x} равен нулю, то @var{e} является 0.
 @end defun
 
 @defun ldexp s e
-Given a numeric significand @var{s} and an integer exponent @var{e},
-this function returns the floating point number
+Учитывается числовая мантисса @var{s} и целочисленный показатель @var{e},
+эта функция возвращает число с плавающей точкой
 @ifnottex
 @var{s} * 2**@var{e}.
 @end ifnottex
@@ -277,14 +285,14 @@ this function returns the floating point number
 @end defun
 
 @defun copysign x1 x2
-This function copies the sign of @var{x2} to the value of @var{x1},
-and returns the result.  @var{x1} and @var{x2} must be floating point.
+Эта функция копирует знак @var{x2} в значению @var{x1}, и возвращает
+результат. @var{x1} и @var{x2} должны быть плавающей точкой.
 @end defun
 
 @defun logb x
-This function returns the binary exponent of @var{x}.  More
-precisely, the value is the logarithm base 2 of @math{|x|}, rounded
-down to an integer.
+Эта функция возвращает двоичную экспоненту @var{x}. Более точно, значение
+представляет собой логарифм по основанию 2 от @math{|x|}, округленый до
+целого числа.
 
 @example
 (logb 10)
@@ -295,80 +303,82 @@ down to an integer.
 @end defun
 
 @node Predicates on Numbers
-@section Type Predicates for Numbers
+@section Тип Предикат для Чисел
 @cindex predicates for numbers
 
-  The functions in this section test for numbers, or for a specific
-type of number.  The functions @code{integerp} and @code{floatp} can
-take any type of Lisp object as argument (they would not be of much
-use otherwise), but the @code{zerop} predicate requires a number as
-its argument.  See also @code{integer-or-marker-p} and
-@code{number-or-marker-p}, in @ref{Predicates on Markers}.
+  Функции в этом разделе проверяют числа, или числа определённого типа.
+  Функции @code{integerp} и @code{floatp} могут принимать любой тип Lisp
+  объекта в качестве аргумента (они не были бы очень ползны), но
+  @code{zerop} предикат требует число в качестве аргумента.  Смотри
+  @code{integer-or-marker-p} и @code{number-or-marker-p}, в
+  @ref{Predicates on Markers}.
 
 @defun floatp object
-This predicate tests whether its argument is floating point
-and returns @code{t} if so, @code{nil} otherwise.
+Этот предикат проверяет, является ли ее аргумент с плавающей точкой и
+возвращает @code{t} если да, и @code{nil} в противном случае.
 @end defun
 
 @defun integerp object
-This predicate tests whether its argument is an integer, and returns
-@code{t} if so, @code{nil} otherwise.
+Этот предикат проверяет является ли аргумент целым числом, и возвращает
+@code{t} если да, и @code{nil} в противном случае.
 @end defun
 
 @defun numberp object
-This predicate tests whether its argument is a number (either integer or
-floating point), and returns @code{t} if so, @code{nil} otherwise.
+Этот предикат проверяет является ли его аргумент числом (либо целым или
+с плавающей точкой) и возвращает @code{t} если да, и @code{nil} в
+противном случае.
 @end defun
 
 @defun natnump object
 @cindex natural numbers
-This predicate (whose name comes from the phrase ``natural number'')
-tests to see whether its argument is a nonnegative integer, and
-returns @code{t} if so, @code{nil} otherwise.  0 is considered
-non-negative.
+Этот предикат (чье название происходит от фразы ``натуральное число'')
+проверяет, является ли аргумент неотрицательным целым числом, и возвращает
+@code{t} если да, и @code{nil} в противном случае.  0 считается
+неотрицательным.
 
 @findex wholenump
-@code{wholenump} is a synonym for @code{natnump}.
+@code{wholenump} это синоним @code{natnump}.
 @end defun
 
 @defun zerop number
-This predicate tests whether its argument is zero, and returns @code{t}
-if so, @code{nil} otherwise.  The argument must be a number.
+Этот предикат проверяет, равен ли ее аргумент нулю, и возвращает @code{t}
+если да, и @code{nil} в противном случае.  Аргумент должен быть числом.
 
-@code{(zerop x)} is equivalent to @code{(= x 0)}.
+@code{(zerop x)} синоним @code{(= x 0)}.
 @end defun
 
 @node Comparison of Numbers
-@section Comparison of Numbers
+@section Сравнение Чисел
 @cindex number comparison
 @cindex comparing numbers
 
-  To test numbers for numerical equality, you should normally use
-@code{=}, not @code{eq}.  There can be many distinct floating-point
-objects with the same numeric value.  If you use @code{eq} to
-compare them, then you test whether two values are the same
-@emph{object}.  By contrast, @code{=} compares only the numeric values
-of the objects.
+  Для проверки чисел на численное равенство, обычно следует использовать
+  @code{=}, не @code{eq}.  Может быть много различных объектов с плавающей
+  точкой с одинаковым числовым значением.  Используете @code{eq},
+  чтобы сравнить являются ли два значения одим и тем же @emph{объектом}.
+  В противоположность этому, @code{=} сравнивает только числовые значения
+  объектов.
 
-  In Emacs Lisp, each integer is a unique Lisp object.
-Therefore, @code{eq} is equivalent to @code{=} where integers are
-concerned.  It is sometimes convenient to use @code{eq} for comparing
-an unknown value with an integer, because @code{eq} does not report an
-error if the unknown value is not a number---it accepts arguments of
-any type.  By contrast, @code{=} signals an error if the arguments are
-not numbers or markers.  However, it is better programming practice to
-use @code{=} if you can, even for comparing integers.
+  В Emacs Lisp, каждое целое число является уникальным объектом Lisp.
+  Поэтому @code{eq} эквивалентно @code{=} для целых чисел.  Иногда удобно
+  использовать @code{eq} для сравнения неизвестного значения с целым числом,
+  потому что @code{eq} не сообщает об ошибке, если неизвестное значение не
+  является числом --- приинимаются аргументы любого типа.  В
+  противоположность этому, @code{=} сигнализирует об ошибке, если аргументы
+  не являются числами или маркерами.  Тем не менее, лучшая практика
+  программирования по возможности использовать @code{=} для сравнения целых
+  чисел.
 
-  Sometimes it is useful to compare numbers with @code{equal}, which
-treats two numbers as equal if they have the same data type (both
-integers, or both floating point) and the same value.  By contrast,
-@code{=} can treat an integer and a floating-point number as equal.
-@xref{Equality Predicates}.
+  Иногда бывает полезно сравнить числа с помощью @code{equal}, при этом два
+  числа рассматриваются как равные, если они имеют один и тот же тип данных
+  (оба целые числа, или оба с плавающей точкой) и одно и то же значение. В
+  отличие от этого, @code{=} может рассматривать целое число и число с
+  плавающей точкой, как равные.  @xref{Equality Predicates}.
 
-  There is another wrinkle: because floating-point arithmetic is not
-exact, it is often a bad idea to check for equality of floating-point
-values.  Usually it is better to test for approximate equality.
-Here's a function to do this:
+  Существует еще одна загвоздка: потому что арифметика с плавающей точкой не
+  является точной, часто бывает плохая идея проверять равенство значений с
+  плавающей точкой.  Обычно лучше проверить примерное равенства.  Вот
+  функция, которая делает это:
 
 @example
 (defvar fuzz-factor 1.0e-6)
@@ -381,52 +391,55 @@ Here's a function to do this:
 
 @cindex CL note---integers vrs @code{eq}
 @quotation
-@b{Common Lisp note:} Comparing numbers in Common Lisp always requires
-@code{=} because Common Lisp implements multi-word integers, and two
-distinct integer objects can have the same numeric value.  Emacs Lisp
-can have just one integer object for any given value because it has a
-limited range of integers.
+@b{Common Lisp примечание:} Сравнение чисел в Common Lisp всегда требует
+@code{=}, потому что Common Lisp реализует многословные целые числа, и два
+различных целочисленных объекта могут иметь одно и то же числовое значение.
+Emacs Lisp может иметь только один целочисленный объект для любого заданного
+значения, поскольку он имеет ограниченный диапазон целых чисел.
 @end quotation
 
 @defun = number-or-marker &rest number-or-markers
-This function tests whether all its arguments are numerically equal,
-and returns @code{t} if so, @code{nil} otherwise.
+Эта функция проверяет, является ли все ее аргументы численно равными, и
+возвращает @code{t} если да, и @code{nil} в противном случае.
 @end defun
 
 @defun eql value1 value2
-This function acts like @code{eq} except when both arguments are
-numbers.  It compares numbers by type and numeric value, so that
-@code{(eql 1.0 1)} returns @code{nil}, but @code{(eql 1.0 1.0)} and
-@code{(eql 1 1)} both return @code{t}.
+Эта функция действует как @code{eq}, за  исключением случаев, когда оба
+аргумента это числа.  Она сравнивает числа по типу и числовому значению,
+так что @code{(eql 1.0 1)} возвращает @code{nil}, но @code{(eql 1.0 1.0)}
+и @code{(eql 1 1)} как возвращает @code{t}.
 @end defun
 
 @defun /= number-or-marker1 number-or-marker2
-This function tests whether its arguments are numerically equal, and
-returns @code{t} if they are not, and @code{nil} if they are.
+Эта функция проверяет, является ли его аргументы численно равными, и
+возвращает @code{t}, если не являются, и @code{nil} если значения равны.
 @end defun
 
 @defun <  number-or-marker &rest number-or-markers
-This function tests whether each argument is strictly less than the
-following argument.  It returns @code{t} if so, @code{nil} otherwise.
+Эта функция проверяет, является ли каждый аргумент строго меньше, чем
+следующий аргумент.  Она возвращает @code{t} если да, и @code{nil} в
+противном случае.
 @end defun
 
 @defun <= number-or-marker &rest number-or-markers
-This function tests whether each argument is less than or equal to
-the following argument.  It returns @code{t} if so, @code{nil} otherwise.
+Эта функция проверяет, является ли каждый аргумент меньше или равным
+следующему аргументу.  Она возвращает @code{t} если да, и @code{nil} в
+противном случае.
 @end defun
 
 @defun > number-or-marker &rest number-or-markers
-This function tests whether each argument is strictly greater than
-the following argument.  It returns @code{t} if so, @code{nil} otherwise.
+Эта функция проверяет, является ли каждый аргумент строго больше, чем
+следующи.  Она возвращает @code{t} если да, и @code{nil} в противном случае.
 @end defun
 
 @defun >= number-or-marker &rest number-or-markers
-This function tests whether each argument is greater than or equal to
-the following argument.  It returns @code{t} if so, @code{nil} otherwise.
+Эта функция проверяет, является ли большим или равным аргумент, чем каждый
+следующий аргумент.  Она возвращает @code{t} если да, и @code{nil} в
+противном случае.
 @end defun
 
 @defun max number-or-marker &rest numbers-or-markers
-This function returns the largest of its arguments.
+Эта функция возвращает наибольший из ее аргументов.
 
 @example
 (max 20)
@@ -439,7 +452,7 @@ This function returns the largest of its arguments.
 @end defun
 
 @defun min number-or-marker &rest numbers-or-markers
-This function returns the smallest of its arguments.
+Эта функция возвращает наименьший из ее аргументов.
 
 @example
 (min -4 1)
@@ -448,7 +461,7 @@ This function returns the smallest of its arguments.
 @end defun
 
 @defun abs number
-This function returns the absolute value of @var{number}.
+Эта функция возвращает абсолютное значение @var{number}.
 @end defun
 
 @node Numeric Conversions
