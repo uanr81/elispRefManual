@@ -4,4 +4,6 @@ objects.texi +
 streams.texi +
 numbers.texi +
 strings.texi +
+lists.texi +
+records.texi +
 eval.texi 68

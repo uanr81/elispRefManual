@@ -3,51 +3,49 @@
 @c Copyright (C) 2017-2019 Free Software Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Records
-@chapter Records
+@chapter Запись
 @cindex records
 
-  The purpose of records is to allow programmers to create objects
-with new types that are not built into Emacs.  They are used as the
-underlying representation of @code{cl-defstruct} and @code{defclass}
-instances.
+  Задача объекта запись, дать возможность программисту создавать объекты с
+  новыми типами, которые не встроены в Emacs.  Они используются в качестве
+  базового представления @code{cl-defstruct} и @code{defclass} экземпляров.
 
-  Internally, a record object is much like a vector; its slots can be
-accessed using @code{aref} and it can be copied using
-@code{copy-sequence}.  However, the first slot is used to hold its
-type as returned by @code{type-of}.  Also, in the current
-implementation records can have at most 4096 slots, whereas vectors
-can be much larger.  Like arrays, records use zero-origin indexing:
-the first slot has index 0.
+  Внутренне, объект запись очень похож на вектор; доступ к его слотам можно
+  получить с помощью @code{aref} и его можно скопировать с помощью
+  @code{copy-sequence}.  Тем не менее, первый слот используются для хранения
+  информации о его типе, возвращаемого @code{type-of}.  Кроме того, в текущей
+  реализации объект запись может иметь не более 4096 слотов, тогда как вектор
+  может иметь значительно больше.  Как массив, запись использует индексацию с
+  с нулевым происхождением: первый слот имеет индекс 0.
 
-  The type slot should be a symbol or a type descriptor.  If it's a
-type descriptor, the symbol naming its type will be returned;
-@ref{Type Descriptors}.  Any other kind of object is returned as-is.
+  Слот для типа должен быть либо символом, либо дескриптор типа.  Если это
+  дескриптор типа, будет возвращен символ, обозначающий его тип;
+  @ref{Type Descriptors}.  Любой другой тип объекта возвращается как есть.
 
-  The printed representation of records is @samp{#s} followed by a
-list specifying the contents.  The first list element must be the
-record type.  The following elements are the record slots.
+  Печатное представление записи - это @samp{#s} за чем следует список с
+  указанием содержимого.  Первый элемент списка должен быть типом записи.
+  Следующие элементы - это слоты записи.
 
-  To avoid conflicts with other type names, Lisp programs that define
-new types of records should normally use the naming conventions of the
-package where these record types are introduced for the names of the
-types.  Note that the names of the types which could possibly conflict
-might not be known at the time the package defining a record type is
-loaded; they could be loaded at some future point in time.
+  Для того, чтобы избежать конфликтов с другими именами типов, Lisp
+  программы, определяющие новые типы записями, как правило, используют
+  соглашения об именовании пакета, где эти имена типов записей введены.
+  Обратите внимание, что имена типов, которые, возможно, будут конфликтовать,
+  могут не быть известны в то время, как пакет, определяющий тип записи
+  загружен; они могут быть загружены в будущем времени.
 
-  A record is considered a constant for evaluation: the result of
-evaluating it is the same record.  This does not evaluate or even
-examine the slots.  @xref{Self-Evaluating Forms}.
+  Запись - постоянна для оценки: результат оценки - это сама запись.
+  Это не оценка и даже не проверка слотов.  @xref{Self-Evaluating Forms}.
 
 @menu
-* Record Functions::        Functions for records.
-* Backward Compatibility::  Compatibility for cl-defstruct.
+* Record Functions::        Функции для работы с Записью.
+* Backward Compatibility::  Совместимость с cl-defstruct.
 @end menu
 
 @node Record Functions
-@section Record Functions
+@section Функции работы с Записью
 
 @defun recordp object
-This function returns @code{t} if @var{object} is a record.
+Функция возвращает @code{t} если @var{object} является записью.
 
 @example
 @group
@@ -58,8 +56,8 @@ This function returns @code{t} if @var{object} is a record.
 @end defun
 
 @defun record type &rest objects
-This function creates and returns a record whose type is @var{type}
-and remaining slots are the rest of the arguments, @var{objects}.
+Функция создает и возвращает запись, тип которой @var{type} и дополнительными
+слотами переданными в аргументе @var{objects}.
 
 @example
 @group
@@ -70,8 +68,9 @@ and remaining slots are the rest of the arguments, @var{objects}.
 @end defun
 
 @defun make-record type length object
-This function returns a new record with type @var{type} and
-@var{length} more slots, each initialized to @var{object}.
+Функция возвращает новую запись с типом @var{type} и дополнительным
+@var{length} колличеством слотов, каждый из которых инициализирован
+@var{object}.
 
 @example
 @group
@@ -82,15 +81,16 @@ This function returns a new record with type @var{type} and
 @end defun
 
 @node Backward Compatibility
-@section Backward Compatibility
+@section Обратная Совместимость
 
-  Code compiled with older versions of @code{cl-defstruct} that
-doesn't use records may run into problems when used in a new Emacs.
-To alleviate this, Emacs detects when an old @code{cl-defstruct} is
-used, and enables a mode in which @code{type-of} handles old struct
-objects as if they were records.
+  Код, скомпилированный с более старыми версиями @code{cl-defstruct}, который
+  не использует объект запись, может столкнуться с проблемами при
+  использовании в новом Emacs.  Чтобы облегчить это, Emacs определяет, когда
+  используется старый @code{cl-defstruct}, и включает режим, в котором
+  структуры старого стиля обрабатывается @code{type-of} так, как будто эти
+  объекты представляют из себя запись.
 
 @defun cl-old-struct-compat-mode arg
-If @var{arg} is positive, enable backward compatibility with old-style
-structs.
+Если @var{arg} положителен, включается обратная совместимость со структурами
+старого стиля.
 @end defun

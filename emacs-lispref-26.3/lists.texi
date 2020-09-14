@@ -1622,129 +1622,128 @@ Common Lisp.  Версии Common Lisp не используют @code{equal} д
 возвращает @var{default}.  Сравнение @var{key} для элементов @var{alist}
 использует функцию, заданную с помощью @var{testfn}, по умолчанию @code{eq}.
 
-This is a generalized variable (@pxref{Generalized Variables})
-that can be used to change a value with @code{setf}.  When
-using it to set a value, optional argument @var{remove} non-@code{nil}
-means to remove @var{key}'s association from @var{alist} if the new
-value is @code{eql} to @var{default}.
+Это обобщенная переменная (@pxref{Generalized Variables}), которые можно
+использовать для изменения значения с помощью @code{setf}.  При использовании
+её, чтобы установить значение необязательного аргумента @var{remove} в
+не-@code{nil}, чтобы удалять @var{key}'s ассоциацию в @var{alist}, если
+новое значение по условию @code{eql} к @var{default}.  (Вопрос1629)
 @end defun
 
 @defun rassq value alist
-This function returns the first association with value @var{value} in
-@var{alist}.  It returns @code{nil} if no association in @var{alist} has
-a @sc{cdr} @code{eq} to @var{value}.
+Функция возвращает первую ассоциацию со значением @var{value} в @var{alist}.
+Возвращается @code{nil}, если ни одна ассоциация в @var{alist} не имеет
+@sc{cdr} по условию @code{eq} к @var{value}.
 
-@code{rassq} is like @code{assq} except that it compares the @sc{cdr} of
-each @var{alist} association instead of the @sc{car}.  You can think of
-this as reverse @code{assq}, finding the key for a given value.
+@code{rassq} схожа с @code{assq}, за исключением того, что сравнивается
+@sc{cdr} каждой ассоциации @var{alist} вместо @sc{car}.  Можно думать об этом
+как обратное @code{assq}, найти ключ для заданного значения.
 
-For example:
+Например:
 
 @smallexample
-(setq trees '((pine . cones) (oak . acorns) (maple . seeds)))
+(setq деревья '((сосна . шишки) (дуб . жёлуди) (клён . семена)))
 
-(rassq 'acorns trees)
-     @result{} (oak . acorns)
-(rassq 'spores trees)
+(rassq 'жёлуди деревья)
+     @result{} (дуб . жёлуди)
+(rassq 'споры деревья)
      @result{} nil
 @end smallexample
 
-@code{rassq} cannot search for a value stored in the @sc{car}
-of the @sc{cdr} of an element:
+С помощью @code{rassq} нельзя найти значение, хранящееся в @sc{car} части
+элемента вместо @sc{cdr}: (ВопросLists1653)
 
 @smallexample
-(setq colors '((rose red) (lily white) (buttercup yellow)))
+(setq цвет '((роза красный) (лилия белый) (лютик желтый)))
 
-(rassq 'white colors)
+(rassq 'белый цвет)
      @result{} nil
 @end smallexample
 
-In this case, the @sc{cdr} of the association @code{(lily white)} is not
-the symbol @code{white}, but rather the list @code{(white)}.  This
-becomes clearer if the association is written in dotted pair notation:
+В этом случае @sc{cdr} ассоциации @code{(лилия белый)} - не символ
+@code{white}, а список @code{(white)}.  Это становится ясным, если
+ассоциацию представить в точечной нотации:
 
 @smallexample
-(lily white) @equiv{} (lily . (white))
+(lily white) @equiv{} (лилия . (белый))
 @end smallexample
 @end defun
 
 @defun assoc-default key alist &optional test default
-This function searches @var{alist} for a match for @var{key}.  For each
-element of @var{alist}, it compares the element (if it is an atom) or
-the element's @sc{car} (if it is a cons) against @var{key}, by calling
-@var{test} with two arguments: the element or its @sc{car}, and
-@var{key}.  The arguments are passed in that order so that you can get
-useful results using @code{string-match} with an alist that contains
-regular expressions (@pxref{Regexp Search}).  If @var{test} is omitted
-or @code{nil}, @code{equal} is used for comparison.
+Функция ищет в @var{alist} совпадение для @var{key}.  Для каждого элемента
+@var{alist}, сравнивается элемент (если это атом) или @sc{car} (если это
+cons-ячейка) с @var{key}, используя функцию заданную в аргументе @var{test} с
+двумя аргументами: элемент или @sc{car} элемента и @var{key}.  Аргументы
+передаются в этом порядке, чтобы получить полезные результаты, используется
+@code{string-match} со списком, который содержит регулярное выражение
+(@pxref{Regexp Search}).  Если @var{test} опущен или установлен в @code{nil},
+@code{equal} используется при сравнении. (ВопросLists1679)
 
-If an alist element matches @var{key} by this criterion,
-then @code{assoc-default} returns a value based on this element.
-If the element is a cons, then the value is the element's @sc{cdr}.
-Otherwise, the return value is @var{default}.
+Если элемент alist соответствует @var{key} по этому критерию, то
+@code{assoc-default} возвращает значение, ассоциированное с этим элементом.
+Если элемент представлен в виде cons-ячейки, то возвращается @sc{cdr}
+элемента. В противном случае, возвращаемое значение @var{default}.
 
-If no alist element matches @var{key}, @code{assoc-default} returns
-@code{nil}.
+Если не найдено совпадений элементов alist с заданным значением @var{key},
+@code{assoc-default} возвращает @code{nil}.
 @end defun
 
 @defun copy-alist alist
 @cindex copying alists
-This function returns a two-level deep copy of @var{alist}: it creates a
-new copy of each association, so that you can alter the associations of
-the new alist without changing the old one.
+Функция возвращает глубокую копию @var{alist}: создаётся новая копия каждой
+ассоциации, так можно изменять ассоциации нового alist, не меняя старый.
 
 @smallexample
 @group
-(setq needles-per-cluster
-      '((2 . ("Austrian Pine" "Red Pine"))
-        (3 . ("Pitch Pine"))
+(setq игл-на-кластер
+      '((2 . ("Австрийская Сосна" "Красная Сосна"))
+        (3 . ("Смолистая Сосна"))
+        (5 . ("Белая Сосна"))))
 @end group
-        (5 . ("White Pine"))))
 @result{}
-((2 "Austrian Pine" "Red Pine")
- (3 "Pitch Pine")
- (5 "White Pine"))
+((2 "Австрийская Сосна" "Красная Сосна")
+ (3 "Смолистая Сосна")
+ (5 "Белая Сосна"))
 
-(setq copy (copy-alist needles-per-cluster))
+(setq копия (copy-alist игл-на-кластер))
 @result{}
-((2 "Austrian Pine" "Red Pine")
- (3 "Pitch Pine")
- (5 "White Pine"))
+((2 "Австрийская Сосна" "Красная Сосна")
+ (3 "Смолистая Сосна")
+ (5 "Белая Сосна"))
 
-(eq needles-per-cluster copy)
+(eq игл-на-кластер копия)
      @result{} nil
-(equal needles-per-cluster copy)
+(equal игл-на-кластер копия)
      @result{} t
-(eq (car needles-per-cluster) (car copy))
+(eq (car игл-на-кластер) (car копия))
      @result{} nil
-(cdr (car (cdr needles-per-cluster)))
-     @result{} ("Pitch Pine")
+(cdr (car (cdr игл-на-кластер)))
+     @result{} ("Смолистая Сосна")
 @group
-(eq (cdr (car (cdr needles-per-cluster)))
+(eq (cdr (car (cdr игл-на-кластер)))
     (cdr (car (cdr copy))))
      @result{} t
 @end group
 @end smallexample
 
-  This example shows how @code{copy-alist} makes it possible to change
-the associations of one copy without affecting the other:
+  Этот пример показывает, как @code{copy-alist} позволяет изменять
+  ассоциации одной копии, не затрагивая другой копии:
 
 @smallexample
 @group
-(setcdr (assq 3 copy) '("Martian Vacuum Pine"))
-(cdr (assq 3 needles-per-cluster))
-     @result{} ("Pitch Pine")
+(setcdr (assq 3 copy) '("Марсианская Вакуумная Сосна"))
+(cdr (assq 3 игл-на-кластер))
+     @result{} ("Смолистая Сосна")
 @end group
 @end smallexample
 @end defun
 
 @defun assq-delete-all key alist
-This function deletes from @var{alist} all the elements whose @sc{car}
-is @code{eq} to @var{key}, much as if you used @code{delq} to delete
-each such element one by one.  It returns the shortened alist, and
-often modifies the original list structure of @var{alist}.  For
-correct results, use the return value of @code{assq-delete-all} rather
-than looking at the saved value of @var{alist}.
+Функция удаляет из @var{alist} все элементы, @sc{car} которых по условию
+@code{eq} к @var{key}, так же, как если бы вы использовали @code{delq} для
+удаления каждого такого элемента один за другим.  Остаётся усечённый
+ассоциативный список, и часто с изменённой первоначальной структурой
+@var{alist}.  Для получения правильных результатов, используется возвращаемое
+значение @code{assq-delete-all}, а не сохранённое значение @var{alist}.
 
 @example
 (setq alist '((foo 1) (bar 2) (foo 3) (lose 4)))
@@ -1757,106 +1756,101 @@ alist
 @end defun
 
 @defun assoc-delete-all key alist
-This function deletes from @var{alist} all the elements whose @sc{car}
-is @code{equal} to @var{key}.  It works like @code{assq-delete-all},
-except for the predicate used for comparing alist elements with
-@var{key}.
+Функция удаляет из @var{alist} все элементы, @sc{car} которых попападает под
+@code{equal} к @var{key}.  Работает аналогично @code{assq-delete-all}, за
+исключением используемого предиката, при сравнении элементов ALIST с заданным
+значением @var{key}.
 @end defun
 
 @defun rassq-delete-all value alist
-This function deletes from @var{alist} all the elements whose @sc{cdr}
-is @code{eq} to @var{value}.  It returns the shortened alist, and
-often modifies the original list structure of @var{alist}.
-@code{rassq-delete-all} is like @code{assq-delete-all} except that it
-compares the @sc{cdr} of each @var{alist} association instead of the
-@sc{car}.
+Функция удаляет из @var{alist} все элементы, @sc{cdr} которых попадает под
+@code{eq} к @var{value}.  Остаётся укороченный ассоциативный список, и часто
+с изменённой первоначальный структурой @var{alist}.  @code{rassq-delete-all},
+аналогична @code{assq-delete-all} за исключением того, что сравнивается
+@sc{cdr} каждой ассоциации @var{alist} вместо @sc{car}.
 @end defun
 
 @node Property Lists
-@section Property Lists
+@section Списки Cвойств
 @cindex property list
 @cindex plist
 
-  A @dfn{property list} (@dfn{plist} for short) is a list of paired
-elements.  Each of the pairs associates a property name (usually a
-symbol) with a property or value.  Here is an example of a property
-list:
+  @dfn{Список свойств} (@dfn{plist} для краткости) - это список парных
+  элементов.  Каждая из пар связывает имя свойства (обычно символ) со
+  свойством или значением.  Ниже приведен пример списка свойств:
 
 @example
-(pine cones numbers (1 2 3) color "blue")
+(сосна шишки числа (1 2 3) цвет "голубой")
 @end example
 
 @noindent
-This property list associates @code{pine} with @code{cones},
-@code{numbers} with @code{(1 2 3)}, and @code{color} with
-@code{"blue"}.  The property names and values can be any Lisp objects,
-but the names are usually symbols (as they are in this example).
+Этот список свойств связывает @code{сосна} с @code{шишки}, @code{числа} с
+@code{(1 2 3)} и @code{цвет} с @code{"голубой"}.  Имена и значения свойств
+могут быть любыми объектами Lisp, но имена, как правило, являются символами
+(как в данном примере).
 
-  Property lists are used in several contexts.  For instance, the
-function @code{put-text-property} takes an argument which is a
-property list, specifying text properties and associated values which
-are to be applied to text in a string or buffer.  @xref{Text
-Properties}.
+  Списки свойств используются в нескольких контекстах.  Например, функция
+  @code{put-text-property} принимает аргумент, который представляет собой
+  список свойств, указывающий свойства текста и связанных с ними значениями,
+  которые должны быть применены к тексту в строке или буфере.
+  @xref{Text Properties}.
 
-  Another prominent use of property lists is for storing symbol
-properties.  Every symbol possesses a list of properties, used to
-record miscellaneous information about the symbol; these properties
-are stored in the form of a property list.  @xref{Symbol Properties}.
+  Еще одно важное использование списка свойств - это хранение свойств
+  символа.  Каждый символ имеет список свойств, используемых для записи
+  разнообразной информации о символе; эти свойства сохраняются в виде списка
+  свойств.  @xref{Symbol Properties}.
 
 @menu
-* Plists and Alists::           Comparison of the advantages of property
-                                  lists and association lists.
-* Plist Access::                Accessing property lists stored elsewhere.
+* Plists and Alists::           Сравнение списка свойств и списка ассоциаций.
+* Plist Access::                Организация доступа к списку свойств.
 @end menu
 
 @node Plists and Alists
-@subsection Property Lists and Association Lists
+@subsection Список Свойств и Ассоциативный Список
 @cindex plist vs. alist
 @cindex alist vs. plist
 
 @cindex property lists vs association lists
-  Association lists (@pxref{Association Lists}) are very similar to
-property lists.  In contrast to association lists, the order of the
-pairs in the property list is not significant, since the property
-names must be distinct.
+  Ассоциативный список (@pxref{Association Lists}) очень схож со списком
+  свойств.  В отличие от списков ассоциации, порядок пар в списке свойств не
+  является существенным, так как имена свойств должны быть различны.
 
-  Property lists are better than association lists for attaching
-information to various Lisp function names or variables.  If your
-program keeps all such information in one association list, it will
-typically need to search that entire list each time it checks for an
-association for a particular Lisp function name or variable, which
-could be slow.  By contrast, if you keep the same information in the
-property lists of the function names or variables themselves, each
-search will scan only the length of one property list, which is
-usually short.  This is why the documentation for a variable is
-recorded in a property named @code{variable-documentation}.  The byte
-compiler likewise uses properties to record those functions needing
-special treatment.
+  Списки свойств лучше подходят, чем списки ассоциаций для присоединения
+  информации к различным именам функций Lisp или переменным.  Если ваша
+  программа хранит всю информацию в одном ассоциативном списке, то, как
+  правило, требуется искать по всему списку каждый раз, когда проверяется
+  наличие ассоциации для конкретного Lisp имени функции или переменной, что
+  может быть долгой операцией.  В противоположность этому, если информация о
+  названии функции иили переменной держиться в списке свойств, каждый поиск
+  будет проверять только один список свойств, который, как правило, короткий.
+  Поэтому документация по переменной записывается в свойство с именем
+  @code{variable-documentation}.  Байт компилятор также использует свойства
+  для записи тех функций, которые требуют специальной обработки.
 
-  However, association lists have their own advantages.  Depending on
-your application, it may be faster to add an association to the front of
-an association list than to update a property.  All properties for a
-symbol are stored in the same property list, so there is a possibility
-of a conflict between different uses of a property name.  (For this
-reason, it is a good idea to choose property names that are probably
-unique, such as by beginning the property name with the program's usual
-name-prefix for variables and functions.)  An association list may be
-used like a stack where associations are pushed on the front of the list
-and later discarded; this is not possible with a property list.
+  Тем не менее, списки ассоциаций имеют свои преимущества.  В зависимости от
+  приложения может быть быстрее добавить ассоциацию в начало ассоциативного
+  списка, чем обновить свойство.  Все свойства для символа хранятся в одном
+  списке свойств, так что есть возможность конфликта между различными
+  вариантами использованием имени свойства.  (По этой причине, хорошая идея
+  выбрать имена свойств, которые, вероятно, уникальны, например, начав имя
+  свойства с определённым префиксом программы для переменных и функций.)
+  Ассоциативный список может быть использован как стек, где ассоциации
+  помещаются в переднюю часть списка, а потом отбрасывается; это не возможно
+  проделать со списком свойств.
 
 @node Plist Access
-@subsection Property Lists Outside Symbols
+@subsection Список Свойств Вне Символа
 @cindex plist access
 @cindex accessing plist properties
 
-  The following functions can be used to manipulate property lists.
-They all compare property names using @code{eq}.
+  Следующие функции могут быть использованы для манипулирования списков
+  свойств.  Они все сравнивают имена свойств с помощью @code{eq}.
 
 @defun plist-get plist property
-This returns the value of the @var{property} property stored in the
-property list @var{plist}.  It accepts a malformed @var{plist}
-argument.  If @var{property} is not found in the @var{plist}, it
-returns @code{nil}.  For example,
+Возвращается значение свойства @var{property} хранящееся в списке свойств
+@var{plist}.  Принимается также неверный @var{plist} в аргументе.  Если
+свойство @var{property} не найдено в @var{plist}, возвращается @code{nil}.
+Например,
 
 @example
 (plist-get '(foo 4) 'foo)
@@ -1871,11 +1865,11 @@ returns @code{nil}.  For example,
 @end defun
 
 @defun plist-put plist property value
-This stores @var{value} as the value of the @var{property} property in
-the property list @var{plist}.  It may modify @var{plist} destructively,
-or it may construct a new list structure without altering the old.  The
-function returns the modified property list, so you can store that back
-in the place where you got @var{plist}.  For example,
+Сохраняет @var{value} в качестве значения свойства @var{property} в списке
+свойств @var{plist}.  Может деструдиктивно изменить @var{plist}, или может
+построить новую структуру списка без изменения старой.  Возвращается
+измененный список свойств, так что можно сохранить его обратно туда, откуда
+тот был получен @var{plist}. Например,
 
 @example
 (setq my-plist '(bar t foo 4))
@@ -1888,19 +1882,18 @@ in the place where you got @var{plist}.  For example,
 @end defun
 
 @defun lax-plist-get plist property
-Like @code{plist-get} except that it compares properties
-using @code{equal} instead of @code{eq}.
+Аналог @code{plist-get} за исключением того, что сравниваются свойства,
+используя @code{equal} вместо @code{eq}.
 @end defun
 
 @defun lax-plist-put plist property value
-Like @code{plist-put} except that it compares properties
-using @code{equal} instead of @code{eq}.
+Аналог @code{plist-put} за исключением того, что сравниваются свойства,
+используя @code{equal} вместо @code{eq}.
 @end defun
 
 @defun plist-member plist property
-This returns non-@code{nil} if @var{plist} contains the given
-@var{property}.  Unlike @code{plist-get}, this allows you to distinguish
-between a missing property and a property with the value @code{nil}.
-The value is actually the tail of @var{plist} whose @code{car} is
-@var{property}.
+Возвращается не-@code{nil} если @var{plist} содержит данное свойство
+@var{property}.  В отличие от @code{plist-get}, позволяет различать
+отсутствующее свойство и свойство со значением @code{nil}.  Значение на самом
+деле хвост элемента @var{plist} @code{car} которого @var{property}.
 @end defun
