@@ -225,87 +225,89 @@
 @end defun
 
 @node Defining Hash
-@section Defining Hash Comparisons
+@section Определение Hash Сравнения
 @cindex hash code
 @cindex define hash comparisons
 
-  You can define new methods of key lookup by means of
-@code{define-hash-table-test}.  In order to use this feature, you need
-to understand how hash tables work, and what a @dfn{hash code} means.
+  Есть возможность определить новые методы поиска ключей в хеш-таблицах
+  с помощью @code{define-hash-table-test}.м Для того, чтобы использовать эту
+  функцию, нужно понимать, как работают хэш-таблицы, и что означает
+  средство @dfn{хеш-код}.
 
-  You can think of a hash table conceptually as a large array of many
-slots, each capable of holding one association.  To look up a key,
-@code{gethash} first computes an integer, the hash code, from the key.
-It reduces this integer modulo the length of the array, to produce an
-index in the array.  Then it looks in that slot, and if necessary in
-other nearby slots, to see if it has found the key being sought.
+  Хэш-таблицы концептуально можно рассматривать как большой массив из
+  множества слотов, каждый из которых способен удерживать одну ассоциацию.
+  Чтобы найти ключ, @code{gethash} сначала вычисляет целое число - хэш-код
+  от ключа.  Затем уменьшает это число по модулю длины массива, чтобы
+  получить индекс в массиве.  Далее ищет в слоте с этим индексом, а при
+  необходимости и в других соседних слотах, чтобы определить, найден ли
+  искомый ключ.
 
-  Thus, to define a new method of key lookup, you need to specify both a
-function to compute the hash code from a key, and a function to compare
-two keys directly.
+  Таким образом, чтобы определить новый метод поиска ключа, необходимо
+  указать как функцию для вычисления хэш-кода из ключа и так и функцию
+  непосредственного сравнения двух ключей.
 
 @defun define-hash-table-test name test-fn hash-fn
-This function defines a new hash table test, named @var{name}.
+Функция определяет новый тест для хэш-таблицы с именем @var{name}.
 
-After defining @var{name} in this way, you can use it as the @var{test}
-argument in @code{make-hash-table}.  When you do that, the hash table
-will use @var{test-fn} to compare key values, and @var{hash-fn} to compute
-a hash code from a key value.
+После такого определения, @var{name} можно использовать в качестве аргумента
+@var{test} для @code{make-hash-table}.  Если это сделано, хэш-таблица будет
+использовать @var{test-fn} для сравнения значения ключа, и @var{hash-fn} для
+вычисления хэш-кода из значения ключа.
 
-The function @var{test-fn} should accept two arguments, two keys, and
-return non-@code{nil} if they are considered the same.
+Функция @var{test-fn} принимает два аргумента, два ключа, и возвращает
+не-@code{nil}, если они считаются одинаковыми.
 
-The function @var{hash-fn} should accept one argument, a key, and return
-an integer that is the hash code of that key.  For good results, the
-function should use the whole range of integers for hash codes,
-including negative integers.
+Функция @var{hash-fn} принимает один аргумент, ключ и возвращает целое число,
+которое является хэш-кодом этого ключа.  Для получения хороших результатов,
+функция должна использовать весь диапазон целых чисел для хэша-кода, в том
+числе отрицательные целые числа.
 
-The specified functions are stored in the property list of @var{name}
-under the property @code{hash-table-test}; the property value's form is
-@code{(@var{test-fn} @var{hash-fn})}.
+Указанные функции хранятся в списке свойств @code{hash-table-test} под именем
+@var{name}; значения хранятся в свойствах @code{(@var{test-fn}
+@var{hash-fn})}. (ВопросHash267)
 @end defun
 
 @defun sxhash-equal obj
-This function returns a hash code for Lisp object @var{obj}.
-This is an integer which reflects the contents of @var{obj}
-and the other Lisp objects it points to.
+Функция возвращает хэш-код для объекта Lisp @var{obj}.  Это целое число,
+которое отражает содержание @var{obj} и других объектов Lisp на которые он
+указывает.
 
-If two objects @var{obj1} and @var{obj2} are @code{equal}, then
-@code{(sxhash-equal @var{obj1})} and @code{(sxhash-equal @var{obj2})}
-are the same integer.
+Если два объекта @var{obj1} и @var{obj2} удовлетворят @code{equal},
+то @code{(sxhash-equal @var{obj1})} и @code{(sxhash-equal @var{obj2})} также
+являются одним и тем же целым числом.
 
-If the two objects are not @code{equal}, the values returned by
-@code{sxhash-equal} are usually different, but not always; once in a
-rare while, by luck, you will encounter two distinct-looking objects
-that give the same result from @code{sxhash-equal}.
+Если два объекта не удовлетворяют @code{equal}, значения, возвращаемые
+@code{sxhash-equal}, как правило, различны, но не всегда; изредка, по
+счастливой случайности, встречаются два совершенно разных объекта, для
+которых @code{sxhash-equal} выдаёт один и тот же результат.
 
-@b{Common Lisp note:} In Common Lisp a similar function is called
-@code{sxhash}.  Emacs provides this name as a compatibility alias for
-@code{sxhash-equal}.
+@b{Common Lisp примечание:} В Common Lisp аналогичная функция называется
+@code{sxhash}.  Emacs предоставляет имя @code{sxhash-equal} в качестве
+псевдонима для совместимости.(ВопросHash286)
 @end defun
 
 @defun sxhash-eq obj
-This function returns a hash code for Lisp object @var{obj}.  Its
-result reflects identity of @var{obj}, but not its contents.
+Функция возвращает хэш-код для объекта Lisp @var{obj}.  Результат отражает
+идентичность @var{obj}, без учёта его содержимого.
 
-If two objects @var{obj1} and @var{obj2} are @code{eq}, then
-@code{(sxhash-eq @var{obj1})} and @code{(sxhash-eq @var{obj2})} are
-the same integer.
+Если два объекта @var{obj1} и @var{obj2} удовлетворяют @code{eq}, то
+@code{(sxhash-eq @var{obj1})} и @code{(sxhash-eq @var{obj2})} выдают одно и
+то же целое число.
 @end defun
 
 @defun sxhash-eql obj
-This function returns a hash code for Lisp object @var{obj} suitable
-for @code{eql} comparison.  I.e. it reflects identity of @var{obj}
-except for the case where the object is a float number, in which case
-hash code is generated for the value.
+Функция возвращает хэш-код Lisp объекта @var{obj}, пригодный для сравнения
+@code{eql}.  То есть отражается идентичность @var{obj}, за исключением
+случая, когда объект представляет собой число с плавающей точкой, и в этом
+случае генерируется значение хеш-кода.(Вопрос302)
 
-If two objects @var{obj1} and @var{obj2} are @code{eql}, then
-@code{(sxhash-eql @var{obj1})} and @code{(sxhash-eql @var{obj2})} are
-the same integer.
+Если два объекта @var{obj1} и @var{obj2} удовлетворяют @code{eql}, то
+@code{(sxhash-eql @var{obj1})} и @code{(sxhash-eql @var{obj2})} производят
+одно и тоже целое число.
 @end defun
 
-  This example creates a hash table whose keys are strings that are
-compared case-insensitively.
+  Этот пример создает хэш-таблицу, ключи которой представляют собой строки,
+  которые сравниваются без учёта регистра.
 
 @example
 (defun case-fold-string= (a b)
@@ -319,9 +321,9 @@ compared case-insensitively.
 (make-hash-table :test 'case-fold)
 @end example
 
-  Here is how you could define a hash table test equivalent to the
-predefined test value @code{equal}.  The keys can be any Lisp object,
-and equal-looking objects are considered the same key.
+  Вот как можно определить тест хэш-таблицы, эквивалентный предопределённому
+  тесту @code{equal}.  Ключи могут быть любыми объектами Lisp и объекты
+  одинакового вида считаются одним и тем же ключом.(Вопрос326)
 
 @example
 (define-hash-table-test 'contents-hash 'equal 'sxhash-equal)
@@ -330,42 +332,42 @@ and equal-looking objects are considered the same key.
 @end example
 
 @node Other Hash
-@section Other Hash Table Functions
+@section Другие Функции работы с Хеш-Таблицей
 
-  Here are some other functions for working with hash tables.
+  Вот некоторые другие функции для работы с хэш-таблицами.
 
 @defun hash-table-p table
-This returns non-@code{nil} if @var{table} is a hash table object.
+Возвращает не-@code{nil} если @var{table} это объект хэш-таблица.
 @end defun
 
 @defun copy-hash-table table
-This function creates and returns a copy of @var{table}.  Only the table
-itself is copied---the keys and values are shared.
+Функция создает и возвращает копию @var{table}.  Только сама таблица
+копируется---ключи и значения используются совместно. (ВопросHash345)
 @end defun
 
 @defun hash-table-count table
-This function returns the actual number of entries in @var{table}.
+Функция возвращает фактическое число записей в @var{table}.
 @end defun
 
 @defun hash-table-test table
-This returns the @var{test} value that was given when @var{table} was
-created, to specify how to hash and compare keys.  See
+Возвращает значение @var{test}, которое было дано при создании @var{table},
+чтобы определить, как получается хэш-ключа и сравниваются ключи.  Смотреть
 @code{make-hash-table} (@pxref{Creating Hash}).
 @end defun
 
 @defun hash-table-weakness table
-This function returns the @var{weak} value that was specified for hash
-table @var{table}.
+Функция возвращает значение @var{weak}, которое было задано для хэш-таблицы
+@var{table}.
 @end defun
 
 @defun hash-table-rehash-size table
-This returns the rehash size of @var{table}.
+Возвращает размер хеширования @var{table}.(ВопросHsh364)
 @end defun
 
 @defun hash-table-rehash-threshold table
-This returns the rehash threshold of @var{table}.
+Возвращает порог повторного хеширования @var{table}.
 @end defun
 
 @defun hash-table-size table
-This returns the current nominal size of @var{table}.
+Возвращает текущий номинальный размер @var{table}.
 @end defun
