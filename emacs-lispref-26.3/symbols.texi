@@ -243,21 +243,21 @@ buffer-file-name
   @var{length} на еденицу меньше степени двойки также хороши.
   (ВопросSymbol.243)
 
-  @strong{Do not try to put symbols in an obarray yourself.}  This does
-not work---only @code{intern} can enter a symbol in an obarray properly.
+  @strong{Не пытайтесь вносить символы в obarray самостоятельно.}  Это не
+  сработает---только @code{intern} может внести символ в obarray правильно.
 
 @cindex CL note---symbol in obarrays
 @quotation
-@b{Common Lisp note:} Unlike Common Lisp, Emacs Lisp does not provide
-for interning a single symbol in several obarrays.
+@b{Common Lisp замечание:} В отличие от Common Lisp, Emacs Lisp не
+обеспечивает интернирование одного символа в нескольких obarrays.
 @end quotation
 
-  Most of the functions below take a name and sometimes an obarray as
-arguments.  A @code{wrong-type-argument} error is signaled if the name
-is not a string, or if the obarray is not a vector.
+  Большинство функций, описанных ниже, принимают в качестве аргумента имя, а
+  иногда obarray.  Ошибка @code{wrong-type-argument} сигнализируется, если
+  имя не является строкой, или если obarray не является вектором.
 
 @defun symbol-name symbol
-This function returns the string that is @var{symbol}'s name.  For example:
+Функция возвращает строку, которая является именем @var{symbol}ов. Например:
 
 @example
 @group
@@ -266,17 +266,18 @@ This function returns the string that is @var{symbol}'s name.  For example:
 @end group
 @end example
 
-@strong{Warning:} Changing the string by substituting characters does
-change the name of the symbol, but fails to update the obarray, so don't
-do it!
+@strong{Предупреждение:} Изменение строки имени, путем замены буквенных
+символов меняет имя символа, но это не отражается обновлением obarray, так
+что не делайте этого!
 @end defun
 
 @defun make-symbol name
-This function returns a newly-allocated, uninterned symbol whose name is
-@var{name} (which must be a string).  Its value and function definition
-are void, and its property list is @code{nil}.  In the example below,
-the value of @code{sym} is not @code{eq} to @code{foo} because it is a
-distinct uninterned symbol whose name is also @samp{foo}.
+Функция возвращает вновь выделенный, неинтернированный символ, имя которого
+@var{name} (которое должно быть строкой).  Его компоненты символа: ячейки
+значения и ячейки функции являются недействительными, а список свойств
+установлен в @code{nil}.  В приведенном ниже примере, значение @code{sym}
+не удовлетворяет  @code{eq} к @code{foo}, потому что это отдельный
+неинтернированный символ, имя которого также @samp{foo}.
 
 @example
 (setq sym (make-symbol "foo"))
@@ -287,17 +288,16 @@ distinct uninterned symbol whose name is also @samp{foo}.
 @end defun
 
 @defun gensym &optional prefix
-This function returns a symbol using @code{make-symbol}, whose name is
-made by appending @code{gensym-counter} to @var{prefix}.  The prefix
-defaults to @code{"g"}.
+Функция возвращает символ с использованием @code{make-symbol}, имя которого
+получается путем добавления @code{gensym-counter} к @var{prefix}. Префикс по
+умолчанию @code{"g"}.(ВопросSymbol293)
 @end defun
 
 @defun intern name &optional obarray
-This function returns the interned symbol whose name is @var{name}.  If
-there is no such symbol in the obarray @var{obarray}, @code{intern}
-creates a new one, adds it to the obarray, and returns it.  If
-@var{obarray} is omitted, the value of the global variable
-@code{obarray} is used.
+Функция возвращает интернированый символ, имя которого @var{name}.  Если нет
+такого символа в obarray @var{obarray}, @code{intern} создает новый,
+добавляет его в obarray, и возвращает его.  Если @var{obarray} опущен,
+используется значение глобальной переменной @code{obarray}.
 
 @example
 (setq sym (intern "foo"))
@@ -314,57 +314,57 @@ creates a new one, adds it to the obarray, and returns it.  If
 
 @cindex CL note---interning existing symbol
 @quotation
-@b{Common Lisp note:} In Common Lisp, you can intern an existing symbol
-in an obarray.  In Emacs Lisp, you cannot do this, because the argument
-to @code{intern} must be a string, not a symbol.
+@b{Common Lisp предупреждение:} В Common Lisp, вы можете поместить
+существующий символ в obarray.  В Emacs Lisp, вы не можете этого сделать,
+потому что аргумент @code{intern} должен быть строкой, а не символом.
 @end quotation
 
 @defun intern-soft name &optional obarray
-This function returns the symbol in @var{obarray} whose name is
-@var{name}, or @code{nil} if @var{obarray} has no symbol with that name.
-Therefore, you can use @code{intern-soft} to test whether a symbol with
-a given name is already interned.  If @var{obarray} is omitted, the
-value of the global variable @code{obarray} is used.
+Функция возвращает символ из @var{obarray}, имя которого @var{name}, или
+@code{nil} если @var{obarray} не имеет символа с таким именем.  Таким
+образом, вы можете использовать @code{intern-soft}, чтобы проверить, является
+ли символ с указанным именем уже интернированным.  Если @var{obarray} опущен,
+используется значение глобальной переменной @code{obarray}.
 
-The argument @var{name} may also be a symbol; in that case,
-the function returns @var{name} if @var{name} is interned
-in the specified obarray, and otherwise @code{nil}.
+Аргумент @var{name} также может быть символом; в этом случае возвращается
+@var{name} если есть интернированный символ с именем @var{name} в указанном
+obarray @code{obarray}, а в противном случае возвращается @code{nil}.
 
 @example
-(intern-soft "frazzle")        ; @r{No such symbol exists.}
+(intern-soft "испытуемый")        ; @r{Нет, такого символа не существует.}
      @result{} nil
-(make-symbol "frazzle")        ; @r{Create an uninterned one.}
-     @result{} frazzle
+(make-symbol "испытуемый")        ; @r{Создание неитернированного символа.}
+     @result{} испытуемый
 @group
-(intern-soft "frazzle")        ; @r{That one cannot be found.}
+(intern-soft "испытуемый")        ; @r{Не найдено.}
      @result{} nil
 @end group
 @group
-(setq sym (intern "frazzle"))  ; @r{Create an interned one.}
-     @result{} frazzle
+(setq sym (intern "испытуемый"))  ; @r{Создание интернированного символа.}
+     @result{} испытуемый
 @end group
 @group
-(intern-soft "frazzle")        ; @r{That one can be found!}
-     @result{} frazzle
+(intern-soft "испытуемый")        ; @r{Найден!}
+     @result{} испытуемый
 @end group
 @group
-(eq sym 'frazzle)              ; @r{And it is the same one.}
+(eq sym 'испытуемый)              ; @r{Одно и тоже.}
      @result{} t
 @end group
 @end example
 @end defun
 
 @defvar obarray
-This variable is the standard obarray for use by @code{intern} and
+Переменная - стандартный obarray для использования в @code{intern} и
 @code{read}.
 @end defvar
 
 @defun mapatoms function &optional obarray
 @anchor{Definition of mapatoms}
-This function calls @var{function} once with each symbol in the obarray
-@var{obarray}.  Then it returns @code{nil}.  If @var{obarray} is
-omitted, it defaults to the value of @code{obarray}, the standard
-obarray for ordinary symbols.
+Функция вызывает функцию @var{function} один раз с каждым символом в obarray
+@var{obarray}.  Затем возвращается @code{nil}.  Если @var{obarray} опущен, то
+используется значение по умолчанию в переменнй @code{obarray}, стандартный
+obarray для обычных символов.
 
 @example
 (setq count 0)
@@ -378,64 +378,66 @@ count
      @result{} 1871
 @end example
 
-See @code{documentation} in @ref{Accessing Documentation}, for another
-example using @code{mapatoms}.
+Смотреть @code{documentation} в @ref{Accessing Documentation}, ещё пример
+использования @code{mapatoms}.
 @end defun
 
 @defun unintern symbol obarray
-This function deletes @var{symbol} from the obarray @var{obarray}.  If
-@code{symbol} is not actually in the obarray, @code{unintern} does
-nothing.  If @var{obarray} is @code{nil}, the current obarray is used.
+Функция удаляет @var{symbol} из obarray @var{obarray}.  Если @code{symbol}
+отсутствует в obarray, @code{unintern} ничего не делает.  Если @var{obarray}
+установлен в @code{nil}, используется текущий obarray.
 
-If you provide a string instead of a symbol as @var{symbol}, it stands
-for a symbol name.  Then @code{unintern} deletes the symbol (if any) in
-the obarray which has that name.  If there is no such symbol,
-@code{unintern} does nothing.
+Если вы предоставляете строку вместо символа в @var{symbol}, это выступает
+в роли имени символа.  Затем @code{unintern} удаляет символ (если такой
+имеется) из obarray по его имени.  Если нет искомого символа, @code{unintern}
+ничего не делает.
 
-If @code{unintern} does delete a symbol, it returns @code{t}.  Otherwise
-it returns @code{nil}.
+Если функцией @code{unintern} действительно был удалён символ, возвращается
+@code{t}.  В противном случае возвращается @code{nil}.
 @end defun
 
 @node Symbol Properties
-@section Symbol Properties
+@section Свойства Символа
 @cindex symbol property
 
-  A symbol may possess any number of @dfn{symbol properties}, which
-can be used to record miscellaneous information about the symbol.  For
-example, when a symbol has a @code{risky-local-variable} property with
-a non-@code{nil} value, that means the variable which the symbol names
-is a risky file-local variable (@pxref{File Local Variables}).
+  Символ может иметь любое количество @dfn{свойств символа}, которые можно
+  использовать для записи разнообразной информации о символе.  Например,
+  когда символ имеет свойство @code{risky-local-variable} установленное в
+  не-@code{nil}, это означает, что символ с заданным именем в своей
+  компоненте ячейки значения, содержит опасную локальную переменную файла
+  (@pxref{File Local Variables}).
 
-  Each symbol's properties and property values are stored in the
-symbol's property list cell (@pxref{Symbol Components}), in the form
-of a property list (@pxref{Property Lists}).
+  Свойства и их значения, каждого символа хранятся в компоненте символа
+  ячейки свойств (@pxref{Symbol Components}) в форме списка свойств
+  (@pxref{Property Lists}).
 
 @menu
-* Symbol Plists::        Accessing symbol properties.
-* Standard Properties::  Standard meanings of symbol properties.
+* Symbol Plists::        Доступ к свойствам символа.
+* Standard Properties::  Стандартные значения свойств символов.
 @end menu
 
 @node Symbol Plists
-@subsection Accessing Symbol Properties
+@subsection Доступ к Свойствам Символа
 
-  The following functions can be used to access symbol properties.
+  Следующие функции могут быть использованы для доступа к свойствам символа.
 
 @defun get symbol property
-This function returns the value of the property named @var{property}
-in @var{symbol}'s property list.  If there is no such property, it
-returns @code{nil}.  Thus, there is no distinction between a value of
-@code{nil} and the absence of the property.
+Функция возвращает значение свойства под названием @var{property} из списка
+свойств символа @var{symbol}.  Если требуемого свойства нет, возвращается
+@code{nil}.  Таким образом, нельзя определить разницу между тем что, свойство
+с указаным названием не существует или же оно содержит значение @code{nil}.
 
-The name @var{property} is compared with the existing property names
-using @code{eq}, so any object is a legitimate property.
+Название свойства, переданное аргументом @var{property}, сравнивается со
+всеми существующими свойствами символами с помощью @code{eq}, поэтому
+любой объект можен выступать в роли свойства.(ВопросSymbol432)
 
-See @code{put} for an example.
+Смотреть @code{put} для примера.
 @end defun
 
 @defun put symbol property value
-This function puts @var{value} onto @var{symbol}'s property list under
-the property name @var{property}, replacing any previous property value.
-The @code{put} function returns @var{value}.
+Функция помещает значение @var{value} в список свойств символа @var{symbol}
+в свойство @var{property}, заменяя любое предыдущее значение свойства.
+Функция @code{put} возвращает значение @var{value}.
 
 @example
 (put 'fly 'verb 'transitive)
@@ -450,13 +452,13 @@ The @code{put} function returns @var{value}.
 @end defun
 
 @defun symbol-plist symbol
-This function returns the property list of @var{symbol}.
+Функция возвращает список свойств  символа @var{symbol}.
 @end defun
 
 @defun setplist symbol plist
-This function sets @var{symbol}'s property list to @var{plist}.
-Normally, @var{plist} should be a well-formed property list, but this is
-not enforced.  The return value is @var{plist}.
+Функция устанавливает символу @var{symbol} список свойств @var{plist}.
+Обычно список свойств @var{plist} должен быть хорошо сформированый список, но
+это не является обязанельным.  Возвращаемое значение - @var{plist}.
 
 @example
 (setplist 'foo '(a 1 b (2 3) c nil))
@@ -465,13 +467,13 @@ not enforced.  The return value is @var{plist}.
      @result{} (a 1 b (2 3) c nil)
 @end example
 
-For symbols in special obarrays, which are not used for ordinary
-purposes, it may make sense to use the property list cell in a
-nonstandard fashion; in fact, the abbrev mechanism does so
-(@pxref{Abbrevs}).
+Для символов состоящих в специальных obarrays, которые не используются для
+обычных целей, может иметь смысл использовать компоненту символа с ячейкой
+списка свойств нестандартным образом; на самом деле, механизм сокращений
+использует это (@pxref{Abbrevs}).
 
-You could define @code{put} in terms of @code{setplist} and
-@code{plist-put}, as follows:
+Можно определить @code{put} в терминах @code{setplist} и @code{plist-put}
+следующим образом:
 
 @example
 (defun put (symbol prop value)
@@ -481,130 +483,137 @@ You could define @code{put} in terms of @code{setplist} and
 @end defun
 
 @defun function-get symbol property &optional autoload
-This function is identical to @code{get}, except that if @var{symbol}
-is the name of a function alias, it looks in the property list of the
-symbol naming the actual function.  @xref{Defining Functions}.  If the
-optional argument @var{autoload} is non-@code{nil}, and @var{symbol}
-is auto-loaded, this function will try to autoload it, since
-autoloading might set @var{property} of @var{symbol}.  If
-@var{autoload} is the symbol @code{macro}, only try autoloading if
-@var{symbol} is an auto-loaded macro.
+Функция идентична @code{get}, за исключением того, что если @var{symbol}
+носит имя псевдонима функции, просматривается список свойств символа в поиске
+имени реальной функции. @xref{Defining Functions}.  Если необязательный аргумент @var{autoload} установлен в не-@code{nil} и @var{symbol} является
+автоматически загружаемым, функция будет пытаться выполнить автозагрузку его,
+так как может установить свойства @var{property} у загруженного символа
+@var{symbol}.  Если символ @var{symbol} представляет собой @code{макрос} и
+@var{autoload} установлен в не-@code{nil}, производится попытка автозагрузки,
+если @var{symbol} является автоматически загружаемым макросом.
+(ВопросSymbol493)
 @end defun
 
 @defun function-put function property value
-This function sets @var{property} of @var{function} to @var{value}.
-@var{function} should be a symbol.  This function is preferred to
-calling @code{put} for setting properties of a function, because it
-will allow us some day to implement remapping of old properties to new
-ones.
+Функция устанавливает функции @var{function} свойству @var{property}
+значение @var{value}.  Аргумент @var{function} должен быть символом.  Вызов
+этой функции является предпочтительнее вызова @code{put} для настройки
+свойств функции, потому что это позволяет осуществить переназначение старых
+значений свойств в новые.(ВопросSymbol502)
 @end defun
 
 @node Standard Properties
-@subsection Standard Symbol Properties
+@subsection Стандартные Свойства Символа
 
-  Here, we list the symbol properties which are used for special
-purposes in Emacs.  In the following table, whenever we say ``the
-named function'', that means the function whose name is the relevant
-symbol; similarly for ``the named variable'' etc.
+  Здесь перечисляются свойства символов, которые используются для специальных
+  целей в Emacs.  В следующей таблице, когда написано ``именуемая функция'',
+  это означает, что функция, чье имя является соответствующим печатным именем
+  символа; аналогично для ``именуемая переменная'' и т.д.
 
 @table @code
 @item :advertised-binding
-This property value specifies the preferred key binding, when showing
-documentation, for the named function.  @xref{Keys in Documentation}.
+Свойство определяет предпочтительную привязку клавиш, при вызове показа
+документации, для именуемой.  @xref{Keys in Documentation}.
 
 @item char-table-extra-slots
-The value, if non-@code{nil}, specifies the number of extra slots in
-the named char-table type.  @xref{Char-Tables}.
+Значение, если установлено в не-@code{nil}, определяет количество
+дополнительных слотов в указаном типе символ-таблицы.  @xref{Char-Tables}.
 
 @item customized-face
 @itemx face-defface-spec
 @itemx saved-face
 @itemx theme-face
-These properties are used to record a face's standard, saved,
-customized, and themed face specs.  Do not set them directly; they are
-managed by @code{defface} and related functions.  @xref{Defining
-Faces}.
-
+Эти свойства используются для записи стандартных, сохраняемых, настраеваемых
+и тематических характеристик лица.  Не устанавливаются непосредственно; они
+управляются @code{defface} и связанных с этим функциями.
+@xref{Defining Faces}. (ВопросSymbol529 ? Баян какой-то, какие ещё лица?)
+ 
 @item customized-value
 @itemx saved-value
 @itemx standard-value
 @itemx theme-value
-These properties are used to record a customizable variable's standard
-value, saved value, customized-but-unsaved value, and themed values.
-Do not set them directly; they are managed by @code{defcustom} and
-related functions.  @xref{Variable Definitions}.
+Эти свойства используются для записи стандартного значения настраиваемой
+переменной, сохраненного значения, настроенного, но несохраненного значения и
+тематических значений. Не устанавливайте их непосредственно; они управляются
+@code{defcustom} и связанных с этим функциями(ВопросSymbols538 баян
+продолжается).  @xref{Variable Definitions}.
 
 @item disabled
-If the value is non-@code{nil}, the named function is disabled as a
-command.  @xref{Disabling Commands}.
+Если значение свойства не-@code{nil}, именованная функция отключена как
+команда.  @xref{Disabling Commands}.
 
 @item face-documentation
-The value stores the documentation string of the named face.  This is
-set automatically by @code{defface}.  @xref{Defining Faces}.
+Значение свойства хранит строку документации названного лица.  Это
+устанавливается автоматически @code{defface}(ВопросSymbol547).
+@xref{Defining Faces}.
 
 @item history-length
-The value, if non-@code{nil}, specifies the maximum minibuffer history
-length for the named history list variable.  @xref{Minibuffer
-History}.
+Установленное значение свойства в не-@code{nil}, определяет максимальную
+длину истории Минибуфера для именованной переменнойо списка истории.
+@xref{Minibuffer History}.
 
 @item interactive-form
-The value is an interactive form for the named function.  Normally,
-you should not set this directly; use the @code{interactive} special
-form instead.  @xref{Interactive Call}.
+Значение свойства представляет собой интерактивную форму для именованной
+функции.  Как правило, не должно устанавливаться непосредственно;
+использовать вместо этого специальную форму @code{interactive}.
+@xref{Interactive Call}.
 
 @item menu-enable
-The value is an expression for determining whether the named menu item
-should be enabled in menus.  @xref{Simple Menu Items}.
+Значение свойства определяет выражение для определения того, следует ли
+указанный пункт меню буть включен в меню.  @xref{Simple Menu Items}.
 
 @item mode-class
-If the value is @code{special}, the named major mode is special.
-@xref{Major Mode Conventions}.
+Если значение свойства установленно в @code{special}, указанный основной
+режим является особенным.  @xref{Major Mode Conventions}.
 
 @item permanent-local
-If the value is non-@code{nil}, the named variable is a buffer-local
-variable whose value should not be reset when changing major modes.
-@xref{Creating Buffer-Local}.
+Если значение установленно в не-@code{nil}, именованная переменная является
+локальной переменной буфера, значение которой не должно быть сброшено при
+изменении основных режимов.  @xref{Creating Buffer-Local}.
 
 @item permanent-local-hook
-If the value is non-@code{nil}, the named function should not be
-deleted from the local value of a hook variable when changing major
-modes.  @xref{Setting Hooks}.
+Если значение свойства установленно в не-@code{nil}, именованная функция не
+должна быть удалена из значения локальной переменной-ловушки при изменении
+основных режимов.  @xref{Setting Hooks}.
 
 @item pure
 @cindex @code{pure} property
-If the value is non-@code{nil}, the named function is considered to be
-pure (@pxref{What Is a Function}).  Calls with constant arguments can
-be evaluated at compile time.  This may shift run time errors to
-compile time.  Not to be confused with pure storage (@pxref{Pure
-Storage}).
+Если значение установленно в не-@code{nil}, именованная функция считается
+чистой (@pxref{What Is a Function}).  Вызовы с постоянными аргументами могут
+быть оценены во время компиляции.  Это может сместить ошибки времени
+выполнения на время компиляции.  Не следует путать с чистым хранилищем
+(@pxref{Pure Storage}). (ВопросSymbols585)
 
 @item risky-local-variable
-If the value is non-@code{nil}, the named variable is considered risky
-as a file-local variable.  @xref{File Local Variables}.
+Если значение свойства установленно в не-@code{nil}, именованная переменная
+считается как опаснвя локальная переменная файла.
+@xref{File Local Variables}.
 
 @item safe-function
-If the value is non-@code{nil}, the named function is considered
-generally safe for evaluation.  @xref{Function Safety}.
+Если значение свойства установлено в не-@code{nil}, именованная функция
+считается в целом безопасной для оценки.  @xref{Function Safety}.
 
 @item safe-local-eval-function
-If the value is non-@code{nil}, the named function is safe to call in
-file-local evaluation forms.  @xref{File Local Variables}.
+Если значение свойства установленно в не-@code{nil}, именованная функция
+безопасна для вызова в формах локального файла для оценки.
+@xref{File Local Variables}.
 
 @item safe-local-variable
-The value specifies a function for determining safe file-local values
-for the named variable.  @xref{File Local Variables}.
+Значение свойства определяет функцию для определения безопасных имён
+переменных локального файла.  @xref{File Local Variables}.
 
 @item side-effect-free
 @cindex @code{side-effect-free} property
-A non-@code{nil} value indicates that the named function is free of
-side effects (@pxref{What Is a Function}), so the byte compiler may
-ignore a call whose value is unused.  If the property's value is
-@code{error-free}, the byte compiler may even delete such unused
-calls.  In addition to byte compiler optimizations, this property is
-also used for determining function safety (@pxref{Function Safety}).
+Значение свойства установленное в не-@code{nil} указывает на то, что
+именованная функция не создаёт побочных эффектов
+(@pxref{What Is a Function}), так что байт компилятор может игнорировать
+вызов, значение которого не используется.  Если значение свойства равно
+@code{error-free}, байт-компилятор может даже удалить неиспользуемые такие
+вызовы.  В дополнение к оптимизации байт-компилятор, это свойство также
+используется для определения безопасности функции (@pxref{Function Safety}).
 
 @item variable-documentation
-If non-@code{nil}, this specifies the named variable's documentation
-string.  This is set automatically by @code{defvar} and related
-functions.  @xref{Defining Faces}.
+Если установлено значение свойства в не-@code{nil}, это указывает строку
+документации именованной переменной.  Это устанавливается автоматически
+@code{defvar} и связанными с ними функциями.  @xref{Defining Faces}.
 @end table

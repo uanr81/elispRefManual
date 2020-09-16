@@ -7,4 +7,5 @@ strings.texi +
 lists.texi +
 records.texi +
 hash.texi +
+symbol.texi +
 eval.texi 68
