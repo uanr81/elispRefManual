@@ -65,115 +65,111 @@
   @xref{Input Functions}.
 
 @cindex recursive evaluation
-  Evaluation is a recursive process, and evaluating a form often
-involves evaluating parts within that form.  For instance, when you
-evaluate a @dfn{function call} form such as @code{(car x)}, Emacs
-first evaluates the argument (the subform @code{x}).  After evaluating
-the argument, Emacs @dfn{executes} the function (@code{car}), and if
-the function is written in Lisp, execution works by evaluating the
-@dfn{body} of the function (in this example, however, @code{car} is
-not a Lisp function; it is a primitive function implemented in C).
-@xref{Functions}, for more information about functions and function
-calls.
+  Оценка представляет собой рекурсивный процесс, и оценка формы часто
+  включает в себя оценку частей внутри этой формы.  Например, при оценке
+  формы @dfn{вызова функции}, такой как @code{(car x)}, Emacs сначала
+  вычисляет аргумент (подчиненную форму @code{x}).  После оценки аргумента,
+  Emacs @dfn{выполняет} функцию (@code{car}), и если функция написана на
+  Lisp, выполнение происходит путем оценки @dfn{тела} функции (в данном
+  примере, однако, @code{car} не является функция Lisp, это примитивная
+  функция реализованная на C).  @xref{Functions}, для получения
+  дополнительной информации о функциях и вызовах функций.
 
 @cindex environment
-  Evaluation takes place in a context called the @dfn{environment},
-which consists of the current values and bindings of all Lisp
-variables (@pxref{Variables}).@footnote{This definition of
-``environment'' is specifically not intended to include all the data
-that can affect the result of a program.}  Whenever a form refers to a
-variable without creating a new binding for it, the variable evaluates
-to the value given by the current environment.  Evaluating a form may
-also temporarily alter the environment by binding variables
-(@pxref{Local Variables}).
+  Оценка происходит в контексте,называемой @dfn{environment (средой)},
+  которая состоит из текущих значений и привязки всех переменных Lisp
+  (@pxref{Variables}).@footnote{Это определение ``environment (среда)''
+  специально не включают в себя все данные, которые могут повлиять на
+  результат программы.}  Всякий раз, когда форма обращается к переменной без
+  создания нового связывания для неё, переменная принимает значение величины,
+  заданное текущей средой.   Оценка формы также может временно изменить
+  окружающую среду путем связывания переменных (@pxref{Local Variables}).
 
 @cindex side effect
 @anchor{Definition of side effect}
-  Evaluating a form may also make changes that persist; these changes
-are called @dfn{side effects}.  An example of a form that produces a
-side effect is @code{(setq foo 1)}.
+  Оценка формы также может внести изменения, которые сохраняются; эти
+  изменения называются @dfn{побочными уффектами}.  Пример формы, которая
+  производит побочный эффект @code{(setq foo 1)}.
 
-  Do not confuse evaluation with command key interpretation.  The
-editor command loop translates keyboard input into a command (an
-interactively callable function) using the active keymaps, and then
-uses @code{call-interactively} to execute that command.  Executing the
-command usually involves evaluation, if the command is written in
-Lisp; however, this step is not considered a part of command key
-interpretation.  @xref{Command Loop}.
+  Не следует путать оценку с интерпретацией ключевой команды.  Командный
+  цикл редактора переводит ввод с клавиатуры в команду (интерактивно
+  вызываемую функцию) с использованием активных раскладок клавиш, а затем
+  использует @code{call-interactively}, чтобы выполнить эту команду.
+  Выполнение команды обычно включает в себя оценку, если команда написана на
+  Lisp; однако этот шаг не считается частью интерпретации ключевой команды.
+  @xref{Command Loop}.
 
 @node Forms
-@section Kinds of Forms
+@section Виды Форм
 
-  A Lisp object that is intended to be evaluated is called a
-@dfn{form} (or an @dfn{expression}).  How Emacs evaluates a form
-depends on its data type.  Emacs has three different kinds of form
-that are evaluated differently: symbols, lists, and all other
-types.  This section describes all three kinds, one by one, starting
-with the other types, which are self-evaluating forms.
+  Lisp объект, который предназначен для оценки называется @dfn{формой} (или
+  @dfn{выражением}).  Как Emacs оценивает форму, зависит от её типа данных.
+  Emacs имеет три различных вида формы, которые оцениваются по-разному:
+  символы, списки и все остальные типы.  В этом разделе описаны все три вида,
+  один за другим, начиная с остальных типов, которые представляют собой
+  самооценочные формы.
 
 @menu
-* Self-Evaluating Forms::   Forms that evaluate to themselves.
-* Symbol Forms::            Symbols evaluate as variables.
-* Classifying Lists::       How to distinguish various sorts of list forms.
-* Function Indirection::    When a symbol appears as the car of a list,
-                              we find the real function via the symbol.
-* Function Forms::          Forms that call functions.
-* Macro Forms::             Forms that call macros.
-* Special Forms::           Special forms are idiosyncratic primitives,
-                              most of them extremely important.
-* Autoloading::             Functions set up to load files
-                              containing their real definitions.
+* Self-Evaluating Forms::   Формы, которые оценивают себя.
+* Symbol Forms::            Символы оцениваются как переменные.
+* Classifying Lists::       Отличие различных списочных форм.
+* Function Indirection::    При появлении символа как car списка, ищется
+                            действительная функция через символ.
+* Function Forms::          Формы, вызова функции.
+* Macro Forms::             Формы, вызова макроса.
+* Special Forms::           Специальные формы - своеобразные примитивы,
+                            большинство из них являются крайне важными.
+* Autoloading::             Функции, загружаемые из файлов, содержащих их
+                            реальное определение.
 @end menu
 
 @node Self-Evaluating Forms
-@subsection Self-Evaluating Forms
+@subsection Самооценочные Формы
 @cindex vector evaluation
 @cindex literal evaluation
 @cindex self-evaluating form
 @cindex form, self-evaluating
 
-  A @dfn{self-evaluating form} is any form that is not a list or
-symbol.  Self-evaluating forms evaluate to themselves: the result of
-evaluation is the same object that was evaluated.  Thus, the number 25
-evaluates to 25, and the string @code{"foo"} evaluates to the string
-@code{"foo"}.  Likewise, evaluating a vector does not cause evaluation
-of the elements of the vector---it returns the same vector with its
-contents unchanged.
+  @dfn{Самооценочная форма} это любая форма, которая не является списком
+  или символом.  Самооценочная форма оценивает себя сама: результат оценки
+  тот же объект, который был оценен.  Таким образом, число 25 имеет значение
+  25, а строка @code{"foo"} принимает значение строки @code{"foo"}.  Точно
+  так же, оценка вектора не вызывает оценку элементов вектора---возвращается
+  один и тот же вектор с его содержимым без изменений.
 
 @example
 @group
-'123               ; @r{A number, shown without evaluation.}
+'123               ; @r{Число, показанное без оценки.}
      @result{} 123
 @end group
 @group
-123                ; @r{Evaluated as usual---result is the same.}
+123                ; @r{Оценка числа как обычно---результат тот же.}
      @result{} 123
 @end group
 @group
-(eval '123)        ; @r{Evaluated "by hand"---result is the same.}
+(eval '123)        ; @r{Оценка @code{вручную}---результат тот же.}
      @result{} 123
 @end group
 @group
-(eval (eval '123)) ; @r{Evaluating twice changes nothing.}
+(eval (eval '123)) ; @r{Двойная оценка ничего не меняет.}
      @result{} 123
 @end group
 @end example
 
-  It is common to write numbers, characters, strings, and even vectors
-in Lisp code, taking advantage of the fact that they self-evaluate.
-However, it is quite unusual to do this for types that lack a read
-syntax, because there's no way to write them textually.  It is possible
-to construct Lisp expressions containing these types by means of a Lisp
-program.  Here is an example:
+  Часто пользуются при записи чисел, символов, строк и даже векторов в
+  Lisp коде тем, что они самооцениваются.  Тем не менее, это довольно
+  необычно для типов, которые не имеют синтаксис чтения, потому что нет
+  никакого способа, написать их текстуально.  Можно создать Lisp выражения,
+  содержащие эти типы с помощью программы Lisp. Вот пример:
 
 @example
 @group
-;; @r{Build an expression containing a buffer object.}
+;; @r{Построить выражение, содержащее объект буфера.}
 (setq print-exp (list 'print (current-buffer)))
      @result{} (print #<buffer eval.texi>)
 @end group
 @group
-;; @r{Evaluate it.}
+;; @r{Оценить его.}
 (eval print-exp)
      @print{} #<buffer eval.texi>
      @result{} #<buffer eval.texi>
@@ -181,19 +177,20 @@ program.  Here is an example:
 @end example
 
 @node Symbol Forms
-@subsection Symbol Forms
+@subsection Символьные Формы
 @cindex symbol evaluation
 @cindex symbol forms
 @cindex forms, symbol
 
-  When a symbol is evaluated, it is treated as a variable.  The result
-is the variable's value, if it has one.  If the symbol has no value as
-a variable, the Lisp interpreter signals an error.  For more
-information on the use of variables, see @ref{Variables}.
+  Когда символ оценивается, он рассматривается в качестве переменной.
+  Результатом является значение переменной, если оно есть.  Если символ не
+  имеет значения в качестве переменной, интерпретатор Lisp сигнализирует об
+  ошибке.  Для получения дополнительной информации об использовании
+  переменных смотреть @ref{Variables}.
 
-  In the following example, we set the value of a symbol with
-@code{setq}.  Then we evaluate the symbol, and get back the value that
-@code{setq} stored.
+  В следующем примере устанавливается значение символу @code{a}, используя
+  @code{setq}.  Затем оценивается символ, и @code{setq} возвращает
+  сохраненное значение.
 
 @example
 @group
@@ -210,66 +207,67 @@ a
 @end group
 @end example
 
-  The symbols @code{nil} and @code{t} are treated specially, so that the
-value of @code{nil} is always @code{nil}, and the value of @code{t} is
-always @code{t}; you cannot set or bind them to any other values.  Thus,
-these two symbols act like self-evaluating forms, even though
-@code{eval} treats them like any other symbol.  A symbol whose name
-starts with @samp{:} also self-evaluates in the same way; likewise,
-its value ordinarily cannot be changed.  @xref{Constant Variables}.
+  Символы @code{nil} и @code{t} обрабатывают специально, так что значение
+  @code{nil} всегда @code{nil}, а значение @code{t} всегда @code{t}; вы не
+  можете установить или связать их с любыми другими значениями.  Таким
+  образом, эти два символа действуют как самооценочные формы, даже если
+  @code{eval} обрабатывает их, как и любой другой символ.  Символ, имя
+  которого начинается с @samp{:} также являются самооценочными; так же, его
+  значение обычно не может быть изменено.  @xref{Constant Variables}.
 
 @node Classifying Lists
-@subsection Classification of List Forms
+@subsection Классификация Списочных Форм
 @cindex list form evaluation
 @cindex forms, list
 
-  A form that is a nonempty list is either a function call, a macro
-call, or a special form, according to its first element.  These three
-kinds of forms are evaluated in different ways, described below.  The
-remaining list elements constitute the @dfn{arguments} for the function,
-macro, or special form.
+  Форма, которая является непустым списком является либо вызовом функции,
+  либо вызовом макроса, либо специальной формой в зависимости от первого
+  элемента списочной формы.  Эти три вида форм оценивается по-разному,
+  описано ниже.  Остальные элементы списка представляют собой @dfn{аргументы}
+  для функции, макроса или специальной формы.
 
-  The first step in evaluating a nonempty list is to examine its first
-element.  This element alone determines what kind of form the list is
-and how the rest of the list is to be processed.  The first element is
-@emph{not} evaluated, as it would be in some Lisp dialects such as
-Scheme.
+  Первый шаг в оценке непустого списка состоит в изучении его первого
+  элемента.  Только по этому элементу определяется к какой форме принадлежит
+  списочная форма и каким образом будет обработана её остальная часть списка.
+  Первый элемент @emph{не} оценивается, как в некоторых Lisp диалектах,
+  таких как Scheme.
 
 @node Function Indirection
-@subsection Symbol Function Indirection
+@subsection Косвенная Функция Символа
 @cindex symbol function indirection
 @cindex indirection for functions
 @cindex void function
 
-  If the first element of the list is a symbol then evaluation
-examines the symbol's function cell, and uses its contents instead of
-the original symbol.  If the contents are another symbol, this
-process, called @dfn{symbol function indirection}, is repeated until
-it obtains a non-symbol.  @xref{Function Names}, for more information
-about symbol function indirection.
+  Если первый элемент списка является символ, то оценщик проверяет компоненту
+  символа, ячейку функции и использует её содержимое вместо исходного
+  символа.  Если содержимое представляет собой другой символ, запускается
+  рекурсивный процесс обрабатывающий @dfn{косвенную функцию символа},
+  повторяется до тех пор, пока в результате не получится не-символ.
+  @xref{Function Names}, для получения дополнительной информации о
+  косвенной функции символа. (ВопросEval247)
 
-  One possible consequence of this process is an infinite loop, in the
-event that a symbol's function cell refers to the same symbol.
-Otherwise, we eventually obtain a non-symbol, which ought to be a
-function or other suitable object.
+  Одним из возможных последствий этого процесса является бесконечный цикл,
+  в том случае, когда значение компоненты символа ячейки функции ссылается на
+  один и тот же символ.  В противном случае, в конечном итоге получается
+  не-символ, который должен быть функцией или другим подходящим объектом.
 
 @kindex invalid-function
-  More precisely, we should now have a Lisp function (a lambda
-expression), a byte-code function, a primitive function, a Lisp macro,
-a special form, or an autoload object.  Each of these types is a case
-described in one of the following sections.  If the object is not one
-of these types, Emacs signals an @code{invalid-function} error.
+  Точнее, в конце концов должна быть: функция Lisp (лямбда-выражение),
+  байт-скомпилированная функция, примитивная функция, макрос Lisp,
+  специальная форма или объект автозагрузки.  Каждый из этих типов описан
+  в одном из следующих разделов.  Если объект не является одним из этих
+  типов, то Emacs сигнализирует об ошибке @code{invalid-function}.
 
-  The following example illustrates the symbol indirection process.
-We use @code{fset} to set the function cell of a symbol and
-@code{symbol-function} to get the function cell contents
-(@pxref{Function Cells}).  Specifically, we store the symbol
-@code{car} into the function cell of @code{first}, and the symbol
-@code{first} into the function cell of @code{erste}.
+  Следующий пример иллюстрирует процесс косвенного обращения к символу.  Мы
+  используем @code{fset}, чтобы установить значение компоненты символа ячейки
+  функции и @code{symbol-function}, чтобы получить такое значение
+  (@pxref{Function Cells}).  В частности, мы сохраняем символ @code{car}
+  значением компоненты ячейки функции символа @code{first}, а символ
+  @code{first} - значением компоненты ячейки функции символа @code{erste}.
 
 @example
 @group
-;; @r{Build this function cell linkage:}
+;; @r{Построение связи компоненты символа ячейки функции:}
 ;;   -------------       -----        -------        -------
 ;;  | #<subr car> | <-- | car |  <-- | first |  <-- | erste |
 ;;   -------------       -----        -------        -------
@@ -287,14 +285,14 @@ We use @code{fset} to set the function cell of a symbol and
      @result{} first
 @end group
 @group
-(erste '(1 2 3))   ; @r{Call the function referenced by @code{erste}.}
+(erste '(1 2 3))   ; @r{Вызов функции, на которую ссылается @code{erste}.}
      @result{} 1
 @end group
 @end example
 
-  By contrast, the following example calls a function without any symbol
-function indirection, because the first element is an anonymous Lisp
-function, not a symbol.
+  В отличии от этого, в следующем примере вызывается функция без какой-либо
+  косвенной символьной функции, потому что первый элемент является
+  анонимной функцией Lisp, а не символом.
 
 @example
 @group
@@ -305,11 +303,12 @@ function, not a symbol.
 @end example
 
 @noindent
-Executing the function itself evaluates its body; this does involve
-symbol function indirection when calling @code{erste}.
+Выполнение самой функции оценивает её тело; это включает косвенное обращение
+к функции установленной значением компоненты ячейки функции символа
+@code{erste}.
 
-  This form is rarely used and is now deprecated.  Instead, you should write it
-as:
+  Эта форма редко используется и в настоящее время не рекомендуется.
+  Вместо этого используется форма:
 
 @example
 @group
@@ -317,32 +316,32 @@ as:
          '(1 2 3))
 @end group
 @end example
-or just
+или ещё проще
 @example
 @group
 (let ((arg '(1 2 3))) (erste arg))
 @end group
 @end example
 
-  The built-in function @code{indirect-function} provides an easy way to
-perform symbol function indirection explicitly.
+  Встроенная функция @code{indirect-function} обеспечивает простой способ
+  для явного обращения к косвенной функции символа.
 
 @c Emacs 19 feature
 @defun indirect-function function &optional noerror
 @anchor{Definition of indirect-function}
-This function returns the meaning of @var{function} as a function.  If
-@var{function} is a symbol, then it finds @var{function}'s function
-definition and starts over with that value.  If @var{function} is not a
-symbol, then it returns @var{function} itself.
+Функция возвращает значение @var{function} как функции.  Если @var{function}
+является символом, то снова ищется @var{function} определение функции с
+этим значением.  Если @var{function} не символ, то он возвращается сама
+@var{function} функция.
 
-This function returns @code{nil} if the final symbol is unbound.  It
-signals a @code{cyclic-function-indirection} error if there is a loop
-in the chain of symbols.
+Эта функция возвращает @code{nil} если конечный символ несвязанн.
+Сигнализируется об ошибке @code{cyclic-function-indirection} если есть
+петля в цепочке символов.
 
-The optional argument @var{noerror} is obsolete, kept for backward
-compatibility, and has no effect.
+Необязательный аргумент @var{noerror} устарел, сохранён для обратной
+совместимости, и не имеет никакого эффекта.
 
-Here is how you could define @code{indirect-function} in Lisp:
+Вот как можно определить @code{indirect-function} в Lisp:
 
 @example
 (defun indirect-function (function)
@@ -353,29 +352,29 @@ Here is how you could define @code{indirect-function} in Lisp:
 @end defun
 
 @node Function Forms
-@subsection Evaluation of Function Forms
+@subsection Оценка Функциональных Форм
 @cindex function form evaluation
 @cindex function call
 @cindex forms, function call
 
-  If the first element of a list being evaluated is a Lisp function
-object, byte-code object or primitive function object, then that list is
-a @dfn{function call}.  For example, here is a call to the function
-@code{+}:
+  Если первый элемент оцениваемого списка является Lisp объектом функции,
+  объектом байт-кода или объектом примитивной функции, то этот список
+  является @dfn{вызовом функции}.  Например, здесь есть вызов функции
+  @code{+}:
 
 @example
 (+ 1 x)
 @end example
 
-  The first step in evaluating a function call is to evaluate the
-remaining elements of the list from left to right.  The results are the
-actual argument values, one value for each list element.  The next step
-is to call the function with this list of arguments, effectively using
-the function @code{apply} (@pxref{Calling Functions}).  If the function
-is written in Lisp, the arguments are used to bind the argument
-variables of the function (@pxref{Lambda Expressions}); then the forms
-in the function body are evaluated in order, and the value of the last
-body form becomes the value of the function call.
+  Первый шаг в оценке вызова функции является оценка оставшихся элементов
+  списка слева направо.  Результаты представляют собой фактические значения
+  аргументов, одно значение для каждого элемента списка.  Следующий шаг
+  заключается в вызове функции с этим списком аргументов, эффективно
+  используя функцию @code{apply} (@pxref{Calling Functions}).  Если функция
+  написана на Lisp, аргументы используются для связывания переменных
+  аргументов функции (@pxref{Lambda Expressions}); затем формы в теле функции
+  вычисляется по порядку, и значение последней формы тела становится
+  значением вызова функции.(ВопросEval377)
 
 @node Macro Forms
 @subsection Lisp Macro Evaluation
