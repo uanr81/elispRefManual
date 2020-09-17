@@ -377,30 +377,32 @@ a
   значением вызова функции.(ВопросEval377)
 
 @node Macro Forms
-@subsection Lisp Macro Evaluation
+@subsection Оценка Макросов Lisp
 @cindex macro call evaluation
 @cindex forms, macro call
 
-  If the first element of a list being evaluated is a macro object, then
-the list is a @dfn{macro call}.  When a macro call is evaluated, the
-elements of the rest of the list are @emph{not} initially evaluated.
-Instead, these elements themselves are used as the arguments of the
-macro.  The macro definition computes a replacement form, called the
-@dfn{expansion} of the macro, to be evaluated in place of the original
-form.  The expansion may be any sort of form: a self-evaluating
-constant, a symbol, or a list.  If the expansion is itself a macro call,
-this process of expansion repeats until some other sort of form results.
+  Если первый элемент оцениваемого спика является объект макрос, то список
+  является @dfn{вызовом макроса}.  Когда макрос оценивается, оставшиеся
+  элементы списка остаются @emph{не} оценёнными первоначально.  Вместо этого,
+  сами по себе эти элементы используются в качестве аргументов макроса.
+  Определение макроса вычисляет собранную таким образом новую форму,
+  называемую @dfn{расширением} макроса, которая оценевается вместо
+  оригинальной формы.  Расширение может иметь любую форму: самооценочной
+  константой, символом, или списком.  Если расширение само по себе является
+  вызовом макроса, этот процесс расширения повторяется до тех пор, пока не
+  будет получена в результате другого рода форма.
 
-  Ordinary evaluation of a macro call finishes by evaluating the
-expansion.  However, the macro expansion is not necessarily evaluated
-right away, or at all, because other programs also expand macro calls,
-and they may or may not evaluate the expansions.
+  Обычная оценка макроса завершается путем оценки расширения.  Однако
+  расширение макроса не обязательно оценивается сразу, или не оценивается
+  вообще, потому что другие программы также расширяют вызовы макроса и могут
+  не оценивать это расширение.
 
-  Normally, the argument expressions are not evaluated as part of
-computing the macro expansion, but instead appear as part of the
-expansion, so they are computed when the expansion is evaluated.
+  Как правило, выражение аргумента не оценивается как часть вычисления
+  расширения макроса, вместо этого буквально появляется в выражении для
+  расширения, таким образом, они вычисляются тогда, когда расширение
+  оцениваются.
 
-  For example, given a macro defined as follows:
+  Например, если макрос определяется следующим образом:
 
 @example
 @group
@@ -410,49 +412,50 @@ expansion, so they are computed when the expansion is evaluated.
 @end example
 
 @noindent
-an expression such as @code{(cadr (assq 'handler list))} is a macro
-call, and its expansion is:
+выражение, такое как @code{(cadr (assq 'обработчик list))} является вызовом
+макроса и вот его выражение для оценки после расширения:
 
 @example
-(car (cdr (assq 'handler list)))
+(car (cdr (assq 'обработчик list)))
 @end example
 
 @noindent
-Note that the argument @code{(assq 'handler list)} appears in the
-expansion.
+Обратите внимание, как аргумент @code{(assq 'обработчик list)} появляется
+в выражении расширения.
 
-@xref{Macros}, for a complete description of Emacs Lisp macros.
+@xref{Macros}, для полного описания макросов Emacs Lisp.
 
 @node Special Forms
-@subsection Special Forms
+@subsection Специальная Форма
 @cindex special forms
 @cindex forms, special
 @cindex evaluation of special forms
 
-  A @dfn{special form} is a primitive function specially marked so that
-its arguments are not all evaluated.  Most special forms define control
-structures or perform variable bindings---things which functions cannot
-do.
+  @dfn{Специальная формы} - примитивная функция, специально отмечена особым
+  образом и её аргументы не все оцениваются.  Большинство специальных форм
+  определяют управляющие структуры или выполняют привязку переменных --- то,
+  что функции не могут делать.
 
-  Each special form has its own rules for which arguments are evaluated
-and which are used without evaluation.  Whether a particular argument is
-evaluated may depend on the results of evaluating other arguments.
+  Каждая специальная форма имеет свои собственные правила, по которым
+  оценеваются её аргументы и которые используются без оценки.  Оценка того
+  или иного аргумента может зависеть от результатов оценки других аргументов.
 
-  If an expression's first symbol is that of a special form, the
-expression should follow the rules of that special form; otherwise,
-Emacs's behavior is not well-defined (though it will not crash).  For
-example, @code{((lambda (x) x . 3) 4)} contains a subexpression that
-begins with @code{lambda} but is not a well-formed @code{lambda}
-expression, so Emacs may signal an error, or may return 3 or 4 or
-@code{nil}, or may behave in other ways.
+  Если первый символ выражения представляет собой символ особой формы,
+  выражение должно следовать правилам оценки этой особой формы; в противном
+  случае поведение Emacs является не вполне определенным (хотя сбой не
+  произойдёт).  Например, форма @code{((lambda (x) x . 3) 4)} содержит
+  подвыражение, которое начинается с @code{lambda}, но не является правильно
+  сформированным выражением @code{lambda}, поэтому Emacs может
+  сигнализировать об ошибке, или может вернуть 3 или 4 или @code{nil}, или
+  может вести себя по-другому.
 
 @defun special-form-p object
-This predicate tests whether its argument is a special form, and
-returns @code{t} if so, @code{nil} otherwise.
+Предикат проверяет является ли его аргумент особой формой, и возвращает
+@code{t} если это так и @code{nil} в другом случае.
 @end defun
 
-  Here is a list, in alphabetical order, of all of the special forms in
-Emacs Lisp with a reference to where each is described.
+  Вот список в алфавитном порядке, из всех специальных форм в Emacs Lisp
+  со ссылкой, где описывается каждая форма.
 
 @table @code
 @item and
@@ -524,52 +527,52 @@ Emacs Lisp with a reference to where each is described.
 
 @cindex CL note---special forms compared
 @quotation
-@b{Common Lisp note:} Here are some comparisons of special forms in
-GNU Emacs Lisp and Common Lisp.  @code{setq}, @code{if}, and
-@code{catch} are special forms in both Emacs Lisp and Common Lisp.
-@code{save-excursion} is a special form in Emacs Lisp, but
-doesn't exist in Common Lisp.  @code{throw} is a special form in
-Common Lisp (because it must be able to throw multiple values), but it
-is a function in Emacs Lisp (which doesn't have multiple
-values).
+@b{Common Lisp примечание:} Вот некоторые сравнения специальных форм в GNU
+Emacs Lisp и Common Lisp.  @code{setq}, @code{if}, и @code{catch}
+специальные формы в обоих Emacs Lisp и Common Lisp.  @code{save-excursion}
+является особой формой в Emacs Lisp, но не существует в Common Lisp.
+@code{throw} является особой формой в Common Lisp (потому что он должен быть
+в состоянии генерировать несколько значений), но это функция в Emacs Lisp
+(который не имеет несколько значений).
 @end quotation
 
 @node Autoloading
-@subsection Autoloading
+@subsection Автозагрузка
 
-  The @dfn{autoload} feature allows you to call a function or macro
-whose function definition has not yet been loaded into Emacs.  It
-specifies which file contains the definition.  When an autoload object
-appears as a symbol's function definition, calling that symbol as a
-function automatically loads the specified file; then it calls the
-real definition loaded from that file.  The way to arrange for an
-autoload object to appear as a symbol's function definition is
-described in @ref{Autoload}.
+  @dfn{Автозагрузка} функции позволяет вызывать функцию или макрос,
+  определение которых еще не были загружены в Emacs.  Указывается какой файл
+  содержит определение.  Когда объект автозагрузка содержиться в компоненте
+  ячейки функции символа, вызов символа как функции автоматически загружает
+  указанный файл и затем вызывается реальное определение, загруженное из
+  этого файла.  Способ организовать отображение объекта автозагрузки, чтобы
+  выглядел как определение функции символа, описан в @ref{Autoload}.
 
 @node Quoting
-@section Quoting
+@section Квотирование
 @cindex forms, quote
 
-  The special form @code{quote} returns its single argument, as written,
-without evaluating it.  This provides a way to include constant symbols
-and lists, which are not self-evaluating objects, in a program.  (It is
-not necessary to quote self-evaluating objects such as numbers, strings,
-and vectors.)
+  Специальная форма @code{quote} возвращает свой единственный аргумент,
+  в его печатном представлении, так как он написан, не оценивая его.  Это
+  дает возможность включать в коде такие символы и списки, которые не
+  должны рассматриваться как самооценочные объекты при выполнения кода
+  программы.  (Необязательно цитировать самооценочные объекты, такие как
+  числа, строки и векторы.)
 
 @defspec quote object
-This special form returns @var{object}, without evaluating it.
+Специальная форма возвращает @var{object}, без его оценки.
 @end defspec
 
 @cindex @samp{'} for quoting
 @cindex quoting using apostrophe
 @cindex apostrophe for quoting
-Because @code{quote} is used so often in programs, Lisp provides a
-convenient read syntax for it.  An apostrophe character (@samp{'})
-followed by a Lisp object (in read syntax) expands to a list whose first
-element is @code{quote}, and whose second element is the object.  Thus,
-the read syntax @code{'x} is an abbreviation for @code{(quote x)}.
+Поскольку @code{quote} используется крайне часто в программах, Lisp
+предоставляет удобный синтаксис для чтения для него.  Апостроф (@samp{'}) с
+последующим объектом Lisp (в синтаксисе для чтения) расширяется до списка,
+первый элемент которого функция @code{quote}, а второй элемент сам объект.
+Таким образом, чтение синтаксиса @code{'x} это аббревиатура для
+@code{(quote x)}.
 
-Here are some examples of expressions that use @code{quote}:
+Вот некоторые примеры выражений, которые используют @code{quote}:
 
 @example
 @group
@@ -598,55 +601,60 @@ Here are some examples of expressions that use @code{quote}:
 @end group
 @end example
 
-  Other quoting constructs include @code{function} (@pxref{Anonymous
-Functions}), which causes an anonymous lambda expression written in Lisp
-to be compiled, and @samp{`} (@pxref{Backquote}), which is used to quote
-only part of a list, while computing and substituting other parts.
+  К другим конструкциям квотирования относятся @code{function}
+  (@pxref{Anonymous Functions}), которая вызывают компиляцию анонимного
+  лямбда-выражения, написанного на Lisp и @samp{`} (@pxref{Backquote}),
+  которая используется для квотирования текстуально опредлённых частей
+  списочной формы при вычислении и замене других частей.(ВопросEval608)
 
 @node Backquote
-@section Backquote
+@section Обратная Кавычка
 @cindex backquote (list substitution)
 @cindex ` (list substitution)
 @findex `
 @cindex forms, backquote
 
-  @dfn{Backquote constructs} allow you to quote a list, but
-selectively evaluate elements of that list.  In the simplest case, it
-is identical to the special form @code{quote}
+  @dfn{Конструкция обратной кавычки} позволяет квотировать списочную форму,
+  но выборочно оценивать элементы этого списка.  В простейшем случае
+  конструкция идентична специальной форме @code{quote}
 @iftex
 @end iftex
 @ifnottex
-(described in the previous section; @pxref{Quoting}).
+(описано в предыдущем разделе; @pxref{Quoting}).
 @end ifnottex
-For example, these two forms yield identical results:
+Например, эти две формы дают одинаковые результаты:
 
 @example
 @group
-`(a list of (+ 2 3) elements)
-     @result{} (a list of (+ 2 3) elements)
+`(список состоит из (+ 2 3) элементов)
+     @result{} (список состоит из
+	(+ 2 3)
+	элементов)
 @end group
 @group
-'(a list of (+ 2 3) elements)
-     @result{} (a list of (+ 2 3) elements)
+'(список состоит из (+ 2 3) элементов)
+     @result{} (список состоит из
+	(+ 2 3)
+	элементов)
 @end group
 @end example
 
 @findex , @r{(with backquote)}
-  The special marker @samp{,} inside of the argument to backquote
-indicates a value that isn't constant.  The Emacs Lisp evaluator
-evaluates the argument of @samp{,}, and puts the value in the list
-structure:
+  Специальный маркер @samp{,} внутри аргумента обратной кавычки указывает на
+  значение, которое не является константным.  Emacs Lisp оценщик оценивает
+  форму, которая следует сразу после @samp{,} в аргументе обратной кавычки и
+  помещает полученное значение вместо оценённой формы в списочную структуру:
 
 @example
 @group
-`(a list of ,(+ 2 3) elements)
-     @result{} (a list of 5 elements)
+`(список состоит из ,(+ 2 3) элементов)
+     @result{} (список состоит из 5 элементов)
 @end group
 @end example
 
 @noindent
-Substitution with @samp{,} is allowed at deeper levels of the list
-structure also.  For example:
+Замещение @samp{,} допускается также и на более глубоких уровнях списочной
+структуры.  Например:
 
 @example
 @group
@@ -657,11 +665,11 @@ structure also.  For example:
 
 @findex ,@@ @r{(with backquote)}
 @cindex splicing (with backquote)
-  You can also @dfn{splice} an evaluated value into the resulting list,
-using the special marker @samp{,@@}.  The elements of the spliced list
-become elements at the same level as the other elements of the resulting
-list.  The equivalent code without using @samp{`} is often unreadable.
-Here are some examples:
+  Вы также можете @dfn{вставить} оцененное значение в результирующую
+  списочную форму, с помощью специального маркера @samp{,@@}.  Элементы
+  сращенной списочной формы становятся того же уровня вложенности, что и
+  другие элементы полученной списочной формы.  Эквивалентный код без
+  использования @samp{`} часто получается нечитаем.  Вот некоторые примеры:
 
 @example
 @group
@@ -682,61 +690,64 @@ Here are some examples:
      @result{} (hack foo bar)
 @end group
 @group
-(cons 'use
-  (cons 'the
-    (cons 'words (append (cdr list) '(as elements)))))
-     @result{} (use the words foo bar as elements)
+(cons 'здесь
+  (cons 'используются
+    (cons 'слова (append (cdr list) '(в качестве элементов)))))
+     @result{} (здесь используются слова foo bar в качестве элементов)
 @end group
 @group
-`(use the words ,@@(cdr list) as elements)
-     @result{} (use the words foo bar as elements)
+`(здесь используются слова ,@@(cdr list) в качестве элементов)
+     @result{} (здесь используются слова foo bar в качестве элементов)
 @end group
 @end example
 
 
 @node Eval
-@section Eval
+@section Оценка
 
-  Most often, forms are evaluated automatically, by virtue of their
-occurrence in a program being run.  On rare occasions, you may need to
-write code that evaluates a form that is computed at run time, such as
-after reading a form from text being edited or getting one from a
-property list.  On these occasions, use the @code{eval} function.
-Often @code{eval} is not needed and something else should be used instead.
-For example, to get the value of a variable, while @code{eval} works,
-@code{symbol-value} is preferable; or rather than store expressions
-in a property list that then need to go through @code{eval}, it is better to
-store functions instead that are then passed to @code{funcall}.
+  Чаще всего, формы вычисляются автоматически, в силу их появления в
+  запущенной программе.  В редких случаях может возникнуть необходимость
+  написания кода, который оценивает форму, которая вычисляется во время
+  выполнения, например, после чтения формы из редактируемого текста или
+  получения формы из списка свойств.  В таких случаях используется функция
+  @code{eval}.  В основном используется что-то другое вместо @code{eval}.
+  Например, чтобы получить значение переменной, предпочтительнее использовать
+  @code{symbol-value} вместо @code{eval} или если значения хранится в списке
+  свойств, лучше получать значения свойств, используя написанную специально
+  для этого действия функцию, вызывая её в @code{funcall} с этим списком
+  свойств в качестве аргумента а не получать эти значения через @code{eval}.
 
-  The functions and variables described in this section evaluate forms,
-specify limits to the evaluation process, or record recently returned
-values.  Loading a file also does evaluation (@pxref{Loading}).
+  Функции и переменные, описанные в этом разделе, оценивают формы, указывают
+  ограничения при процессе оценки или записывают недавно возвращённые
+  значения.  При загрузки файла также производится оценка (@pxref{Loading}).
+  (ВопросEval723)
 
-  It is generally cleaner and more flexible to store a function in a
-data structure, and call it with @code{funcall} or @code{apply}, than
-to store an expression in the data structure and evaluate it.  Using
-functions provides the ability to pass information to them as
-arguments.
+  Как правило, более чище и более гибче, иметь функцию для работы с хранимой
+  структурой данных, вызывать её с @code{funcall} или @code{apply} для
+  обработки этой структуры, чем непосредственно оценивать эту структуру.
+  Использование таким образом функции, реализуется путём передачи самой
+  структуры в качестве аргумента функции.
 
 @defun eval form &optional lexical
-This is the basic function for evaluating an expression.  It evaluates
-@var{form} in the current environment, and returns the result.  The
-type of the @var{form} object determines how it is evaluated.
+Основная функция для вычисления выражения.  Оценивает @var{form} в текущей
+определённой окружающей среде, и возвращает результат.  Тип объекта
+@var{form} определяет, каким образом оно вычисляется.
 @xref{Forms}.
 
-The argument @var{lexical} specifies the scoping rule for local
-variables (@pxref{Variable Scoping}).  If it is omitted or @code{nil},
-that means to evaluate @var{form} using the default dynamic scoping
-rule.  If it is @code{t}, that means to use the lexical scoping rule.
-The value of @var{lexical} can also be a non-empty alist specifying a
-particular @dfn{lexical environment} for lexical bindings; however,
-this feature is only useful for specialized purposes, such as in Emacs
-Lisp debuggers.  @xref{Lexical Binding}.
+Аргумент @var{lexical} определяет правила видимости для локальных переменных
+(@pxref{Variable Scoping}).  Если опущен или @code{nil}, то форма @var{form}
+оценивается по правилам динамического связывания области по умолчанию.  Если
+аргумент установлен в @code{t}, это значит использовать правила лексической
+области видимости.  Значение @var{lexical} также может быть установленно в
+непустой ALIST, указывающий конкретную @dfn{лексическую среду} для
+лексического связывания; однако, эта возможность полезна только для
+специальных целей, например, в Emacs Lisp отладчиках.
+@xref{Lexical Binding}.
 
-Since @code{eval} is a function, the argument expression that appears
-in a call to @code{eval} is evaluated twice: once as preparation before
-@code{eval} is called, and again by the @code{eval} function itself.
-Here is an example:
+Поскольку @code{eval} - это функция, оценивающая также выражение аргумента,
+который передаётся в вызове @code{eval}, она вычисляется дважды: один раз
+как подготовка перед вызовом @code{eval} и снова самой функцией @code{eval}.
+Вот пример:
 
 @example
 @group
@@ -746,104 +757,108 @@ Here is an example:
 @group
 (setq bar 'baz)
      @result{} baz
-;; @r{Here @code{eval} receives argument @code{foo}}
+;; @r{Здесь @code{eval} получает квотируемый аргумент @code{foo}}
 (eval 'foo)
      @result{} bar
-;; @r{Here @code{eval} receives argument @code{bar}, which is the value of @code{foo}}
+;; @r{Здесь @code{eval} получает аргумент @code{foo}, который оценивается в
+значение @code{bar}} 
 (eval foo)
      @result{} baz
 @end group
 @end example
 
-The number of currently active calls to @code{eval} is limited to
-@code{max-lisp-eval-depth} (see below).
+Количество активных в данный момент вызовов в @code{eval} ограничивается
+@code{max-lisp-eval-depth} (смотреть ниже).
 @end defun
 
 @deffn Command eval-region start end &optional stream read-function
 @anchor{Definition of eval-region}
-This function evaluates the forms in the current buffer in the region
-defined by the positions @var{start} and @var{end}.  It reads forms from
-the region and calls @code{eval} on them until the end of the region is
-reached, or until an error is signaled and not handled.
+Функция оценивает форму в текущем буфере, в области, определяемой позицией
+начала @var{start} и позицией конца @var{end} области.  Считываются все формы
+из региона.  Для каждой вызывается @code{eval}, пока не будет достигнут конец
+указанного региона или пока не произойдёт ошибка, которая не будет
+обработана.
 
-By default, @code{eval-region} does not produce any output.  However,
-if @var{stream} is non-@code{nil}, any output produced by output
-functions (@pxref{Output Functions}), as well as the values that
-result from evaluating the expressions in the region are printed using
-@var{stream}.  @xref{Output Streams}.
+По умолчанию @code{eval-region} не производит никакокого вывода.  Однако,
+если @var{stream} установлен в не-@code{nil}, любой вывод, производимый
+функциями вывода (@pxref{Output Functions}), а также значения, которые
+являются результатом оценки выражений в выбранной области выводятся в
+указанный поток @var{stream}.  @xref{Output Streams}.
 
-If @var{read-function} is non-@code{nil}, it should be a function,
-which is used instead of @code{read} to read expressions one by one.
-This function is called with one argument, the stream for reading
-input.  You can also use the variable @code{load-read-function}
-(@pxref{Definition of load-read-function,, How Programs Do Loading})
-to specify this function, but it is more robust to use the
-@var{read-function} argument.
+Если аргумент функция чтения @var{read-function} установлен в не-@code{nil},
+это должна быть функция, которая используется вместо @code{read} для чтения
+выражений одиного за другим.  Эта функция вызывается с одним аргументом,
+потоком для чтения ввода.  Также можно использовать переменную
+@code{load-read-function}
+(@pxref{Definition of load-read-function,, How Programs Do Loading}), чтобы
+указать эту функцию, но более надежно использовать в аргументе функцию
+чтения @var{read-function}.
 
-@code{eval-region} does not move point.  It always returns @code{nil}.
+@code{eval-region} не перемещает и всегда возвращает @code{nil}.
 @end deffn
 
 @cindex evaluation of buffer contents
 @deffn Command eval-buffer &optional buffer-or-name stream filename unibyte print
-This is similar to @code{eval-region}, but the arguments provide
-different optional features.  @code{eval-buffer} operates on the
-entire accessible portion of buffer @var{buffer-or-name}
+Похожа на @code{eval-region}, но аргументами предоставляется различный
+дополнительный функционал.  @code{eval-buffer} действует на всей доступной
+части буфера @var{buffer-or-name}
 (@pxref{Narrowing,,, emacs, The GNU Emacs Manual}).
-@var{buffer-or-name} can be a buffer, a buffer name (a string), or
-@code{nil} (or omitted), which means to use the current buffer.
-@var{stream} is used as in @code{eval-region}, unless @var{stream} is
-@code{nil} and @var{print} non-@code{nil}.  In that case, values that
-result from evaluating the expressions are still discarded, but the
-output of the output functions is printed in the echo area.
-@var{filename} is the file name to use for @code{load-history}
-(@pxref{Unloading}), and defaults to @code{buffer-file-name}
-(@pxref{Buffer File Name}).  If @var{unibyte} is non-@code{nil},
-@code{read} converts strings to unibyte whenever possible.
+@var{buffer-or-name} может быть буфером, именем буфера (строкой), или
+@code{nil} (быть опущен), что означает использовать текущий буфер.
+@var{stream} используется как и в @code{eval-region}, если @var{stream}
+установлен в не-@code{nil} и @var{print} установлен в не-@code{nil}.  В этом
+случае, значения, полученные в результате оценки выражений все ещё
+отбрасываются, но вывод функций вывода печатаются в области эха.
+@var{filename} это имя файла для @code{load-history} (@pxref{Unloading}), и
+по умолчанию это @code{buffer-file-name} (@pxref{Buffer File Name}).  Если
+@var{unibyte} не-@code{nil}, @code{read} преобразует строки в однобайтные
+всякий раз, когда это возможно.
 
 @findex eval-current-buffer
-@code{eval-current-buffer} is an alias for this command.
+@code{eval-current-buffer} это псевдоним для этой команды.
 @end deffn
 
 @defopt max-lisp-eval-depth
 @anchor{Definition of max-lisp-eval-depth}
-This variable defines the maximum depth allowed in calls to @code{eval},
-@code{apply}, and @code{funcall} before an error is signaled (with error
-message @code{"Lisp nesting exceeds max-lisp-eval-depth"}).
+Эта переменная определяет максимальную глубину разрешенных вызовов
+@code{eval}, @code{apply}, и @code{funcall}, превышение значение которой,
+способствует сигналу об ошибке (с сообщением об ошибке
+@code{"Lisp nesting exceeds max-lisp-eval-depth"}).
 
-This limit, with the associated error when it is exceeded, is one way
-Emacs Lisp avoids infinite recursion on an ill-defined function.  If
-you increase the value of @code{max-lisp-eval-depth} too much, such
-code can cause stack overflow instead.  On some systems, this overflow
-can be handled.  In that case, normal Lisp evaluation is interrupted
-and control is transferred back to the top level command loop
-(@code{top-level}).  Note that there is no way to enter Emacs Lisp
-debugger in this situation.  @xref{Error Debugging}.
+Этот предел и связанная с ним ошибка при его превышении - это один из
+способов, избежать Emacs Lisp, зацикливание на плохо определенной функции.
+Если сильно увеличить значение @code{max-lisp-eval-depth}, такой код может
+вызвать переполнение стека.  В некоторых системах, это переполнение может
+быть обработано.  В этом случае нормальная оценка Lisp прерывается и
+управление передается обратно в (@code{top-level}) цикл верхнего уровня.
+Обратите внимание, что нет никакого способа, чтобы запустить Emacs Lisp
+отладчик в этой ситуации.  @xref{Error Debugging}.
 
 @cindex Lisp nesting error
 
-The depth limit counts internal uses of @code{eval}, @code{apply}, and
-@code{funcall}, such as for calling the functions mentioned in Lisp
-expressions, and recursive evaluation of function call arguments and
-function body forms, as well as explicit calls in Lisp code.
+Предел глубины подсчитывает внутренние использования @code{eval},
+@code{apply}, и @code{funcall}, например, для вызова функций, упомянутых в
+Lisp выражениях, рекурсивные оценки аргументов вызова функции и формы
+функции тела, а также явные вызовы в коде Lisp.
 
-The default value of this variable is 800.  If you set it to a value
-less than 100, Lisp will reset it to 100 if the given value is
-reached.  Entry to the Lisp debugger increases the value, if there is
-little room left, to make sure the debugger itself has room to
-execute.
+Значение по умолчанию для этой переменной равно 800.  Если вы установите его
+на значение меньше 100, Lisp исправит его до 100, если будет достигнуто
+заданное максимальное значение.  Вход в Lisp отладчик увеличивает при
+необходимости это значение, если у самого отладчика существует место для
+выполнения.
 
-@code{max-specpdl-size} provides another limit on nesting.
+@code{max-specpdl-size} предоставляет ещё один предел вложенности.
 @xref{Definition of max-specpdl-size,, Local Variables}.
 @end defopt
 
 @defvar values
-The value of this variable is a list of the values returned by all the
-expressions that were read, evaluated, and printed from buffers
-(including the minibuffer) by the standard Emacs commands which do
-this.  (Note that this does @emph{not} include evaluation in
-@file{*ielm*} buffers, nor evaluation using @kbd{C-j}, @kbd{C-x C-e},
-and similar evaluation commands in @code{lisp-interaction-mode}.)  The
-elements are ordered most recent first.
+Значение этого переменный представляет собой список значений, возвращаемых
+всеми выражениями, которые были прочитаны, оценены, и введены из буферов
+(в том числе минибуфера) с помощью стандартных команд Emacs, которые делают
+это.  (Обратите внимание, что это @emph{не} включает оценку в @file{*ielm*}
+буфере: не производит оценки, используя @kbd{C-j}, @kbd{C-x C-e} и подобные
+в @code{lisp-interaction-mode} команды оценки.).  Элементы упорядочиваются
+в хронологическом порядке.
 
 @example
 @group
@@ -860,19 +875,20 @@ values
 @end group
 @end example
 
-This variable is useful for referring back to values of forms recently
-evaluated.  It is generally a bad idea to print the value of
-@code{values} itself, since this may be very long.  Instead, examine
-particular elements, like this:
+Эта переменная полезна для ссылок к значениям недавно оценённых форм.  Как
+правило, плохая идея, вывести значение самого @code{values}, так как это
+может быть очень длинным.  Вместо этого, лучше изучить отдельные элементы,
+например так:
 
+(ВопросEval883, баян с примером)
 @example
 @group
-;; @r{Refer to the most recent evaluation result.}
+;; @r{Обращение к самому недавнему результату оценки.}
 (nth 0 values)
      @result{} (A 3 t)
 @end group
 @group
-;; @r{That put a new element on,}
+;; @r{That put a new element on, }
 ;;   @r{so all elements move back one.}
 (nth 1 values)
      @result{} (A 3 t)
