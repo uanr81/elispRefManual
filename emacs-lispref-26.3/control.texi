@@ -790,41 +790,39 @@ LET-связывающего механизма, предоставляемый 
 @anchor{pcase-symbol-caveats}
 @subheading Предостережения для @var{символа} в Последовательностях Шаблонов
 
-The preceding examples all use sequencing patterns
-which include the @var{symbol}
-sub-pattern in some way.
-Here are some important details about that usage.
+В предыдущих примерах, все последовательности шаблонов, каким-то образом
+включают @var{symbol} суб-шаблон в некотором роде.  Вот некоторые важные
+детали при использовании.
 
 @enumerate
-@item When @var{symbol} occurs more than once in @var{seqpat},
-the second and subsequent occurrences do not expand to re-binding,
-but instead expand to an equality test using @code{eq}.
+@item Когда @var{symbol} встречается более чем один раз в @var{seqpat},
+вторые и последующие появления не расширяются для повторного связывания, но
+расширяются для теста равенства с помощью @code{eq}.
 
-The following example features a @code{pcase} form
-with two clauses and two @var{seqpat}, A and B.
-Both A and B first check that @var{expval} is a
-pair (using @code{pred}),
-and then bind symbols to the @code{car} and @code{cdr}
-of @var{expval} (using one @code{app} each).
+Следующий пример показывает форму @code{pcase} с двумя пунктами и двумя
+@var{seqpat}, A и B.  И А и В в первую очередь проверяются на соответствие
+@var{expval} (с использованием @code{pred}), а затем связывают символы к
+@code{car} и @code{cdr} из @var{expval} (с использованием @code{app} для
+каждого). (ВопросControl806)
 
-For A, because symbol @code{st} is mentioned twice, the second
-mention becomes an equality test using @code{eq}.
-On the other hand, B uses two separate symbols, @code{s1} and
-@code{s2}, both of which become independent bindings.
+Для А, так как символ @code{st} упоминается дважды, второе упоминание
+становится проверка на равенство с использованием @code{eq}.  С другой
+стороны, B использует два отдельных символа, @code{s1} и @code{s2}, оба из
+которых устанавлмваются независимыми привязками.
 
 @example
 @group
 (defun grok (object)
   (pcase object
     ((and (pred consp)        ; seqpat A
-          (app car st)        ; first mention: st
-          (app cdr st))       ; second mention: st
+          (app car st)        ; первое упоминание: st
+          (app cdr st))       ; второе упоминание: st
      (list 'eq st))
 @end group
 @group
     ((and (pred consp)        ; seqpat B
-          (app car s1)        ; first mention: s1
-          (app cdr s2))       ; first mention: s2
+          (app car s1)        ; первое упоминание: s1
+          (app cdr s2))       ; первое упоминание: s2
      (list 'not-eq s1 s2))))
 @end group
 
@@ -836,10 +834,9 @@ On the other hand, B uses two separate symbols, @code{s1} and
 @end group
 @end example
 
-@item Side-effecting code referencing @var{symbol} is undefined.
-Avoid.
-For example, here are two similar functions.
-Both use @code{and}, @var{symbol} and @code{guard}:
+@item Побочное действия кода на который ссылается @var{symbol} не определено.
+Избегайте этого.  Например, вот две аналогичные функции.
+Оба используют @code{and}, @var{symbol} и @code{guard}:
 
 @example
 @group
@@ -848,8 +845,8 @@ Both use @code{and}, @var{symbol} and @code{guard}:
     ((and n (guard (< 9 n 100))) (list 'yes n))
     (sorry (list 'no sorry))))
 
-(square-double-digit-p/CLEAN 9) @result{} (yes 81)
-(square-double-digit-p/CLEAN 3) @result{} (no 9)
+(square-double-digit-p/CLEAN 9) @result{} (да 81)
+(square-double-digit-p/CLEAN 3) @result{} (не 9)
 @end group
 
 @group
@@ -858,21 +855,20 @@ Both use @code{and}, @var{symbol} and @code{guard}:
     ((and n (guard (< 9 (incf n) 100))) (list 'yes n))
     (sorry (list 'no sorry))))
 
-(square-double-digit-p/MAYBE 9) @result{} (yes 81)
-(square-double-digit-p/MAYBE 3) @result{} (yes 9)  ; @r{WRONG!}
+(square-double-digit-p/MAYBE 9) @result{} (да 81)
+(square-double-digit-p/MAYBE 3) @result{} (да 9)  ; @r{НЕПРАВИЛЬНО!}
 @end group
 @end example
 
 @noindent
-The difference is in @var{boolean-expression} in @code{guard}:
-@code{CLEAN} references @code{n} simply and directly,
-while @code{MAYBE} references @code{n} with a side-effect,
-in the expression @code{(incf n)}.
-When @code{integer} is 3, here's what happens:
+Разница заключается в @var{boolean-expression} в @code{guard}: @code{CLEAN}
+ссылки @code{n} просто и непосредственно, в то время как ссылки @code{MAYBE}
+@code{n} с побочным эффектом, в выражении @code{(incf n)}.  Когда
+@code{integer} 3, вот что происходит:
 
 @itemize
-@item The first @code{n} binds it to @var{expval},
-i.e., the result of evaluating @code{(* 3 3)}, or 9.
+@item Первый @code{n} связывает его с @var{expval}, то есть, результат
+вычисления @code{(* 3 3)}, или 9.
 
 @item @var{boolean-expression} is evaluated:
 
@@ -884,131 +880,123 @@ becomes: (< 9 (setq n (1+ 9)) 100)
 @end group
 @group
 becomes: (< 9 (setq n 10)     100)
-                                   ; @r{side-effect here!}
-becomes: (< 9       n         100) ; @r{@code{n} now bound to 10}
+                                   ; @r{Побочный эффект здесь!}
+becomes: (< 9       n         100) ; @r{@code{n} теперь связан с 10}
 becomes: (< 9      10         100)
 becomes: t
 @end group
 @end example
 
-@item Because the result of the evaluation is non-@code{nil},
-@code{guard} matches, @code{and} matches, and
-control passes to that clause's body forms.
+@item Так как результат оценки @code{guard} соответствия устанавливатся в
+не-@code{nil}, управление переходит к формам тела @code{and} соответствия.
 @end itemize
 
 @noindent
-Aside from the mathematical incorrectness of asserting that 9 is a
-double-digit integer, there is another problem with @code{MAYBE}.
-The body form references @code{n} once more, yet we do not see
-the updated value---10---at all.  What happened to it?
+Помимо математической некорректности, утверждая, что 9 является двузначным
+числом, есть еще одна проблема, с @code{MAYBE}.  Основная форма вычисляется
+ещё @code{n} раз, пока мы не увидим обновленное значение---10---ки для всех.
+Что случилось?
 
-To sum up, it's best to avoid side-effecting references to
-@var{symbol} patterns entirely, not only
-in @var{boolean-expression} (in @code{guard}),
-but also in @var{expr} (in @code{let})
-and @var{function} (in @code{pred} and @code{app}).
+Подводя итог, лучше, целиком избегать побочных ссылок @var{symbol} на
+шаблоны, а не только в @var{boolean-expression} (in @code{guard}), но и в
+@var{expr} (in @code{let}) и @var{function} (в @code{pred} и @code{app}).
 
-@item On match, the clause's body forms can reference the set
-of symbols the pattern let-binds.
-When @var{seqpat} is @code{and}, this set is
-the union of all the symbols each of its sub-patterns let-binds.
-This makes sense because, for @code{and} to match,
-all the sub-patterns must match.
+@item При соответствиие, форма тела альтернативы может ссылаться на набор
+символов шаблона let-привязки.  Когда @var{seqpat} обрабатывает @code{and},
+это множество является объединением всех символов в каждой из его
+суб-шаблонов let-привязки.  Это имеет смысл, потому что, @code{and} для
+соответствия требует, чтобы все суб-шаблоны совпали.
 
-When @var{seqpat} is @code{or}, things are different:
-@code{or} matches at the first sub-pattern that matches;
-the rest of the sub-patterns are ignored.
-It makes no sense for each sub-pattern to let-bind a different
-set of symbols because the body forms have no way to distinguish
-which sub-pattern matched and choose among the different sets.
-For example, the following is invalid:
+Когда @var{seqpat} пользуется @code{or}, дело обстоит иначе: @code{or}
+отработает на первом суб-шаблоне, который соответствует; остальная часть
+sub-шаблонов игнорируются.  Это не имеет никакого смысла для каждого
+sub-шаблона чтобы определять let-привязку другого набора символов, потому
+что формы тела не имеют никакого способа определить, какой sub-шаблон
+отработал соответствию и выбирать среди различных наборов.  Например,
+следующее недействительно:
 
 @example
 @group
-(pcase (read-number "Enter an integer: ")
+(pcase (read-number "Введите целое число: ")
   ((or (and (pred evenp)
-            e-num)      ; @r{bind @code{e-num} to @var{expval}}
-       o-num)           ; @r{bind @code{o-num} to @var{expval}}
+            e-num)      ; @r{связывают @code{e-num} с @var{expval}}
+       o-num)           ; @r{связывают @code{o-num} с @var{expval}}
    (list e-num o-num)))
 @end group
 
 @group
-Enter an integer: 42
-@error{} Symbol’s value as variable is void: o-num
+Введите целое число: 42
+@error{} Значение символа как переменный, является недействительным: o-num
 @end group
 @group
-Enter an integer: 149
-@error{} Symbol’s value as variable is void: e-num
+Введите целое число: 149
+@error{} значение символа как переменный, является недействительным: e-num
 @end group
 @end example
 
 @noindent
-Evaluating body form @w{@code{(list e-num o-num)}} signals error.
-To distinguish between sub-patterns, you can use another symbol,
-identical in name in all sub-patterns but differing in value.
-Reworking the above example:
+Оценка формы @w{@code{(list e-num o-num)}} сигнализирует об ошибке.  Для
+того, чтобы различать подшаблоны, вы можете использовать другой символ,
+идентичный по имени во всех подшаблонах но различающийся по значению.
+Переделывая приведенный выше пример:
 
 @example
 @group
-(pcase (read-number "Enter an integer: ")
-  ((and num                                ; @r{line 1}
-        (or (and (pred evenp)              ; @r{line 2}
-                 (let spin 'even))         ; @r{line 3}
-            (let spin 'odd)))              ; @r{line 4}
-   (list spin num)))                       ; @r{line 5}
+(pcase (read-number "Введите целое число: ")
+  ((and num                                ; @r{строка 1}
+        (or (and (pred evenp)              ; @r{строка 2}
+                 (let spin 'even))         ; @r{строка 3}
+            (let spin 'odd)))              ; @r{строка 4}
+   (list spin num)))                       ; @r{строка 5}
 @end group
 
 @group
-Enter an integer: 42
+Введите целое число: 42
 @result{} (even 42)
 @end group
 @group
-Enter an integer: 149
+Введите целое число: 149
 @result{} (odd 149)
 @end group
 @end example
 
 @noindent
-Line 1 ``factors out'' the @var{expval} binding with
-@code{and} and @var{symbol} (in this case, @code{num}).
-On line 2, @code{or} begins in the same way as before,
-but instead of binding different symbols, uses @code{let} twice
-(lines 3-4) to bind the same symbol @code{spin} in both sub-patterns.
-The value of @code{spin} distinguishes the sub-patterns.
-The body form references both symbols (line 5).
+Строка 1 ``фактический вывод'' @var{expval} связывает с @code{and} и
+@var{symbol} (в данном случае, @code{num}).  В строке 2, @code{or} вначале
+отрабатывает таким же образом, как и раньше, но вместо того, чтобы связывать
+различные символы, использует дважды @code{let} (строки 3-4), чтобы связать
+один и тот же символ @code{spin} в обоих подшаблонах.  Значение @code{spin}
+различает суб-шаблоны. Тело формы ссылается на оба символа (строка 5).
 @end enumerate
 
 @node Extending pcase
-@subsection Extending @code{pcase}
+@subsection Расширение @code{pcase}
 @cindex pcase, defining new kinds of patterns
 
-The @code{pcase} macro supports several kinds of patterns
+Макрос @code{pcase} поддерживает несколько видов шаблонов
 (@pxref{Pattern-Matching Conditional}).
-You can add support for other kinds of patterns
-using the @code{pcase-defmacro} macro.
+Можно добавить поддержку других видов шаблонов используя
+@code{pcase-defmacro} макрос.
 
 @defmac pcase-defmacro name args [doc] &rest body
-Define a new kind of pattern for @code{pcase}, to be invoked
-as @w{@code{(@var{name} @var{actual-args})}}.
-The @code{pcase} macro expands this into a function call
-that evaluates @var{body}, whose job it is to
-rewrite the invoked pattern into some other pattern,
-in an environment where @var{args} are bound to @var{actual-args}.
+Определить новый вид шаблона для @code{pcase}, который будет вызыватся формой
+@w{@code{(@var{name} @var{actual-args})}}.
+@code{pcase} макрос это вызов функции, которая оценивает @var{body}, чтобы
+переписать Вызванный шаблон в какой-то другой, в среде, где @var{args}
+связан с @var{actual-args}.
 
-Additionally, arrange to display @var{doc} along with
-the docstring of @code{pcase}.
-By convention, @var{doc} should use @code{EXPVAL}
-to stand for the result of
-evaluating @var{expression} (first arg to @code{pcase}).
+Кроме того, организовывается отображение @var{doc} вместе с @code{pcase} в
+строку документации.  По соглашению, для @var{doc} требуется использовать
+@code{EXPVAL} обозначения результата оценки @var{expression} (первый
+аргумент в @code{pcase}).
 @end defmac
 
 @noindent
-Typically, @var{body} rewrites the invoked pattern
-to use more basic patterns.
-Although all patterns eventually reduce to core patterns,
-@code{body} need not use core patterns straight away.
-The following example defines two patterns, named
-@code{less-than} and @code{integer-less-than}.
+Как правило, @var{body} переписывает вызванный шаблон, для использования
+более простых шаблонов.  Хотя все шаблоны в конечном счете сводятся к
+основному шаблону, нельзя использовать основные модели @code{body} сразу.
+Следующий пример определяет два шаблона, с именами @code{less-than} и
+@code{integer-less-than}.
 
 @example
 @group
@@ -1026,32 +1014,32 @@ The following example defines two patterns, named
 @end example
 
 @noindent
-Note that the docstrings mention @var{args}
-(in this case, only one: @code{n}) in the usual way,
-and also mention @code{EXPVAL} by convention.
-The first rewrite (i.e., @var{body} for @code{less-than})
-uses one core pattern: @code{pred}.
-The second uses two core patterns: @code{and} and @code{pred},
-as well as the newly-defined pattern @code{less-than}.
-Both use a single backquote construct (@pxref{Backquote}).
+Обратите внимание, что в строке документации @var{args} (в данном случае
+только один: @code{n}) упоменается обычным способом, а также упомянуто
+соглашение @code{EXPVAL}.  Первый переписывают (т.е. @var{body} для
+@code{less-than}) использует один основной шаблон с: @code{pred}.  Второй
+использует два основных шаблона с: @code{and} и @code{pred}, а также вновь
+определенный шаблон @code{less-than}.  Оба используют единую конструкцию
+кавычки (@pxref{Backquote}).
 
 @node Backquote Patterns
-@subsection Backquote-Style Patterns
+@subsection Шаблоны в Обратных Кавычках
 @cindex backquote-style patterns
 @cindex matching, structural
 @cindex structural matching
 
-This subsection describes @dfn{backquote-style patterns},
-a set of builtin patterns that eases structural matching.
-For background, @pxref{Pattern-Matching Conditional}.
+В этом подразделе описаны @dfn{шаблоны в обратных кавычках}, набор шаблонов,
+облегчающих структурное сопоставление. Для примера,
+@pxref{Pattern-Matching Conditional}.
 
-Backquote-style patterns are a powerful set of @code{pcase} pattern
-extensions (created using @code{pcase-defmacro}) that make it easy to
-match @var{expval} against specifications of its @emph{structure}.
+Шаблоны в обратных кавычках - мощный набор @code{pcase} расширений шаблонов
+(созданных с помощью @code{pcase-defmacro}), которые позволяют легко
+сопоставить @var{expval} со спецификациями его @emph{структуры}.
 
-For example, to match @var{expval} that must be a list of two
-elements whose first element is a specific string and the second
-element is any value, you can write a core pattern:
+Например, чтобы соответствовать @var{expval}, который должен быть списком из
+двух элементов, первый элемент которого представляет собой определенную
+строку, а второй элемент является любое значение, вы можете написать
+основной шаблон:
 
 @example
 @group
@@ -1066,62 +1054,57 @@ element is any value, you can write a core pattern:
 @end example
 
 @noindent
-or you can write the equivalent backquote-style pattern:
+или вы можете написать эквивалентный шаблон в стиле обратных кавычек:
 
 @example
 `("first" ,second-elem)
 @end example
 
 @noindent
-The backquote-style pattern is more concise,
-resembles the structure of @var{expval},
-and avoids binding @code{ls}.
+Шаблон в стиле обратных кавычек более краткий, напоминает структуру
+@var{expval}, и избегает привязки @code{ls}.
 
-A backquote-style pattern has the form @code{`@var{qpat}} where
-@var{qpat} can have the following forms:
+Стиль шаблона в обратных кавычках имеет вид @code{`@var{qpat}} где
+@var{qpat} может иметь следующие формы:
 
 @table @code
 
 @item (@var{qpat1} . @var{qpat2})
-Matches if @var{expval} is a cons cell whose @code{car}
-matches @var{qpat1} and whose @code{cdr} matches @var{qpat2}.
-This readily generalizes to lists as in
-@w{@code{(@var{qpat1} @var{qpat2} @dots{})}}.
+Срабатывает, если @var{expval} cons-ячейки, @code{car} которой соответствует
+@var{qpat1} и чей @code{cdr} соответствует @var{qpat2}.  Это легко обобщается
+на списки, как в  @w{@code{(@var{qpat1} @var{qpat2} @dots{})}}.
 
 @item [@var{qpat1} @var{qpat2} @dots{} @var{qpatm}]
-Matches if @var{expval} is a vector of length @var{m} whose
-@code{0}..@code{(@var{m}-1)}th elements match @var{qpat1},
-@var{qpat2} @dots{} @var{qpatm}, respectively.
+Срабатывает, если @var{expval} является вектором длиной @var{m}, чьи элементы
+соответствуют @code{0}..@code{(@var{m}-1)} @var{qpat1}, @var{qpat2} @dots{} @var{qpatm}, соответственно.
 
 @item @var{symbol}
 @itemx @var{keyword}
 @itemx @var{integer}
 @itemx @var{string}
-Matches if the corresponding element of @var{expval} is
-@code{equal} to the specified literal object.
-Note that, aside from @var{symbol}, this is the same set of
-self-quoting literal objects that are acceptable as a core pattern.
+Совпадение, если соответствующий элемент @var{expval} удовлетворяет
+@code{equal} к указанному буквальному объекту.
+Следует отметить, что, помимо @var{symbol}, это тот же самый набор
+самостоятельно процитированных литералов объектов, которые являются
+приемлемыми в качестве основного шаблона.
 
 @item ,@var{pattern}
-Matches if the corresponding element of @var{expval}
-matches @var{pattern}.
-Note that @var{pattern} is any kind that @code{pcase} supports.
-(In the example above, @code{second-elem} is a @var{symbol}
-core pattern; it therefore matches anything,
-and let-binds @code{second-elem}.)
+Совпадение, если соответствующий элемент @var{expval} соответствует
+@var{pattern}.  Обратите внимание, что @var{pattern} является любым видом,
+поддерживаемым @code{pcase}.  (В приведенном выше примере, @code{second-elem}
+является основным @var{symbol} шаблона, поэтому он соответствует чему угодно,
+и let-связанным с @code{second-elem}.)
 @end table
 
-The @dfn{corresponding element} is the portion of @var{expval}
-that is in the same structural position as the structural position
-of @var{qpat} in the backquote-style pattern.
-(In the example above, the corresponding element of
-@code{second-elem} is the second element of @var{expval}.)
+@dfn{Связанный элемент} представляет собой часть @var{expval}, которая
+находится в той же позиции, что и в структурной позиции @var{qpat} в шаблоне
+в стиле обратных кавычек.  (В приведенном выше примере, соответствующий
+элемент @code{second-elem} является вторым элементом @var{expval}.)
 
-Here is an example of using @code{pcase} to implement a simple
-interpreter for a little expression language
-(note that this requires lexical binding for the
-lambda expression in the @code{fn} clause to properly
-capture @code{body} and @code{arg} (@pxref{Lexical Binding}):
+Ниже приведен пример использования @code{pcase} реализации простого
+интерпретатора для небольшого языка выражений (заметим, что это требует
+лексического связывания для лямбда-выражения в альтернативе @code{fn}, чтобы
+должным образом захватить @code{body} и @code{arg} (@pxref{Lexical Binding}):
 
 @example
 @group
@@ -1145,26 +1128,23 @@ capture @code{body} and @code{arg} (@pxref{Lexical Binding}):
 @end example
 
 @noindent
-The first three clauses use backquote-style patterns.
-@code{`(add ,x ,y)} is a pattern that checks that @code{form}
-is a three-element list starting with the literal symbol @code{add},
-then extracts the second and third elements and binds them
-to symbols @code{x} and @code{y}, respectively.
-The clause body evaluates @code{x} and @code{y} and adds the results.
-Similarly, the @code{call} clause implements a function call,
-and the @code{fn} clause implements an anonymous function definition.
+Первые три альтернативы используют шаблоны в обратных кавычках.
+@code{`(add ,x ,y)} это шаблон, который проверяет, @code{form} как список из
+трех элементов, начиная с буквального символа @code{add}, затем извлекает
+второй и третий элементы и связывают их с символами @code{x} и @code{y},
+соответственно.  Тело альтернативы оценивает @code{x} и @code{y} и добавляет
+результаты.  Аналогичным образом, @code{call} альтернатива реализует функцию
+вызова, а условие реализует @code{fn} анонимное определение функции.
 
-The remaining clauses use core patterns.
-@code{(pred numberp)} matches if @code{form} is a number.
-On match, the body evaluates it.
-@code{(pred symbolp)} matches if @code{form} is a symbol.
-On match, the body looks up the symbol in @code{env} and
-returns its association.
-Finally, @code{_} is the catch-all pattern that
-matches anything, so it's suitable for reporting syntax errors.
+Остальные альтернативы используют основные шаблоны.  @code{(pred numberp)}
+совпадает, если @code{form} является числом.  При соответствии, оценивается
+его тело формы.  @code{(pred symbolp)} совпадает, если @code{form} является
+символом.  При совпадении с @code{env}, тело формы возвращает его ассоциацию.
+Наконец, @code{_} это универсальный шаблон, который соответствует чему
+угодно, поэтому подходит для представления синтаксических ошибок.
 
-Here are some sample programs in this small language, including their
-evaluation results:
+Вот некоторые примеры программ в этом небольшом языке, в том числе их
+результаты оценки:
 
 @example
 (evaluate '(add 1 2) nil)                 @result{} 3
@@ -1174,37 +1154,36 @@ evaluation results:
 @end example
 
 @node Destructuring with pcase Patterns
-@subsection Destructuring with @code{pcase} Patterns
+@subsection Деструктуризация Шаблонов @code{pcase}
 @cindex destructuring with pcase patterns
 
-Pcase patterns not only express a condition on the form of the objects
-they can match, but they can also extract sub-fields of those objects.
-For example we can extract 2 elements from a list that is the value of
-the variable @code{my-list} with the following code:
+@code{pcase} с помощью шаблоов выражает не только условие о форме объектов,
+которые они могут совпадать, но они также может извлечь дополнительные поля
+этих объектов.  Например, мы можем извлечь 2 элемента из списка, который
+является значением переменной @code{my-list} со следующим кодом:
 
 @example
   (pcase my-list
     (`(add ,x ,y)  (message "Contains %S and %S" x y)))
 @end example
 
-This will not only extract @code{x} and @code{y} but will additionally
-test that @code{my-list} is a list containing exactly 3 elements and
-whose first element is the symbol @code{add}.  If any of those tests
-fail, @code{pcase} will immediately return @code{nil} without calling
-@code{message}.
+Это позволяет не только извлечь @code{x} и @code{y}, но будет дополнительно
+проверенно, что @code{my-list} представляет собой список, содержащий ровно
+3 элемента и чей первый элемент является символом @code{add}.  Если
+какое-либо из этих условий не выполняется, @code{pcase} немедленно
+возвращает @code{nil} без вызова @code{message}.
 
-Extraction of multiple values stored in an object is known as
-@dfn{destructuring}.  Using @code{pcase} patterns allows to perform
-@dfn{destructuring binding}, which is similar to a local binding
-(@pxref{Local Variables}), but gives values to multiple elements of
-a variable by extracting those values from an object of compatible
-structure.
+Извлечение нескольких значений, хранящихся в объекте известно как
+@dfn{деструктуризация}.  Использование шаблонов с @code{pcase} позволяет
+выполнять @dfn{деструктуризационную привязку}, похожую на локальное
+связывание (@pxref{Local Variables}), но обрабатывает несколько значений
+элементов в переменной, извлекая эти значения из объекта совместимой
+структуры.
 
-The macros described in this section use @code{pcase} patterns to
-perform destructuring binding.  The condition of the object to be of
-compatible structure means that the object must match the pattern,
-because only then the object's subfields can be extracted.  For
-example:
+Макросы, описанные в этом разделе, используют @code{pcase} с шаблонами для
+выполнения деструктуризационного связывания.  Чтобы это сработало, объект
+должен иметь совместимую структуру, то есть соответствовать шаблону, что в
+итоге позволяет извлекать подполя объекта.  Например:
 
 @example
   (pcase-let ((`(add ,x ,y) my-list))
@@ -1212,89 +1191,89 @@ example:
 @end example
 
 @noindent
-does the same as the previous example, except that it directly tries
-to extract @code{x} and @code{y} from @code{my-list} without first
-verifying if @code{my-list} is a list which has the right number of
-elements and has @code{add} as its first element.  The precise
-behavior when the object does not actually match the pattern is
-undefined, although the body will not be silently skipped: either an
-error is signaled or the body is run with some of the variables
-potentially bound to arbitrary values like @code{nil}.
+происходит то же самое, как и в предыдущем примере, за исключением того, что
+непосредственно производится попытка извлечь @code{x} и @code{y} из
+@code{my-list} без предварительной проверки, если @code{my-list} список,
+который имеет нужное количество элементов и имеет @code{add} в качестве
+первого элемента.  Точное поведение, когда объект фактически не
+соответствует шаблону не определен, хотя тело не будет молча пропущено:
+сигнализируется либо ошибка или тело отработает с некоторыми переменными,
+потенциально связанными с произвольными значениями, например @code{nil}.
 
-The pcase patterns that are useful for destructuring bindings are
-generally those described in @ref{Backquote Patterns}, since they
-express a specification of the structure of objects that will match.
+Шаблоны в pcase, которые полезны для деструктурированных привязок, обычно
+записываются в стиле @ref{Backquote Patterns}, поскольку могут выразить
+специфическую структуру объектов, которым будут соответствовать.
 
-For an alternative facility for destructuring binding, see
-@ref{seq-let}.
+В качестве альтернативного средства для деструктурированного связывания,
+смотреть @ref{seq-let}.
 
 @defmac pcase-let bindings body@dots{}
-Perform destructuring binding of variables according to
-@var{bindings}, and then evaluate @var{body}.
+Выполняется деструктуризированное связывание переменных в соответствии с
+@var{bindings}, а затем оценивается @var{body}.
 
-@var{bindings} is a list of bindings of the form @w{@code{(@var{pattern}
-@var{exp})}}, where @var{exp} is an expression to evaluate and
-@var{pattern} is a @code{pcase} pattern.
+@var{bindings} представляет собой список привязок вида
+@w{@code{(@var{pattern} @var{exp})}}, где @var{exp} является выражением
+для оценки и @var{pattern} является шаблоном @code{pcase}.
 
-All @var{exp}s are evaluated first, after which they are matched
-against their respective @var{pattern}, introducing new variable
-bindings that can then be used inside @var{body}.  The variable
-bindings are produced by destructuring binding of elements of
-@var{pattern} to the values of the corresponding elements of the
-evaluated @var{exp}.
+Все @var{exp} вычисляются в первую очередь, после чего они сопоставляются
+с их соответствующими @var{pattern}, вводя новые привязки переменных,
+которые затем могут быть использованы внутри @var{body}.  Cвязывание
+переменных производится путём деструткризированной привязки элементов шаблона
+@var{pattern} к значениям соответствующих элементов оцениваемого @var{exp}.
 @end defmac
 
 @defmac pcase-let* bindings body@dots{}
-Perform destructuring binding of variables according to
-@var{bindings}, and then evaluate @var{body}.
+Выполняется деструктуризированное связывание переменных в соответствии с
+@var{bindings}, а затем оценивается @var{body}.
 
-@var{bindings} is a list of bindings of the form @code{(@var{pattern}
-@var{exp})}, where @var{exp} is an expression to evaluate and
-@var{pattern} is a @code{pcase} pattern.  The variable bindings are
-produced by destructuring binding of elements of @var{pattern} to the
-values of the corresponding elements of the evaluated @var{exp}.
+@var{bindings} представляет собой список привязок вида
+@code{(@var{pattern} @var{exp})}, где @var{exp} является выражением для
+оценки и @var{pattern} является шаблоном @code{pcase}.  Связывание переменных
+производится путём деструктуризированного связывания элементов @var{pattern}
+к значениям соответствующих элементов оцениваемого @var{exp}.
 
-Unlike @code{pcase-let}, but similarly to @code{let*}, each @var{exp}
-is matched against its corresponding @var{pattern} before processing
-the next element of @var{bindings}, so the variable bindings
-introduced in each one of the @var{bindings} are available in the
-@var{exp}s of the @var{bindings} that follow it, additionally to
-being available in @var{body}.
+В отличие от @code{pcase-let} и так же, как @code{let*}, каждое @var{exp}
+сравнивается с соответствующим ему шаблону @var{pattern} перед обработкой
+следующей привязки элемента @var{bindings}, поэтому привязки переменных,
+введенные в каждой одной привязки @var{bindings} доступны @var{exp}s 
+привязки @var{bindings} в дополнение доступности в теле @var{body}.
 @end defmac
 
 @defmac pcase-dolist (pattern list) body@dots{}
-Execute @var{body} once for each element of @var{list}, on each
-iteration performing a destructuring binding of variables in
-@var{pattern} to the values of the corresponding subfields of the
-element of @var{list}.  The bindings are performed as if by
-@code{pcase-let}.  When @var{pattern} is a simple variable, this ends
-up being equivalent to @code{dolist} (@pxref{Iteration}).
+Выполняет тело @var{body} один раз для каждого элемента списка @var{list},
+на каждой итерации, выполняя деструтурирующее связывания переменных
+шаблона @var{pattern} к значениям соответствующих подполей элемента списка
+@var{list}.  Привязка выполняются как бы и по @code{pcase-let}.  Когда
+шаблон @var{pattern} является простой переменной, это в конечном итоге
+эквивалентно @code{dolist} (@pxref{Iteration}).
 @end defmac
 
 
 @node Iteration
-@section Iteration
+@section Итерация
 @cindex iteration
 @cindex recursion
 @cindex forms, iteration
 
-  Iteration means executing part of a program repetitively.  For
-example, you might want to repeat some computation once for each element
-of a list, or once for each integer from 0 to @var{n}.  You can do this
-in Emacs Lisp with the special form @code{while}:
+  Итерация означает повторное выполнение части программы.  Например, нужно
+  повторить некоторые вычисления один раз для каждого элемента списка или
+  один раз для каждого целого числа от 0 до @var{n}.  Сделать это в Emacs
+  Lisp можно используя специальную форму @code{while}:
 
 @defspec while condition forms@dots{}
-@code{while} first evaluates @var{condition}.  If the result is
-non-@code{nil}, it evaluates @var{forms} in textual order.  Then it
-reevaluates @var{condition}, and if the result is non-@code{nil}, it
-evaluates @var{forms} again.  This process repeats until @var{condition}
-evaluates to @code{nil}.
+Выражение @code{while} сначала вычисляет состояния @var{condition}.  Если
+установленно в не-@code{nil}, оценивается тело формы @var{forms} в текстовом
+порядке.  Затем переоценивает состояние @var{condition}, и если оно снова
+установлено в не-@code{nil}, снова оценивается тело формы @var{forms}.  Этот
+процесс повторяется до тех пор, состояние @var{condition} будет установлено в
+@code{nil}.
 
-There is no limit on the number of iterations that may occur.  The loop
-will continue until either @var{condition} evaluates to @code{nil} or
-until an error or @code{throw} jumps out of it (@pxref{Nonlocal Exits}).
+Нет ограничений на количество итераций, которые могут произойти.  Цикл будет
+продолжаться до тех пор, пока либо состояние @var{condition} не будет
+установлено в @code{nil} либо не произойдёт выход @code{throw} из него
+(@pxref{Nonlocal Exits}).
 
-The value of a @code{while} form is always @code{nil}.
+Оценка формы @code{while} всегда @code{nil}.
 
 @example
 @group
@@ -1313,10 +1292,9 @@ The value of a @code{while} form is always @code{nil}.
 @end group
 @end example
 
-To write a repeat-until loop, which will execute something on each
-iteration and then do the end-test, put the body followed by the
-end-test in a @code{progn} as the first argument of @code{while}, as
-shown here:
+Для реализации выполнения инструкций в итерации цикла до проверки состояния,
+поместите инструкции в форму @code{progn} в качестве первого аргумента
+@code{while}, как показано здесь:
 
 @example
 @group
@@ -1327,20 +1305,21 @@ shown here:
 @end example
 
 @noindent
-This moves forward one line and continues moving by lines until it
-reaches an empty line.  It is peculiar in that the @code{while} has no
-body, just the end test (which also does the real work of moving point).
+Здесь точка перемещается вперед на одну строку и движется по строке до тех
+пор, пока не достигнет пустой строки.   Особенность такого подхода в том, что
+форма @code{while} не имеет тела инструкции, только инструкцию состояния
+(которая кроме проверки, также перемещает точку).
 @end defspec
 
-  The @code{dolist} and @code{dotimes} macros provide convenient ways to
-write two common kinds of loops.
+  @code{dolist} и @code{dotimes} макросы обеспечивают удобный способ, чтобы
+  написать два общих вида цикла.
 
 @defmac dolist (var list [result]) body@dots{}
-This construct executes @var{body} once for each element of
-@var{list}, binding the variable @var{var} locally to hold the current
-element.  Then it returns the value of evaluating @var{result}, or
-@code{nil} if @var{result} is omitted.  For example, here is how you
-could use @code{dolist} to define the @code{reverse} function:
+Конструкция выполняет тело формы @var{body}, один раз для каждого элемента
+списка @var{list}, локально связывая переменную @var{var} для хранения
+текущего элемента.  Затем возвращает значение оценки переменной @var{result}
+или @code{nil}, если @var{result} не задано.  Например, вот как вы можете
+использовать @code{dolist} для определения функции @code{reverse}:
 
 @example
 (defun reverse (list)
@@ -1351,163 +1330,161 @@ could use @code{dolist} to define the @code{reverse} function:
 @end defmac
 
 @defmac dotimes (var count [result]) body@dots{}
-This construct executes @var{body} once for each integer from 0
-(inclusive) to @var{count} (exclusive), binding the variable @var{var}
-to the integer for the current iteration.  Then it returns the value
-of evaluating @var{result}, or @code{nil} if @var{result} is omitted.
-Here is an example of using @code{dotimes} to do something 100 times:
+Конструкция оценивает тело формы @var{body}, один раз для каждого целого
+числа, от 0 (включительно) до @var{count} (исключительно), связывая
+переменную @var{var} с целым числом текущей итерации.  Затем возвращает
+значение оценки @var{result} или @code{nil}, если @var{result} опущен.
+Ниже приведен пример использования @code{dotimes} сделать что-то 100 раз:
 
 @example
 (dotimes (i 100)
-  (insert "I will not obey absurd orders\n"))
+  (insert "Я не буду выполнять абсурдные приказы\n"))
 @end example
 @end defmac
 
 @node Generators
-@section Generators
+@section Генераторы
 @cindex generators
 
-  A @dfn{generator} is a function that produces a potentially-infinite
-stream of values.  Each time the function produces a value, it
-suspends itself and waits for a caller to request the next value.
+  @dfn{Генератор} представляет из себя функцию, которая производит
+  потенциально бесконечный поток выполнения.  Каждый раз, когда функция
+  производит значение, приостанавливается и ждет вызывающего абонента для
+  запроса следующего значения. (ВопросControl1352)
 
 @defmac iter-defun name args [doc] [declare] [interactive] body@dots{}
-@code{iter-defun} defines a generator function.  A generator function
-has the same signature as a normal function, but works differently.
-Instead of executing @var{body} when called, a generator function
-returns an iterator object.  That iterator runs @var{body} to generate
-values, emitting a value and pausing where @code{iter-yield} or
-@code{iter-yield-from} appears.  When @var{body} returns normally,
-@code{iter-next} signals @code{iter-end-of-sequence} with @var{body}'s
-result as its condition data.
+@code{iter-defun} определяет функцию генератора.  Функция генератора имеет
+сигнатуру нормальной функции, но работает по-другому.  Вместо выполнения
+@var{body} при вызове функции генератора, возвращается объект итератора.
+Этот итератор запускает @var{body} для генерации значений, выдачи значений и
+пауз, в местах появления @code{iter-yield} или @code{iter-yield-from}.  Когда
+@var{body} возвращается, как правило, @code{iter-next} сигнализирует
+@code{iter-end-of-sequence} с @var{body} результатом в качестве данных
+состояния.
 
-Any kind of Lisp code is valid inside @var{body}, but
-@code{iter-yield} and @code{iter-yield-from} cannot appear inside
-@code{unwind-protect} forms.
+Любой вид кода Lisp действует внутри @var{body}, но @code{iter-yield} и
+@code{iter-yield-from} не могут появляться внутри формы
+@code{unwind-protect}.
 
 @end defmac
 
 @defmac iter-lambda args [doc] [interactive] body@dots{}
-@code{iter-lambda} produces an unnamed generator function that works
-just like a generator function produced with @code{iter-defun}.
+@code{iter-lambda} создаёт безымянную функцию генератора, которая работает
+точно так же, как функции генератора созданная @code{iter-defun}.
 @end defmac
 
 @defmac iter-yield value
-When it appears inside a generator function, @code{iter-yield}
-indicates that the current iterator should pause and return
-@var{value} from @code{iter-next}.  @code{iter-yield} evaluates to the
-@code{value} parameter of next call to @code{iter-next}.
+Когда появляется внутри функции генератора, @code{iter-yield} указывает на
+то, что текущий итератор должен сделать паузу и вернуть @var{value} из
+@code{iter-next}.  @code{iter-yield} принимает значение параметра
+@code{value} следующего вызова @code{iter-next}.
 @end defmac
 
 @defmac iter-yield-from iterator
-@code{iter-yield-from} yields all the values that @var{iterator}
-produces and evaluates to the value that @var{iterator}'s generator
-function returns normally.  While it has control, @var{iterator}
-receives values sent to the iterator using @code{iter-next}.
+@code{iter-yield-from} дает все значения, которые @var{iterator} производит
+и определяет этой функции @var{iterator} когда генератор возвращается в
+нормальном режиме.  Пока существует контроль, @var{iterator} принимает
+значения, отправленные итератору с помощью @code{iter-next}.
 @end defmac
 
-  To use a generator function, first call it normally, producing a
-@dfn{iterator} object.  An iterator is a specific instance of a
-generator.  Then use @code{iter-next} to retrieve values from this
-iterator.  When there are no more values to pull from an iterator,
-@code{iter-next} raises an @code{iter-end-of-sequence} condition with
-the iterator's final value.
+  Для того, чтобы использовать функцию генератора, сначала требуется вызвать
+  её как обычно, создав объект @dfn{iterator}.  Итератор - это конкретный
+  экземпляр генератора.  Затем используется @code{iter-next} для извлечения
+  значений из этого итератора.  Когда больше нет значений, чтобы получить из
+  итератора, @code{iter-next} используется состояние
+  @code{iter-end-of-sequence} с конечным значением итератора.
 
-It's important to note that generator function bodies only execute
-inside calls to @code{iter-next}.  A call to a function defined with
-@code{iter-defun} produces an iterator; you must drive this
-iterator with @code{iter-next} for anything interesting to happen.
-Each call to a generator function produces a @emph{different}
-iterator, each with its own state.
+Важно отметить, что тело функции генератора выполняется только внутри вызова
+@code{iter-next}.  Вызов функции, определенной с помощью @code{iter-defun}
+создаёт итератор; нужно управлять этим итератором с помощью @code{iter-next}
+для получения чего-нибудь полезного.  Каждый вызов функции генератора
+производит @emph{разные} итераторы, каждый со своим собственным состоянием.
 
 @defun iter-next iterator value
-Retrieve the next value from @var{iterator}.  If there are no more
-values to be generated (because @var{iterator}'s generator function
-returned), @code{iter-next} signals the @code{iter-end-of-sequence}
-condition; the data value associated with this condition is the value
-with which @var{iterator}'s generator function returned.
+Получение следующего значения из @var{iterator}.  Если нет больше значений,
+которые требуется сгенерировать (поскольку @var{iterator} вернулас функци.
+генератора), @code{iter-next} сигнализирует состояние
+@code{iter-end-of-sequence}; значение данных, связанное с этим условием
+является значением, с которым @var{iterator} вернула функция генератора.
 
-@var{value} is sent into the iterator and becomes the value to which
-@code{iter-yield} evaluates.  @var{value} is ignored for the first
-@code{iter-next} call to a given iterator, since at the start of
-@var{iterator}'s generator function, the generator function is not
-evaluating any @code{iter-yield} form.
+@var{value} отправляется в итератор и становится значением, которое
+@code{iter-yield} оценивает.  @var{value} игнорируется для первого вызова
+@code{iter-next} данного итератора, так как в начале функция генератора
+@var{iterator}, функция генератор не оценивает какую-либо форму
+@code{iter-yield}. (ВопросControl1413)
 @end defun
 
 @defun iter-close iterator
-If @var{iterator} is suspended inside an @code{unwind-protect}'s
-@code{bodyform} and becomes unreachable, Emacs will eventually run
-unwind handlers after a garbage collection pass.  (Note that
-@code{iter-yield} is illegal inside an @code{unwind-protect}'s
-@code{unwindforms}.)  To ensure that these handlers are run before
-then, use @code{iter-close}.
+Если @var{iterator} подвешен внутри @code{unwind-protect}'s @code{bodyform} и
+становится недоступным, Emacs в конечном итоге запустит UNWIND обработчиков
+после сбора мусора прохода.  (Обратите внимание, что @code{iter-yield}
+не допускается внутри @code{unwind-protect}'s @code{unwindforms}.).  Для
+гарантии запуска этих обработчиков, используйте @code{iter-close}.
 @end defun
 
-Some convenience functions are provided to make working with
-iterators easier:
+Для облегчения работы с итераторами предусмотрены некоторые удобные функции:
 
 @defmac iter-do (var iterator) body @dots{}
-Run @var{body} with @var{var} bound to each value that
-@var{iterator} produces.
+Оценивается тело @var{body} с переменной @var{var}, связанной с каждым
+значением, которое @var{iterator} производит.
 @end defmac
 
-The Common Lisp loop facility also contains features for working with
-iterators.  @xref{Loop Facility,,,cl,Common Lisp Extensions}.
+Common Lisp объект цикла также содержит функции для работы с итераторами.
+@xref{Loop Facility,,,cl,Common Lisp Extensions}.
 
-The following piece of code demonstrates some important principles of
-working with iterators.
+Следующий фрагмент кода демонстрирует некоторые важные принципы работы
+с итераторами.
 
 @example
 (require 'generator)
 (iter-defun my-iter (x)
   (iter-yield (1+ (iter-yield (1+ x))))
-   ;; Return normally
+   ;; Нормальное возвращение
   -1)
 
 (let* ((iter (my-iter 5))
        (iter2 (my-iter 0)))
-  ;; Prints 6
+  ;; Вывод 6
   (print (iter-next iter))
-  ;; Prints 9
+  ;; Вывод 9
   (print (iter-next iter 8))
-  ;; Prints 1; iter and iter2 have distinct states
+  ;; Вывод 1; iter и iter2 имеют различные состояния
   (print (iter-next iter2 nil))
 
-  ;; We expect the iter sequence to end now
+  ;; Мы ожидаем, что последовательность iter завершится сейчас
   (condition-case x
       (iter-next iter)
     (iter-end-of-sequence
-      ;; Prints -1, which my-iter returned normally
+      ;; Вывод -1, которое обычно возвращает my-iter
       (print (cdr x)))))
 @end example
 
 @node Nonlocal Exits
-@section Nonlocal Exits
+@section Нелокальные Выходы
 @cindex nonlocal exits
 
-  A @dfn{nonlocal exit} is a transfer of control from one point in a
-program to another remote point.  Nonlocal exits can occur in Emacs Lisp
-as a result of errors; you can also use them under explicit control.
-Nonlocal exits unbind all variable bindings made by the constructs being
-exited.
+  @dfn{Нелокальный выход} - это передача управления от одной точки в
+  программе на другую удаленную точку.  Нелокальные выходы могут происходить
+  в Emacs Lisp в результате ошибок; можно также использовать их под явным
+  контролем.  Нелокальные выходы разрывают все привязки переменных,
+  сделанные конструкциями осуществляющими выход.
 
 @menu
-* Catch and Throw::     Nonlocal exits for the program's own purposes.
-* Examples of Catch::   Showing how such nonlocal exits can be written.
-* Errors::              How errors are signaled and handled.
-* Cleanups::            Arranging to run a cleanup form if an error happens.
+* Catch and Throw::     Нелокальные выходы для собственных целей программы.
+* Examples of Catch::   Каким образом записать нелокальные выходы.
+* Errors::              Как ошибки сигнализируются и обрабатываются.
+* Cleanups::            Организация запуска формы очистки при ошибке.
 @end menu
 
 @node Catch and Throw
-@subsection Explicit Nonlocal Exits: @code{catch} and @code{throw}
+@subsection Явные Нелокальные Выходы: @code{catch} и @code{throw}
 @cindex forms for nonlocal exits
 
-  Most control constructs affect only the flow of control within the
-construct itself.  The function @code{throw} is the exception to this
-rule of normal program execution: it performs a nonlocal exit on
-request.  (There are other exceptions, but they are for error handling
-only.)  @code{throw} is used inside a @code{catch}, and jumps back to
-that @code{catch}.  For example:
+  Большинство конструкций управления влияют только на поток управления
+  внутри самой конструкции.  Функция @code{throw} является исключением из
+  этого правила нормального выполнения программы: она выполняет нелокальный
+  выход по требованию.  (Есть и другие исключения, но они предназначены для
+  обработки только ошибок.)   @code{throw} используется внутри @code{catch},
+  и возвращается к этому @code{catch}. Например: (ВопросControl1487)
 
 @example
 @group
@@ -1524,87 +1501,91 @@ that @code{catch}.  For example:
 @end example
 
 @noindent
-The @code{throw} form, if executed, transfers control straight back to
-the corresponding @code{catch}, which returns immediately.  The code
-following the @code{throw} is not executed.  The second argument of
-@code{throw} is used as the return value of the @code{catch}.
+Форма @code{throw}, если выполняется, передает управление прямо назад к
+соответствующему @code{catch}, который возвращает немедленно.  Код после
+@code{throw} не выполняется.  Второй аргумент @code{throw} используется в
+качестве возвращаемого значения @code{catch}.
 
-  The function @code{throw} finds the matching @code{catch} based on the
-first argument: it searches for a @code{catch} whose first argument is
-@code{eq} to the one specified in the @code{throw}.  If there is more
-than one applicable @code{catch}, the innermost one takes precedence.
-Thus, in the above example, the @code{throw} specifies @code{foo}, and
-the @code{catch} in @code{foo-outer} specifies the same symbol, so that
-@code{catch} is the applicable one (assuming there is no other matching
-@code{catch} in between).
+  Функция @code{throw} находит совпадение @code{catch} на основе первого
+  аргумента: ищется @code{catch} чей первый аргумент @code{eq} к одному
+  указанному в @code{throw}.  Если @code{catch} применено более одного раза,
+  приоритет за самым внутренним.  Таким образом, в приведенном выше примере,
+  @code{throw} указывает @code{foo} а @code{catch} указывает @code{foo-outer}
+  указывает тот же символ, так что @code{catch} является применимым
+  (при условии, что нет никакого другого соответствия @code{catch} между
+  ними).(ВопросControl1516)
 
-  Executing @code{throw} exits all Lisp constructs up to the matching
-@code{catch}, including function calls.  When binding constructs such
-as @code{let} or function calls are exited in this way, the bindings
-are unbound, just as they are when these constructs exit normally
-(@pxref{Local Variables}).  Likewise, @code{throw} restores the buffer
-and position saved by @code{save-excursion} (@pxref{Excursions}), and
-the narrowing status saved by @code{save-restriction}.  It also runs
-any cleanups established with the @code{unwind-protect} special form
-when it exits that form (@pxref{Cleanups}).
+  Выполнение @code{throw} производит выход из всех Lisp конструкций до
+  согласования @code{catch}, включая вызовы функций.  Когда конструкции
+  привязки, такие как @code{let} или вызовы функций, завеншаются таким
+  образом, привязка не выполняется, так же, как при обычном выходе этих
+  конструкций (@pxref{Local Variables}).  Кроме того, @code{throw}
+  восстанавливает буфер и позицию, сохраненную @code{save-excursion}
+  (@pxref{Excursions}) и статус сужения буфера, сохраненную
+  @code{save-restriction}.  Запускаются все очистки, установленные с
+  помощью специальной формы @code{unwind-protect}, при выходе из этой формы.
+  (@pxref{Cleanups}).
 
-  The @code{throw} need not appear lexically within the @code{catch}
-that it jumps to.  It can equally well be called from another function
-called within the @code{catch}.  As long as the @code{throw} takes place
-chronologically after entry to the @code{catch}, and chronologically
-before exit from it, it has access to that @code{catch}.  This is why
-@code{throw} can be used in commands such as @code{exit-recursive-edit}
-that throw back to the editor command loop (@pxref{Recursive Editing}).
+  Не требуется лексического появления @code{throw} для перехода в
+  @code{catch}.  Может одинаково хорошо быть вызван из другой функции,
+  вызываемой в @code{catch}.  Пока действия @code{throw} происходят в
+  хронологическом порядке после входа в @code{catch}, и хронологическом
+  порядке перед выходом из него, имеется доступ к этому @code{catch}. Именно
+  поэтому @code{throw} может быть использована в таких командах, как
+  @code{exit-recursive-edit}, которые выходят обратно в цикл команд
+  редактора (@pxref{Recursive Editing}).
 
 @cindex CL note---only @code{throw} in Emacs
 @quotation
-@b{Common Lisp note:} Most other versions of Lisp, including Common Lisp,
-have several ways of transferring control nonsequentially: @code{return},
-@code{return-from}, and @code{go}, for example.  Emacs Lisp has only
-@code{throw}.  The @file{cl-lib} library provides versions of some of
-these.  @xref{Blocks and Exits,,,cl,Common Lisp Extensions}.
+@b{Common Lisp предупреждение:} Большинство других версий Lisp, включая
+Common Lisp, имеют несколько способов передачи непоследовательного
+управления: @code{return}, @code{return-from}, и @code{go}, например.  Emacs
+Lisp имеет только @code{throw}.  @file{cl-lib} библиотека предоставляет
+версии некоторых из них.
+@xref{Blocks and Exits,,,cl,Common Lisp Extensions}.
 @end quotation
 
 @defspec catch tag body@dots{}
 @cindex tag on run time stack
-@code{catch} establishes a return point for the @code{throw} function.
-The return point is distinguished from other such return points by
-@var{tag}, which may be any Lisp object except @code{nil}.  The argument
-@var{tag} is evaluated normally before the return point is established.
+@code{catch} устанавливает точку возврата для функции @code{throw}.  Точка
+возврата отличаются от других таких точек возврата по тегу @var{tag}, который
+может быть любым объектом Lisp, за исключением бъекта @code{nil}.  Аргумент
+@var{tag} оценивается, как правило, прежде чем устанавливается точка
+возврата.
 
-With the return point in effect, @code{catch} evaluates the forms of the
-@var{body} in textual order.  If the forms execute normally (without
-error or nonlocal exit) the value of the last body form is returned from
-the @code{catch}.
+С присутствующей точкой возврата, @code{catch} оценивает форму @var{body} в
+текстовом порядке.  Если формы выполнения нормально (без ошибок или
+нелокального выхода) значение последней формы тела возвращается из
+@code{catch}.
 
-If a @code{throw} is executed during the execution of @var{body},
-specifying the same value @var{tag}, the @code{catch} form exits
-immediately; the value it returns is whatever was specified as the
-second argument of @code{throw}.
+Если @code{throw} выполняется во время выполнения @var{body} с указанным
+значением тега @var{tag}, оценка формы @code{catch} немедленно завершается;
+возвращается то значение, которое указано в качестве второго аргумента
+@code{throw}.
 @end defspec
 
 @defun throw tag value
-The purpose of @code{throw} is to return from a return point previously
-established with @code{catch}.  The argument @var{tag} is used to choose
-among the various existing return points; it must be @code{eq} to the value
-specified in the @code{catch}.  If multiple return points match @var{tag},
-the innermost one is used.
+Целью @code{throw} является возвращение с точки возврата ранее установленной
+в @code{catch}.  Аргумент @var{tag} используется для выбора среди различных
+существующих точек возврата; должно быть соответствие @code{eq} к значению,
+указанному в @code{catch}.  Если несколько точек соответствуют тегу
+@var{tag}, используется самый внутренний.
 
-The argument @var{value} is used as the value to return from that
-@code{catch}.
+Аргумент @var{value} используется в качестве значения для возврата из
+этого @code{catch}.
 
 @kindex no-catch
-If no return point is in effect with tag @var{tag}, then a @code{no-catch}
-error is signaled with data @code{(@var{tag} @var{value})}.
+Если нет точки возврата с тегаом @var{tag}, то сигнализируется ошибка
+@code{no-catch} данных @code{(@var{tag} @var{value})}.
 @end defun
 
 @node Examples of Catch
-@subsection Examples of @code{catch} and @code{throw}
+@subsection Примеры @code{catch} и @code{throw}
 
-  One way to use @code{catch} and @code{throw} is to exit from a doubly
-nested loop.  (In most languages, this would be done with a @code{goto}.)
-Here we compute @code{(foo @var{i} @var{j})} for @var{i} and @var{j}
-varying from 0 to 9:
+  Один из способов использовать @code{catch} и @code{throw}, чтобы выйти из
+  двукратно вложенного цикла.  (В большинстве языков, это будет сделано с
+  помощью @code{goto}.).   Здесь мы вычисляем @code{(foo @var{i} @var{j})}
+  для @var{i} и @var{j} изменяющихся от 0 до 9:
 
 @example
 @group
@@ -1622,14 +1603,13 @@ varying from 0 to 9:
 @end example
 
 @noindent
-If @code{foo} ever returns non-@code{nil}, we stop immediately and return a
-list of @var{i} and @var{j}.  If @code{foo} always returns @code{nil}, the
-@code{catch} returns normally, and the value is @code{nil}, since that
-is the result of the @code{while}.
+Если @code{foo} когда-либо возвращает не-@code{nil}, немедленно прекратить и
+вернуть список @var{i} и @var{j}.  Если @code{foo} всегда возвращает
+@code{nil}, в @code{catch} возвращается нормально, а значение @code{nil}, так
+как это результат оценки @code{while}.
 
-  Here are two tricky examples, slightly different, showing two
-return points at once.  First, two return points with the same tag,
-@code{hack}:
+  Вот два хитрых примера, немного разные, показывают две точки возврата
+  сразу.  Во-первых, две точки возврата с тем же тегом, @code{hack}:
 
 @example
 @group
@@ -1649,13 +1629,13 @@ return points at once.  First, two return points with the same tag,
 @end example
 
 @noindent
-Since both return points have tags that match the @code{throw}, it goes to
-the inner one, the one established in @code{catch2}.  Therefore,
-@code{catch2} returns normally with value @code{yes}, and this value is
-printed.  Finally the second body form in the outer @code{catch}, which is
-@code{'no}, is evaluated and returned from the outer @code{catch}.
+Поскольку обе точки возврата имеют метки, которые соответствуют @code{throw},
+происходит переход во внутрений, установленный в @code{catch2}.  Поэтому
+@code{catch2} возвращается нормально со значением @code{yes}, и это значение
+выводится.  И, наконец, вторая форма тела во внешнем @code{catch}, то есть
+@code{'no}, оценивается и возвращается из внешнего @code{catch}.
 
-  Now let's change the argument given to @code{catch2}:
+  Теперь давайте изменим рассуждения, приведенные в @code{catch2}:
 
 @example
 @group
@@ -1667,104 +1647,103 @@ printed.  Finally the second body form in the outer @code{catch}, which is
 @end example
 
 @noindent
-We still have two return points, but this time only the outer one has
-the tag @code{hack}; the inner one has the tag @code{quux} instead.
-Therefore, @code{throw} makes the outer @code{catch} return the value
-@code{yes}.  The function @code{print} is never called, and the
-body-form @code{'no} is never evaluated.
+У нас есть еще две возвратные точки, но на этот раз только внешняя имеет тег
+@code{hack}; а внутренняя имеет тег @code{quux}.  Поэтому внешний
+@code{throw} по отношению к @code{catch}, возвращает значение @code{yes}.
+Функция @code{print} никогда не вызывается, а тело-форма @code{'no} никогда
+не оценивается.  (ВопросControl1654)
 
 @node Errors
-@subsection Errors
+@subsection Ошибки
 @cindex errors
 
-  When Emacs Lisp attempts to evaluate a form that, for some reason,
-cannot be evaluated, it @dfn{signals} an @dfn{error}.
+  Когда Emacs Lisp попытки оценить форму, которая, по некоторым причинам,
+  не может быть оценена, он @dfn{сигнализирует} @dfn{ошибку}.
 
-  When an error is signaled, Emacs's default reaction is to print an
-error message and terminate execution of the current command.  This is
-the right thing to do in most cases, such as if you type @kbd{C-f} at
-the end of the buffer.
+  Когда поступает сигнал об ошибке, по умолчанию Emacs выводит сообщение об
+  ошибке и прекращает выполнение текущей команды.  Это то, что нужно делать
+  в большинстве случаев, например, если вы наберете @kbd{C-f} в конце буфера.
 
-  In complicated programs, simple termination may not be what you want.
-For example, the program may have made temporary changes in data
-structures, or created temporary buffers that should be deleted before
-the program is finished.  In such cases, you would use
-@code{unwind-protect} to establish @dfn{cleanup expressions} to be
-evaluated in case of error.  (@xref{Cleanups}.)  Occasionally, you may
-wish the program to continue execution despite an error in a subroutine.
-In these cases, you would use @code{condition-case} to establish
-@dfn{error handlers} to recover control in case of error.
+  В сложных программах, просто прекращение не может быть то, что нужно.
+  Например, программа могла внести временные изменения в структуры данных или
+  создать временные буферы, которые должны быть удалены до завершения
+  программы.  В таких случаях нужно использовать @code{unwind-protect} и
+  установить @dfn{выражения очистки}, которые оценеваются в случае ошибки.
+  (@xref{Cleanups}.).   Иногда, требуется продолжить выполнение программы
+  несмотря на ошибку в подпрограмме.  В этих случаях нужно использовать
+  @code{condition-case} установить @dfn{обработчики ошибок} для
+  восстановления управления в случае возникновения ошибки.
 
-  Resist the temptation to use error handling to transfer control from
-one part of the program to another; use @code{catch} and @code{throw}
-instead.  @xref{Catch and Throw}.
+  Не поддавайтесь искушению использовать обработку ошибок для контроля
+  передачи управления из одной части программы в другую; используйте
+  @code{catch} и @code{throw} вместо этого.  @xref{Catch and Throw}.
 
 @menu
-* Signaling Errors::      How to report an error.
-* Processing of Errors::  What Emacs does when you report an error.
-* Handling Errors::       How you can trap errors and continue execution.
-* Error Symbols::         How errors are classified for trapping them.
+* Signaling Errors::      Как сообщить об ошибке.
+* Processing of Errors::  Что Emacs делает, когда вы сообщаете об ошибке.
+* Handling Errors::       Как перехватывать ошибки и продолжать выполнение.
+* Error Symbols::         Как классифицируются ошибки для их захвата.
 @end menu
 
 @node Signaling Errors
-@subsubsection How to Signal an Error
+@subsubsection Как Сообщить об Ошибке
 @cindex signaling errors
 
-   @dfn{Signaling} an error means beginning error processing.  Error
-processing normally aborts all or part of the running program and
-returns to a point that is set up to handle the error
-(@pxref{Processing of Errors}).  Here we describe how to signal an
-error.
+   @dfn{Сигнал} об ошибке означает начало обработки ошибки.  Обработка ошибок
+   обычно прерывает всю или часть выполняющейся программы и возвращается в
+   точку, которая настроена для обработки ошибки
+   (@pxref{Processing of Errors}).  Здесь описывается, как реализован
+   сигнал об ошибке.
 
-  Most errors are signaled automatically within Lisp primitives
-which you call for other purposes, such as if you try to take the
-@sc{car} of an integer or move forward a character at the end of the
-buffer.  You can also signal errors explicitly with the functions
-@code{error} and @code{signal}.
+  Большинство ошибок в Lisp сигнализируют примитивы автоматически, которые
+  вызваны не по назначению, например, если вы попытаетесь взять @sc{car}
+  целого числа или двигать точку вперед в конце буфера.  Возможно также
+  сигнализировать ошибки в явном виде с функциями @code{error} и
+  @code{signal}.
 
-  Quitting, which happens when the user types @kbd{C-g}, is not
-considered an error, but it is handled almost like an error.
+  Выход, который происходит, когда пользователь набирает @kbd{C-g}, не
+  считается ошибкой, но он обрабатывается почти как ошибка.
 @xref{Quitting}.
 
-  Every error specifies an error message, one way or another.  The
-message should state what is wrong (``File does not exist''), not how
-things ought to be (``File must exist'').  The convention in Emacs
-Lisp is that error messages should start with a capital letter, but
-should not end with any sort of punctuation.
+  Каждая ошибка так или иначе указывает сообщение об ошибке.  В сообщение
+  должно быть указано, что не так (``File does not exist
+  (Файл не существует)''), не так (``File must exist (Файл должен
+  существовать)'').  По соглашению в Emacs Lisp сообщения об ошибках должны
+  начинаться с заглавной буквой, но не должны заканчиваться с каким-либо
+  знаками препинания.
 
 @defun error format-string &rest args
-This function signals an error with an error message constructed by
-applying @code{format-message} (@pxref{Formatting Strings}) to
-@var{format-string} and @var{args}.
+Функция сигнализирует об ошибке сообщением об ошибке, построенном с
+применением @code{format-message} (@pxref{Formatting Strings}) к
+@var{format-string} и @var{args}.
 
-These examples show typical uses of @code{error}:
+Эти примеры показывают типичное использование @code{error}:
 
 @example
 @group
-(error "That is an error -- try something else")
-     @error{} That is an error -- try something else
+(error "Это ошибка -- попробуйте что-то другое")
+     @error{} Это ошибка -- попробуйте что-то другое
 @end group
 
 @group
-(error "Invalid name `%s'" "A%%B")
-     @error{} Invalid name ‘A%%B’
+(error "Неправильное имя `%s'" "A%%B")
+     @error{} Неправильное имя ‘A%%B’
 @end group
 @end example
 
-@code{error} works by calling @code{signal} with two arguments: the
-error symbol @code{error}, and a list containing the string returned by
+@code{error} работает, вызывая @code{signal} с двумя аргументами: символом
+ошибки @code{error}, и списком, содержащим строку, возвращаемую
 @code{format-message}.
 
-Typically grave accent and apostrophe in the format translate to
-matching curved quotes, e.g., @t{"Missing `%s'"} might result in
-@t{"Missing ‘foo’"}.  @xref{Text Quoting Style}, for how to influence
-or inhibit this translation.
+Как правило, апостроф и ударение при форматировании переводятся на
+соответствующие перевёрнутые кавычки, например, @t{"Отсутствует `%s'"} может привести к @t{"Отсутствует ‘foo’"}.  @xref{Text Quoting Style}, о том, как
+влиять или запретить этот перевод.
 
-@strong{Warning:} If you want to use your own string as an error message
-verbatim, don't just write @code{(error @var{string})}.  If @var{string}
-@var{string} contains @samp{%}, @samp{`}, or @samp{'} it may be
-reformatted, with undesirable results.  Instead, use @code{(error "%s"
-@var{string})}.
+@strong{Предупреждение:} Если требуется использовать свою собственную строку
+в качестве дословного сообщения об ошибке, не пишиться
+@code{(error @var{string})}.  Если @var{string} содержит @samp{%}, @samp{`}
+или @samp{'} это может быть переформатировано, с нежелательными результатами.
+Вместо этого используется @code{(error "%s" @var{string})}.
 @end defun
 
 @defun signal error-symbol data
