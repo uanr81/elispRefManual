@@ -1748,35 +1748,35 @@ Lisp имеет только @code{throw}.  @file{cl-lib} библиотека �
 
 @defun signal error-symbol data
 @anchor{Definition of signal}
-This function signals an error named by @var{error-symbol}.  The
-argument @var{data} is a list of additional Lisp objects relevant to
-the circumstances of the error.
+Эта функция сигнализирует об ошибке с именем, @var{error-symbol}.  Аргумент
+@var{data} представляет собой список дополнительных Lisp объектов имеющих
+отношение к обстоятельствам ошибки.
 
-The argument @var{error-symbol} must be an @dfn{error symbol}---a symbol
-defined with @code{define-error}.  This is how Emacs Lisp classifies different
-sorts of errors.  @xref{Error Symbols}, for a description of error symbols,
-error conditions and condition names.
+Аргумент @var{error-symbol} должен быть @dfn{символом ошибки}--- символом,
+определенным с помощью @code{define-error}.  Именно так Emacs Lisp
+классифицирует различные виды ошибок.  @xref{Error Symbols}, для описания
+символов ошибок, условий ошибки и имён условий.
 
-If the error is not handled, the two arguments are used in printing
-the error message.  Normally, this error message is provided by the
-@code{error-message} property of @var{error-symbol}.  If @var{data} is
-non-@code{nil}, this is followed by a colon and a comma separated list
-of the unevaluated elements of @var{data}.  For @code{error}, the
-error message is the @sc{car} of @var{data} (that must be a string).
-Subcategories of @code{file-error} are handled specially.
+Если ошибка не обрабатывается, два аргумента используются в выводе печати
+сообщения об ошибке.  Как правило, это сообщение об ошибке обеспечивается
+@code{error-message} свойством @var{error-symbol}.  Если @var{data}
+установленно в не-@code{nil}, это сопровождается двоеточием и списком
+невычисленных элементов @var{data}, разделенных запятыми.  Для @code{error},
+сообщение об ошибке является @sc{car} из @var{data} (что должно быть
+строкой).  Подкатегории @code{file-error} обрабатываются специальным образом.
 
-The number and significance of the objects in @var{data} depends on
-@var{error-symbol}.  For example, with a @code{wrong-type-argument} error,
-there should be two objects in the list: a predicate that describes the type
-that was expected, and the object that failed to fit that type.
+Количество и природа объектов @var{data} зависит от @var{error-symbol}.
+Например, с ошибкой @code{wrong-type-argument}, должно быть два объекта в
+списке: предикат, который описывает ожидаемый тип и объект, который не в
+состоянии соответствовать этому типу.
 
-Both @var{error-symbol} and @var{data} are available to any error
-handlers that handle the error: @code{condition-case} binds a local
-variable to a list of the form @code{(@var{error-symbol} .@:
+И @var{error-symbol} и @var{data} доступны для любых обработчиков ошибок,
+которые обрабатывают ошибки: @code{condition-case} связывая локальную
+переменную в список вида @code{(@var{error-symbol} .@:
 @var{data})} (@pxref{Handling Errors}).
 
-The function @code{signal} never returns.
-@c (though in older Emacs versions it sometimes could).
+Функция @code{signal} ничего не возвращает.
+@c (хотя в более ранних версиях Emacs иногда может).
 
 @example
 @group
@@ -1785,79 +1785,80 @@ The function @code{signal} never returns.
 @end group
 
 @group
-(signal 'no-such-error '("My unknown error condition"))
-     @error{} peculiar error: "My unknown error condition"
+(signal 'no-such-error '("Моё неизвестное состояние ошибки"))
+     @error{} peculiar error: "Моё неизвестное состояние ошибки"
 @end group
 @end example
 @end defun
 
 @cindex user errors, signaling
 @defun user-error format-string &rest args
-This function behaves exactly like @code{error}, except that it uses
-the error symbol @code{user-error} rather than @code{error}.  As the
-name suggests, this is intended to report errors on the part of the
-user, rather than errors in the code itself.  For example,
-if you try to use the command @code{Info-history-back} (@kbd{l}) to
-move back beyond the start of your Info browsing history, Emacs
-signals a @code{user-error}.  Such errors do not cause entry to the
-debugger, even when @code{debug-on-error} is non-@code{nil}.
+Функция ведет себя так же, как @code{error}, за исключением того, что
+используется символ ошибки @code{user-error} а не @code{error}.  Как следует
+из названия, это предназначено для сообщения об ошибках со стороны
+пользователя, а не для ошибок в самом коде.  Например, если вы пытаетесь
+использовать команду @code{Info-history-back} (@kbd{l}), чтобы вернуться за
+пределы начала вошей истории просмотра Info, Emacs сигнализирует об ошибке
+@code{user-error}.  Такие ошибки не вызывают вход в отладчик, даже когда
+@code{debug-on-error} установленно в не-@code{nil}.
 @xref{Error Debugging}.
 @end defun
 
 @cindex CL note---no continuable errors
 @quotation
-@b{Common Lisp note:} Emacs Lisp has nothing like the Common Lisp
-concept of continuable errors.
+@b{Common Lisp замечание:} Emacs Lisp не имеет ничего подобного Common Lisp
+относительно концепции продолжаемых ошибок.
 @end quotation
 
 @node Processing of Errors
-@subsubsection How Emacs Processes Errors
+@subsubsection Как Emacs Обрабатывает Ошибки
 @cindex processing of errors
 
-When an error is signaled, @code{signal} searches for an active
-@dfn{handler} for the error.  A handler is a sequence of Lisp
-expressions designated to be executed if an error happens in part of the
-Lisp program.  If the error has an applicable handler, the handler is
-executed, and control resumes following the handler.  The handler
-executes in the environment of the @code{condition-case} that
-established it; all functions called within that @code{condition-case}
-have already been exited, and the handler cannot return to them.
+Когда сигнализируется ошибка, @code{signal} ищет активный @dfn{обработчик}
+для ошибки.  Обработчик представляет собой последовательность Lisp выражений,
+предназначенных для исполнения, если ошибка происходит в рамках программы
+Lisp.  Если ошибка имеет применимый обработчик, обработчик выполняется, и
+управление возобновляется после обработчика.  Обработчик выполняется в среде
+@code{condition-case}, создавшей его; все функции, которые вызываются в
+пределах этого @code{condition-case} уже завершены, и обработчик не может
+вернуться к ним.
 
-If there is no applicable handler for the error, it terminates the
-current command and returns control to the editor command loop.  (The
-command loop has an implicit handler for all kinds of errors.)  The
-command loop's handler uses the error symbol and associated data to
-print an error message.  You can use the variable
-@code{command-error-function} to control how this is done:
+Если для ошибки нет требуемого обработчика, прерывается текущая команда и
+возвращается управление циклу команд редактора.  (У командного цикла команд
+есть неявный обработчик для всех типов ошибок.)  Обработчик командного цикла
+использует символ ошибки и связанные с ними данные для вывода печати
+сообщения об ошибке.  Можно использовать переменную
+@code{command-error-function} для управления, вот как это делается:
 
 @defvar command-error-function
-This variable, if non-@code{nil}, specifies a function to use to
-handle errors that return control to the Emacs command loop.  The
-function should take three arguments: @var{data}, a list of the same
-form that @code{condition-case} would bind to its variable;
-@var{context}, a string describing the situation in which the error
-occurred, or (more often) @code{nil}; and @var{caller}, the Lisp
-function which called the primitive that signaled the error.
+Переменная, установленная в не-@code{nil}, определяет функцию, которая
+используется для обработки ошибок, которые возвращают контроль в командный
+цикл Emacs.  Функция принимает три аргумента: @var{data}, список той же
+формы, которую @code{condition-case} будет связывать с её переменными;
+@var{context}, строка, описывающая ситуацию, в которой произошла ошибка, или
+(чаще) @code{nil}, что указывает @var{вызов} примитивной функции Lisp,
+сигнализации об ошибке.
 @end defvar
 
 @cindex @code{debug-on-error} use
-An error that has no explicit handler may call the Lisp debugger.  The
-debugger is enabled if the variable @code{debug-on-error} (@pxref{Error
-Debugging}) is non-@code{nil}.  Unlike error handlers, the debugger runs
-in the environment of the error, so that you can examine values of
-variables precisely as they were at the time of the error.
+Ошибка, которая не имеет явного обработчика может вызвать Lisp отладчик.
+Отладчик включен, если переменная @code{debug-on-error}
+(@pxref{Error Debugging}) установлена в не-@code{nil}.  В отличии от
+обработчиков ошибок, отладчик работает в среде ошибки, поэтому существует
+возможность проверить значения переменных именно те, которые были в момент
+ошибки.
 
 @node Handling Errors
-@subsubsection Writing Code to Handle Errors
+@subsubsection Написание Кода для Обработки Ошибки
 @cindex error handler
 @cindex handling errors
 @cindex forms for handling errors
 
-  The usual effect of signaling an error is to terminate the command
-that is running and return immediately to the Emacs editor command loop.
-You can arrange to trap errors occurring in a part of your program by
-establishing an error handler, with the special form
-@code{condition-case}.  A simple example looks like this:
+  Обычный эффект подачи сигнала об ошибке - завершить выполняемую команду и
+  немедленно вернуться к командному циклу редактора Emacs.  Можно
+  организовать перехват ошибок, возникающих в рамках вашей программы путем
+  создания обработчика ошибок, со специальной формой @code{condition-case}.
+  Простой пример выглядит следующим образом:
 
 @example
 @group
@@ -1868,49 +1869,48 @@ establishing an error handler, with the special form
 @end example
 
 @noindent
-This deletes the file named @var{filename}, catching any error and
-returning @code{nil} if an error occurs.  (You can use the macro
-@code{ignore-errors} for a simple case like this; see below.)
+Это удаляет файл с именем @var{filename}, отлавливая любую ошибку и
+возвращая @code{nil}, если произошла ошибка.  (Вы можете использовать
+@code{ignore-errors} макрос для такого простого случая, как этот.  см. Ниже)
 
-  The @code{condition-case} construct is often used to trap errors that
-are predictable, such as failure to open a file in a call to
-@code{insert-file-contents}.  It is also used to trap errors that are
-totally unpredictable, such as when the program evaluates an expression
-read from the user.
+  @code{condition-case} конструкция часто используется для перехвата ошибок,
+  которые предсказуемы, таких как невозможность открыть файл при вызове
+  @code{insert-file-contents}.  Также используется для перехвата ошибок,
+  которые совершенно непредсказуемы, например, когда программа вычисляет
+  выражение введённое пользователем.
 
-  The second argument of @code{condition-case} is called the
-@dfn{protected form}.  (In the example above, the protected form is a
-call to @code{delete-file}.)  The error handlers go into effect when
-this form begins execution and are deactivated when this form returns.
-They remain in effect for all the intervening time.  In particular, they
-are in effect during the execution of functions called by this form, in
-their subroutines, and so on.  This is a good thing, since, strictly
-speaking, errors can be signaled only by Lisp primitives (including
-@code{signal} and @code{error}) called by the protected form, not by the
-protected form itself.
+  Второй аргумент @code{condition-case} называется @dfn{защищённой формой}.
+  (В приведенном выше примере, защищенная форма является вызовом
+  @code{delete-file}.)   Обработчики ошибок вступают в силу, когда эта форма
+  начинает выполнение и деактивируются, когда эта форма вычислена.  Они
+  остаются в силе на все время.  В частности, они действуют во время
+  выполнения функций, вызываемых с помощью этой формы, в их подпрограммах и
+  так далее.  Это хорошо, так как, строго говоря, ошибки могут
+  сигнализировать только примитивы Lisp (включая @code{signal} и
+  @code{error}), вызываемые в защищенной форме, а не самой защищенной формой.
 
-  The arguments after the protected form are handlers.  Each handler
-lists one or more @dfn{condition names} (which are symbols) to specify
-which errors it will handle.  The error symbol specified when an error
-is signaled also defines a list of condition names.  A handler applies
-to an error if they have any condition names in common.  In the example
-above, there is one handler, and it specifies one condition name,
-@code{error}, which covers all errors.
+  Аргументы после защищенной формы являются обработчиками.  Каждые обработчик
+  перечисляет одно или более @dfn{имя условия} (которые являются символами),
+  чтобы определить, какие ошибки будут обрабатываться.  Символ ошибки,
+  указанный для сигнализации об ошибке также определяет список имен условий.
+  Обработчик относится к ошибке, если есть какие-либо общие имена условий.
+  В приведенном выше примере, есть один обработчик, и это указывает на одно
+  условие с именем @code{error}, которое охватывает все ошибки.
 
-  The search for an applicable handler checks all the established handlers
-starting with the most recently established one.  Thus, if two nested
-@code{condition-case} forms offer to handle the same error, the inner of
-the two gets to handle it.
+  Поиск применимого обработчик проверяет все установленные обработчики,
+  начиная с самого последнего установленного.  Таким образом, если две
+  вложенные формы @code{condition-case} предлагают обрабатывать одну и ту же
+  ошибку, саммая вложенная из двух, обработает эту ошибку.
 
-  If an error is handled by some @code{condition-case} form, this
-ordinarily prevents the debugger from being run, even if
-@code{debug-on-error} says this error should invoke the debugger.
+  Если ошибка обрабатываются какой-либо формой @code{condition-case}, это
+  обычно предотвращает запуск отладчика, даже если @code{debug-on-error}
+  установлена так, что эта ошибка должна вызвать отладчик.
 
-  If you want to be able to debug errors that are caught by a
-@code{condition-case}, set the variable @code{debug-on-signal} to a
-non-@code{nil} value.  You can also specify that a particular handler
-should let the debugger run first, by writing @code{debug} among the
-conditions, like this:
+  Если вы хотите иметь возможность отладки ошибок, которые обнаружены
+  в @code{condition-case}, установите переменную @code{debug-on-signal} в
+  не-@code{nil}.  Можно также указать, что конкретный обработчик должен
+  позволить отладчику запуститься первый, указав @code{debug} среди условий,
+  например:
 
 @example
 @group
@@ -1921,129 +1921,130 @@ conditions, like this:
 @end example
 
 @noindent
-The effect of @code{debug} here is only to prevent
-@code{condition-case} from suppressing the call to the debugger.  Any
-given error will invoke the debugger only if @code{debug-on-error} and
-the other usual filtering mechanisms say it should.  @xref{Error Debugging}.
+Эффект @code{debug} здесь заключается в том, чтобы предотвратить
+@code{condition-case} от подавления вызова отладчика.  Любая данная ошибка
+будет вызывать отладчик только если @code{debug-on-error} и другие обычные
+механизмы устанолены к выполнению этого.  @xref{Error Debugging}.
 
 @defmac condition-case-unless-debug var protected-form handlers@dots{}
-The macro @code{condition-case-unless-debug} provides another way to
-handle debugging of such forms.  It behaves exactly like
-@code{condition-case}, unless the variable @code{debug-on-error} is
-non-@code{nil}, in which case it does not handle any errors at all.
+Макрос @code{condition-case-unless-debug} обеспечивает другой способ
+обработки отладки таких форм.  Он ведет себя так же, как
+@code{condition-case}, если переменная @code{debug-on-error} установлена в
+не-@code{nil}, в этом случае вообще не обрабатывается никаких ошибок.
 @end defmac
 
-  Once Emacs decides that a certain handler handles the error, it
-returns control to that handler.  To do so, Emacs unbinds all variable
-bindings made by binding constructs that are being exited, and
-executes the cleanups of all @code{unwind-protect} forms that are
-being exited.  Once control arrives at the handler, the body of the
-handler executes normally.
+  После того, как Emacs решает, что определенный обработчик должен
+  обрабатать ошибку, он передаёт управление обработчику.  Для этого, Emacs
+  развязывает все привязки переменных, сделанные конструкциями связывания,
+  из которых в настоящее время происходит выход, и выполняет очитку всех форм
+  @code{unwind-protect}, из которых сейчас происходит выход.  После того, как
+  управление поступает в обработчик, тело обработчика выполняется нормально.
 
-  After execution of the handler body, execution returns from the
-@code{condition-case} form.  Because the protected form is exited
-completely before execution of the handler, the handler cannot resume
-execution at the point of the error, nor can it examine variable
-bindings that were made within the protected form.  All it can do is
-clean up and proceed.
+  После выполнения тела обработчика, выполнение возвращается из формы
+  @code{condition-case}.  Поскольку защищенная форма вышла полностью перед
+  выполнением обработчика, обработчик не может возобновить выполнение в точке
+  ошибки и не может исследовать связывание переменных, которые были сделаны
+  в защищенной форме. Все что можно сделать это очистить и продолжить.
 
-  Error signaling and handling have some resemblance to @code{throw} and
-@code{catch} (@pxref{Catch and Throw}), but they are entirely separate
-facilities.  An error cannot be caught by a @code{catch}, and a
-@code{throw} cannot be handled by an error handler (though using
-@code{throw} when there is no suitable @code{catch} signals an error
-that can be handled).
+  Сигнализации ошибок и их обработка имеют некоторое сходство с
+  @code{throw} и @code{catch} (@pxref{Catch and Throw}), но это совершенно
+  разные объекты.  Ошибка не может быть обнаружена в @code{catch} и
+  @code{throw} и не может быть обработана с помощью обработчика ошибок
+  (хотя с помощью @code{throw}, когда нет подходящей @code{catch}
+  сигнализируется об ошибке, которую можно обработать).
 
 @defspec condition-case var protected-form handlers@dots{}
-This special form establishes the error handlers @var{handlers} around
-the execution of @var{protected-form}.  If @var{protected-form} executes
-without error, the value it returns becomes the value of the
-@code{condition-case} form; in this case, the @code{condition-case} has
-no effect.  The @code{condition-case} form makes a difference when an
-error occurs during @var{protected-form}.
+Cпециальная форма устанавливает обработчики ошибок @var{handlers} вокруг
+выполнения защищенной формы @var{protected-form}.  Если @var{protected-form}
+выполняется без ошибок, то возвращаемое значение становится значением формы
+@code{condition-case}; в этом случае @code{condition-case} не имеет никакого
+эффекта.  @code{condition-case} форма имеет значение, когда происходит ошибка
+во время оценки защищённой формы @var{protected-form}.
 
-Each of the @var{handlers} is a list of the form @code{(@var{conditions}
-@var{body}@dots{})}.  Here @var{conditions} is an error condition name
-to be handled, or a list of condition names (which can include @code{debug}
-to allow the debugger to run before the handler); @var{body} is one or more
-Lisp expressions to be executed when this handler handles an error.
-Here are examples of handlers:
+Каждый из обработчиков @var{handlers} представляется списком вида
+@code{(@var{conditions} @var{body}@dots{})}.  Здесь @var{conditions} - это
+имя условия ошибки, которая должна быть обработана, или список имен условий
+(которые могут включать в себя @code{debug}, для запуска отладчика перед
+запуском обработчика); форма @var{body} это один или несколько Lisp
+выражений, которые будут выполняться, когда этот обработчик обрабатывает
+ошибку. Вот примеры обработчиков:
 
 @example
 @group
 (error nil)
 
-(arith-error (message "Division by zero"))
+(arith-error (message "Деление на ноль"))
 
 ((arith-error file-error)
  (message
-  "Either division by zero or failure to open a file"))
+  "Либо деление на ноль или невозможно открыть файл"))
 @end group
 @end example
 
-Each error that occurs has an @dfn{error symbol} that describes what
-kind of error it is, and which describes also a list of condition names
-(@pxref{Error Symbols}).  Emacs
-searches all the active @code{condition-case} forms for a handler that
-specifies one or more of these condition names; the innermost matching
-@code{condition-case} handles the error.  Within this
-@code{condition-case}, the first applicable handler handles the error.
+Каждая ошибка, которая возникает имеет @dfn{символ ошибки}, который
+описывает, что это за ошибка, а также описывает список имен условий
+(@pxref{Error Symbols}).  Emacs ищет во всех активных формах
+@code{condition-case} обработчик, который определяет один или несколько из
+этих имен условий; самое вложенное согласованное условие
+@code{condition-case} обрабатывает ошибку.  В этом @code{condition-case},
+первый применимый обработчик обрабатывает ошибку.
 
-After executing the body of the handler, the @code{condition-case}
-returns normally, using the value of the last form in the handler body
-as the overall value.
+После выполнения тела обработчика, @code{condition-case} оценивается в
+обычном режиме, используя значение последней формы в теле обработчика в
+качестве возвращаемого значения.
 
 @cindex error description
-The argument @var{var} is a variable.  @code{condition-case} does not
-bind this variable when executing the @var{protected-form}, only when it
-handles an error.  At that time, it binds @var{var} locally to an
-@dfn{error description}, which is a list giving the particulars of the
-error.  The error description has the form @code{(@var{error-symbol}
-. @var{data})}.  The handler can refer to this list to decide what to
-do.  For example, if the error is for failure opening a file, the file
-name is the second element of @var{data}---the third element of the
-error description.
+Аргумент @var{var} является переменной.  @code{condition-case} не связывает
+эту переменную при выполнении @var{protected-form}, только тогда, когда
+обрабатывается ошибка.  В это время, связывается @var{var} локально к
+@dfn{дескриптору ошибки}, который представляет собой список, давая подробные
+сведения об ошибке.  Описание ошибки имеет вид
+@code{(@var{error-symbol} . @var{data})}.  Обработчик может обратиться к
+этому списку, чтобы решить, что делать.  Например, если ошибка связана с
+неудачным открытием файла, имя файла является вторым элементом, а @var{data}
+--- третьим элементом описания ошибки. (ВопросControl2005)
 
-If @var{var} is @code{nil}, that means no variable is bound.  Then the
-error symbol and associated data are not available to the handler.
+Если @var{var} установленно в @code{nil}, это означает, что ни одна
+переменная не связана.  Тогда символ ошибки и связанные с ними данные не
+доступны для обработчика.
 
 @cindex rethrow a signal
-Sometimes it is necessary to re-throw a signal caught by
-@code{condition-case}, for some outer-level handler to catch.  Here's
-how to do that:
+Иногда необходимо, чтобы повторно выбросить перехваченный сигнал
+@code{condition-case},  для некоторого обработчика внешнего уровня, который
+должен его поймать и обработать.  Вот как это сделать:
 
 @example
   (signal (car err) (cdr err))
 @end example
 
 @noindent
-where @code{err} is the error description variable, the first argument
-to @code{condition-case} whose error condition you want to re-throw.
-@xref{Definition of signal}.
+Где @code{err} является переменной описания ошибки, где первый аргумент
+@code{condition-case} условие ошибки, которое требуется повторно пробросить.
+@xref{Definition of signal}.  (ВопросControl2023)
 @end defspec
 
 @defun error-message-string error-descriptor
-This function returns the error message string for a given error
-descriptor.  It is useful if you want to handle an error by printing the
-usual error message for that error.  @xref{Definition of signal}.
+Функция возвращает строку сообщения об ошибке для данного дескриптора ошибки.
+Это полезно, если требуется обработать ошибку, напечатав сообщение об ошибке
+для этой ошибки.  @xref{Definition of signal}.
 @end defun
 
 @cindex @code{arith-error} example
-Here is an example of using @code{condition-case} to handle the error
-that results from dividing by zero.  The handler displays the error
-message (but without a beep), then returns a very large number.
+Ниже приведен пример использования @code{condition-case} для обработки
+ошибки, как результат от деления на ноль.  Обработчик выводит сообщение об
+ошибке (но без звукового сигнала), затем возвращает очень большое число.
 
 @example
 @group
 (defun safe-divide (dividend divisor)
   (condition-case err
-      ;; @r{Protected form.}
+      ;; @r{Защищенная форма.}
       (/ dividend divisor)
 @end group
 @group
-    ;; @r{The handler.}
-    (arith-error                        ; @r{Condition.}
-     ;; @r{Display the usual message for this error.}
+    ;; @r{обработчик.}
+    (arith-error                        ; @r{Услвие.}
+     ;; @r{Вывод обычного сообщения об этой ошибке.}
      (message "%s" (error-message-string err))
      1000000)))
 @result{} safe-divide
@@ -2051,25 +2052,25 @@ message (but without a beep), then returns a very large number.
 
 @group
 (safe-divide 5 0)
-     @print{} Arithmetic error: (arith-error)
+     @print{} Арифметическая ошибка: (arith-error)
 @result{} 1000000
 @end group
 @end example
 
 @noindent
-The handler specifies condition name @code{arith-error} so that it
-will handle only division-by-zero errors.  Other kinds of errors will
-not be handled (by this @code{condition-case}).  Thus:
+Обработчик определяет имя условия @code{arith-error} так, что он будет
+обрабатывать только ошибки деления на ноль.  Другие виды ошибок не будут
+обработаны (этим @code{condition-case}). таким образом:
 
 @example
 @group
 (safe-divide nil 3)
-     @error{} Wrong type argument: number-or-marker-p, nil
+     @error{} Неправильный тип аргумента: number-or-marker-p, nil
 @end group
 @end example
 
-  Here is a @code{condition-case} that catches all kinds of errors,
-including those from @code{error}:
+  Вот @code{condition-case}, для отлавливания всех виды ошибок, в том числе
+  из @code{error}:
 
 @example
 @group
@@ -2081,23 +2082,23 @@ including those from @code{error}:
 (condition-case err
     (if (eq baz 35)
         t
-      ;; @r{This is a call to the function @code{error}.}
-      (error "Rats!  The variable %s was %s, not 35" 'baz baz))
-  ;; @r{This is the handler; it is not a form.}
-  (error (princ (format "The error was: %s" err))
+      ;; @r{Это вызов функции @code{error}.}
+      (error "Враньё!  Переменная %s была %s, а не 35" 'baz baz))
+  ;; @r{Это обработчик; это не форма.}
+  (error (princ (format "Ошибка: %s" err))
          2))
-@print{} The error was: (error "Rats!  The variable baz was 34, not 35")
+@print{} Ошибка: (error "Враньё! Переменная baz была 34, а не 35")
 @result{} 2
 @end group
 @end example
 
 @defmac ignore-errors body@dots{}
-This construct executes @var{body}, ignoring any errors that occur
-during its execution.  If the execution is without error,
-@code{ignore-errors} returns the value of the last form in @var{body};
-otherwise, it returns @code{nil}.
+Конструкция выполняет форму @var{body}, игнорируя любые ошибки, возникающие в
+процессе её оценки.  Если оценка без ошибок, @code{ignore-errors}
+возвращается значение последней формы в @var{body}; в противном случае
+возвращается @code{nil}.
 
-Here's the example at the beginning of this subsection rewritten using
+Вот пример в начале этого подраздела, переписанный с использованием
 @code{ignore-errors}:
 
 @example
@@ -2109,18 +2110,18 @@ Here's the example at the beginning of this subsection rewritten using
 @end defmac
 
 @defmac with-demoted-errors format body@dots{}
-This macro is like a milder version of @code{ignore-errors}.  Rather
-than suppressing errors altogether, it converts them into messages.
-It uses the string @var{format} to format the message.
-@var{format} should contain a single @samp{%}-sequence; e.g.,
-@code{"Error: %S"}.  Use @code{with-demoted-errors} around code
-that is not expected to signal errors, but
-should be robust if one does occur.  Note that this macro uses
-@code{condition-case-unless-debug} rather than @code{condition-case}.
+Макрос подобен мягкой версии @code{ignore-errors}.  Вместо того, чтобы
+подавлять ошибки вообще, они преобразуются в сообщения.  Используется строка
+@var{format} для форматирования сообщения.  @var{format} должен содержать
+одну @samp{%}-последовательность; например, @code{"Error: %S"}.  Используйте
+@code{with-demoted-errors} вокруг кода, который не ожидает сигналов ошибок,
+и это должен быть надёжный код в случае возникновения ошибок.  Обратите
+внимание, что этот макрос использует @code{condition-case-unless-debug}
+вместо @code{condition-case}.
 @end defmac
 
 @node Error Symbols
-@subsubsection Error Symbols and Condition Names
+@subsubsection Символы Ошибок и Имена Условий
 @cindex error symbol
 @cindex error name
 @cindex condition name
@@ -2128,41 +2129,43 @@ should be robust if one does occur.  Note that this macro uses
 @kindex error-conditions
 @kindex define-error
 
-  When you signal an error, you specify an @dfn{error symbol} to specify
-the kind of error you have in mind.  Each error has one and only one
-error symbol to categorize it.  This is the finest classification of
-errors defined by the Emacs Lisp language.
+  Когда появляется сигнал об ошибке, указывается @dfn{символ ошибки}, чтобы
+  указать тип ошибки который имеется в виду.  Каждая ошибка имеет один и
+  только один символ ошибки для описания её категории. Это лучшая
+  классификация ошибок, определенная языком Emacs Lisp.
 
-  These narrow classifications are grouped into a hierarchy of wider
-classes called @dfn{error conditions}, identified by @dfn{condition
-names}.  The narrowest such classes belong to the error symbols
-themselves: each error symbol is also a condition name.  There are also
-condition names for more extensive classes, up to the condition name
-@code{error} which takes in all kinds of errors (but not @code{quit}).
-Thus, each error has one or more condition names: @code{error}, the
-error symbol if that is distinct from @code{error}, and perhaps some
-intermediate classifications.
+  Эти узкие классификации сгруппированы в иерархии более широких классов,
+  называемых @dfn{состояниями ошибок}, которые были определены
+  @dfn{именами условий}.  Самые узкие такие классы принадлежат к самим
+  символам ошибки: каждый символ ошибки - также является именем условия. Есть
+  также имена условия для более широких классов, вплоть до имени условия
+  @code{error}, которое принимает все виды ошибок (но только не @code{quit}).
+  Таким образом, каждая ошибка имеет одно или несколько имен условий:
+  @code{error}, символ ошибки, если имя отлично от @code{error}, и, возможно,
+  некоторые промежуточные классификации.  (ВопросControl2145)
 
 @defun define-error name message &optional parent
-  In order for a symbol to be an error symbol, it must be defined with
-@code{define-error} which takes a parent condition (defaults to @code{error}).
-This parent defines the conditions that this kind of error belongs to.
-The transitive set of parents always includes the error symbol itself, and the
-symbol @code{error}.  Because quitting is not considered an error, the set of
-parents of @code{quit} is just @code{(quit)}.
+  Для того, чтобы символ, выступал в роли символа ошибки, он должен быть
+  определен с @code{define-error} которое принимает родительское условие
+  (по умолчанию @code{error}).  Этот родитель определяет условия, которым
+  принадлежит такого рода ошибка.  Транзитивное множество родителей всегда
+  включает в себя также сам символ ошибки и символ @code{error}.  Потому что
+  выход не считается ошибкой, множество родителей @code{quit} просто
+  @code{(quit)}. (ВопросControl2154)
 @end defun
 
 @cindex peculiar error
-  In addition to its parents, the error symbol has a @var{message} which
-is a string to be printed when that error is signaled but not handled.  If that
-message is not valid, the error message @samp{peculiar error} is used.
+  В дополнение к своим родителям, символ ошибки имеет @var{message}, которое
+  является строкой и которая будет напечатана, когда сигнализируется ошибка,
+  но не обрабатывается.  Если это сообщение не является действительным,
+  используются сообщение об ошибке @samp{своеобразная ошибка}.
 @xref{Definition of signal}.
 
-Internally, the set of parents is stored in the @code{error-conditions}
-property of the error symbol and the message is stored in the
-@code{error-message} property of the error symbol.
+Внутренне множество родителей хранится в @code{error-conditions} свойстве
+символа ошибки а сообщение хранится в @code{error-message} свойства символа
+ошибки.
 
-  Here is how we define a new error symbol, @code{new-error}:
+  Вот как определяется новый символ ошибки, @code{new-error}:
 
 @example
 @group
@@ -2171,17 +2174,18 @@ property of the error symbol and the message is stored in the
 @end example
 
 @noindent
-This error has several condition names: @code{new-error}, the narrowest
-classification; @code{my-own-errors}, which we imagine is a wider
-classification; and all the conditions of @code{my-own-errors} which should
-include @code{error}, which is the widest of all.
+Эта ошибка имеет несколько имён услвий: условие @code{new-error}, самая
+узкая классификация; @code{my-own-errors}, предположительно представляет
+более широкую классификацию; и все условия @code{my-own-errors}, которые
+должны включать в себя @code{error}, которое является самой широкой
+класификацией из всех.
 
   The error string should start with a capital letter but it should
 not end with a period.  This is for consistency with the rest of Emacs.
 
-  Naturally, Emacs will never signal @code{new-error} on its own; only
-an explicit call to @code{signal} (@pxref{Definition of signal}) in
-your code can do this:
+  Естественно, Emacs никогда не будет сигнализировать @code{new-error} самим
+  по себе; только явный вызов @code{signal} (@pxref{Definition of signal}) в
+  коде может сделать это:
 
 @example
 @group
@@ -2190,9 +2194,9 @@ your code can do this:
 @end group
 @end example
 
-  This error can be handled through any of its condition names.
-This example handles @code{new-error} and any other errors in the class
-@code{my-own-errors}:
+  Эту ошибку можно обработать с помощью любого из его имен условий.  Этот
+  пример обрабатывает @code{new-error} и любые другие ошибки класса
+  @code{my-own-errors}:
 
 @example
 @group
@@ -2202,65 +2206,64 @@ This example handles @code{new-error} and any other errors in the class
 @end group
 @end example
 
-  The significant way that errors are classified is by their condition
-names---the names used to match errors with handlers.  An error symbol
-serves only as a convenient way to specify the intended error message
-and list of condition names.  It would be cumbersome to give
-@code{signal} a list of condition names rather than one error symbol.
+  Естественный способ класификации ошибок - это использование их имен условий
+  сопоставимыми с их именами ошибки.  Символ ошибки служит только в качестве
+  удобного способа указать предполагаемое сообщение об ошибке и список имен
+  условий.  Было бы громоздким, давать @code{signal} список имен условий, а
+  не использовать один символ ошибки.
 
-  By contrast, using only error symbols without condition names would
-seriously decrease the power of @code{condition-case}.  Condition names
-make it possible to categorize errors at various levels of generality
-when you write an error handler.  Using error symbols alone would
-eliminate all but the narrowest level of classification.
+  В противоположность этому, используя только символы ошибок без имен условий
+  серьезно уменьшило бы возможности @code{condition-case}.  Имена условий
+  позволяют классифицировать ошибки на различных уровнях общности, когда вы
+  пишете обработчик ошибок.  Использование одних только символов ошибок
+  устранило бы все, кроме самого узкого уровня классификации.
 
-  @xref{Standard Errors}, for a list of the main error symbols
-and their conditions.
+  @xref{Standard Errors}, где приведен список основных символов ошибок и
+  их условий.
 
 @node Cleanups
-@subsection Cleaning Up from Nonlocal Exits
+@subsection Очистка Нелокальных Выходов
 @cindex nonlocal exits, cleaning up
 @cindex forms for cleanup
 
-  The @code{unwind-protect} construct is essential whenever you
-temporarily put a data structure in an inconsistent state; it permits
-you to make the data consistent again in the event of an error or
-throw.  (Another more specific cleanup construct that is used only for
-changes in buffer contents is the atomic change group; @ref{Atomic
-Changes}.)
+  @code{unwind-protect} конструкция имеет важное значение, когда вы временно
+  переводите структуру данных в несогласованное состояние; она позволяет вам
+  сделать данные снова согласованные в случае ошибки или сбоя.  (Еще одна
+  более конкретная конструкция очистки, которая используется только для
+  изменения содержимого буфера и относится к группе атомарных изменений;
+  @ref{Atomic Changes}.)
 
 @defspec unwind-protect body-form cleanup-forms@dots{}
 @cindex cleanup forms
 @cindex protected forms
 @cindex error cleanup
 @cindex unwinding
-@code{unwind-protect} executes @var{body-form} with a guarantee that
-the @var{cleanup-forms} will be evaluated if control leaves
-@var{body-form}, no matter how that happens.  @var{body-form} may
-complete normally, or execute a @code{throw} out of the
-@code{unwind-protect}, or cause an error; in all cases, the
-@var{cleanup-forms} will be evaluated.
+@code{unwind-protect} исполняет @var{body-form} с гарантией того, что
+@var{cleanup-forms} будут оценены, если элемент управления покинет форму
+@var{body-form}, независимо от того, как это произойдёт.  @var{body-form}
+может завершаться нормально, или выполнить @code{throw} из
+@code{unwind-protect}, или вызвать ошибку; во всех случаях,
+@var{cleanup-forms} будет оцениваться.
 
-If @var{body-form} finishes normally, @code{unwind-protect} returns the
-value of @var{body-form}, after it evaluates the @var{cleanup-forms}.
-If @var{body-form} does not finish, @code{unwind-protect} does not
-return any value in the normal sense.
+Если @var{body-form} нормально завершается, @code{unwind-protect} возвращает
+значение @var{body-form}, после того, как оценивается @var{cleanup-forms}.
+Если @var{body-form} не завершается, @code{unwind-protect} не возвращает
+никакого значения в обычном смысле этого слова.
 
-Only @var{body-form} is protected by the @code{unwind-protect}.  If any
-of the @var{cleanup-forms} themselves exits nonlocally (via a
-@code{throw} or an error), @code{unwind-protect} is @emph{not}
-guaranteed to evaluate the rest of them.  If the failure of one of the
-@var{cleanup-forms} has the potential to cause trouble, then protect
-it with another @code{unwind-protect} around that form.
+Только @var{body-form} защищена @code{unwind-protect}.  Если какая-либо форма
+из @var{cleanup-forms} выходит нелокально (через @code{throw} или ошибки),
+@code{unwind-protect} @emph{не} гарантированно оценит остальные.  Если
+одна из форм @var{cleanup-forms} потенциально может вызвать проблемы,
+защитите его с помощью другого @code{unwind-protect} вокруг этой формы.
 
-The number of currently active @code{unwind-protect} forms counts,
-together with the number of local variable bindings, against the limit
-@code{max-specpdl-size} (@pxref{Definition of max-specpdl-size,, Local
-Variables}).
+Количество активных форм @code{unwind-protect}, в определёный момент
+времени, учитывается вместе с числом локальных привязок переменных, с
+учётом предельных значений @code{max-specpdl-size}
+(@pxref{Definition of max-specpdl-size,, Local Variables}).
 @end defspec
 
-  For example, here we make an invisible buffer for temporary use, and
-make sure to kill it before finishing:
+  Например, здесь мы делаем невидимый буфер для временного использования, и
+  обязательно уничтожаем его, пред завершением:
 
 @example
 @group
@@ -2273,27 +2276,26 @@ make sure to kill it before finishing:
 @end example
 
 @noindent
-You might think that we could just as well write @code{(kill-buffer
-(current-buffer))} and dispense with the variable @code{buffer}.
-However, the way shown above is safer, if @var{body-form} happens to
-get an error after switching to a different buffer!  (Alternatively,
-you could write a @code{save-current-buffer} around @var{body-form},
-to ensure that the temporary buffer becomes current again in time to
-kill it.)
+Можно подумать, что можно использовать @code{(kill-buffer (current-buffer))}
+и забыть о переменной @code{buffer}.  Однако, способ показанный выше,
+является более безопасным, если @var{body-form} выдаст ошибку после
+переключения на другой буфер!  (В качестве альтернативы, можно написать
+@code{save-current-buffer} вокруг формы  @var{body-form}, чтобы
+гарантировать, что временный буфер снова станет текущим, чтобы убить его.)
 
-  Emacs includes a standard macro called @code{with-temp-buffer} which
-expands into more or less the code shown above (@pxref{Definition of
-with-temp-buffer,, Current Buffer}).  Several of the macros defined in
-this manual use @code{unwind-protect} in this way.
+  Emacs включает в себя стандартный макрос @code{with-temp-buffer}, который
+  расширяется к более или менее похожему коду, показанной выше
+  (@pxref{Definition of with-temp-buffer,, Current Buffer}).  Некоторые из
+  макросов, определенных в данном руководстве, используют
+  @code{unwind-protect} таким образом.
 
 @findex ftp-login
-  Here is an actual example derived from an FTP package.  It creates a
-process (@pxref{Processes}) to try to establish a connection to a remote
-machine.  As the function @code{ftp-login} is highly susceptible to
-numerous problems that the writer of the function cannot anticipate, it
-is protected with a form that guarantees deletion of the process in the
-event of failure.  Otherwise, Emacs might fill up with useless
-subprocesses.
+  Вот конкретный пример, полученный из пакета FTP.  Создает процесс
+  (@pxref{Processes}), чтобы попытаться установить соединение с удаленным
+  компьютером.  Поскольку функция @code{ftp-login} очень восприимчива к
+  многочисленным проблемам, которые автор функции не может предвидеть, она
+  защищена формой, которая гарантирует удаление процесса в случае сбоя.
+  В противном случае, Emacs может заполниться бесполезными подпроцессами.
 
 @example
 @group
@@ -2308,8 +2310,8 @@ subprocesses.
 @end group
 @end example
 
-  This example has a small bug: if the user types @kbd{C-g} to
-quit, and the quit happens immediately after the function
-@code{ftp-setup-buffer} returns but before the variable @code{process} is
-set, the process will not be killed.  There is no easy way to fix this bug,
-but at least it is very unlikely.
+  В этом примере есть небольшая ошибка: если пользователь вводит @kbd{C-g},
+  чтобы выйти, а выход происходит сразу после возвращения функции
+  @code{ftp-setup-buffer} но перед тем как переменная @code{process}
+  будет установлена, то процесс не будет убит.  Нет простого способа
+  исправить эту ошибку, но, по крайней мере, это очень маловероятно.
