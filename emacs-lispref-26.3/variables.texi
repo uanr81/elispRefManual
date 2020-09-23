@@ -3,73 +3,73 @@
 @c Copyright (C) 1990-1995, 1998-2019 Free Software Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Variables
-@chapter Variables
+@chapter Переменные
 @cindex variable
 
-  A @dfn{variable} is a name used in a program to stand for a value.
-In Lisp, each variable is represented by a Lisp symbol
-(@pxref{Symbols}).  The variable name is simply the symbol's name, and
-the variable's value is stored in the symbol's value cell@footnote{To
-be precise, under the default @dfn{dynamic scoping} rule, the value
-cell always holds the variable's current value, but this is not the
-case under the @dfn{lexical scoping} rule.  @xref{Variable Scoping},
-for details.}.  @xref{Symbol Components}.  In Emacs Lisp, the use of a
-symbol as a variable is independent of its use as a function name.
+  @dfn{Переменная} это имя, используемое в программе, чтобы остаивать
+  значение.  В Lisp, каждая переменная представлена ​​символом Lisp
+  (@pxref{Symbols}).  Имя переменной - просто имя символа, а значение
+  переменной сохраняется в компоненте символа ячейки
+  значения@footnote{Чтобы быть точным, в соответствии с правилом
+  @dfn{динамического связывания} по умолчанию, в компоненте символа ячейки
+  значения всегда установленно текущее значение переменной, но это не так,
+  в соответствии с правилом @dfn{лексического связывания}.
+  @xref{Variable Scoping}, для деталей.}.  @xref{Symbol Components}.  В Emacs
+  Lisp, использование символа в качестве переменной не зависит от
+  использования его в качестве имени функции.
 
-  As previously noted in this manual, a Lisp program is represented
-primarily by Lisp objects, and only secondarily as text.  The textual
-form of a Lisp program is given by the read syntax of the Lisp objects
-that constitute the program.  Hence, the textual form of a variable in
-a Lisp program is written using the read syntax for the symbol
-representing the variable.
+ Как уже отмечалось ранее в данном руководстве, программа Lisp представлена
+ в основном объектами Lisp, и лишь во вторую очередь как текст.  Текстовая
+ форма программы Lisp задается для чтения синтаксиса объектов Lisp, которые
+ составляют программу.  Следовательно, текстовая форма переменной в программе
+ Lisp записывается с использованием синтаксиса для чтения символа,
+ представляющего переменную.
 
 @menu
-* Global Variables::            Variable values that exist permanently, everywhere.
-* Constant Variables::          Variables that never change.
-* Local Variables::             Variable values that exist only temporarily.
-* Void Variables::              Symbols that lack values.
-* Defining Variables::          A definition says a symbol is used as a variable.
-* Tips for Defining::           Things you should think about when you
-                            define a variable.
-* Accessing Variables::         Examining values of variables whose names
-                            are known only at run time.
-* Setting Variables::           Storing new values in variables.
-* Watching Variables::          Running a function when a variable is changed.
-* Variable Scoping::            How Lisp chooses among local and global values.
-* Buffer-Local Variables::      Variable values in effect only in one buffer.
-* File Local Variables::        Handling local variable lists in files.
-* Directory Local Variables::   Local variables common to all files in a directory.
-* Connection Local Variables::  Local variables common for remote connections.
-* Variable Aliases::            Variables that are aliases for other variables.
-* Variables with Restricted Values::  Non-constant variables whose value can
-                                        @emph{not} be an arbitrary Lisp object.
-* Generalized Variables::       Extending the concept of variables.
+* Global Variables::            Переменные, значения которых существуют постоянно, везде.
+* Constant Variables::          Переменные, значения которых никогда не меняются.
+* Local Variables::             Переменные, значения которых существуют временно.
+* Void Variables::              Символы, которые не имеют значения.
+* Defining Variables::          Определение указывает использование символа в качестве переменной.
+* Tips for Defining::           Вещи, о которых требуется думать, когда определяется переменная.
+* Accessing Variables::         Проверка значений переменных, имена которых известны только во время выполнения.
+* Setting Variables::           Сохранение новых значений в переменных.
+* Watching Variables::          Выполнение функции, когда переменная изменяется.
+* Variable Scoping::            Как Lisp выбирает среди локальных и глобальных связок.
+* Buffer-Local Variables::      Значения переменных действующих только в одном буфере.
+* File Local Variables::        Обработка списков локальных переменных файла.
+* Directory Local Variables::   Локальные переменные, общие для всех файлов в каталоге.
+* Connection Local Variables::  Локальные переменные, общие для удаленных подключений.
+* Variable Aliases::            Переменные, которые являются псевдонимами для других переменных.
+* Variables with Restricted Values::  Непостоянные переменные, принимающих значения определённого объекта Lisp.
+* Generalized Variables::       Расширение концепции переменных.
 @end menu
 
 @node Global Variables
-@section Global Variables
+@section Глобальные Переменные
 @cindex global variable
 
-  The simplest way to use a variable is @dfn{globally}.  This means that
-the variable has just one value at a time, and this value is in effect
-(at least for the moment) throughout the Lisp system.  The value remains
-in effect until you specify a new one.  When a new value replaces the
-old one, no trace of the old value remains in the variable.
+  Самый простой способ использовать переменную - использовать её
+  @dfn{глобально}.  Это означает, что переменная имеет только одно значение
+  (по крайней мере на данный момент) по всей системе Lisp.  Значение остается
+  в силе до тех пор, пока не задать новое.  Когда новое значение заменяет
+  старое, никаких следов старого значения в переменной не остаётся.
 
-  You specify a value for a symbol with @code{setq}.  For example,
+  Необходимо указать значение для символа. Используется @code{setq}.
+  Например,
 
 @example
 (setq x '(a b))
 @end example
 
 @noindent
-gives the variable @code{x} the value @code{(a b)}.  Note that
-@code{setq} is a special form (@pxref{Special Forms}); it does not
-evaluate its first argument, the name of the variable, but it does
-evaluate the second argument, the new value.
+присваивает переменной @code{x} значение @code{(a b)}.  Обратите внимание,
+что @code{setq} это специальная форма (@pxref{Special Forms}); она не
+оценивает свой первый аргумент, имя переменной, но оценивает второй аргумент,
+новое значение.
 
-  Once the variable has a value, you can refer to it by using the
-symbol itself as an expression.  Thus,
+  После того, как переменная имеет значение, можно обратиться к нему,
+  используя сам символ как выражение.  Таким образом,
 
 @example
 @group
@@ -78,10 +78,9 @@ x @result{} (a b)
 @end example
 
 @noindent
-assuming the @code{setq} form shown above has already been executed.
+предполлагается, что уже оценена форма @code{setq},  показанная выше.
 
-  If you do set the same variable again, the new value replaces the old
-one:
+  Если определить ту же переменную снова, новое значение замещает старое:
 
 @example
 @group
@@ -99,7 +98,7 @@ x
 @end example
 
 @node Constant Variables
-@section Variables that Never Change
+@section Переменные, Которые не Меняются
 @cindex @code{setting-constant} error
 @cindex keyword symbol
 @cindex variable with constant value
@@ -107,14 +106,15 @@ x
 @cindex symbol that evaluates to itself
 @cindex symbol with constant value
 
-  In Emacs Lisp, certain symbols normally evaluate to themselves.  These
-include @code{nil} and @code{t}, as well as any symbol whose name starts
-with @samp{:} (these are called @dfn{keywords}).  These symbols cannot
-be rebound, nor can their values be changed.  Any attempt to set or bind
-@code{nil} or @code{t} signals a @code{setting-constant} error.  The
-same is true for a keyword (a symbol whose name starts with @samp{:}),
-if it is interned in the standard obarray, except that setting such a
-symbol to itself is not an error.
+  В Emacs Lisp, определенные символы, как правило, оценивают сами себя.  К
+  ним относятся @code{nil} и @code{t}, а также любой символ, имя которого
+  начинается с @samp{:} (они называются @dfn{keywords}).  Эти символы не
+  могут быть переопределены, и нельзя изменить их значения.  Любая попытка
+  определить или связать символы @code{nil} или @code{t}, приводит к сигналу
+  ошибки @code{setting-constant}.  То же самое верно и для ключевого слова
+  (символ, имя которого начинается с @samp{:}), если он интернирован в
+  стандартном obarray, за исключением того, что определение такого символа
+  само по себе не является ошибкой.  (ВопросVariables117)
 
 @example
 @group
@@ -123,100 +123,101 @@ nil @equiv{} 'nil
 @end group
 @group
 (setq nil 500)
-@error{} Attempt to set constant symbol: nil
+@error{} Попытка определить символ константу: nil
 @end group
 @end example
 
 @defun keywordp object
-function returns @code{t} if @var{object} is a symbol whose name
-starts with @samp{:}, interned in the standard obarray, and returns
-@code{nil} otherwise.
+Функция возвращает @code{t} если @var{object} символ, имя которого начинается
+с @samp{:}, интернированных в стандартном obarray и возвращается @code{nil}
+другом случае.
 @end defun
 
-These constants are fundamentally different from the constants
-defined using the @code{defconst} special form (@pxref{Defining
-Variables}).  A @code{defconst} form serves to inform human readers
-that you do not intend to change the value of a variable, but Emacs
-does not raise an error if you actually change it.
+Такие константы существенно отличаются от констант, определенных с помощью
+специальной формы @code{defconst} (@pxref{Defining Variables}).  Форма
+@code{defconst} - средство выделить переменную для программиста, который
+может изменить значение переменной, Emacs не вызывает ошибку, если значение
+на самом деле будет изменено.
 
 @cindex read-only variables
-A small number of additional symbols are made read-only for various
-practical reasons.  These include @code{enable-multibyte-characters},
-@code{most-positive-fixnum}, @code{most-negative-fixnum}, and a few
-others.  Any attempt to set or bind these also signals a
-@code{setting-constant} error.
+Небольшое количество дополнительных символов сделаны доступными только для
+чтения по различным практическим причинам.  К ним относятся
+@code{enable-multibyte-characters}, @code{most-positive-fixnum},
+@code{most-negative-fixnum}, и несколько других.  Любая попытка установить
+или связать их также сигнализирует об ошибке @code{setting-constant}.
 
 @node Local Variables
-@section Local Variables
+@section Локальные Переменные
 @cindex binding local variables
 @cindex local variables
 @cindex local binding
 @cindex global binding
 
-  Global variables have values that last until explicitly superseded
-with new values.  Sometimes it is useful to give a variable a
-@dfn{local value}---a value that takes effect only within a certain
-part of a Lisp program.  When a variable has a local value, we say
-that it is @dfn{locally bound} to that value, and that it is a
-@dfn{local variable}.
+  Глобальные переменные имеют значения, которые сохраняются до тех пор, пока
+  не будут явно заменены новыми значениями.  Иногда требуется присвоить
+  переменной @dfn{локальное значение}---ия, который вступают в силу только в
+  пределах определенной части программы Lisp.  Когда переменная имеет
+  локальное значение, это определяется как @dfn{локальная привязка} к этому
+  значению пременной, и что это @dfn{локальная переменная}.
 
-  For example, when a function is called, its argument variables
-receive local values, which are the actual arguments supplied to the
-function call; these local bindings take effect within the body of the
-function.  To take another example, the @code{let} special form
-explicitly establishes local bindings for specific variables, which
-take effect only within the body of the @code{let} form.
+  Например, когда происходит вызов функции, ее аргументы переменные получают
+  локальные значения, которые представляют фактические аргументы, переданные
+  в вызов функции; эти локальные привязки вступают в силу в теле функции.
+  Возьмем другой пример, специальная форма @code{let} явно устанавливает
+  локальные привязки для конкретных переменных, которые вступают в силу
+  только в теле самой формы @code{let}.
 
-  We also speak of the @dfn{global binding}, which is where
-(conceptually) the global value is kept.
+  Также определение @dfn{глобальная привязка}, подразумевает (концептуально)
+  глобальное хранение значения.
 
 @cindex shadowing of variables
-  Establishing a local binding saves away the variable's previous
-value (or lack of one).  We say that the previous value is
-@dfn{shadowed}.  Both global and local values may be shadowed.  If a
-local binding is in effect, using @code{setq} on the local variable
-stores the specified value in the local binding.  When that local
-binding is no longer in effect, the previously shadowed value (or lack
-of one) comes back.
+  Установка локальной привязки не изменяет предыдущее значение переменной
+  (или отсутствие такового).  Рассматривается так, что предыдущее значение
+  @dfn{затенено}.  Могут быть затенены как глобальные так и локальные
+  значения переменных.  Если действует локальная привязка, с помощью
+  @code{setq} присваивается значение в локальной привязке.  Когда эта
+  локальная привязка перестаёт действовать, ранее затененное значение
+  (или отсутствие таковго) снова вступает в силу.
 
 @cindex current binding
-  A variable can have more than one local binding at a time (e.g., if
-there are nested @code{let} forms that bind the variable).  The
-@dfn{current binding} is the local binding that is actually in effect.
-It determines the value returned by evaluating the variable symbol,
-and it is the binding acted on by @code{setq}.
+  Переменная может одновременно иметь более одной локальной привязки
+  (например, если есть вложенные формы @code{let}, которые связывают
+  переменные).  @dfn{Текущая привязка} на самом деле это локальное
+  связывание.  @code{setq} определяется значение, возвращаемое посредством
+  оценки символа переменной в условиях связывания.
 
-  For most purposes, you can think of the current binding as the
-innermost local binding, or the global binding if there is no
-local binding.  To be more precise, a rule called the @dfn{scoping
-rule} determines where in a program a local binding takes effect.  The
-default scoping rule in Emacs Lisp is called @dfn{dynamic scoping},
-which simply states that the current binding at any given point in the
-execution of a program is the most recently-created binding for that
-variable that still exists.  For details about dynamic scoping, and an
-alternative scoping rule called @dfn{lexical scoping}, @xref{Variable
-Scoping}.
+  В большинстве случаев текущая привязка рассматривается как самое внутреннее
+  локальное связывание или глобальное связывание, если отсутствует локальное
+  связывание.  Более точно, правило называется @dfn{областью видимости}
+  и определяет, где в программе локальное связывание вступает в силу.
+  Правило области видимости (действует по умолчанию) в Emacs Lisp называется
+  @dfn{динамическое связывание}, которое гласит, что текущая привязка
+  переменной значения в любой заданной точке выполнения программы является
+  самой последней такой созданной привязкой к этой переменной, которая все
+  еще существуетвует.  Более подробную информацию о динамической области
+  видимости, и альтернативное правило области видимости под названием
+  @dfn{лексическое связывание}, @xref{Variable Scoping}.
 
-  The special forms @code{let} and @code{let*} exist to create local
-bindings:
+  Специальные формы @code{let} и @code{let*} существуют для создания
+  локальных привязок:
 
 @defspec let (bindings@dots{}) forms@dots{}
-This special form sets up local bindings for a certain set of
-variables, as specified by @var{bindings}, and then evaluates all of
-the @var{forms} in textual order.  Its return value is the value of
-the last form in @var{forms}.  The local bindings set up by @code{let}
-will be in effect only within the body of @var{forms}.
+Особая форма устанавливает локальные привязки для определенного набора
+переменных, как определенно с помощью формы @var{bindings}, а затем оценивает
+все @var{forms} в текстовом порядке.  Возвращаемое значение является
+значением последней формы в @var{forms}.  Местные привязок созданые с помощью
+формы @code{let} будет действовать только в пределах её тела @var{forms}.
 
-Each of the @var{bindings} is either @w{(i) a} symbol, in which case
-that symbol is locally bound to @code{nil}; or @w{(ii) a} list of the
-form @code{(@var{symbol} @var{value-form})}, in which case
-@var{symbol} is locally bound to the result of evaluating
-@var{value-form}.  If @var{value-form} is omitted, @code{nil} is used.
+Каждая из форм @var{bindings} является либо отдельным символом @w{(i) a}, и
+в этом случае символу локально устанавливается значение в @code{nil}; или
+список @w{(ii) a} вида @code{(@var{symbol} @var{value-form})}, в этом случае
+символ @var{symbol} локально связывается с результатом оценки формы
+@var{value-form}.  Если @var{value-form} опущена, используется @code{nil}.
 
-All of the @var{value-form}s in @var{bindings} are evaluated in the
-order they appear and @emph{before} binding any of the symbols to them.
-Here is an example of this: @code{z} is bound to the old value of
-@code{y}, which is 2, not the new value of @code{y}, which is 1.
+Все формы @var{value-form}ы в @var{bindings} оцениваются в порядке их
+появления и @emph{до} связывания с предназначенным для них символом.  Вот
+пример этого: @code{z} связан со старым значением @code{y}, которое 2, а не
+новое значение @code{y}, которое 1.
 
 @example
 @group
@@ -232,8 +233,8 @@ Here is an example of this: @code{z} is bound to the old value of
 @end group
 @end example
 
-On the other hand, the order of @emph{bindings} is unspecified: in the
-following example, either 1 or 2 might be printed.
+С другой стороны, порядок оценки @emph{bindings} не определен: в следующем
+примере, либо 1 или 2 может быть в результате напечатано.
 
 @example
 (let ((x 1)
@@ -241,16 +242,16 @@ following example, either 1 or 2 might be printed.
   (print x))
 @end example
 
-Therefore, avoid binding a variable more than once in a single
-@code{let} form.
+Поэтому требуется избегать связывания переменной более одного раза в одной
+форме @code{let}.
 @end defspec
 
 @defspec let* (bindings@dots{}) forms@dots{}
-This special form is like @code{let}, but it binds each variable right
-after computing its local value, before computing the local value for
-the next variable.  Therefore, an expression in @var{bindings} can
-refer to the preceding symbols bound in this @code{let*} form.
-Compare the following example with the example above for @code{let}.
+Специальная форма подобна @code{let}, но связывается каждая переменная сразу
+после вычисления её локального значения, перед вычислением локального
+значения следующих переменных.  Таким образом, выражение в @var{bindings}
+может относиться к предыдущим символам, связанным в этой @code{let*} форме.
+Сравните следующий пример с примером @code{let} выше.
 
 @example
 @group
@@ -260,141 +261,143 @@ Compare the following example with the example above for @code{let}.
 
 @group
 (let* ((y 1)
-       (z y))    ; @r{Use the just-established value of @code{y}.}
+       (z y))    ; @r{Действует только что установленное значение @code{y}.}
   (list y z))
      @result{} (1 1)
 @end group
 @end example
 @end defspec
 
-  Here is a complete list of the other facilities that create local
-bindings:
+  Вот полный список других средств, которые создают локальные привязки:
 
 @itemize @bullet
 @item
-Function calls (@pxref{Functions}).
+Вызов функций (@pxref{Functions}).
 
 @item
-Macro calls (@pxref{Macros}).
+Вызов макросов (@pxref{Macros}).
 
 @item
 @code{condition-case} (@pxref{Errors}).
 @end itemize
 
-  Variables can also have buffer-local bindings (@pxref{Buffer-Local
-Variables}); a few variables have terminal-local bindings
-(@pxref{Multiple Terminals}).  These kinds of bindings work somewhat
-like ordinary local bindings, but they are localized depending on
-where you are in Emacs.
+  Переменные могут также иметь локальную привязку к буфферу
+  (@pxref{Buffer-Local Variables}); некоторые переменные имеют локальную
+  привязку к терминалу (@pxref{Multiple Terminals}).  Эти виды привязок
+  работают как обычные локальные привязки, но они локализуются в зависимости
+  от контекста где находится Emacs.
 
 @defopt max-specpdl-size
 @anchor{Definition of max-specpdl-size}
 @cindex variable limit error
 @cindex evaluation error
 @cindex infinite recursion
-This variable defines the limit on the total number of local variable
-bindings and @code{unwind-protect} cleanups (see @ref{Cleanups,,
-Cleaning Up from Nonlocal Exits}) that are allowed before Emacs
-signals an error (with data @code{"Variable binding depth exceeds
-max-specpdl-size"}).
+Переменная определяет допустимый предел на общее количество локальных
+привязок и очисток @code{unwind-protect} переменных (смотреть
+@ref{Cleanups,,Cleaning Up from Nonlocal Exits}), которые разрешены, прежде
+чем Emacs сигнализирует об ошибке (с данными @code{"Глубина связывания
+переменной превышает заданное значение max-specpdl-size"}).
 
-This limit, with the associated error when it is exceeded, is one way
-that Lisp avoids infinite recursion on an ill-defined function.
-@code{max-lisp-eval-depth} provides another limit on depth of nesting.
-@xref{Definition of max-lisp-eval-depth,, Eval}.
+Это ограничение, с соответствующей ошибкой при превышении, это один из
+способов Lisp избежать зацикливания на нечетко определенной функции.
+@code{max-lisp-eval-depth} обеспечивает еще ограничение на глубину
+вложенности.  @xref{Definition of max-lisp-eval-depth,, Eval}.
 
-The default value is 1300.  Entry to the Lisp debugger increases the
-value, if there is little room left, to make sure the debugger itself
-has room to execute.
+Значение по умолчанию 1300.  При вход в отладчик, Lisp увеличивает значение,
+если остаётся мало места для выполнения отладчиком действий.
 @end defopt
 
 @node Void Variables
-@section When a Variable is Void
+@section Недействительная Переменная
 @cindex @code{void-variable} error
 @cindex void variable
 
-  We say that a variable is void if its symbol has an unassigned value
-cell (@pxref{Symbol Components}).
+  Понимается, что переменная недействительна, если компонента символа ячейка
+  значения не имеет значения (@pxref{Symbol Components}).
 
-  Under Emacs Lisp's default dynamic scoping rule (@pxref{Variable
-Scoping}), the value cell stores the variable's current (local or
-global) value.  Note that an unassigned value cell is @emph{not} the
-same as having @code{nil} in the value cell.  The symbol @code{nil} is
-a Lisp object and can be the value of a variable, just as any other
-object can be; but it is still a value.  If a variable is void, trying
-to evaluate the variable signals a @code{void-variable} error, instead
-of returning a value.
+  В соответствии правилу динамического связывания, действующему по умолчанию
+  (@pxref{Variable Scoping}), Emacs Lisp хранит текущее значение переменной
+  (локальное или глобальное) значением компоненты символа ячейки значения.
+  Обратите внимание, что неприсвоенное значение этой ячейки значения
+  @emph{не} такое, как установленое в @code{nil}.  Символ @code{nil}
+  является объектом Lisp и может быть значением переменной, так же, как
+  может быть любой другой объект.  Если переменная недействительна, попытка
+  её оценить сигнализирует ошибку @code{void-variable}, вместо того, чтобы
+  вернуть её значение.
 
-  Under the optional lexical scoping rule, the value cell only holds
-the variable's global value---the value outside of any lexical binding
-construct.  When a variable is lexically bound, the local value is
-determined by the lexical environment; hence, variables can have local
-values even if their symbols' value cells are unassigned.
+  Согласно дополнительному правилу лексической области видимости, значение
+  ячейки компоненты символа содержит только глобальное значение переменной---
+  значение вне любого лексического связывания конструкции.  Когда переменная
+  лексически связана, локальное значение определяется лексической средой;
+  следовательно, переменные могут иметь локальные значения, даже если
+  ячейкам значений компоненты их символов значения неприсвоенны.
 
 @defun makunbound symbol
-This function empties out the value cell of @var{symbol}, making the
-variable void.  It returns @var{symbol}.
+Функция очищает значение ячейки значения символа @var{symbol}, что делает
+переменную пустой.  Возвращается @var{symbol}.
 
-If @var{symbol} has a dynamic local binding, @code{makunbound} voids
-the current binding, and this voidness lasts only as long as the local
-binding is in effect.  Afterwards, the previously shadowed local or
-global binding is reexposed; then the variable will no longer be void,
-unless the reexposed binding is void too.
+Если @var{symbol} имеет локальное динамическое связывание, @code{makunbound}
+аннулирует текущую привязку, и эта пустота длится только до тех пор, пока
+действует локальное связывание.  После этого, ранее затененное локальное или
+глобальное связывание выходит на первый план и переменная больше не будет
+считаться недействительной, если восстановленная привязка существует.
 
-Here are some examples (assuming dynamic binding is in effect):
+Ниже приведены некоторые примеры (предполагая, что действует динамическое
+связывание):
 
 @smallexample
 @group
-(setq x 1)               ; @r{Put a value in the global binding.}
+(setq x 1)               ; @r{Помещается значение глобальной привязки.}
      @result{} 1
-(let ((x 2))             ; @r{Locally bind it.}
-  (makunbound 'x)        ; @r{Void the local binding.}
+(let ((x 2))             ; @r{Её локальное связывание.}
+  (makunbound 'x)        ; @r{Очистка локального связывания.}
   x)
-@error{} Symbol's value as variable is void: x
+@error{} Значение символа как переменный является недействительным: x
 @end group
 @group
-x                        ; @r{The global binding is unchanged.}
+x                        ; @r{Глобальное связывание осталось неизменным.}
      @result{} 1
 
-(let ((x 2))             ; @r{Locally bind it.}
-  (let ((x 3))           ; @r{And again.}
-    (makunbound 'x)      ; @r{Void the innermost-local binding.}
-    x))                  ; @r{And refer: it's void.}
-@error{} Symbol's value as variable is void: x
+(let ((x 2))             ; @r{Локально её связать.}
+  (let ((x 3))           ; @r{И снова связать.}
+    (makunbound 'x)      ; @r{Очистка самой внутренней локальной привязки.}
+    x))                  ; @r{И прверка: что здесь пусто.}
+@error{} Значение символа как переменный является недействительным: x
 @end group
 
 @group
 (let ((x 2))
   (let ((x 3))
-    (makunbound 'x))     ; @r{Void inner binding, then remove it.}
-  x)                     ; @r{Now outer @code{let} binding is visible.}
+    (makunbound 'x))     ; @r{Очистка внутреннего @code{let} связывания.}
+  x)                     ; @r{Теперь оценка внешнего @code{let} связывания.}
      @result{} 2
 @end group
 @end smallexample
 @end defun
 
 @defun boundp variable
-This function returns @code{t} if @var{variable} (a symbol) is not
-void, and @code{nil} if it is void.
+Функция возвращает @code{t} если @var{variable} (символ) действительная
+переменная и @code{nil}, в обратном случае.
 
-Here are some examples (assuming dynamic binding is in effect):
+Ниже приведены некоторые примеры (предполагается, что действует динамическое
+связывание):
 
 @smallexample
 @group
-(boundp 'abracadabra)          ; @r{Starts out void.}
+(boundp 'abracadabra)          ; @r{Прверка недействительной переменной.}
      @result{} nil
 @end group
 @group
-(let ((abracadabra 5))         ; @r{Locally bind it.}
+(let ((abracadabra 5))         ; @r{Локальная её привязка.}
   (boundp 'abracadabra))
      @result{} t
 @end group
 @group
-(boundp 'abracadabra)          ; @r{Still globally void.}
+(boundp 'abracadabra)          ; @r{Глобально переменная недействительна.}
      @result{} nil
 @end group
 @group
-(setq abracadabra 5)           ; @r{Make it globally nonvoid.}
+(setq abracadabra 5)           ; @r{Глобальная привязка.}
      @result{} 5
 @end group
 @group

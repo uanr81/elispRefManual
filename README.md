@@ -9,3 +9,4 @@ records.texi +
 hash.texi +
 symbol.texi +
 eval.texi +
+control.texi +
