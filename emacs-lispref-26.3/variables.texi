@@ -408,74 +408,80 @@ x                        ; @r{Глобальное связывание оста
 @end defun
 
 @node Defining Variables
-@section Defining Global Variables
+@section Определение Глобальных Переменных
 @cindex variable definition
 
-  A @dfn{variable definition} is a construct that announces your
-intention to use a symbol as a global variable.  It uses the special
-forms @code{defvar} or @code{defconst}, which are documented below.
+  @dfn{Определение переменной} представляет собой конструкцию, которая
+  объявляет о намерении использовать символ в качестве глобальной переменной.
+  Используются специальные формы @code{defvar} или @code{defconst}, которые
+  описаны ниже.
 
-  A variable definition serves three purposes.  First, it informs
-people who read the code that the symbol is @emph{intended} to be used
-a certain way (as a variable).  Second, it informs the Lisp system of
-this, optionally supplying an initial value and a documentation
-string.  Third, it provides information to programming tools such as
-@command{etags}, allowing them to find where the variable was defined.
+  Определение переменной служит трем целям.  Во-первых, информирует людей,
+  которые читают код, что символ @emph{предназначается} для использования
+  определенным образом (в качестве переменной).  Во-вторых, информирует
+  систему Lisp этого, при необходимости подавая начальное значение и строку
+  документации.  В-третьих, предоставляет информацию инструментам
+  программирования, таким как @command{etags}, что позволяет найти, где
+  была определена переменная.
 
-  The difference between @code{defconst} and @code{defvar} is mainly a
-matter of intent, serving to inform human readers of whether the value
-should ever change.  Emacs Lisp does not actually prevent you from
-changing the value of a variable defined with @code{defconst}.  One
-notable difference between the two forms is that @code{defconst}
-unconditionally initializes the variable, whereas @code{defvar}
-initializes it only if it is originally void.
+  Разница между @code{defconst} и @code{defvar} в основном заключена в
+  намерениях, служащих для информирования читалей о том, должно ли значение
+  когда-либо изменится.  Emacs Lisp фактически не мешает изменять значение
+  переменной, определенной с использованием @code{defconst}.  Одно заметное
+  различие между этими двумя формами является то, что @code{defconst}
+  безоговорочно инициализирует переменную, тогда как @code{defvar}
+  инициализирует его только тогда, когда она изначально недействительная.
 
-  To define a customizable variable, you should use @code{defcustom}
-(which calls @code{defvar} as a subroutine).  @xref{Variable
-Definitions}.
+  Чтобы определить настраиваемую переменную, вы должны использовать
+  @code{defcustom} (который вызывает @code{defvar} в качестве подпрограммы).
+  @xref{Variable Definitions}.
 
 @defspec defvar symbol [value [doc-string]]
-This special form defines @var{symbol} as a variable.  Note that
-@var{symbol} is not evaluated; the symbol to be defined should appear
-explicitly in the @code{defvar} form.  The variable is marked as
-@dfn{special}, meaning that it should always be dynamically bound
-(@pxref{Variable Scoping}).
+Специальная форма определяет @var{symbol} в качестве переменной.  Обратите
+внимание, что @var{symbol} не оценивается; символ, который определяется
+должен быть записан в явном виде @code{defvar}.  Переменная помечается как
+@dfn{специальная}, а это означает, что должна всегда быть динамически
+связаной.  (@pxref{Variable Scoping}).
 
-If @var{value} is specified, and @var{symbol} is void (i.e., it has no
-dynamically bound value; @pxref{Void Variables}), then @var{value} is
-evaluated and @var{symbol} is set to the result.  But if @var{symbol}
-is not void, @var{value} is not evaluated, and @var{symbol}'s value is
-left unchanged.  If @var{value} is omitted, the value of @var{symbol}
-is not changed in any case.
+Если @var{value} указано, и @var{symbol} является недействительным (то есть,
+не имеет динамически связанного значения; @pxref{Void Variables}), то
+@var{value} оценивается и устанавливается в результате значением компоненты
+символа @var{symbol} ячейки значения.  Но если @var{symbol} действительный,
+@var{value} не вычисляется, и значение @var{symbol}ов остаётся неизменным.
+Если @var{value} опущен, то значение @var{symbol} не изменяется в любом
+случае.
 
-Note that specifying a value, even @code{nil}, marks the variable as
-special permanently.  Whereas if @var{value} is omitted then the
-variable is only marked special locally (i.e.@: within the current
-lexical scope, or file if at the top-level).  This can be useful for
-suppressing byte compilation warnings, see @ref{Compiler Errors}.
+Обратите внимание, что определение значения, даже @code{nil}, помечает
+переменную в качестве специальной навсегда.  В то время как, если @var{value}
+опущено, то переменная помечается специальным локально (т.е. @: в пределах
+текущей лексической области видимости, или файла, если находится на верхнем
+уровне).  Это может быть полезным для подавления предупреждений байт
+компиляции, see @ref{Compiler Errors}.  (ВопросVariables459)
 
-If @var{symbol} has a buffer-local binding in the current buffer,
-@code{defvar} acts on the default value, which is buffer-independent,
-rather than the buffer-local binding.  It sets the default value if
-the default value is void.  @xref{Buffer-Local Variables}.
+Если @var{symbol} имеет локальную привязку к буферу в текущем буфере,
+@code{defvar} устанавливает значение по умолчанию, которое является
+буферо-независимое, а не связано с текущим буфером.  Значение устанавливается
+по умолчанию, если значение по умолчанию было недействительным.
+@xref{Buffer-Local Variables}. (ВопросVariables465)
 
-If @var{symbol} is already lexically bound (e.g., if the @code{defvar}
-form occurs in a @code{let} form with lexical binding enabled), then
-@code{defvar} sets the dynamic value.  The lexical binding remains in
-effect until its binding construct exits.  @xref{Variable Scoping}.
+Если @var{symbol} уже лексически связан (например, если форма @code{defvar}
+используется в теле формы @code{let} с включенным лексическим связыванием),
+@code{defvar} устанавливает динамическое значение.  Лексическое связывание
+остается в силе до его выхода из конструкции связывания.
+@xref{Variable Scoping}.
 
 @cindex @code{eval-defun}, and @code{defvar} forms
-When you evaluate a top-level @code{defvar} form with @kbd{C-M-x} in
-Emacs Lisp mode (@code{eval-defun}), a special feature of
-@code{eval-defun} arranges to set the variable unconditionally, without
-testing whether its value is void.
+Когда вы оцениваете форму @code{defvar} верхнего уровня с @kbd{C-M-x} в Emacs
+Lisp режиме (@code{eval-defun}), специальная функция @code{eval-defun}
+договаривается установить переменную, безусловно, не проверяя, является ли
+недействительным его значение.  (ВопросVariables477)
 
-If the @var{doc-string} argument is supplied, it specifies the
-documentation string for the variable (stored in the symbol's
-@code{variable-documentation} property).  @xref{Documentation}.
+Если указан @var{doc-string} аргумент, он указует строку документации для
+переменной (хранится в свойстве @code{variable-documentation} символа).
+@xref{Documentation}.
 
-Here are some examples.  This form defines @code{foo} but does not
-initialize it:
+Вот несколько примеров. Эта форма определяет @code{foo}, но не
+инициализирует её:
 
 @example
 @group
@@ -484,53 +490,52 @@ initialize it:
 @end group
 @end example
 
-This example initializes the value of @code{bar} to @code{23}, and gives
-it a documentation string:
+Этот пример инициализирует символ @code{bar} значением @code{23}, и
+устанавливает ему строку документации:
 
 @example
 @group
 (defvar bar 23
-  "The normal weight of a bar.")
+  "Нормальное состояние bar.")
      @result{} bar
 @end group
 @end example
 
-The @code{defvar} form returns @var{symbol}, but it is normally used
-at top level in a file where its value does not matter.
+@code{defvar} форма возвращает @var{symbol}, используется на верхнем уровне в
+файле, где его значение не имеет значения.
 
-For a more elaborate example of using @code{defvar} without a value,
-see @ref{Local defvar example}.
+Для более сложного примера использования @code{defvar} без значения,
+смотреть @ref{Local defvar example}.
 @end defspec
 
 @cindex constant variables
 @defspec defconst symbol value [doc-string]
-This special form defines @var{symbol} as a value and initializes it.
-It informs a person reading your code that @var{symbol} has a standard
-global value, established here, that should not be changed by the user
-or by other programs.  Note that @var{symbol} is not evaluated; the
-symbol to be defined must appear explicitly in the @code{defconst}.
+Эта специальная форма определяет @var{symbol} и инициализирует его значеним.
+Это информирует человека, читающего код, о том, что @var{symbol} имеет
+стандартное глобальное значение, установленное здесь, которые не должно быть
+изменены пользователем или другими программами.  Обратите внимание, что
+@var{symbol} не оценивается; символ, который должен быть определен явно
+печатается в @code{defconst}.  (ВопросVariables518)
 
-The @code{defconst} form, like @code{defvar}, marks the variable as
-@dfn{special}, meaning that it should always be dynamically bound
-(@pxref{Variable Scoping}).  In addition, it marks the variable as
-risky (@pxref{File Local Variables}).
+@code{defconst} форма, как @code{defvar}, отмечает переменную как
+@dfn{специальную}, а это означает, что она всегда должна быть динамически
+связанной (@pxref{Variable Scoping}).  Кроме того, отмечается переменная как
+рискованная (@pxref{File Local Variables}).
 
-@code{defconst} always evaluates @var{value}, and sets the value of
-@var{symbol} to the result.  If @var{symbol} does have a buffer-local
-binding in the current buffer, @code{defconst} sets the default value,
-not the buffer-local value.  (But you should not be making
-buffer-local bindings for a symbol that is defined with
-@code{defconst}.)
+@code{defconst} всегда оценивает @var{value}, и в результате устанавливает значение @var{symbol}.  Если @var{symbol} имеет локальное связывание с буфером
+в текущем буфере, @code{defconst} устанавливает значение по умолчанию, а не
+буфер локального значения. (Но вы не должны делать буфер локальной привязки
+для символа, который определяется с @code{defconst}.) (ВопросVariables528)
 
-An example of the use of @code{defconst} is Emacs's definition of
-@code{float-pi}---the mathematical constant @math{pi}, which ought not
-to be changed by anyone (attempts by the Indiana State Legislature
-notwithstanding).  As the second form illustrates, however,
-@code{defconst} is only advisory.
+Примером использования @code{defconst} является определение Emacs
+@code{float-pi}---математической константы @math{pi}, которая не должна быть
+изменена кем-либо (не смотря на попытки законодательного органа штата
+Индиана).  Однако, как показывает вторая форма, @code{defconst} носит только
+рекомендательный характер.
 
 @example
 @group
-(defconst float-pi 3.141592653589793 "The value of Pi.")
+(defconst float-pi 3.141592653589793 "Значение Pi.")
      @result{} float-pi
 @end group
 @group
@@ -544,75 +549,74 @@ float-pi
 @end example
 @end defspec
 
-  @strong{Warning:} If you use a @code{defconst} or @code{defvar}
-special form while the variable has a local binding (made with
-@code{let}, or a function argument), it sets the local binding rather
-than the global binding.  This is not what you usually want.  To
-prevent this, use these special forms at top level in a file, where
-normally no local binding is in effect, and make sure to load the file
-before making a local binding for the variable.
+  @strong{Предупреждение:} Если вы используете специальную форму
+  @code{defconst} или @code{defvar}, когда переменная имеет локальное
+  связывание (сделанную с @code{let} или аргументом функции), это
+  устанавливает локальное, а не глобальное связывание.  Это не то, что обычно
+  требуется.  Чтобы избежать этого, используйте эти специальные формы на
+  верхнем уровне в файле, где обычно не нет локальной привязки, и обязательно
+  загрузите файл, прежде чем сделать локальное связывание переменной.
 
 @node Tips for Defining
-@section Tips for Defining Variables Robustly
+@section Советы для Надёжного Определения Переменных
 
-  When you define a variable whose value is a function, or a list of
-functions, use a name that ends in @samp{-function} or
-@samp{-functions}, respectively.
+  При определении переменной, значением которой является функция или список
+  функций, используется имя, которое заканчивается на @samp{-function} или
+  @samp{-functions}, соответственно.
 
-  There are several other variable name conventions;
-here is a complete list:
+  Есть несколько других соглашений именования переменных; вот полный список:
 
 @table @samp
 @item @dots{}-hook
-The variable is a normal hook (@pxref{Hooks}).
+Переменная - это обычная ловушка (@pxref{Hooks}).
 
 @item @dots{}-function
-The value is a function.
+Значение является функцией.
 
 @item @dots{}-functions
-The value is a list of functions.
+Значение представляет собой список функций.
 
 @item @dots{}-form
-The value is a form (an expression).
+Значение представляет собой форму (выражение).
 
 @item @dots{}-forms
-The value is a list of forms (expressions).
+Значение представляет собой список форм (выражения).
 
 @item @dots{}-predicate
-The value is a predicate---a function of one argument that returns
-non-@code{nil} for success and @code{nil} for failure.
+Значение предикат---функция одного аргумента, которая возвращает
+не-@code{nil} в случае успеха и @code{nil} в другом случае.
 
 @item @dots{}-flag
-The value is significant only as to whether it is @code{nil} or not.
-Since such variables often end up acquiring more values over time,
-this convention is not strongly recommended.
+Значение может принимать значение @code{nil} или нет.  Поскольку такие
+переменные часто в конечном итоге приобретают другие значения с течением
+времени, эта соглашение настоятельно не рекомендуется. (ВопросVariables592)
 
 @item @dots{}-program
-The value is a program name.
+Значение имени программы.
 
 @item @dots{}-command
-The value is a whole shell command.
+Значение целая команда оболочки.
 
 @item @dots{}-switches
-The value specifies options for a command.
+Значение определяет параметры для команды.
 
 @item @var{prefix}--@dots{}
-The variable is intended for internal use and is defined in the file
-@file{@var{prefix}.el}.  (Emacs code contributed before 2018 may
-follow other conventions, which are being phased out.)
+Переменная предназначена для внутреннего использования и определяется в файле
+@file{@var{prefix}.el}.  (Emacs, код, внесенный до 2018 года может следовать
+другим соглашениям, которые постепенно сокращаются.)
 
 @item @dots{}-internal
-The variable is intended for internal use and is defined in C code.
-(Emacs code contributed before 2018 may follow other conventions,
-which are being phased out.)
+Переменная предназначена для внутреннего использования и определяется в коде
+C. (Emacs, код, внесенный до 2018 года может следовать другим соглашениям,
+которые постепенно сокращаются.)
 @end table
 
-  When you define a variable, always consider whether you should mark
-it as safe or risky; see @ref{File Local Variables}.
+  При определении переменной, всегда учитывается, следует ли пометить её как
+  безопасный или опасной; смотреть @ref{File Local Variables}.
 
-  When defining and initializing a variable that holds a complicated
-value (such as a keymap with bindings in it), it's best to put the
-entire computation of the value into the @code{defvar}, like this:
+  При определении и инициализации переменной, которая содержит сложное
+  значение (например, раскладку клавиатуры с привязкой в ней), то лучше
+  поместить всё вычисление в @code{defvar}, как здесь:
 
 @example
 (defvar my-mode-map
@@ -624,18 +628,19 @@ entire computation of the value into the @code{defvar}, like this:
 @end example
 
 @noindent
-This method has several benefits.  First, if the user quits while
-loading the file, the variable is either still uninitialized or
-initialized properly, never in-between.  If it is still uninitialized,
-reloading the file will initialize it properly.  Second, reloading the
-file once the variable is initialized will not alter it; that is
-important if the user has run hooks to alter part of the contents
-(such as, to rebind keys).  Third, evaluating the @code{defvar} form
-with @kbd{C-M-x} will reinitialize the map completely.
+Этот метод имеет ряд преимуществ.  Во-первых, если пользователь завершает
+работу при загрузке файла, переменная предстаёт либо инициализирована
+правильно, либо вовсе не инициализирована, а не частично.  Если она ещё
+не инициализирована, перезагрузка файла инициализирует её должным образом.
+Во-вторых, перезагрузка файл не изменит уже проинициализированную переменную;
+что важно, если пользователь запустил ловушки, чтобы изменить часть
+содержимого (например, для повторной привязки ключей).  В-третьих, оценка
+формы @code{defvar} с @kbd{C-M-x} полностью переинициализирует карту.
+(ВопросVariables639)
 
-  Putting so much code in the @code{defvar} form has one disadvantage:
-it puts the documentation string far away from the line which names the
-variable.  Here's a safe way to avoid that:
+  Помещение такого колличества кода в @code{defvar} имеет один недостаток:
+  помещается строка документации далеко от строки, имени переменной.  Вот
+  безопасный способ избежать этого:
 
 @example
 (defvar my-mode-map nil
@@ -648,31 +653,33 @@ variable.  Here's a safe way to avoid that:
 @end example
 
 @noindent
-This has all the same advantages as putting the initialization inside
-the @code{defvar}, except that you must type @kbd{C-M-x} twice, once on
-each form, if you do want to reinitialize the variable.
+Здесь используются все преимущества помещения инициализации внутри
+@code{defvar}, за исключением того, что требуется ввести @kbd{C-M-x} дважды,
+один раз на каждой форме, если вы хотите повторно инициализировать
+переменную.
 
 @node Accessing Variables
-@section Accessing Variable Values
+@section Доступ к Значениям Переменных
 
-  The usual way to reference a variable is to write the symbol which
-names it.  @xref{Symbol Forms}.
+  Обычный способ ссылки на переменную, записать символ с этим именем.
+  @xref{Symbol Forms}.
 
-  Occasionally, you may want to reference a variable which is only
-determined at run time.  In that case, you cannot specify the variable
-name in the text of the program.  You can use the @code{symbol-value}
-function to extract the value.
+  Иногда, вы можете ссылаться на переменную, которая определяется только во
+  время выполнения.  В этом случае вы не можете указать имя переменной в
+  тексте программы.  Вы можете использовать функцию @code{symbol-value} для
+  извлечения значения.
 
 @defun symbol-value symbol
-This function returns the value stored in @var{symbol}'s value cell.
-This is where the variable's current (dynamic) value is stored.  If
-the variable has no local binding, this is simply its global value.
-If the variable is void, a @code{void-variable} error is signaled.
+Функция возвращает значение, хранящееся в компоненте яцейки значения символа
+@var{symbol}.  Здесь хранится текущее значение переменной (динамическое).
+Если переменная не имеет локального связывания, это просто её глобальное
+значение.  Если переменная является недействительной, сигнализируется ошибка
+@code{void-variable}.
 
-If the variable is lexically bound, the value reported by
-@code{symbol-value} is not necessarily the same as the variable's
-lexical value, which is determined by the lexical environment rather
-than the symbol's value cell.  @xref{Variable Scoping}.
+Если переменная связана лексически, значение получаемое @code{symbol-value}
+не обязательно совпадёт с лексическим значением переменной, которое
+определяется лексической средой, а не компонентой ячейки значения символа.
+@xref{Variable Scoping}.
 
 @example
 @group
@@ -685,17 +692,17 @@ than the symbol's value cell.  @xref{Variable Scoping}.
 @end group
 
 @group
-;; @r{Here the symbol @code{abracadabra}}
-;;   @r{is the symbol whose value is examined.}
+;; @r{Здесь символ @code{abracadabra}}
+;;   @r{это символ, значение которого проверяется.}
 (let ((abracadabra 'foo))
   (symbol-value 'abracadabra))
      @result{} foo
 @end group
 
 @group
-;; @r{Here, the value of @code{abracadabra},}
-;;   @r{which is @code{foo},}
-;;   @r{is the symbol whose value is examined.}
+;; @r{Здесь значение @code{abracadabra},}
+;;   @r{устанавливается в @code{foo},}
+;;   @r{символ, значение которого проверяется.}
 (let ((abracadabra 'foo))
   (symbol-value abracadabra))
      @result{} 9
@@ -709,17 +716,17 @@ than the symbol's value cell.  @xref{Variable Scoping}.
 @end defun
 
 @node Setting Variables
-@section Setting Variable Values
+@section Установка Значений Переменным
 
-  The usual way to change the value of a variable is with the special
-form @code{setq}.  When you need to compute the choice of variable at
-run time, use the function @code{set}.
+  Обычный способ изменить значение переменной, воспользоватся специальной
+  формой @code{setq}.  Когда нужно вычислить переменную во время
+  выполнения, используется форма @code{set}.
 
 @defspec setq [symbol form]@dots{}
-This special form is the most common method of changing a variable's
-value.  Each @var{symbol} is given a new value, which is the result of
-evaluating the corresponding @var{form}.  The current binding of the
-symbol is changed.
+Особая форма является наиболее распространенным способом изменения значения
+переменной.  Каждый @var{symbol} получает новое значение, которое является
+результатом оценки соответствующей ему формы @var{form}. Меняется текущее
+связывание символа.
 
 @code{setq} does not evaluate @var{symbol}; it sets the symbol that you
 write.  We say that this argument is @dfn{automatically quoted}.  The
