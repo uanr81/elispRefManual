@@ -1117,21 +1117,21 @@ one
   специализированные программы, такие как отладчики).
 
 @cindex closures, example of using
-  Lexical bindings have indefinite extent.  Even after a binding
-construct has finished executing, its lexical environment can be
-``kept around'' in Lisp objects called @dfn{closures}.  A closure is
-created when you define a named or anonymous function with lexical
-binding enabled.  @xref{Closures}, for details.
+  Лексическое связывание не имеет сокучности.  Даже после завршения
+  выполнения привязки, его лексическая среда может быть ``удержана в поле''
+  в Lisp объекте под названием @dfn{замыкание}.  Замыкание создается при
+  определении именованной или анонимной функции с включённым лексическим
+  связыванием.  @xref{Closures}, для деталей.
 
-  When a closure is called as a function, any lexical variable
-references within its definition use the retained lexical environment.
-Here is an example:
+  Когда замыкание вызывается как функция, любые ссылки на лексически
+  связанные в пределах её определения переменные, используют нераспределенную
+  лексическую среду. Вот пример:
 
 @example
-(defvar my-ticker nil)   ; @r{We will use this dynamically bound}
-                         ; @r{variable to store a closure.}
+(defvar my-ticker nil)   ; @r{Будет использоваться эта динамически связанная}
+                         ; @r{переменная для хранения замыкания.}
 
-(let ((x 0))             ; @r{@code{x} is lexically bound.}
+(let ((x 0))             ; @r{@code{x} лексически связана.}
   (setq my-ticker (lambda ()
                     (setq x (1+ x)))))
     @result{} (closure ((x . 0) t) ()
@@ -1146,73 +1146,73 @@ Here is an example:
 (funcall my-ticker)
     @result{} 3
 
-x                        ; @r{Note that @code{x} has no global value.}
-@error{} Symbol's value as variable is void: x
+x        ; @r{Обратите внимание, что @code{x} не имеет глобального значения.}
+@error{} Значение символа как переменной является недействительным: x
 @end example
 
 @noindent
-The @code{let} binding defines a lexical environment in which the
-variable @code{x} is locally bound to 0.  Within this binding
-construct, we define a lambda expression which increments @code{x} by
-one and returns the incremented value.  This lambda expression is
-automatically turned into a closure, in which the lexical environment
-lives on even after the @code{let} binding construct has exited.  Each
-time we evaluate the closure, it increments @code{x}, using the
-binding of @code{x} in that lexical environment.
+@code{let} привязка определяет лексическую среду, в которой переменная
+@code{x} локально устанавливается в 0.  В этой конструкции связывания,
+определяется лямбда-выражение, которое приращивает начальному значение
+@code{x} единицу и возвращает измененное значение.  Это лямбда-выражение
+автоматически включается в замыкание, в котором лексическая среда существует
+даже после того, как покинута  @code{let} конструкция связывания.  Каждый
+раз, когда оценивается замыкание, увеличивается @code{x}, используя
+связывание @code{x} в этой лексической среде.
 
-  Note that unlike dynamic variables which are tied to the symbol
-object itself, the relationship between lexical variables and symbols
-is only present in the interpreter (or compiler).  Therefore,
-functions which take a symbol argument (like @code{symbol-value},
-@code{boundp}, and @code{set}) can only retrieve or modify a
-variable's dynamic binding (i.e., the contents of its symbol's value
-cell).
+  Следует отметить, что в отличие от динамически связанных переменных,
+  которые привязаны к самому объекту символа, отношения между лексически
+  связанными переменными и символами присутствуют только в интерпретаторе
+  (или компиляторе).  Таким образом, функция, которые принимают символьный
+  аргумент (как @code{symbol-value}, @code{boundp}, и @code{set}) может
+  только получить или модифицировать динамически связанную переменную (то
+  есть содержимое компоненты своего символа ячейки значения).
 
 @node Using Lexical Binding
-@subsection Using Lexical Binding
+@subsection Использование Лексического Связывания
 
-  When loading an Emacs Lisp file or evaluating a Lisp buffer, lexical
-binding is enabled if the buffer-local variable @code{lexical-binding}
-is non-@code{nil}:
+  При загрузке файла Emacs Lisp или оценки буфера Lisp, лексическая связь
+  включена, если локальная переменная буфера @code{lexical-binding}
+  установлена в не-@code{nil}:
 
 @defvar lexical-binding
-If this buffer-local variable is non-@code{nil}, Emacs Lisp files and
-buffers are evaluated using lexical binding instead of dynamic
-binding.  (However, special variables are still dynamically bound; see
-below.)  If @code{nil}, dynamic binding is used for all local
-variables.  This variable is typically set for a whole Emacs Lisp
-file, as a file local variable (@pxref{File Local Variables}).
-Note that unlike other such variables, this one must be set in the
-first line of a file.
+Если эта локальная переменная буфера учтановлена в не-@code{nil}, Emacs Lisp
+оценивает файлы и буферы по правилам лексического связывания вместо
+динамического.  (Тем не менее, специальные переменные все еще динамически
+связаны; см. Ниже).  Если установлена в @code{nil}, используется динамическое
+связывание для всех локальных переменных.  Эта переменная обычно
+устанавливается для всего файла Emacs Lisp, как локальная переменная файла.
+(@pxref{File Local Variables}).  Обратить внимание, что в отличие от других
+таких переменных, она одна должен быть находится в первой строке файла.
 @end defvar
 
 @noindent
-When evaluating Emacs Lisp code directly using an @code{eval} call,
-lexical binding is enabled if the @var{lexical} argument to
-@code{eval} is non-@code{nil}.  @xref{Eval}.
+При оценке кода Emacs Lisp непосредственно с помощью вызова @code{eval},
+правило лексического связывания действует, если аргумент @var{lexical}
+функции @code{eval} установлен в не-@code{nil}.  @xref{Eval}.
 
 @cindex special variables
-  Even when lexical binding is enabled, certain variables will
-continue to be dynamically bound.  These are called @dfn{special
-variables}.  Every variable that has been defined with @code{defvar},
-@code{defcustom} or @code{defconst} is a special variable
-(@pxref{Defining Variables}).  All other variables are subject to
-lexical binding.
+  Даже когда лексическая связь действует, некоторые переменные продолжают
+  связываться динамически.  Они называются @dfn{специальные переменные}.
+  Каждая переменная, которая была определена с использованием @code{defvar},
+  @code{defcustom} или @code{defconst} принадлежат к типу специальных
+  переменных (@pxref{Defining Variables}).  Все остальные переменные могут
+  подвергаться лексическому связыванию.
 
 @anchor{Local defvar example}
-Using @code{defvar} without a value, it is possible to bind a variable
-dynamically just in one file, or in just one part of a file while
-still binding it lexically elsewhere.  For example:
+Используя @code{defvar} без значения, то можно динамически связать переменную
+только в одном файле, или только в одной части файла, при этом использовать
+её лексическую привязку в другом месте. Например:
 
 @example
 @group
 (let (_)
-  (defvar x)      ; @r{Let-bindings of @code{x} will be dynamic within this let.}
-  (let ((x -99))  ; @r{This is a dynamic binding of @code{x}.}
+  (defvar x)      ; @r{Let-привязка @code{x} динамическая внутри конструкции}
+  (let ((x -99))  ; @r{Это динамичное связывание @code{x}.}
     (defun get-dynamic-x ()
       x)))
 
-(let ((x 'lexical)) ; @r{This is a lexical binding of @code{x}.}
+(let ((x 'lexical)) ; @r{Это лексическое связывание @code{x}.}
   (defun get-lexical-x ()
     x))
 
@@ -1226,120 +1226,128 @@ still binding it lexically elsewhere.  For example:
 @end example
 
 @defun special-variable-p symbol
-This function returns non-@code{nil} if @var{symbol} is a special
-variable (i.e., it has a @code{defvar}, @code{defcustom}, or
-@code{defconst} variable definition).  Otherwise, the return value is
-@code{nil}.
+Эта функция возвращает не-@code{nil}, если @var{symbol} содержит специальную
+переменную (то есть, значение переменной определенной с использованием
+@code{defvar}, @code{defcustom}, или @code{defconst}).  В противном случае,
+возвращаемое значение @code{nil}.
 @end defun
 
-  The use of a special variable as a formal argument in a function is
-discouraged.  Doing so gives rise to unspecified behavior when lexical
-binding mode is enabled (it may use lexical binding sometimes, and
-dynamic binding other times).
+  Использование специальной переменной в качестве формального аргумента в
+  функции не рекомендуется.  Это приводит к возникновению неопределенного
+  поведения при включённом правиле лексического связывания (это может
+  использовать как лексическое связывание, так и динамическое связывание в
+  с неопределённым приоритетом).
 
-  Converting an Emacs Lisp program to lexical binding is easy.  First,
-add a file-local variable setting of @code{lexical-binding} to
-@code{t} in the header line of the Emacs Lisp source file (@pxref{File
-Local Variables}).  Second, check that every variable in the program
-which needs to be dynamically bound has a variable definition, so that
-it is not inadvertently bound lexically.
+  Использование в программе Emacs Lisp лексического связывания легко
+  реализуется.  Во-первых, устанавливается значение локальной переменной
+  файла @code{lexical-binding} в @code{t} в строке заголовка исходного файла
+  Emacs Lisp (@pxref{File Local Variables}).  Во-вторых, проверяется каждая
+  переменная в программе, которая должна быть динамически связана, так что
+  бы случайно не связать её лексически.
 
 @cindex free variable
 @cindex unused lexical variable
-  A simple way to find out which variables need a variable definition
-is to byte-compile the source file.  @xref{Byte Compilation}.  If a
-non-special variable is used outside of a @code{let} form, the
-byte-compiler will warn about reference or assignment to a free
-variable.  If a non-special variable is bound but not used within a
-@code{let} form, the byte-compiler will warn about an unused lexical
-variable.  The byte-compiler will also issue a warning if you use a
-special variable as a function argument.
+  Простой способ выяснить, каким переменным необходимо определение переменной
+  - это байт-компиляции исходного файла.  @xref{Byte Compilation}.  Если
+  неспециальная переменная используется вне формы @code{let}, байт-компилятор
+  будет предупреждать о назначении или ссылки свободной переменной.  Если
+  неспециальная переменная связана, но не используется в форме @code{let},
+  байт-компилятор будет предупреждать о неиспользованной лексически связанной
+  переменной.  Байт-компилятор также выдаст предупреждение, если использовать
+  специальную переменную в качестве аргумента функции.
 
-  (To silence byte-compiler warnings about unused variables, just use
-a variable name that starts with an underscore.  The byte-compiler
-interprets this as an indication that this is a variable known not to
-be used.)
+  (Чтобы отключить предупреждения байт-компилятора о неиспользуемых
+  переменных, просто нужно использовать имя переменной, которое начинается с
+  символа подчеркивания.  Байт-компилятор интерпретирует это как признак
+  того, что это будет использоваться неизвестная переменная.)
 
 @node Buffer-Local Variables
-@section Buffer-Local Variables
+@section Локальные Переменные Буфера
 @cindex variable, buffer-local
 @cindex buffer-local variables
 
-  Global and local variable bindings are found in most programming
-languages in one form or another.  Emacs, however, also supports
-additional, unusual kinds of variable binding, such as
-@dfn{buffer-local} bindings, which apply only in one buffer.  Having
-different values for a variable in different buffers is an important
-customization method.  (Variables can also have bindings that are
-local to each terminal.  @xref{Multiple Terminals}.)
+  Глобальные и локальные привязки переменных встречаются в большинстве
+  языков программирования в той или иной форме.  Emacs, однако, также
+  поддерживает дополнительные, необычные виды связываения переменных, такие
+  как @dfn{локальные буферные} привязки, которые применяются только в одном
+  буфере.  Имея различные значения для переменной в различных буферах
+  является важным методом настройки.  (Переменные могут также иметь привязки,
+  которые являются локальными для каждого терминала.
+  @xref{Multiple Terminals}.)
 
 @menu
-* Intro to Buffer-Local::       Introduction and concepts.
-* Creating Buffer-Local::       Creating and destroying buffer-local bindings.
-* Default Value::               The default value is seen in buffers
-                                 that don't have their own buffer-local values.
+* Intro to Buffer-Local::       Введение и соглашения.
+* Creating Buffer-Local::       Создание и уничтожение локальной привязки буфера.
+* Default Value::               Значения по умолчанию для буферов не имеющих
+                                собственных локальных значений буфера.
 @end menu
 
 @node Intro to Buffer-Local
-@subsection Introduction to Buffer-Local Variables
+@subsection Введение в Локальные Переменные Буфера
 
-  A buffer-local variable has a buffer-local binding associated with a
-particular buffer.  The binding is in effect when that buffer is
-current; otherwise, it is not in effect.  If you set the variable while
-a buffer-local binding is in effect, the new value goes in that binding,
-so its other bindings are unchanged.  This means that the change is
-visible only in the buffer where you made it.
+  Локальная переменная буфера имеет локальное связывание с конкретным
+  буфером.  Связывание действует, когда этот буфер текущий; в противном
+  случае, связывание не действует.  Если вы установите переменную во время
+  её локального связывания к буферу, по сути, новое значение заменит значение
+  только для этой связки, и другие её связывания не затронутся.  Это
+  означает, что изменение видно только в буфере, где вы его сделали.
 
-  The variable's ordinary binding, which is not associated with any
-specific buffer, is called the @dfn{default binding}.  In most cases,
-this is the global binding.
+  Обычная привязка переменной, которая не связывается с каким-либо
+  конкретным буфером, называется @dfn{привязкой по умолчанию}.  В
+  большинстве случаев это глобальное связывание.
 
-  A variable can have buffer-local bindings in some buffers but not in
-other buffers.  The default binding is shared by all the buffers that
-don't have their own bindings for the variable.  (This includes all
-newly-created buffers.)  If you set the variable in a buffer that does
-not have a buffer-local binding for it, this sets the default binding,
-so the new value is visible in all the buffers that see the default
-binding.
+  Переменная может иметь локальную привязку для конкретного буфера,
+  действующую только в этом конкретном буфере.  Связывание по умолчанию
+  является общим для всех буферов, и вступает в силу, если текущий буфер не
+  имеет своего собственного связывания для переменной.  (Это относиться ко
+  всем вновь созданным буферам.)  Если вы установите переменную в буфере,
+  которая не имеет локального связывания буфера, это устанавливает
+  обязательное связывание по умолчанию, так что новое значение видно во всех
+  буферах, в которых действует для переменной локальное связование буфера по
+  умолчанию.
 
-  The most common use of buffer-local bindings is for major modes to change
-variables that control the behavior of commands.  For example, C mode and
-Lisp mode both set the variable @code{paragraph-start} to specify that only
-blank lines separate paragraphs.  They do this by making the variable
-buffer-local in the buffer that is being put into C mode or Lisp mode, and
-then setting it to the new value for that mode.  @xref{Major Modes}.
+  Наиболее распространено использование локальной привязки буфера в основных
+  режимах для изменения переменных, которые контролируют поведение команд.
+  Например, режим С и режим Lisp оба устанавливают переменную
+  @code{paragraph-start}, чтобы указать, что только пустые строки служат
+  разделением параграфов.  Они делают это посредствам локальной переменной
+  буфера, которая содержит признак использования режима С или Lisp,
+  устанавливая ей определённое новое значение для каждого из режимов.
+  @xref{Major Modes}.
 
-  The usual way to make a buffer-local binding is with
-@code{make-local-variable}, which is what major mode commands typically
-use.  This affects just the current buffer; all other buffers (including
-those yet to be created) will continue to share the default value unless
-they are explicitly given their own buffer-local bindings.
+  Обычный способ создать локальное связывание буфера использовать
+  @code{make-local-variable}, как правило используемое командами основного
+  режима.  Это связывание влияет только на текущий буфер и все другие буферы
+  (включая те, которые еще будут созданы), которые будут разделять это
+  значение, как значение по умолчанию, если не будут явно определять свои
+  собственные локальные привязки буфера для переменной.
 
 @cindex automatically buffer-local
-  A more powerful operation is to mark the variable as
-@dfn{automatically buffer-local} by calling
-@code{make-variable-buffer-local}.  You can think of this as making the
-variable local in all buffers, even those yet to be created.  More
-precisely, the effect is that setting the variable automatically makes
-the variable local to the current buffer if it is not already so.  All
-buffers start out by sharing the default value of the variable as usual,
-but setting the variable creates a buffer-local binding for the current
-buffer.  The new value is stored in the buffer-local binding, leaving
-the default binding untouched.  This means that the default value cannot
-be changed with @code{setq} in any buffer; the only way to change it is
-with @code{setq-default}.
+  Более мощная операция, помечается переменная как
+  @dfn{автоматическая локальная буфера} использовать средство
+  @code{make-variable-buffer-local}.  Можно представить это, как определение
+  локальной переменной для всех буферов, но даже тех, которые будут созданы.
+  Точнее, эффект состоит в том, что устанавливается автоматическая переменная
+  делая эту переменную локальной для текущего буфера, если это ещё не так.
+  Все буфера обычно используют значение переменной из привязки по умолчанию,
+  но установка переменной таким образом, создаёт локальную привязку для
+  текущего буфера.  Новое значение сохраняется в локальном связывания буфера,
+  оставляя нетронутым привязку по умолчанию.  Это означает, что значение по
+  умолчанию не может быть изменено используя @code{setq} в любом из буферов;
+  единственный способ изменить это, использовать @code{setq-default}.
 
-  @strong{Warning:} When a variable has buffer-local
-bindings in one or more buffers, @code{let} rebinds the binding that's
-currently in effect.  For instance, if the current buffer has a
-buffer-local value, @code{let} temporarily rebinds that.  If no
-buffer-local bindings are in effect, @code{let} rebinds
-the default value.  If inside the @code{let} you then change to a
-different current buffer in which a different binding is in effect,
-you won't see the @code{let} binding any more.  And if you exit the
-@code{let} while still in the other buffer, you won't see the
-unbinding occur (though it will occur properly).  Here is an example
-to illustrate:
+  @strong{Предупреждение:} Когда переменная имеет локальную привязку буфера в
+  одном или нескольких буферах, @code{let} добавляет своё связывание, пока
+  конструкция в действии.  Например, если текущий буфер имеет локальное
+  значение переменной буфера, @code{let} временно добавляет ещё одну привязку
+  затеняя это значение.  Если нет локальной привязки переменной буфера,
+  @code{let} производит дополнительную привязку, затеняя значение по
+  умолчанию.  Если внутри конструкции @code{let} происходит переход в другой
+  буфер, делая его текущим, в котором существуют другие привязки, по сути,
+  теряется связывание @code{let}.  И если выход из @code{let} происходит при
+  использовании другого буфера в качестве текущего, отмена связывания не
+  происходит (хотя это будет происходить должным образом). Ниже приведен
+  пример для иллюстрации:
 
 @example
 @group
@@ -1349,60 +1357,61 @@ to illustrate:
 @end group
 (setq foo 'a)
 (let ((foo 'temp))
-  ;; foo @result{} 'temp  ; @r{let binding in buffer @samp{a}}
+  ;; foo @result{} 'temp  ; @r{Выполняется связывание в буфере @samp{a} в конструкции @samp{let}}
   (set-buffer "b")
-  ;; foo @result{} 'g     ; @r{the global value since foo is not local in @samp{b}}
+  ;; foo @result{} 'g     ; @r{Получается глобальное значение, так как foo не имеет значение локальной привязки в буфере @samp{b}}
   @var{body}@dots{})
 @group
-foo @result{} 'g        ; @r{exiting restored the local value in buffer @samp{a},}
-                 ; @r{but we don't see that in buffer @samp{b}}
+foo @result{} 'g        ; @r{после выхода восстановлено локальное значение
+буфера @samp{a},}
+                 ; @r{но мы не видим, этого изменений в буфере @samp{b}}
 @end group
 @group
-(set-buffer "a") ; @r{verify the local value was restored}
+(set-buffer "a") ; @r{Проверка того, что локальное значение восстановлено}
 foo @result{} 'a
 @end group
 @end example
 
 @noindent
-Note that references to @code{foo} in @var{body} access the
-buffer-local binding of buffer @samp{b}.
+Обратите внимание, что ссылки на @code{foo} в @var{body} доступны локальному
+связыванию буфера @samp{b}.  (ВопросVariables1377)
 
-  When a file specifies local variable values, these become buffer-local
-values when you visit the file.  @xref{File Variables,,, emacs, The
-GNU Emacs Manual}.
+  Когда определяются локальные переменные файла, они становятся локальными
+  переменными буфера при посещении этого файла.
+  @xref{File Variables,,, emacs, The GNU Emacs Manual}.
 
-  A buffer-local variable cannot be made terminal-local
-(@pxref{Multiple Terminals}).
+  Локальную переменную буфера, нельзя сделать локальной переменной терминала
+  (@pxref{Multiple Terminals}).
 
 @node Creating Buffer-Local
-@subsection Creating and Deleting Buffer-Local Bindings
+@subsection Создание и Удаление Локального Связывания Буфера
 
 @deffn Command make-local-variable variable
-This function creates a buffer-local binding in the current buffer for
-@var{variable} (a symbol).  Other buffers are not affected.  The value
-returned is @var{variable}.
+Функция создает локальное связывание буфера в текущем буфере для
+@var{variable} (символа).  Другие буферы не затрагиваются.  Возвращаемое
+значение @var{variable}.
 
-The buffer-local value of @var{variable} starts out as the same value
-@var{variable} previously had.  If @var{variable} was void, it remains
-void.
+Локальное связывание буфера связывает значение @var{variable} с прежним
+значением @var{variable}.  Если @var{variable} была недействительной
+переменной, она остаётся также недействительной.
 
 @example
 @group
-;; @r{In buffer @samp{b1}:}
-(setq foo 5)                ; @r{Affects all buffers.}
+;; @r{В буфере @samp{b1}:}
+(setq foo 5)                ; @r{Влияет на все буферы.}
      @result{} 5
 @end group
 @group
-(make-local-variable 'foo)  ; @r{Now it is local in @samp{b1}.}
+(make-local-variable 'foo)  ; @r{Сейчас это локальная привязка @samp{b1}.}
      @result{} foo
 @end group
 @group
-foo                         ; @r{That did not change}
-     @result{} 5                   ;   @r{the value.}
+foo                         ; @r{Значение @samp{foo}}
+     @result{} 5                   ;   @r{подхватывается.}
 @end group
 @group
-(setq foo 6)                ; @r{Change the value}
-     @result{} 6                   ;   @r{in @samp{b1}.}
+(setq foo 6)                ; @r{Изменение значения}
+     @result{} 6                   ;   @r{@samp{b1}.}
 @end group
 @group
 foo
@@ -1410,37 +1419,37 @@ foo
 @end group
 
 @group
-;; @r{In buffer @samp{b2}, the value hasn't changed.}
+;; @r{В буфере @samp{b2}, значение не изменилось.}
 (with-current-buffer "b2"
   foo)
      @result{} 5
 @end group
 @end example
 
-Making a variable buffer-local within a @code{let}-binding for that
-variable does not work reliably, unless the buffer in which you do this
-is not current either on entry to or exit from the @code{let}.  This is
-because @code{let} does not distinguish between different kinds of
-bindings; it knows only which variable the binding was made for.
+Создание связывания локальной переменной буфера @code{let}-свзыванием этой
+переменной не работает надежно, если буфер, в котором это происходит,
+является текущим, пока конструкция @code{let} имеет силу.  Это происходит
+потому, что @code{let} не делает различия между различными видами связывания;
+просто создаёт связывание переменной.
 
-It is an error to make a constant or a read-only variable
-buffer-local.  @xref{Constant Variables}.
+Ошибочно, делать доступную только для чтения константу, локальной переменной
+буфера.  @xref{Constant Variables}.
 
-If the variable is terminal-local (@pxref{Multiple Terminals}), this
-function signals an error.  Such variables cannot have buffer-local
-bindings as well.
+Если переменная является локальной переменной терминала
+(@pxref{Multiple Terminals}), эта функция сигнализирует об ошибке.  Эти
+переменные также не могут иметь локальные привязки буфера.
 
-@strong{Warning:} do not use @code{make-local-variable} for a hook
-variable.  The hook variables are automatically made buffer-local as
-needed if you use the @var{local} argument to @code{add-hook} or
-@code{remove-hook}.
+@strong{Предупреждение:} @code{make-local-variable} не используется для
+переменных ловушек.  Переменная ловушка автоматически становится локальной
+переменной буфера по необходимости, когда используется аогумент @var{local}
+для @code{add-hook} или @code{remove-hook}.
 @end deffn
 
 @defmac setq-local variable value
-This macro creates a buffer-local binding in the current buffer for
-@var{variable}, and gives it the buffer-local value @var{value}.  It
-is equivalent to calling @code{make-local-variable} followed by
-@code{setq}.  @var{variable} should be an unquoted symbol.
+Макрос создает локальное связывание переменной буфера в текущем буфере для
+переменной @var{variable}, и связывает её с локальное значением буфера
+@var{value}.  Это эквивалентно вызову @code{make-local-variable} с
+последующим @code{setq}.  @var{variable} печатается символом без кавычек.
 @end defmac
 
 @deffn Command make-variable-buffer-local variable
