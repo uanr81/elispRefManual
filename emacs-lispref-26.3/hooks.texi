@@ -4,40 +4,43 @@
 @c Inc.
 @c See the file elisp.texi for copying conditions.
 @node Standard Hooks
-@appendix Standard Hooks
+@appendix Простые Ловушки
 @cindex standard hooks
 @cindex hook variables, list of
 
-The following is a list of some hook variables that let you provide
-functions to be called from within Emacs on suitable occasions.
+Ниже приведен список некоторых переменных ловушек, которые позволяют
+предоставить функции, которые будут вызываться Emacs в подходящих случаях.
 
-Most of these variables have names ending with @samp{-hook}.  They are
-@dfn{normal hooks}, run by means of @code{run-hooks}.  The value of such
-a hook is a list of functions; the functions are called with no
-arguments and their values are completely ignored.  The recommended way
-to put a new function on such a hook is to call @code{add-hook}.
-@xref{Hooks}, for more information about using hooks.
+Большинство из этих переменных имеют имена, заканчивающиеся на @samp{-hook}.
+Это @dfn{простые ловушки}, запустить можно с помощью @code{run-hooks}. Оценка
+такой ловушки, представляет собой список функций; функции вызываются без
+аргументов и их возвращаемые значения полностью игнорируются. Рекомендуемый
+способ добавить новую функцию в такую ловушку, вызвать @code{add-hook}.
+@xref{Hooks}, для получения дополнительной информации об использовании
+ловушек.
 
-The variables whose names end in @samp{-functions} are usually @dfn{abnormal
-hooks} (some old code may also use the deprecated @samp{-hooks} suffix); their
-values are lists of functions, but these functions are called in a special way
-(they are passed arguments, or their return values are used).  The variables
-whose names end in @samp{-function} have single functions as their values.
+Переменные, имена которых заканчиваются на @samp{-functions} обычно это
+@dfn{сложные ловушки} (какой-то старый код может также использовать
+устаревший @samp{-hooks} суффикс); их значения составляют перечни функций, но
+эти функции вызываются особым образом (им передаются аргументы, или
+используются их возвращаемые значения).  Переменные, чьи имена заканчиваются
+на @samp{-function} содержат в качестве значений отдельную функцию.
 
-This is not an exhaustive list, it only covers the more general hooks.
-For example, every major mode defines a hook named
-@samp{@var{modename}-mode-hook}.  The major mode command runs this
-normal hook with @code{run-mode-hooks} as the very last thing it does.
-@xref{Mode Hooks}.  Most minor modes have mode hooks too.
+Это не исчерпывающий список, он охватывает только более общие ловушки.
+Например, каждый основной режим определяет ловушку с именем
+@samp{@var{modename}-mode-hook}.  Основной режим запускает эту простую
+ловушку с функцией @code{run-mode-hooks} в последнюю очередь.
+@xref{Mode Hooks}.  Большинство дополнительных режимов тоже содержат ловушки.
 
-A special feature allows you to specify expressions to evaluate if and
-when a file is loaded (@pxref{Hooks for Loading}).  That feature is
-not exactly a hook, but does a similar job.
+Специальная функция позволяет оценить выражения если и когда файл загружен
+(@pxref{Hooks for Loading}).  Эта функция не совсем ловушка, но делает
+подобную работу.
 
-@c We need to xref to where each hook is documented or else document it here.
-@c Add vindex for anything not indexed elsewhere.
-@c This list is in alphabetical order, grouped by topic.
-@c TODO It should probably be more thoroughly ordered by topic.
+@c Нам нужно внешние ссылки на которых задокументированы каждый крючок или
+@c еще документ, он здесь.
+@c Добавить ВИНДЕКС за что не индексируется в других местах.
+@c Этот список в алфавитном порядке, сгруппированных по темам.
+@c TODO Это, вероятно, следует более тщательно отсортированы по теме.
 
 @table @code
 @item activate-mark-hook
@@ -68,7 +71,7 @@ not exactly a hook, but does a similar job.
 @itemx before-make-frame-hook
 @xref{Creating Frames}.
 
-@c Not general enough?
+@c Не достаточно общее?
 @ignore
 @item after-revert-hook
 @itemx before-revert-hook
@@ -86,7 +89,7 @@ not exactly a hook, but does a similar job.
 
 @item after-setting-font-hook
 @vindex after-setting-font-hook
-Hook run after a frame's font changes.
+Ловушка запускается после изменения шрифта фрейма.
 
 @item auto-save-hook
 @xref{Auto-Saving}.
@@ -100,11 +103,11 @@ Hook run after a frame's font changes.
 
 @item buffer-list-update-hook
 @vindex buffer-list-update-hook
-Hook run when the buffer list changes (@pxref{Buffer List}).
+Ловушка запуск при изменении списка буферов (@pxref{Buffer List}).
 
 @item buffer-quit-function
 @vindex buffer-quit-function
-Function to call to quit the current buffer.
+Вызов функция для выхода из текущего буфера.
 
 @item change-major-mode-hook
 @xref{Creating Buffer-Local}.
@@ -114,7 +117,7 @@ Function to call to quit the current buffer.
 
 @item delayed-warnings-hook
 @vindex delayed-warnings-hook
-The command loop runs this soon after @code{post-command-hook} (q.v.).
+Запускает цикл команд вскоре после @code{post-command-hook} (q.v.).
 
 @item focus-in-hook
 @vindex focus-in-hook
@@ -175,30 +178,30 @@ The command loop runs this soon after @code{post-command-hook} (q.v.).
 
 @item mouse-leave-buffer-hook
 @vindex mouse-leave-buffer-hook
-Hook run when about to switch windows with a mouse command.
+Ловушка перспектива, когда подготовка переключения окна с помощью мыши.
 
 @item mouse-position-function
 @xref{Mouse Position}.
 
 @item prefix-command-echo-keystrokes-functions
 @vindex prefix-command-echo-keystrokes-functions
-An abnormal hook run by prefix commands (such as @kbd{C-u}) which
-should return a string describing the current prefix state.  For
-example, @kbd{C-u} produces @samp{C-u-} and @samp{C-u 1 2 3-}.  Each
-hook function is called with no arguments and should return a string
-describing the current prefix state, or @code{nil} if there's no
-prefix state.  @xref{Prefix Command Arguments}.
+Сложная ловушка, запускается с использованием команд с префиксом (например,
+@kbd{C-u}), которая должна возвращать строку, описывающую текущее состояние
+префикса.  Например, @kbd{C-u} производит @samp{C-u-} и @samp{C-u 1 2 3-}.
+Каждая функция ловушки вызывается без аргументов и должна возвращать строку,
+описывающую текущее состояние префикса или @code{nil} если нет состояния
+префикса.  @xref{Prefix Command Arguments}.
 
 @item prefix-command-preserve-state-hook
 @vindex prefix-command-preserve-state-hook
-Hook run when a prefix command needs to preserve the prefix by passing
-the current prefix command state to the next command.  For example,
-@kbd{C-u} needs to pass the state to the next command when the user
-types @kbd{C-u -} or follows @kbd{C-u} with a digit.
+Ловушка используется, когда префиксная команда должна сохранить префикс,
+передавая текущее состояние префикса команды следующей команде.  Например,
+@kbd{C-u} должен передать состояние следующей команде, когда пользователь
+набирает @kbd{C-u -} или набирает @kbd{C-u} с цифрой.
 
 @item pre-redisplay-functions
-Hook run in each window just before redisplaying it.  @xref{Forcing
-Redisplay}.
+Ловушка запускается в каждом окне непосредственно перед его повторным
+отображением.  @xref{Forcing Redisplay}.
 
 @item post-command-hook
 @itemx pre-command-hook
@@ -244,8 +247,8 @@ Redisplay}.
 @end table
 
 @ignore
-Some -hook, -function, -functions from preloaded Lisp or C files that
-I thought did not need to be mentioned here:
+Некоторые -hook, -function, -functions с предустановленным Lisp или C файлы,
+которые я думал, не должны быть упомянуты здесь:
 
 Lisp:
 after-load-functions
