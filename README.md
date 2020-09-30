@@ -10,3 +10,5 @@ hash.texi +
 symbol.texi +
 eval.texi +
 control.texi +
+variables.texi +
+hooks.texi +

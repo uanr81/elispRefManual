@@ -2032,95 +2032,94 @@ Emacs вызывает эту ловушку сразу же после того
 @end defvr
 
 @defun hack-dir-local-variables
-This function reads the @code{.dir-locals.el} file and stores the
-directory-local variables in @code{file-local-variables-alist} that is
-local to the buffer visiting any file in the directory, without
-applying them.  It also stores the directory-local settings in
-@code{dir-locals-class-alist}, where it defines a special class for
-the directory in which @file{.dir-locals.el} file was found.  This
-function works by calling @code{dir-locals-set-class-variables} and
-@code{dir-locals-set-directory-class}, described below.
+Функция считывает файл @code{.dir-locals.el} и сохраняют локальные переменные
+каталога в @code{file-local-variables-alist} локального буфера, при посещениилюбого файла в директории, без применения их.  Она также сохраняет локальные
+настройки каталога в @code{dir-locals-class-alist}, где определяет
+специальный класс для каталога, в котором был найден @file{.dir-locals.el}
+файл.  Эта функция работает, вызывая @code{dir-locals-set-class-variables} и
+@code{dir-locals-set-directory-class}, как описано ниже.
 @end defun
 
 @defun hack-dir-local-variables-non-file-buffer
-This function looks for directory-local variables, and immediately
-applies them in the current buffer.  It is intended to be called in
-the mode commands for non-file buffers, such as Dired buffers, to let
-them obey directory-local variable settings.  For non-file buffers,
-Emacs looks for directory-local variables in @code{default-directory}
-and its parent directories.
+Функция ищет локальные переменные каталога, и немедленно применяет их в
+текущем буфере.  Предназначена для вызова в командах режима для нефайловых
+буферов, таких как Dired буфер, чтобы реализовать влияние настройки локальных
+переменных каталога.  Для нефайловых буферов, Emacs ищет локальные переменные
+каталога в @code{default-directory} родительских каталогах.
 @end defun
 
 @defun dir-locals-set-class-variables class variables
-This function defines a set of variable settings for the named
-@var{class}, which is a symbol.  You can later assign the class to one
-or more directories, and Emacs will apply those variable settings to
-all files in those directories.  The list in @var{variables} can be of
-one of the two forms: @code{(@var{major-mode} . @var{alist})} or
-@code{(@var{directory} . @var{list})}.  With the first form, if the
-file's buffer turns on a mode that is derived from @var{major-mode},
-then all the variables in the associated @var{alist} are applied;
-@var{alist} should be of the form @code{(@var{name} . @var{value})}.
-A special value @code{nil} for @var{major-mode} means the settings are
-applicable to any mode.  In @var{alist}, you can use a special
-@var{name}: @code{subdirs}.  If the associated value is
-@code{nil}, the alist is only applied to files in the relevant
-directory, not to those in any subdirectories.
+Функция определяет набор переменных с именем класса @var{class}, который
+является символом.  Позже можно назначить класс одному или нескольким
+каталогам, и Emacs будет применять эти переменные для всех файлов в этих
+каталогах.  Список в @var{variables} может быть одной из двух форм:
+@code{(@var{major-mode} . @var{alist})} или
+@code{(@var{directory} . @var{list})}.  Первая форма, если буфер включает
+режим, который является производным от режима @var{major-mode} и все
+переменных в соответствующем @var{alist} применяется; @var{alist} должен
+иметь вид @code{(@var{name} . @var{value})}.  Особое значение для режима
+@var{major-mode} установленное в @code{nil} означает, что параметры применимы
+к любому режиму.  В @var{alist}, вы можете использовать специальные имена
+@var{name}: @code{subdirs}.  Если соответствующее значение установлено в
+@code{nil}, то ассоциативный список применяется только к файлам в
+соответствующем каталоге, исключая файлы в подкаталогах.
 
-With the second form of @var{variables}, if @var{directory} is the
-initial substring of the file's directory, then @var{list} is applied
-recursively by following the above rules; @var{list} should be of one
-of the two forms accepted by this function in @var{variables}.
+Со второй формой используются переменные @var{variables}, указанные начальной
+подстрокой @var{directory} имени директории файла, список @var{list}
+применяется рекурсивно, следуя вышеуказанным правилам; @var{list} должен быть
+одной из двух форм, принимаемых этой функцией к переменным @var{variables}.
+(ВопросVariables2071)
 @end defun
 
 @defun dir-locals-set-directory-class directory class &optional mtime
-This function assigns @var{class} to all the files in @code{directory}
-and its subdirectories.  Thereafter, all the variable settings
-specified for @var{class} will be applied to any visited file in
-@var{directory} and its children.  @var{class} must have been already
-defined by @code{dir-locals-set-class-variables}.
+Функция присваивает класс @var{class} всем файлам в  директории
+@code{directory} и его подкаталогах.  После этого все настройки, заданные для
+переменной @var{class} будет применяться к любому посещаемому файлу в
+директории @var{directory} и его подкаталогах.  @var{class} уже должен быть
+определён с помощью @code{dir-locals-set-class-variables}.
 
-Emacs uses this function internally when it loads directory variables
-from a @code{.dir-locals.el} file.  In that case, the optional
-argument @var{mtime} holds the file modification time (as returned by
-@code{file-attributes}).  Emacs uses this time to check stored
-local variables are still valid.  If you are assigning a class
-directly, not via a file, this argument should be @code{nil}.
+Emacs использует эту функцию неявно, когда загружает переменные файла
+каталога из файла @code{.dir-locals.el}.  В этом случае необязательный
+аргумент @var{mtime} содержит время изменения файла (значение которого
+возвращается @code{file-attributes}).  Emacs использует это время, чтобы
+проверить актуальность сохраненных локальных переменных.  Если назначается
+класс напрямую, а не через файл, этот аргумент должен быть @code{nil}.
 @end defun
 
 @defvar dir-locals-class-alist
-This alist holds the class symbols and the associated variable
-settings.  It is updated by @code{dir-locals-set-class-variables}.
+Ассоциативный список содеожит символы класса и настройки соответствующих
+переменными.  Обновляется с помощью  @code{dir-locals-set-class-variables}.
 @end defvar
 
 @defvar dir-locals-directory-cache
-This alist holds directory names, their assigned class names, and
-modification times of the associated directory local variables file
-(if there is one).  The function @code{dir-locals-set-directory-class}
-updates this list.
+Список содержит имена каталогов, присвоенные им имена классов, и время
+модификации локальных переменных файла, связанного каталога (если он есть).
+Функция @code{dir-locals-set-directory-class} обновляет этот список.
 @end defvar
 
 @defvar enable-dir-local-variables
-If @code{nil}, directory-local variables are ignored.  This variable
-may be useful for modes that want to ignore directory-locals while
-still respecting file-local variables (@pxref{File Local Variables}).
+Если преременная установлена в @code{nil}, локальные переменные файла
+игнорируются.  Переменная может быть полезна для режимов, в которых требуется
+игнорировать локальные переменные файла в то же сохраняя локальные переменные
+файла (@pxref{File Local Variables}).
 @end defvar
 
 @node Connection Local Variables
-@section Connection Local Variables
+@section Локальные Переменные Соединения
 @cindex connection local variables
 
-  Connection-local variables provide a general mechanism for different
-variable settings in buffers with a remote connection.  They are bound
-and set depending on the remote connection a buffer is dedicated to.
+  Локальные переменные соединения обеспечивают общий механизм для различных
+  настроек переменных в буферах с удаленным подключением.  Связывание и
+  установка этих переменных зависит от удаленного соединения, которое
+  выделено для посещения буфером.
 
 @defun connection-local-set-profile-variables profile variables
-This function defines a set of variable settings for the connection
-@var{profile}, which is a symbol.  You can later assign the connection
-profile to one or more remote connections, and Emacs will apply those
-variable settings to all process buffers for those connections.  The
-list in @var{variables} is an alist of the form
-@code{(@var{name}@tie{}.@tie{}@var{value})}.  Example:
+Функция определяет набор переменных для использования при подключении
+профиля @var{profile}, который представлен символом.  Позже можно назначить
+такой профиль подключения к одному или нескольким удаленным соединениям, и
+Emacs будет применять эти настройки переменных для всех процесов буферов этих
+соединений.  Список переменных в @var{variables} является ассоциативным
+списком вида @code{(@var{name}@tie{}.@tie{}@var{value})}. Например:
 
 @example
 @group
@@ -2150,20 +2149,21 @@ list in @var{variables} is an alist of the form
 @end defun
 
 @defvar connection-local-profile-alist
-This alist holds the connection profile symbols and the associated
-variable settings.  It is updated by
+Ассоциативный список содержит символ профиля соединения и соответствующие
+параметры переменных.  Обновляется с помощью
 @code{connection-local-set-profile-variables}.
 @end defvar
 
 @defun connection-local-set-profiles criteria &rest profiles
-This function assigns @var{profiles}, which are symbols, to all remote
-connections identified by @var{criteria}.  @var{criteria} is a plist
-identifying a connection and the application using this connection.
-Property names might be @code{:application}, @code{:protocol},
-@code{:user} and @code{:machine}.  The property value of
-@code{:application} is a symbol, all other property values are
-strings.  All properties are optional; if @var{criteria} is @code{nil}, it
-always applies.  Example:
+Функция назначает профили @var{profiles}, которые являются символами, для
+всех удаленных подключений, определенных критерием @var{criteria}.
+Критерий @var{criteria} является списком свойств идентифицирующим соединения
+и приложения использующие это соединение.  Свойства могут иметь имена
+@code{:application}, @code{:protocol}, @code{:user} и @code{:machine}.
+Значением свойства с именем @code{:application} является символом, все
+остальные значения свойств являются строками.  Указание свойств не являются
+обязательным; если критерий @var{criteria} установлен в @code{nil}, он всегда
+применяется. Пример:
 
 @example
 @group
@@ -2180,8 +2180,9 @@ always applies.  Example:
 @end group
 @end example
 
-  If @var{criteria} is @code{nil}, it applies for all remote connections.
-Therefore, the example above would be equivalent to
+  Если критерий @var{criteria} установлен в @code{nil}, критерий применяется
+  для всех удаленных подключений. Таким образом, в приведенный выше пример
+  был бы эквивалентен
 
 @example
 @group
@@ -2203,21 +2204,20 @@ Therefore, the example above would be equivalent to
 @end group
 @end example
 
-  Any connection profile of @var{profiles} must have been already
-defined by @code{connection-local-set-profile-variables}.
+  Любой профиль подключения @var{profiles} должен был зараннее определен
+  @code{connection-local-set-profile-variables}.
 @end defun
 
 @defvar connection-local-criteria-alist
-This alist contains connection criteria and their assigned profile
-names.  The function @code{connection-local-set-profiles} updates this
-list.
+Ассоциативный список содержит критерии подключения и назначенные им имена
+профилей.  Функция @code{connection-local-set-profiles} обновляет этот
+список.
 @end defvar
 
 @defun hack-connection-local-variables criteria
-This function collects applicable connection-local variables
-associated with @var{criteria} in
-@code{connection-local-variables-alist}, without applying them.
-Example:
+Функция собирает применимые локальные переменные подключения, связанные с
+критерием @var{criteria} в @code{connection-local-variables-alist}, без их
+применения. Пример:
 
 @example
 @group
@@ -2237,16 +2237,16 @@ connection-local-variables-alist
 @end defun
 
 @defun hack-connection-local-variables-apply criteria
-This function looks for connection-local variables according to
-@var{criteria}, and immediately applies them in the current buffer.
+Функция ищет локальные переменные соединения согласно критерию
+@var{criteria} и немедленно применяет их в текущем буфере.
 @end defun
 
 @defmac with-connection-local-profiles profiles &rest body
-All connection-local variables, which are specified by a connection
-profile in @var{profiles}, are applied.
+Применяются все локальные переменные соединения, которые указаны в профиле
+соединения @var{profiles}.
 
-After that, @var{body} is executed, and the connection-local variables
-are unwound.  Example:
+После этого, выполняется тело @var{body}, и локальные переменные соединения
+развязываются. Пример: (ВопросVariables2249)
 
 @example
 @group
@@ -2264,67 +2264,67 @@ are unwound.  Example:
 @end defmac
 
 @defvar enable-connection-local-variables
-If @code{nil}, connection-local variables are ignored.  This variable
-shall be changed temporarily only in special modes.
+Если переменная установлена в @code{nil}, локальные переменные соединения
+игнорируются.  Эта переменная должна временно изменяется только в специальных
+режимах.
 @end defvar
 
 @node Variable Aliases
-@section Variable Aliases
+@section Псевдонимы Переменных
 @cindex variable aliases
 @cindex alias, for variables
 
-  It is sometimes useful to make two variables synonyms, so that both
-variables always have the same value, and changing either one also
-changes the other.  Whenever you change the name of a
-variable---either because you realize its old name was not well
-chosen, or because its meaning has partly changed---it can be useful
-to keep the old name as an @emph{alias} of the new one for
-compatibility.  You can do this with @code{defvaralias}.
+  Иногда полезно сделать две переменные синонимы, так чтобы обе переменные
+  всегда имели одинаковое значение, и изменение значения одной переменной
+  также меняло и значение другой.  Всякий раз, когда меняется имя переменной
+  ---либо потому, что её прежднее имя не было выбрано удачно, или потому, что
+  её значение частично изменилось---это может быть полезно, чтобы сохранить
+  прежднее имя как @emph{псевдоним} нового для совместимости.  Можно сделать
+  это с использованием @code{defvaralias}.
 
 @defun defvaralias new-alias base-variable &optional docstring
-This function defines the symbol @var{new-alias} as a variable alias
-for symbol @var{base-variable}. This means that retrieving the value
-of @var{new-alias} returns the value of @var{base-variable}, and
-changing the value of @var{new-alias} changes the value of
-@var{base-variable}.  The two aliased variable names always share the
-same value and the same bindings.
+Функция определяет символ @var{new-alias} в качестве псевдонима базовой
+преремнной символа @var{base-variable}.  Это означает, что получение значения
+@var{new-alias} возвращает значение @var{base-variable}, и изменение значения
+@var{new-alias} изменяет значение @var{base-variable}.  Два псевдонима с
+одним и тем же именем всегда одинакого оцениваются и имеют общие привязки.
 
-If the @var{docstring} argument is non-@code{nil}, it specifies the
-documentation for @var{new-alias}; otherwise, the alias gets the same
-documentation as @var{base-variable} has, if any, unless
-@var{base-variable} is itself an alias, in which case @var{new-alias} gets
-the documentation of the variable at the end of the chain of aliases.
-
-This function returns @var{base-variable}.
+Если @var{docstring} аргумент установлен в не-@code{nil}, это указывает на
+документацию для @var{new-alias}; в противном случае, получается та же
+документация, которой распологает @var{base-variable}, если таковая имеется,
+если переменная @var{base-variable} сама не является псевдонимом, в случае
+если это псевдоним, @var{new-alias} получает документацию переменной в конце
+цепочки псевдонимов.  Эта функция возвращает @var{base-variable}.
 @end defun
 
-  Variable aliases are convenient for replacing an old name for a
-variable with a new name.  @code{make-obsolete-variable} declares that
-the old name is obsolete and therefore that it may be removed at some
-stage in the future.
+  Переменные псевдонимы удобны для замены прежднего имени переменной
+  переменной с новым именем.  @code{make-obsolete-variable} заявляет, что
+  старое название является устаревшим и, следовательно, может быть удалено
+  в последующем будущем.
 
 @defun make-obsolete-variable obsolete-name current-name when &optional access-type
-This function makes the byte compiler warn that the variable
-@var{obsolete-name} is obsolete.  If @var{current-name} is a symbol,
-it is the variable's new name; then the warning message says to use
-@var{current-name} instead of @var{obsolete-name}.  If
-@var{current-name} is a string, this is the message and there is no
-replacement variable.  @var{when} should be a string indicating when
-the variable was first made obsolete (usually a version number
-string).
+Функция делает предупреждение байт компилятору, что переменная
+@var{obsolete-name} является устаревшей.  Если @var{current-name} это символ,
+указывающий новое имя переменной; то предупреждающее сообщение печатает
+использовать имя @var{current-name} вместо имени @var{obsolete-name}.  Если
+@var{current-name} является строкой, то это представляет из себя сообщение и
+нет замены для переменной.   Аргумент @var{when} предоставляет строку,
+описывающую, когда переменная впервые была сделана устаревшей (обычно строка
+номера версии).
 
-The optional argument @var{access-type}, if non-@code{nil}, should
-specify the kind of access that will trigger obsolescence warnings; it
-can be either @code{get} or @code{set}.
+Необязательный аргумент @var{access-type}, если установлен в не-@code{nil},
+указывает тип доступа, при котором будут вызываться предупреждения
+устаревания; это может быть либо @code{get} или @code{set}.
 @end defun
 
-  You can make two variables synonyms and declare one obsolete at the
-same time using the macro @code{define-obsolete-variable-alias}.
+  Можно создат две переменные синонимы и объявить, в то же время, одну
+  устаревшей, воспользовавшись макросом
+  @code{define-obsolete-variable-alias}.
 
 @defmac define-obsolete-variable-alias obsolete-name current-name &optional when docstring
-This macro marks the variable @var{obsolete-name} as obsolete and also
-makes it an alias for the variable @var{current-name}.  It is
-equivalent to the following:
+Макрос отмечает переменную @var{obsolete-name} как устаревшую, а также
+делает её псевдоним переменной @var{current-name}.  Это эквивалентно
+следующему:
 
 @example
 (defvaralias @var{obsolete-name} @var{current-name} @var{docstring})
@@ -2333,12 +2333,13 @@ equivalent to the following:
 @end defmac
 
 @defun indirect-variable variable
-This function returns the variable at the end of the chain of aliases
-of @var{variable}.  If @var{variable} is not a symbol, or if @var{variable} is
-not defined as an alias, the function returns @var{variable}.
+Функция возвращает значение переменной @var{variable} в конце цепочки
+её псевдонимов.  Если переменная @var{variable} не является символом, или
+если переменная @var{variable} не определена как псевдоним, функция
+возвращает переменную @var{variable}.
 
-This function signals a @code{cyclic-variable-indirection} error if
-there is a loop in the chain of symbols.
+Функция сообщает об ошибке @code{cyclic-variable-indirection}, если есть
+зацикливание в цепочке символов псевдонимов.
 @end defun
 
 @example
@@ -2362,22 +2363,22 @@ foo
 @end example
 
 @node Variables with Restricted Values
-@section Variables with Restricted Values
+@section Переменные с Ограниченными Значениями
 @cindex lisp variables defined in C, restrictions
 
-  Ordinary Lisp variables can be assigned any value that is a valid
-Lisp object.  However, certain Lisp variables are not defined in Lisp,
-but in C@.  Most of these variables are defined in the C code using
-@code{DEFVAR_LISP}.  Like variables defined in Lisp, these can take on
-any value.  However, some variables are defined using
-@code{DEFVAR_INT} or @code{DEFVAR_BOOL}.  @xref{Defining Lisp
-variables in C,, Writing Emacs Primitives}, in particular the
-description of functions of the type @code{syms_of_@var{filename}},
-for a brief discussion of the C implementation.
+  Обычным переменным Lisp может быть назначено любое значение, которое
+  является допустимым объектом Lisp.  Однако некоторые переменные Lisp не
+  определены в Lisp, а определены в C@.  Большинство из этих переменных
+  определены в коде C помощью @code{DEFVAR_LISP}.  Как переменные,
+  определенные в Lisp, они могут принимать любые значения.  Однако некоторые
+  переменные определяются с помощью @code{DEFVAR_INT} или @code{DEFVAR_BOOL}.
+  @xref{Defining Lisp variables in C,, Writing Emacs Primitives}, в
+  частности, при описании функций типа @code{syms_of_@var{filename}}, для
+  краткого осуществления в C.
 
-  Variables of type @code{DEFVAR_BOOL} can only take on the values
-@code{nil} or @code{t}.  Attempting to assign them any other value
-will set them to @code{t}:
+  Переменные типа @code{DEFVAR_BOOL} могут принимать только значений
+  @code{nil} или @code{t}.  Попытка присвоить им любой другой тип значения
+  установит их в @code{t}:
 
 @example
 (let ((display-hourglass 5))
@@ -2386,75 +2387,75 @@ will set them to @code{t}:
 @end example
 
 @defvar byte-boolean-vars
-This variable holds a list of all variables of type @code{DEFVAR_BOOL}.
+Переменная содержит список всех переменных типа @code{DEFVAR_BOOL}.
 @end defvar
 
-  Variables of type @code{DEFVAR_INT} can take on only integer values.
-Attempting to assign them any other value will result in an error:
+  Переменные типа @code{DEFVAR_INT} могут принимать только целые значения.
+  Попытка присвоить им любое другое значение приведет к ошибке:
 
 @example
 (setq undo-limit 1000.0)
-@error{} Wrong type argument: integerp, 1000.0
+@error{} Wrong type argument (Неправильный тип аргумента): integerp, 1000.0
 @end example
 
 @node Generalized Variables
-@section Generalized Variables
+@section Обобщенные Переменные
 
 @cindex generalized variable
 @cindex place form
-A @dfn{generalized variable} or @dfn{place form} is one of the many
-places in Lisp memory where values can be stored using the @code{setf}
-macro (@pxref{Setting Generalized Variables}).  The simplest place
-form is a regular Lisp variable.  But the @sc{car}s and @sc{cdr}s of
-lists, elements of arrays, properties of symbols, and many other
-locations are also places where Lisp values get stored.
+@dfn{Обобщённая переменная} или @dfn{место формы} является одним из многих
+мест в памяти Lisp, где значения могут быть сохранены с помощью
+(@pxref{Setting Generalized Variables})  макроса @code{setf}.  Простейшее
+форма размещения - это обычная переменная Lisp.  Но @sc{car}ы и @sc{cdr}ы
+списков, элементы массивов, свойства символов и многие другие места, также
+места, где хранит значения Lisp.
 
-Generalized variables are analogous to lvalues in the C
-language, where @samp{x = a[i]} gets an element from an array
-and @samp{a[i] = x} stores an element using the same notation.
-Just as certain forms like @code{a[i]} can be lvalues in C, there
-is a set of forms that can be generalized variables in Lisp.
+Обобщенные переменные аналогичны lvalues ​​в языке C, где форма
+@samp{x = a[i]} получает элемент из массива и @samp{a[i] = x} помещает
+элемент в массив, используя ту же нотацию.  Подобно тому, как некоторые
+формы, такие как @code{a[i]} могут быть lvalues ​​в C, существует множество
+форм, которые могут быть обобщенными переменными в Lisp.
 
 @menu
-* Setting Generalized Variables::   The @code{setf} macro.
-* Adding Generalized Variables::    Defining new @code{setf} forms.
+* Setting Generalized Variables::   Макрос @code{setf}.
+* Adding Generalized Variables::    Определение новых форм @code{setf}.
 @end menu
 
 @node Setting Generalized Variables
-@subsection The @code{setf} Macro
+@subsection Макрос @code{setf}
 
-The @code{setf} macro is the most basic way to operate on generalized
-variables.  The @code{setf} form is like @code{setq}, except that it
-accepts arbitrary place forms on the left side rather than just
-symbols.  For example, @code{(setf (car a) b)} sets the car of
-@code{a} to @code{b}, doing the same operation as @code{(setcar a b)},
-but without you having to use two separate functions for setting and
-accessing this type of place.
+Макрос @code{setf} является самым основным способом работать с обобщенными
+переменными.  Форма @code{setf} аналогична @code{setq}, за исключением того,
+что принимает произвольные формы мест хранения в левой стороне, а не только
+символы.  Например, @code{(setf (car a) b)} устанавливает голову @code{car}
+@code{a} в значение @code{b}, делая ту же операцию, @code{(setcar a b)}, но
+без необходимости использовать две отдельные функции для настройки и доступа
+к этому типу места.
 
 @defmac setf [place form]@dots{}
-This macro evaluates @var{form} and stores it in @var{place}, which
-must be a valid generalized variable form.  If there are several
-@var{place} and @var{form} pairs, the assignments are done sequentially
-just as with @code{setq}.  @code{setf} returns the value of the last
-@var{form}.
+Макрос оценивает форму @var{form} и сохраняет её значение в форму
+@var{place}, которая должна быть допустимой обобщённой формой переменной.
+Если есть несколько пар форм @var{place} и @var{form}, присваивание
+выполняется последовательно так же, как при использовании @code{setq}.
+@code{setf} возвращает значение последней оценённой формы @var{form}.
 @end defmac
 
-The following Lisp forms are the forms in Emacs that will work as
-generalized variables, and so may appear in the @var{place} argument
-of @code{setf}:
+Следующие формы Lisp являются формами Emacs, которые будут работать в
+качестве обобщенных переменных, и поэтому могут появиться в аргументе
+@var{place} формы @code{setf}:
 
 @itemize
 @item
-A symbol.  In other words, @code{(setf x y)} is exactly equivalent to
-@code{(setq x y)}, and @code{setq} itself is strictly speaking
-redundant given that @code{setf} exists.  Most programmers will
-continue to prefer @code{setq} for setting simple variables, though,
-for stylistic and historical reasons.  The macro @code{(setf x y)}
-actually expands to @code{(setq x y)}, so there is no performance
-penalty for using it in compiled code.
+Символ.  Другими словами, @code{(setf x y)} в точности эквивалентен
+@code{(setq x y)} и @code{setq}, строго говоря,  является излишним, учитывая,
+что @code{setf} существует.  Большинство программистов по-прежнему
+предпочитают @code{setq} для установки простых переменных из стилистических и
+исторических причин.  Макрос @code{(setf x y)} фактически расширяется до
+@code{(setq x y)}, так что использование его не снижает производительность
+скомпилированного кода.
 
 @item
-A call to any of the following standard Lisp functions:
+Вызов любой из следующих стандартных функций Lisp:
 
 @smallexample
 aref      cddr      symbol-function
@@ -2466,7 +2467,7 @@ cdar      nthcdr
 @end smallexample
 
 @item
-A call to any of the following Emacs-specific functions:
+Вызов любой из следующих стандартных функций Emacs:
 
 @smallexample
 alist-get                     process-get
@@ -2483,88 +2484,90 @@ process-filter                default-value
 @end itemize
 
 @noindent
-@code{setf} signals an error if you pass a @var{place} form that it
-does not know how to handle.
+@code{setf} сигнализирует об ошибке, если не знает как обращаться с формой
+места @var{place}.
 
-@c And for cl-lib's cl-getf.
-Note that for @code{nthcdr}, the list argument of the function must
-itself be a valid @var{place} form.  For example, @code{(setf (nthcdr
-0 foo) 7)} will set @code{foo} itself to 7.
-@c The use of @code{nthcdr} as a @var{place} form is an extension
-@c to standard Common Lisp.
+@c И для cl-lib's cl-getf.
+Обратите внимание, что для формы @code{nthcdr}, список аргументов функции
+сами должны быть действительными формами @var{place}.  Например,
+@code{(setf (nthcdr 0 foo) 7)} установит @code{foo} в 7.
+@c Использование @code{nthcdr} как формы @var{place} является расширением
+@c стандарта Common Lisp.
 
-@c FIXME I don't think is a particularly good way to do it,
-@c but these macros are introduced before generalized variables are.
-The macros @code{push} (@pxref{List Variables}) and @code{pop}
-(@pxref{List Elements}) can manipulate generalized variables,
-not just lists.  @code{(pop @var{place})} removes and returns the first
-element of the list stored in @var{place}.  It is analogous to
-@code{(prog1 (car @var{place}) (setf @var{place} (cdr @var{place})))},
-except that it takes care to evaluate all subforms only once.
-@code{(push @var{x} @var{place})} inserts @var{x} at the front of
-the list stored in @var{place}.  It is analogous to @code{(setf
-@var{place} (cons @var{x} @var{place}))}, except for evaluation of the
-subforms.  Note that @code{push} and @code{pop} on an @code{nthcdr}
-place can be used to insert or delete at any position in a list.
+@c ИСПРАВИТЬ МЕНЯ: Я не думаю, что это особенно хороший способ сделать это,
+@c но эти макросы были введены, прежде чем ввели обобщенные переменные.
+Макросы @code{push} (@pxref{List Variables}) и @code{pop}
+(@pxref{List Elements}) могут манипулировать обобщенными переменными, а не
+только списками.  Макрос @code{(pop @var{place})} удаляет и возвращает первый
+элемент списка, хранящегося в месте формы @var{place}.  Это аналогично
+@code{(prog1 (car @var{place}) (setf @var{place} (cdr @var{place})))}, за
+исключением того, что берёт на себя, одноразовую оценку всех субформ.
+Макрос @code{(push @var{x} @var{place})} вставляет @var{x} в передней части
+списка, сохраненного в месте @var{place}.  Она аналогично
+@code{(setf @var{place} (cons @var{x} @var{place}))}, за исключением оценки
+подчинённых форм.  Обратите внимание, что @code{push} и @code{pop} используя
+@code{nthcdr} к месту, может это использовать для вставки или удаления в
+любом месте списка.
 
-The @file{cl-lib} library defines various extensions for generalized
-variables, including additional @code{setf} places.
+Библиотека @file{cl-lib} определяет различные расширения для обобщенных
+переменных, включая дополнительные места для @code{setf}.
 @xref{Generalized Variables,,, cl, Common Lisp Extensions}.
 
 
 @node Adding Generalized Variables
-@subsection Defining new @code{setf} forms
+@subsection Определение Новых Форм @code{setf}
 
-This section describes how to define new forms that @code{setf} can
-operate on.
+В этом разделе описывается, как определить новые формы, с которыми сможет
+работать @code{setf}.
 
 @defmac gv-define-simple-setter name setter &optional fix-return
-This macro enables you to easily define @code{setf} methods for simple
-cases.  @var{name} is the name of a function, macro, or special form.
-You can use this macro whenever @var{name} has a directly
-corresponding @var{setter} function that updates it, e.g.,
-@code{(gv-define-simple-setter car setcar)}.
+Макрос позволяет легко определить методы @code{setf} для простых случаев.
+@var{name} это имя функции, макроса или специальной формы.  Можно
+использовать этот макрос, когда @var{name} имеет непосредственно
+соответствующую @var{setter} функцию, которая обновляет её, например,
+@code{(gv-define-simple-setter car setcar)}. (ВопросVariables2528)
 
-This macro translates a call of the form
+Этот макрос переводит вызов формы
 
 @example
 (setf (@var{name} @var{args}@dots{}) @var{value})
 @end example
 
-into
+к вызову формы
 @example
 (@var{setter} @var{args}@dots{} @var{value})
 @end example
 
 @noindent
-Such a @code{setf} call is documented to return @var{value}.  This is
-no problem with, e.g., @code{car} and @code{setcar}, because
-@code{setcar} returns the value that it set.  If your @var{setter}
-function does not return @var{value}, use a non-@code{nil} value for
-the @var{fix-return} argument of @code{gv-define-simple-setter}.  This
-expands into something equivalent to
+Такой вызов @code{setf} задокументирован для возврата значения @var{value}.
+Это не проблема при использовании, например с, @code{car} и @code{setcar},
+поскольку @code{setcar} возвращает значение, которое установил.  Если функция
+@var{setter} не возвращает значение @var{value}, используется установленное в
+не-@code{nil} значение для аргумента @var{fix-return}
+@code{gv-define-simple-setter}.  Это расширяется в нечто эквивалентное
+(ВопросVariables2548)
 @example
 (let ((temp @var{value}))
   (@var{setter} @var{args}@dots{} temp)
   temp)
 @end example
-so ensuring that it returns the correct result.
+чтобы гарантировать, что возвращается правильный результат.
 @end defmac
 
 
 @defmac gv-define-setter name arglist &rest body
-This macro allows for more complex @code{setf} expansions than the
-previous form.  You may need to use this form, for example, if there
-is no simple setter function to call, or if there is one but it
-requires different arguments to the place form.
+Макрос позволяет выполнить более сложные @code{setf} расширения, чем
+предыдущая форма.  Возможно, потребуется использовать эту форму, например,
+если не существует простой способ вызова установленной функции, или если есть
+такой, но требующий дополнительных аргументы для форм размещения.
 
-This macro expands the form
-@code{(setf (@var{name} @var{args}@dots{}) @var{value})} by
-first binding the @code{setf} argument forms
-@code{(@var{value} @var{args}@dots{})} according to @var{arglist},
-and then executing @var{body}.  @var{body} should return a Lisp
-form that does the assignment, and finally returns the value that was
-set.  An example of using this macro is:
+Этот макрос расширяет форму вида
+@code{(setf (@var{name} @var{args}@dots{}) @var{value})} сначала посредствам
+@code{setf} связывая формы аргументов @var{args}@dots{} с их значениями
+@var{value} согласно списка @var{arglist}, а затем выполняя тело формы
+@var{body}.  Тело @var{body} должно возвращать форму Lisp, которая выполняет
+задание, и, наконец, возвращает значение, которое было установлено.  Пример
+использования этого макроса:
 
 @example
 (gv-define-setter caar (val x) `(setcar (car ,x) ,val))
@@ -2573,22 +2576,23 @@ set.  An example of using this macro is:
 
 @findex gv-define-expander
 @findex gv-letplace
-@c FIXME?  Not sure what or how much to say about these.
-@c See cl.texi for an example of using gv-letplace.
-For more control over the expansion, see the macro @code{gv-define-expander}.
-The macro @code{gv-letplace} can be useful in defining macros that
-perform similarly to @code{setf}; for example, the @code{incf} macro
-of Common Lisp.  Consult the source file @file{gv.el} for more details.
+@c Поправте меня?  Не уверен, что и как много, чтобы сказать о них.
+@c See cl.texi для примера использования gv-letplace.
+Для большего контроля над расширениями смотреть макрос
+@code{gv-define-expander}.  Макрос @code{gv-letplace} может быть полезным
+при определении макросов, которые выполняются аналогично @code{setf};
+например, макрос Common Lisp @code{incf}.  Обратитесь к исходному файлу
+@file{gv.el} для получения более подробной информации.
 
 @cindex CL note---no @code{setf} functions
 @quotation
-@b{Common Lisp note:} Common Lisp defines another way to specify the
-@code{setf} behavior of a function, namely @code{setf} functions,
-whose names are lists @code{(setf @var{name})} rather than symbols.
-For example, @code{(defun (setf foo) @dots{})} defines the function
-that is used when @code{setf} is applied to @code{foo}.  Emacs does
-not support this.  It is a compile-time error to use @code{setf} on a
-form that has not already had an appropriate expansion defined.  In
-Common Lisp, this is not an error since the function @code{(setf
-@var{func})} might be defined later.
+@b{Common Lisp Замечание:} Common Lisp имеет другой способ определить
+поведение функций @code{setf}, а именно @code{setf} функций, чьи имена
+перечислены списком @code{(setf @var{name})}, а не символами.  Например,
+@code{(defun (setf foo) @dots{})} определяет функцию, которая используется,
+когда @code{setf} применяется к @code{foo}.  Emacs не поддерживает этого.
+Это ошибка времени компиляции использование @code{setf} в форме, которая еще
+не имела соответствующего определённого расширения.  В Common Lisp, это не
+ошибка, так как функция @code{(setf @var{func})} может быть определена
+позднее.
 @end quotation
