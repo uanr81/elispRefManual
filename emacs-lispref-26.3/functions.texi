@@ -4,72 +4,71 @@
 @c Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Functions
-@chapter Functions
+@chapter Функции
 
-  A Lisp program is composed mainly of Lisp functions.  This chapter
-explains what functions are, how they accept arguments, and how to
-define them.
+  Программа Lisp состоит в основном из Lisp функций. В этой главе
+  описывается, что такое функции, как они принимают аргументы, и как
+  определить их.
 
 @menu
-* What Is a Function::          Lisp functions vs. primitives; terminology.
-* Lambda Expressions::          How functions are expressed as Lisp objects.
-* Function Names::              A symbol can serve as the name of a function.
-* Defining Functions::          Lisp expressions for defining functions.
-* Calling Functions::           How to use an existing function.
-* Mapping Functions::           Applying a function to each element of a list, etc.
-* Anonymous Functions::         Lambda expressions are functions with no names.
-* Generic Functions::           Polymorphism, Emacs-style.
-* Function Cells::              Accessing or setting the function definition
-                            of a symbol.
-* Closures::                    Functions that enclose a lexical environment.
-* Advising Functions::          Adding to the definition of a function.
-* Obsolete Functions::          Declaring functions obsolete.
-* Inline Functions::            Functions that the compiler will expand inline.
-* Declare Form::                Adding additional information about a function.
-* Declaring Functions::         Telling the compiler that a function is defined.
-* Function Safety::             Determining whether a function is safe to call.
-* Related Topics::              Cross-references to specific Lisp primitives
-                            that have a special bearing on how functions work.
+* What Is a Function::          Lisp функции против примитивов; терминология.
+* Lambda Expressions::          Выражение функции как объекта Lisp.
+* Function Names::              Символ может служить именем функции.
+* Defining Functions::          Lisp выражения для определения функций.
+* Calling Functions::           Как использовать существующую функцию.
+* Mapping Functions::           Применение функции к каждому элементу списка и т.д.
+* Anonymous Functions::         Lambda выражения функции без каких-либо имен.
+* Generic Functions::           Полиморфизм, Emacs-стиль.
+* Function Cells::              Доступ к настройке или определение функции символа.
+* Closures::                    Функции, вмещающие лексическую среду.
+* Advising Functions::          Дополнение к определению функции.
+* Obsolete Functions::          Объявление функцию устаревшей.
+* Inline Functions::            Встроенные Функции, которые расширяет компилятор.(ВопросFunction26)
+* Declare Form::                Добавление дополнительной информации о функции.
+* Declaring Functions::         Собщение компилятору, что функция определена.(ВопросFunction28)
+* Function Safety::             Определение, является ли функция безопасна для вызова.
+* Related Topics::              Перекрестные ссылки на конкретные Lisp примитивы, которые имеют особое отношение к работе функций.
 @end menu
 
 @node What Is a Function
-@section What Is a Function?
+@section Что Такое Функция?
 
 @cindex return value
 @cindex value of function
 @cindex argument
 @cindex pure function
-  In a general sense, a function is a rule for carrying out a
-computation given input values called @dfn{arguments}.  The result of
-the computation is called the @dfn{value} or @dfn{return value} of the
-function.  The computation can also have side effects, such as lasting
-changes in the values of variables or the contents of data structures
-(@pxref{Definition of side effect}).  A @dfn{pure function} is a
-function which, in addition to having no side effects, always returns
-the same value for the same combination of arguments, regardless of
-external factors such as machine type or system state.
+  В общем смысле, функция является правилом для проведения вычислений
+  заданных входных значений, называемых @dfn{аргументами}.  Результат таких
+  вычислений называется @dfn{значением} или @dfn{возвращаемым значением}
+  функции.  Вычисление может также иметь побочные эффекты, такие как
+  сохранение изменённого значения в переменных или содержимого структур
+  данных (@pxref{Definition of side effect}).  @dfn{Чистая функция} является
+  такой функцией, которая, в дополнение к тому, что не имеет каких-либо
+  побочных эффектов, всегда возвращает то же значение для одной и той же
+  комбинации аргументов, независимо от внешних факторов, таких как тип машины
+  или состояния системы.
 
-  In most computer languages, every function has a name.  But in Lisp,
-a function in the strictest sense has no name: it is an object which
-can @emph{optionally} be associated with a symbol (e.g., @code{car})
-that serves as the function name.  @xref{Function Names}.  When a
-function has been given a name, we usually also refer to that symbol
-as a ``function'' (e.g., we refer to ``the function @code{car}'').
-In this manual, the distinction between a function name and the
-function object itself is usually unimportant, but we will take note
-wherever it is relevant.
+  В большинстве языков программирования, каждая функция имеет имя. Но в Lisp,
+  функция в строгом смысле этого слова не имеет имени: это объект, который
+  может быть связан @emph{по желанию} с символом (например, @code{car}),
+  который служит в качестве имени функции.  @xref{Function Names}. Когда
+  функция была связана с именем, помещён объект функции в компоненту ячейки
+  функции символа, обычно относятся к этому символу, как к ``функции''
+  (например, имеется в виду ``функция @code{car}'').  В этом руководстве,
+  различие между именем символа, содержащего в своей компоненте функции
+  объект функции и самой функции как объекта, как правило, неважно, но будет
+  приниматься во внимание, где это уместно.
 
-  Certain function-like objects, called @dfn{special forms} and
-@dfn{macros}, also accept arguments to carry out computations.
-However, as explained below, these are not considered functions in
-Emacs Lisp.
+  Некоторые объекты, подобные функциям и называемые @dfn{специальные формы} и
+  @dfn{макросы}, а также принимают аргументы для выполнения вычислений.
+  Однако, как объяснено ниже, они не рассматриваются как функции Emacs Lisp.
 
-  Here are important terms for functions and function-like objects:
+  Вот важные условия для функций и объектов подобных функциям:
 
 @table @dfn
 @item lambda expression
-A function (in the strict sense, i.e., a function object) which is
-written in Lisp.  These are described in the following section.
+Функция (в строгом смысле этого слова, то есть, функциональный объект),
+написанная на языке Lisp.  Это описано в следующем разделе.
 @ifnottex
 @xref{Lambda Expressions}.
 @end ifnottex
@@ -78,119 +77,118 @@ written in Lisp.  These are described in the following section.
 @cindex primitive
 @cindex subr
 @cindex built-in function
-A function which is callable from Lisp but is actually written in C@.
-Primitives are also called @dfn{built-in functions}, or @dfn{subrs}.
-Examples include functions like @code{car} and @code{append}.  In
-addition, all special forms (see below) are also considered
-primitives.
+Функция, которая вызывается из Lisp, но на самом деле написана на C@.
+Примитивы также называют @dfn{встроенными функциями}, или @dfn{subrs}.
+Примеры включают в себя функции, такие как @code{car} и @code{append}. Кроме
+того, все специальные формы (смотри ниже), также считаются примитивами.
+(ВопросFunction84)
 
-Usually, a function is implemented as a primitive because it is a
-fundamental part of Lisp (e.g., @code{car}), or because it provides a
-low-level interface to operating system services, or because it needs
-to run fast.  Unlike functions defined in Lisp, primitives can be
-modified or added only by changing the C sources and recompiling
-Emacs.  See @ref{Writing Emacs Primitives}.
+Как правило, функция реализуется как примитив, поскольку она является
+основной частью Lisp (например, @code{car}), или потому, что она обеспечивает
+интерфейс низкого уровня для работающих системных служб, или потому, что она
+должна работать быстро.  В отличие от функций, определенных в Lisp, примитивы
+могут быть изменены или добавлены только путем изменения источников С и
+перекомпилированием Emacs.  Смотреть @ref{Writing Emacs Primitives}.
 
 @item special form
-A primitive that is like a function but does not evaluate all of its
-arguments in the usual way.  It may evaluate only some of the
-arguments, or may evaluate them in an unusual order, or several times.
-Examples include @code{if}, @code{and}, and @code{while}.
+Примитив, который подобен функции, но не оценивает все свои аргументы обычным
+образом.  Он может оценить только некоторые из аргументов, или может оценить
+их в необычном порядке, или по нескольку раз.  Примеры таких специальных
+форм это формы @code{if}, @code{and} и @code{while}.
 @xref{Special Forms}.
 
 @item macro
 @cindex macro
-A construct defined in Lisp, which differs from a function in that it
-translates a Lisp expression into another expression which is to be
-evaluated instead of the original expression.  Macros enable Lisp
-programmers to do the sorts of things that special forms can do.
+Конструкция определённая в Lisp, которая отличается от функции тем, что
+преобразует одно выражение Lisp в другое выражение, которое должно быть
+оценено вместо исходного выражения.  Макросы позволяют Lisp программистам
+делать разные вещи, как те, что специальные формы сделать не могут.
 @xref{Macros}.
 
 @item command
 @cindex command
-An object which can be invoked via the @code{command-execute}
-primitive, usually due to the user typing in a key sequence
-@dfn{bound} to that command.  @xref{Interactive Call}.  A command is
-usually a function; if the function is written in Lisp, it is made
-into a command by an @code{interactive} form in the function
-definition (@pxref{Defining Commands}).  Commands that are functions
-can also be called from Lisp expressions, just like other functions.
+Объект, который может быть вызван посредствам примитива
+@code{command-execute}, как правило, из-за ввода пользователем
+последовательности клавиш, @dfn{привязаной ключевой последовательности} к
+этой команде.  @xref{Interactive Call}.  Команда, как правило, является
+функцией; если функция написана на Lisp, она превращается в команду с помощью
+специальной формы @code{interactive} при определении функции
+(@pxref{Defining Commands}).  Команды, которые являются функциями, также
+могут быть вызваны из Lisp выражений, так же как и другие функции.
 
-Keyboard macros (strings and vectors) are commands also, even though
-they are not functions.  @xref{Keyboard Macros}.  We say that a symbol
-is a command if its function cell contains a command (@pxref{Symbol
-Components}); such a @dfn{named command} can be invoked with
-@kbd{M-x}.
+Клавиатурные макросы (строки и векторы) также являются командами, хотя они не
+являются функциями.  @xref{Keyboard Macros}.  Имеется в виду, при выражении,
+символ является командой, это когда компонента символа ячека функции,
+содержит команду (@pxref{Symbol Components}); такая @dfn{именованная команда}
+может быть вызвана с помощью @kbd{M-x}.
 
 @item closure
-A function object that is much like a lambda expression, except that
-it also encloses an environment of lexical variable bindings.
+Объект функции, такой же, как лямбда-выражения, за исключением того, что
+также охватывает лексическую среду привязки переменных.
 @xref{Closures}.
 
 @item byte-code function
-A function that has been compiled by the byte compiler.
+Функция, которая была скомпилирована ​​байтовым компилятором.
 @xref{Byte-Code Type}.
 
 @item autoload object
 @cindex autoload object
-A place-holder for a real function.  If the autoload object is called,
-Emacs loads the file containing the definition of the real function,
-and then calls the real function.  @xref{Autoload}.
+Место кода определения для реальной функции.  Если объект автозагрузка
+вызывается, Emacs загружает файл, содержащий определение реальной функции, а
+затем вызывает реальную функцию.  @xref{Autoload}.  (ВопросFunctions138)
 @end table
 
-  You can use the function @code{functionp} to test if an object is a
-function:
+  Вы можете использовать функцию @code{functionp} для прверки, является ли
+  объект объектом функции:
 
 @defun functionp object
-This function returns @code{t} if @var{object} is any kind of
-function, i.e., can be passed to @code{funcall}.  Note that
-@code{functionp} returns @code{t} for symbols that are function names,
-and returns @code{nil} for special forms.
+Функция возвращает @code{t}, если @var{object} является любым видом функции,
+то есть, может быть передан в @code{funcall}.  Обратите внимание, что
+@code{functionp} возвращает @code{t} для символов, которые являются именами
+функций и возвращает @code{nil} для специальных форм.
 @end defun
 
-  It is also possible to find out how many arguments an arbitrary
-function expects:
+  Также можно узнать, сколько аргументов ожидает функция:
 
 @defun func-arity function
-This function provides information about the argument list of the
-specified @var{function}.  The returned value is a cons cell of the
-form @w{@code{(@var{min} . @var{max})}}, where @var{min} is the
-minimum number of arguments, and @var{max} is either the maximum
-number of arguments, or the symbol @code{many} for functions with
-@code{&rest} arguments, or the symbol @code{unevalled} if
-@var{function} is a special form.
+Функция предоставляет информацию о списке аргументов для указанной аргументом
+@var{function} функции.  Возвращаемое значением является либо форма
+cons-ячейки вида @w{@code{(@var{min} . @var{max})}}, где @var{min} является
+минимальным, а @var{max} максимальным количеством аргументов, либо
+символ @code{many} для функций использующих @code{&rest} аргументы, и
+символ @code{unevalled}, если @var{function} является специальной формой.
 
-Note that this function might return inaccurate results in some
-situations, such as the following:
+Обратите внимание, что эта функция может возвращать неточные результаты в
+некоторых ситуациях, таких как следующие:
 
 @itemize @minus
 @item
-Functions defined using @code{apply-partially} (@pxref{Calling
-Functions, apply-partially}).
+Функции определённые с помощью @code{apply-partially}
+(@pxref{Calling Functions, apply-partially}).
 
 @item
-Functions that are advised using @code{advice-add} (@pxref{Advising
-Named Functions}).
+Функции, с которыми рекомендуется использовать @code{advice-add}
+(@pxref{Advising Named Functions}). (ВопросFunctions171)
 
 @item
-Functions that determine the argument list dynamically, as part of
-their code.
+Функции, которые определяют список аргументов динамически, как часть своего
+кода.
 @end itemize
 
 @end defun
 
 @noindent
-Unlike @code{functionp}, the next three functions do @emph{not} treat
-a symbol as its function definition.
+В отличие от @code{functionp}, следующие три функции @emph{не} рассматривают
+символ в качестве определения функции.
 
 @defun subrp object
-This function returns @code{t} if @var{object} is a built-in function
-(i.e., a Lisp primitive).
+Функция возвращает @code{t}, если @var{object} является встроенной функцией
+(т.е. Lisp примитивом).
 
 @example
 @group
-(subrp 'message)            ; @r{@code{message} is a symbol,}
-     @result{} nil                 ;   @r{not a subr object.}
+(subrp 'message)            ; @r{символ @code{message}, не является}
+     @result{} nil                 ;   @r{объектом встроенной функции (subr)}
 @end group
 @group
 (subrp (symbol-function 'message))
@@ -200,8 +198,8 @@ This function returns @code{t} if @var{object} is a built-in function
 @end defun
 
 @defun byte-code-function-p object
-This function returns @code{t} if @var{object} is a byte-code
-function.  For example:
+Функция возвращает @code{t} если @var{object} байт-компилированная функция.
+Например:
 
 @example
 @group
@@ -212,46 +210,45 @@ function.  For example:
 @end defun
 
 @defun subr-arity subr
-This works like @code{func-arity}, but only for built-in functions and
-without symbol indirection.  It signals an error for non-built-in
-functions.  We recommend to use @code{func-arity} instead.
+Это работает как @code{func-arity}, но только для встроенных функций и без
+косвенной ссылки на символ функции.  Сигнализирует об ошибке для не
+встроенных функций.  Рекомендуем использовать @code{func-arity} вместо этой.
 @end defun
 
 @node Lambda Expressions
-@section Lambda Expressions
+@section Lambda Выражения
 @cindex lambda expression
 
-  A lambda expression is a function object written in Lisp.  Here is
-an example:
+  Лямбда-выражение является объектом функции написанной на Lisp. Вот пример:
 
 @example
 (lambda (x)
-  "Return the hyperbolic cosine of X."
+  "Возвращает гиперболический косинус X."
   (* 0.5 (+ (exp x) (exp (- x)))))
 @end example
 
 @noindent
-In Emacs Lisp, such a list is a valid expression which evaluates to
-a function object.
+В Emacs Lisp, такой список является действительным выражением, которое
+вычисляется в объект функции.
 
-  A lambda expression, by itself, has no name; it is an @dfn{anonymous
-function}.  Although lambda expressions can be used this way
-(@pxref{Anonymous Functions}), they are more commonly associated with
-symbols to make @dfn{named functions} (@pxref{Function Names}).
-Before going into these details, the following subsections describe
-the components of a lambda expression and what they do.
+  Лямбда-выражения, само по себе, не имеет имени; это
+  @dfn{анонимная функция}.  Хотя лямбда-выражения можно использовать таким
+  способом (@pxref{Anonymous Functions}), они чаще связаны с символами, чтобы
+  получить @dfn{именованную функцию} (@pxref{Function Names}). Прежде, чем
+  погрузится в детали, следующие подразделы описывают компоненты
+  лямбда-выражения и то, что они делают.
 
 @menu
-* Lambda Components::           The parts of a lambda expression.
-* Simple Lambda::               A simple example.
-* Argument List::               Details and special features of argument lists.
-* Function Documentation::      How to put documentation in a function.
+* Lambda Components::           Компоненты лямбда-выражения.
+* Simple Lambda::               Простой пример.
+* Argument List::               Детали и особенности списков аргументов.
+* Function Documentation::      Как разместить документацию о функции.
 @end menu
 
 @node Lambda Components
-@subsection Components of a Lambda Expression
+@subsection Компоненты Лямбда-Выражения
 
-  A lambda expression is a list that looks like this:
+  Лямбда-выражение - это список, который выглядит следующим образом:
 
 @example
 (lambda (@var{arg-variables}@dots{})
@@ -261,21 +258,21 @@ the components of a lambda expression and what they do.
 @end example
 
 @cindex lambda list
-  The first element of a lambda expression is always the symbol
-@code{lambda}.  This indicates that the list represents a function.  The
-reason functions are defined to start with @code{lambda} is so that
-other lists, intended for other uses, will not accidentally be valid as
-functions.
+  Первый элемент лямбда-выражения всегда является символом @code{lambda}.
+  Это указывает на то, что список представляет собой функцию.  Причина
+  такого определения, использование первым элементом списка символ
+  @code{lambda}, кроется в том, чтобы другие списки, предназначенные для
+  использования в других целях, случайно не определялись в качестве функции.
 
-  The second element is a list of symbols---the argument variable names.
-This is called the @dfn{lambda list}.  When a Lisp function is called,
-the argument values are matched up against the variables in the lambda
-list, which are given local bindings with the values provided.
-@xref{Local Variables}.
+  Второй элемент этого списка, представляет собой список символов --- имен
+  переменных аргументов.  Это называется @dfn{лямбда-списком}.  Когда функция
+  Lisp вызывается, значения аргументов сопостовляются с переменными
+  @dfn{лямбда-списка}, которые получают локальные привязки предоставляемых
+  значений. @xref{Local Variables}.
 
-  The documentation string is a Lisp string object placed within the
-function definition to describe the function for the Emacs help
-facilities.  @xref{Function Documentation}.
+  Строка документации, предстовляет собой строковый объект Lisp, помещённый в
+  определение функции и используется средствами помощи Emacs для описания
+  функции.  @xref{Function Documentation}.
 
   The interactive declaration is a list of the form @code{(interactive
 @var{code-string})}.  This declares how to provide arguments if the
