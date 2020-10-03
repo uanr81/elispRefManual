@@ -274,31 +274,32 @@ cons-ячейки вида @w{@code{(@var{min} . @var{max})}}, где @var{min} 
   определение функции и используется средствами помощи Emacs для описания
   функции.  @xref{Function Documentation}.
 
-  The interactive declaration is a list of the form @code{(interactive
-@var{code-string})}.  This declares how to provide arguments if the
-function is used interactively.  Functions with this declaration are called
-@dfn{commands}; they can be called using @kbd{M-x} or bound to a key.
-Functions not intended to be called in this way should not have interactive
-declarations.  @xref{Defining Commands}, for how to write an interactive
-declaration.
+  Объявление интерактивности представляет собой список вида
+  @code{(interactive @var{code-string})}. Это определяет, как обеспечить
+  аргументами функцию, если вызов происходит в интерактивном режиме.  Функции
+  с таким определением называются @dfn{командами}; могут быть вызваны с
+  как с помощью сочетания нажатия клавиш @kbd{M-x} и набора привязанного
+  ключа.  Функции не предназначены для вызова таким образом, не должен иметь
+  интерактивного определения.  @xref{Defining Commands}, о том, как создать
+  интерактивное заявление.
 
 @cindex body of function
-  The rest of the elements are the @dfn{body} of the function: the Lisp
-code to do the work of the function (or, as a Lisp programmer would say,
-``a list of Lisp forms to evaluate'').  The value returned by the
-function is the value returned by the last element of the body.
+  Остальные элементы являются @dfn{телом} функции: Lisp-код, выполняет
+  работу функции (или, как Lisp программист сказал бы, ``список Lisp форм
+  для оценки'').  Значение, возвращаемое функцией является значением,
+  возвращаемое последней оценённой формы этого тела.
 
 @node Simple Lambda
-@subsection A Simple Lambda Expression Example
+@subsection Простой Пример Лямбда-Выражения
 
-  Consider the following example:
+  Рассмотрим следующий пример:
 
 @example
 (lambda (a b c) (+ a b c))
 @end example
 
 @noindent
-We can call this function by passing it to @code{funcall}, like this:
+Мы можем вызвать эту функцию, передавая ее форме @code{funcall}, как здесь:
 
 @example
 @group
@@ -308,13 +309,11 @@ We can call this function by passing it to @code{funcall}, like this:
 @end example
 
 @noindent
-This call evaluates the body of the lambda expression  with the variable
-@code{a} bound to 1, @code{b} bound to 2, and @code{c} bound to 3.
-Evaluation of the body adds these three numbers, producing the result 6;
-therefore, this call to the function returns the value 6.
-
-  Note that the arguments can be the results of other function calls, as in
-this example:
+Этот вызов вычисляет тело лямбды-выражения связывая переменную @code{a} с 1,
+@code{b} связывая с 2 и @code{c} связывая с 3.  Оценка тела формы складывает
+эти три числа, производя результат 6; поэтому, этот вызов функции возвращает
+значение 6.  Обратите внимание, что аргументы могут быть результатами других
+вызовов функций, как в этом примере:
 
 @example
 @group
@@ -324,262 +323,269 @@ this example:
 @end example
 
 @noindent
-This evaluates the arguments @code{1}, @code{(* 2 3)}, and @code{(- 5
-4)} from left to right.  Then it applies the lambda expression to the
-argument values 1, 6 and 1 to produce the value 8.
+Вначале оцениваются аргументы @code{1}, @code{(* 2 3)}, и @code{(- 5 4)}
+слева направо.  Затем их применяет лямбда-выражение со значениями аргументов
+1, 6 и 1, в итоге получая значение 8.
 
-  As these examples show, you can use a form with a lambda expression
-as its @sc{car} to make local variables and give them values.  In the
-old days of Lisp, this technique was the only way to bind and
-initialize local variables.  But nowadays, it is clearer to use the
-special form @code{let} for this purpose (@pxref{Local Variables}).
-Lambda expressions are mainly used as anonymous functions for passing
-as arguments to other functions (@pxref{Anonymous Functions}), or
-stored as symbol function definitions to produce named functions
-(@pxref{Function Names}).
+  Как показывают эти примеры, вы можете использовать форму с
+  лямбда-выражением в качестве её @sc{car}, а остальными элементами передать
+  значения для переменных лямбда формы, тем самым получить локальные привязки
+  переменных полученной формы.  В прежние времена Lisp, этот метод был
+  единственный способ связать и инициализировать локальные переменные.  Но в
+  наше время, это понятнее использовать специальную форму @code{let} для
+  этого (@pxref{Local Variables}).  Лямбда-выражения в основном используются
+  в качестве анонимных функций для передачи в качестве аргументов другим
+  функциям (@pxref{Anonymous Functions}), или для хранения в виде определений
+  в компоненте символа его ячейки функции для получения именованной функции
+  (@pxref{Function Names}).
 
 @node Argument List
-@subsection Other Features of Argument Lists
+@subsection Другие Особенности Списка Аргументов
 @kindex wrong-number-of-arguments
 @cindex argument binding
 @cindex binding arguments
 @cindex argument lists, features
 
-  Our simple sample function, @code{(lambda (a b c) (+ a b c))},
-specifies three argument variables, so it must be called with three
-arguments: if you try to call it with only two arguments or four
-arguments, you get a @code{wrong-number-of-arguments} error
-(@pxref{Errors}).
+  Простой пример, функция @code{(lambda (a b c) (+ a b c))}, определяет
+  три аргумента, поэтому вызов производится с тремя аргументами: если
+  попытаться передать в функцию два (и менее) или четыре (и более) аргумента,
+  получиться ошибка @code{wrong-number-of-arguments} (@pxref{Errors}).
 
-  It is often convenient to write a function that allows certain
-arguments to be omitted.  For example, the function @code{substring}
-accepts three arguments---a string, the start index and the end
-index---but the third argument defaults to the @var{length} of the
-string if you omit it.  It is also convenient for certain functions to
-accept an indefinite number of arguments, as the functions @code{list}
-and @code{+} do.
+  Часто бывает удобно написать функцию, которая позволяет опускать некоторые
+  аргументы.  Например, функция @code{substring} принимает три аргумента ---
+  строку, индекс начала и индекс конца --- но третий аргумент привязывается
+  к @var{длинне} строки по умолчанию, если он опущен.  Также удобно для
+  некоторых функций принимать неопределенное количество аргументов, такие как
+  функции @code{list} и @code{+}.
 
 @cindex optional arguments
 @cindex rest arguments
 @kindex &optional
 @kindex &rest
-  To specify optional arguments that may be omitted when a function
-is called, simply include the keyword @code{&optional} before the optional
-arguments.  To specify a list of zero or more extra arguments, include the
-keyword @code{&rest} before one final argument.
+  Чтобы задать необязательные аргументы, которые могут быть опущены при
+  вызове функции, включается ключевое слово @code{&optional} перед
+  необязательными аргументами.  Чтобы указать список из нуля или более
+  необязательных  аргументов, включается ключевое слово @code{&rest} до
+  одного последнего аргумента списка аргументов.
 
-  Thus, the complete syntax for an argument list is as follows:
+  Таким образом, полный синтаксис списка аргументов выглядит следующим
+  образом:
 
 @example
 @group
-(@var{required-vars}@dots{}
- @r{[}&optional @var{optional-vars}@dots{}@r{]}
- @r{[}&rest @var{rest-var}@r{]})
+(@var{обязательные-переменные}@dots{}
+ @r{[}&optional @var{опциональные-переменные}@dots{}@r{]}
+ @r{[}&rest @var{дополнительные-переменные}@r{]})
 @end group
 @end example
 
 @noindent
-The square brackets indicate that the @code{&optional} and @code{&rest}
-clauses, and the variables that follow them, are optional.
+То что помещается в квадратные скобки, здесь @code{&optional} и @code{&rest},
+а также переменные, которые заключены в них, не являются обязательными.
 
-  A call to the function requires one actual argument for each of the
-@var{required-vars}.  There may be actual arguments for zero or more of
-the @var{optional-vars}, and there cannot be any actual arguments beyond
-that unless the lambda list uses @code{&rest}.  In that case, there may
-be any number of extra actual arguments.
+  Вызову функции требуется один фактический аргумент для каждого из
+  @var{обязательные-переменные}.  Далее могут быть указаны ноль или более
+  до определённого количества аргументов @var{опциональные-переменные}, и в
+  конце после ключевого слова @code{&rest} может быть передано любое
+  количество фактических аргументов @var{дополнительные-переменные}.
+  (ВопросFunctions391)
 
-  If actual arguments for the optional and rest variables are omitted,
-then they always default to @code{nil}.  There is no way for the
-function to distinguish between an explicit argument of @code{nil} and
-an omitted argument.  However, the body of the function is free to
-consider @code{nil} an abbreviation for some other meaningful value.
-This is what @code{substring} does; @code{nil} as the third argument to
-@code{substring} means to use the length of the string supplied.
+  Если фактические аргументы для опцинальных и дополнительных переменных
+  опущены, то они всегда привязываются по умолчанию к @code{nil}.  Нет
+  никакого способа для функции различать явный аргумент @code{nil} и
+  опущенный фактический аргумент.  Тем не менее, в теле функции свободно
+  использовать аббревиатуру @code{nil} для какого-либо другого значимого
+  значения.  Это то, что делает @code{substring}; @code{nil} в качестве
+  третьего аргумента @code{substring} означает использовать всю длину
+  предоставляемой строки.
 
 @cindex CL note---default optional arg
 @quotation
-@b{Common Lisp note:} Common Lisp allows the function to specify what
-default value to use when an optional argument is omitted; Emacs Lisp
-always uses @code{nil}.  Emacs Lisp does not support @code{supplied-p}
-variables that tell you whether an argument was explicitly passed.
+@b{Common Lisp замечание:} Common Lisp позволяет функции указать,
+значение по умолчанию для необязательного аргумента если тот опущен;
+Emacs Lisp всегда использует @code{nil}.  Emacs Lisp не поддерживает
+@code{supplied-p} переменные, которые определяют, был ли явно предоставлен
+аргумент.
 @end quotation
 
-  For example, an argument list that looks like this:
+  Например, список аргументов, который выглядит следующим образом:
 
 @example
 (a b &optional c d &rest e)
 @end example
 
 @noindent
-binds @code{a} and @code{b} to the first two actual arguments, which are
-required.  If one or two more arguments are provided, @code{c} and
-@code{d} are bound to them respectively; any arguments after the first
-four are collected into a list and @code{e} is bound to that list.
-Thus, if there are only two arguments, @code{c}, @code{d} and @code{e}
-are @code{nil}; if two or three arguments, @code{d} and @code{e} are
-@code{nil}; if four arguments or fewer, @code{e} is @code{nil}.  Note
-that exactly five arguments with an explicit @code{nil} argument
-provided for @code{e} will cause that @code{nil} argument to be passed
-as a list with one element, @code{(nil)}, as with any other single
-value for @code{e}.
+связывает @code{a} и @code{b} с первыми двумя обязательными аргументами.
+Если далее предоставлены один или два аргумента, @code{c} и @code{d}
+связываются с ними соответственно; любые аргументы после первых четырех
+собираются в список и @code{e} и привязывается к этому списку.  Таким
+образом, если передано только два аргумента, @code{c}, @code{d} и @code{e}
+устанавливаются в @code{nil}; если три аргумента, @code{d} и @code{e}
+устанавливаются в @code{nil}; если не более четырёх аргументов, @code{e}
+устанавливается в @code{nil}.  Обратите внимание, что ровно пять переданных
+аргумента с явным @code{nil} в качестве пятого аргумента, приводит к тому,
+что список @code{e} будет список с одним элементом @code{(nil)}, как с любым
+другим одним значением для @code{e}.
 
-  There is no way to have required arguments following optional
-ones---it would not make sense.  To see why this must be so, suppose
-that @code{c} in the example were optional and @code{d} were required.
-Suppose three actual arguments are given; which variable would the
-third argument be for?  Would it be used for the @var{c}, or for
-@var{d}?  One can argue for both possibilities.  Similarly, it makes
-no sense to have any more arguments (either required or optional)
-after a @code{&rest} argument.
+  Нет никакого способа, чтобы указать фактические аргументы следующими за
+  опущенными --- это не будет иметь смысла.  Чтобы понять, почему это так,
+  предположим, что @code{c} в примере выше, является не обязательным а
+  @code{d} обязательным.  Предположим, что функции передано три фактические
+  аргумента; какая переменная будет связана с третим аргументом?  Будет ли
+  она использована для @var{c}, или для @var{d}?  Можно утверждать оба
+  случая.  Кроме того, также не имеет никакого смысла, использовать таким
+  образом (либо обязательные либо необязательные) аргументы после ключевого
+  слова @code{&rest}. (ВопросFunctions438)
 
-  Here are some examples of argument lists and proper calls:
+  Вот некоторые примеры списков аргументов и соответствующих вызовов:
 
 @example
-(funcall (lambda (n) (1+ n))        ; @r{One required:}
-         1)                         ; @r{requires exactly one argument.}
+(funcall (lambda (n) (1+ n))        ; @r{Один обязательный:}
+         1)                         ; @r{передаётся только один аргумент.}
      @result{} 2
-(funcall (lambda (n &optional n1)   ; @r{One required and one optional:}
-           (if n1 (+ n n1) (1+ n))) ; @r{1 or 2 arguments.}
+(funcall (lambda (n &optional n1); @r{Один обязательный и один опциональный:}
+           (if n1 (+ n n1) (1+ n))) ; @r{1 или 2 аргумента.}
          1 2)
      @result{} 3
-(funcall (lambda (n &rest ns)       ; @r{One required and one rest:}
-           (+ n (apply '+ ns)))     ; @r{1 or more arguments.}
+(funcall (lambda (n &rest ns); @r{Один обязательный и один дополнительный:}
+           (+ n (apply '+ ns)))     ; @r{1 или более аргументов.}
          1 2 3 4 5)
      @result{} 15
 @end example
 
 @node Function Documentation
-@subsection Documentation Strings of Functions
+@subsection Строка Документации Функции
 @cindex documentation of function
 
-  A lambda expression may optionally have a @dfn{documentation string}
-just after the lambda list.  This string does not affect execution of
-the function; it is a kind of comment, but a systematized comment
-which actually appears inside the Lisp world and can be used by the
-Emacs help facilities.  @xref{Documentation}, for how the
-documentation string is accessed.
+  Лямбда-выражение может иметь необязательную @dfn{строку документации} сразу
+  после лямбда-списка.  Эта строка не влияет на выполнение функции; это
+  своего рода комментарий, но систематизированый, который на самом деле
+  имеет своё место в Lisp и может использоваться в справочных средствах
+  Emacs.  @xref{Documentation}, для того, как получить доступ к строке
+  документации.
 
-  It is a good idea to provide documentation strings for all the
-functions in your program, even those that are called only from within
-your program.  Documentation strings are like comments, except that they
-are easier to access.
+  Это идея хорошая, чтобы обеспечить строкой документации все функции в вашей
+  программе, даже те, которые вызываются только из вашей программы. Строка
+  документации, похожа на комментарий, за исключением того, что к ней легче
+  получить доступ.
 
-  The first line of the documentation string should stand on its own,
-because @code{apropos} displays just this first line.  It should consist
-of one or two complete sentences that summarize the function's purpose.
+  Первая строка документации должна быть самостоятельной и до конца
+  осмысленной, потому что  @code{apropos} отображает только эту первую сроку.
+  Лучше чтобы составлена была одного или двух полных предложений, которые
+  описывают предназначение функции.
 
-  The start of the documentation string is usually indented in the
-source file, but since these spaces come before the starting
-double-quote, they are not part of the string.  Some people make a
-practice of indenting any additional lines of the string so that the
-text lines up in the program source.  @emph{That is a mistake.}  The
-indentation of the following lines is inside the string; what looks
-nice in the source code will look ugly when displayed by the help
-commands.
+  Начало строки документации, как правило, пишется с отступом в исходном
+  файле, но так как этот отступ приходится до начальной двойной кавычки,
+  то не включается в содержание этой строки.  Некоторые делают отступ
+  также для остальных дополнительных строки документации, чтобы выровнять
+  текст в исходном тексте программы.  @emph{Это ошибка.}  Отступ на следующих
+  строках находится внутри содержимого строки и выглядит красиво в исходном
+  коде, но будет выглядеть некрасиво, при отображении командой справки.
 
-  You may wonder how the documentation string could be optional, since
-there are required components of the function that follow it (the body).
-Since evaluation of a string returns that string, without any side effects,
-it has no effect if it is not the last form in the body.  Thus, in
-practice, there is no confusion between the first form of the body and the
-documentation string; if the only body form is a string then it serves both
-as the return value and as the documentation.
+  Можно задаться вопросом, как строка документации может быть необязательной,
+  так как обязательные компоненты тела функции следуют за ней.  Поскольку
+  оценка строки возвращает туже строку, без каких-либо побочных эффектов, это
+  не имеет никакого эффекта, если это не последняя форма в теле.  Таким
+  образом, на практике не существует путаницы между первой формой тела и
+  строки документации; если форма тела является строкой, то она служит и в
+  качестве возвращаемого значения и в качестве документации.
 
-  The last line of the documentation string can specify calling
-conventions different from the actual function arguments.  Write
-text like this:
+  В последней строке документации можно указать соглашения о вызовах,
+  использующих различное количество фактических аргументов функции.  Пишется
+  это так:
 
 @example
 \(fn @var{arglist})
 @end example
 
 @noindent
-following a blank line, at the beginning of the line, with no newline
-following it inside the documentation string.  (The @samp{\} is used
-to avoid confusing the Emacs motion commands.)  The calling convention
-specified in this way appears in help messages in place of the one
-derived from the actual arguments of the function.
+после пустой строки, в начале строки, без следующего символа перевода строки
+строк документации.  (@samp{\} используется, чтобы избежать путаницы для
+команд перемещения Emacs.).  Если придерживаться этого соглашение о вызовах,
+в справочных сообщениях вместо обычного списка параметров, подставиться
+список определённых в этой строке фактических аргументов функции.
 
-  This feature is particularly useful for macro definitions, since the
-arguments written in a macro definition often do not correspond to the
-way users think of the parts of the macro call.
+  Эта функция особенно полезна для определения макросов, так как аргументы,
+  написанные в определении макроса часто не соответствуют тому, что они
+  собой представляют прибеглом взгляде программиста.
 
-  Do not use this feature if you want to deprecate the calling
-convention and favor the one you advertise by the above specification.
-Instead, use the @code{advertised-calling-convention} declaration
-(@pxref{Declare Form}) or @code{set-advertised-calling-convention}
-(@pxref{Obsolete Functions}), because these two will cause the byte
-compiler emit a warning message when it compiles Lisp programs which
-use the deprecated calling convention.
+  Не нужно использовать эту функцию, если не придерживатся выше описанного
+  соглашения.  Вместо этого используйте @code{advertised-calling-convention}
+  объявление (@pxref{Declare Form}) или
+  @code{set-advertised-calling-convention} (@pxref{Obsolete Functions}),
+  потому что эти два способа заставят байт-компилятор выдавать предупреждение
+  при компиляции Lisp программ, которые используют устаревшее соглашение
+  строки документации о вызовах.
 
 @node Function Names
-@section Naming a Function
+@section Именование Функций
 @cindex function definition
 @cindex named function
 @cindex function name
 
-  A symbol can serve as the name of a function.  This happens when the
-symbol's @dfn{function cell} (@pxref{Symbol Components}) contains a
-function object (e.g., a lambda expression).  Then the symbol itself
-becomes a valid, callable function, equivalent to the function object
-in its function cell.
+  Символ может служить в качестве имени функции.  Это происходит,
+  когда компонента символа @dfn{ячейка функции} (@pxref{Symbol Components})
+  содержит функциональный объект (например, лямбда-выражение).  Тогда сам
+  символ становится действительным при использовании его как функции и его
+  такой вызов эквивалентен вызову напрямую выражения, помещённого в его
+  компоненте ячейки функции.
 
-  The contents of the function cell are also called the symbol's
-@dfn{function definition}.  The procedure of using a symbol's function
-definition in place of the symbol is called @dfn{symbol function
-indirection}; see @ref{Function Indirection}.  If you have not given a
-symbol a function definition, its function cell is said to be
-@dfn{void}, and it cannot be used as a function.
+  Содержание компоненты символа ячейки функции также называют
+  @dfn{определением функции} символа.  Порядок использования такого
+  определения функции символа вместо символа называется использование
+  @dfn{косвенного символа функции}; см @ref{Function Indirection}.  Если не
+  задано символу определение функции, его компоненту ячейки функции называют
+  @dfn{void (недействительной)}, и символ не может быть использован в
+  качестве функции.
 
-  In practice, nearly all functions have names, and are referred to by
-their names.  You can create a named Lisp function by defining a
-lambda expression and putting it in a function cell (@pxref{Function
-Cells}).  However, it is more common to use the @code{defun} special
-form, described in the next section.
+  На практике почти все функции имеют имена, и называются их именами.  Можно
+  создать именованную функцию Lisp, путем определения лямбда-выражения и
+  поместив это выражение в компоненту символа ячейку функции
+  (@pxref{Function Cells}).  Тем не менее, чаще используется специальная
+  форма @code{defun}, описанная в следующем разделе.
 @ifnottex
 @xref{Defining Functions}.
 @end ifnottex
 
-  We give functions names because it is convenient to refer to them by
-their names in Lisp expressions.  Also, a named Lisp function can
-easily refer to itself---it can be recursive.  Furthermore, primitives
-can only be referred to textually by their names, since primitive
-function objects (@pxref{Primitive Function Type}) have no read
-syntax.
+  Даются имена функциям, потому что удобно ссылаться на них по их именам в
+  выражениях Lisp.  Кроме того, именованная функция Lisp может легко
+  ссылаться на себя --- она может быть рекурсивной.  В добавок, на примитивы
+  можно ссылаться только по их текстуально выраженным именам, так как они
+  представляют собой объекты функций (@pxref{Primitive Function Type}) и не
+  имеют синтаксис для чтения.
 
-  A function need not have a unique name.  A given function object
-@emph{usually} appears in the function cell of only one symbol, but
-this is just a convention.  It is easy to store it in several symbols
-using @code{fset}; then each of the symbols is a valid name for the
-same function.
+  Функция не должна иметь уникальное имя.  Данный объект функции
+  @emph{обычно} появляется в компоненте ячейки функции только одного символа,
+  но это всего лишь условность.  Легко можно сохранить такой объект в
+  нескольких символах используя @code{fset}; и каждый из символов будет
+  допустимым именем для одной и той же функции.
 
-  Note that a symbol used as a function name may also be used as a
-variable; these two uses of a symbol are independent and do not
-conflict.  (This is not the case in some dialects of Lisp, like
-Scheme.)
+  Обратите внимание, что символ, используемый в качестве имени функции также
+  может быть использован в качестве переменной;  Эти два варианта
+  использования символа являются независимыми и не конфликтует.  (Это не так
+  в некоторых диалектах Lisp, как Scheme.)
 
-  By convention, if a function's symbol consists of two names
-separated by @samp{--}, the function is intended for internal use and
-the first part names the file defining the function.  For example, a
-function named @code{vc-git--rev-parse} is an internal function
-defined in @file{vc-git.el}.  Internal-use functions written in C have
-names ending in @samp{-internal}, e.g., @code{bury-buffer-internal}.
-Emacs code contributed before 2018 may follow other internal-use
-naming conventions, which are being phased out.
+  По соглашению, если имя символа функции состоит из двух имен, разделенных
+  @samp{--}, функция предназначается для внутреннего использования и первая
+  часть относиться к имени файла определения функции.  Например, функция с
+  именем @code{vc-git--rev-parse} внутренняя функция, определенная в
+  файле @file{vc-git.el}.  Для внутреннего использования функции, написанные
+  на C имеют имена, оканчивающиеся на @samp{-internal}, например,
+  @code{bury-buffer-internal}.  Emacs код, относящийся к именованию функций
+  для внутреннего использования написанный до 2018 года, может не
+  придерживаться такого соглашения, которые постепенно отменяются.
 
 @node Defining Functions
-@section Defining Functions
+@section Определение Функций
 @cindex defining a function
 
-  We usually give a name to a function when it is first created.  This
-is called @dfn{defining a function}, and it is done with the
-@code{defun} macro.
+  Обычно имя функции появляется при ее создании.  Это называется
+  @dfn{определение функции}, и это делается с помощью макроса @code{defun}.
 
 @defmac defun name args [doc] [declare] [interactive] body@dots{}
-@code{defun} is the usual way to define new Lisp functions.  It
-defines the symbol @var{name} as a function with argument list
-@var{args} and body forms given by @var{body}.  Neither @var{name} nor
-@var{args} should be quoted.
+@code{defun} обычный способ определение новой функции Lisp.  Определяет
+символ @var{name} как функцию со списком аргументов @var{args} и телом формы,
+заданных @var{body}.  Ни @var{name}, ни @var{args} не должны цитироваться.
 
 @var{doc}, if present, should be a string specifying the function's
 documentation string (@pxref{Function Documentation}).  @var{declare},
