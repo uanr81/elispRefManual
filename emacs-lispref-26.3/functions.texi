@@ -579,24 +579,24 @@ Emacs Lisp всегда использует @code{nil}.  Emacs Lisp не под
 @section Определение Функций
 @cindex defining a function
 
-  Обычно имя функции появляется при ее создании.  Это называется
+  Обычно имя функции присваивается при ее создании.  Это называется
   @dfn{определение функции}, и это делается с помощью макроса @code{defun}.
 
 @defmac defun name args [doc] [declare] [interactive] body@dots{}
-@code{defun} обычный способ определение новой функции Lisp.  Определяет
+@code{defun} это обычный способ определение новой функции Lisp.  Определяет
 символ @var{name} как функцию со списком аргументов @var{args} и телом формы,
-заданных @var{body}.  Ни @var{name}, ни @var{args} не должны цитироваться.
+заданным @var{body}.  Ни @var{name}, ни @var{args} не должны цитироваться.
 
-@var{doc}, if present, should be a string specifying the function's
-documentation string (@pxref{Function Documentation}).  @var{declare},
-if present, should be a @code{declare} form specifying function
-metadata (@pxref{Declare Form}).  @var{interactive}, if present,
-should be an @code{interactive} form specifying how the function is to
-be called interactively (@pxref{Interactive Call}).
+@var{doc}, если присутствует, должно быть строкой с указанием строки
+документации к функции (@pxref{Function Documentation}).  @var{declare}, если
+присутствует, должно быть формой @code{declare} с указанием метаданных
+функции (@pxref{Declare Form}).  @var{interactive}, если присутствует, должно
+быть формой @code{interactive}, для указания как функция будет вызываться в
+интерактивном режиме (@pxref {Interactive Call}).
 
-The return value of @code{defun} is undefined.
+Возвращаемое значение @code{defun} не определено.
 
-Here are some examples:
+Вот некоторые примеры:
 
 @example
 @group
@@ -617,12 +617,12 @@ Here are some examples:
 @end group
 @group
 (bar)
-@error{} Wrong number of arguments.
+@error{} Неверное число аргументов.
 @end group
 
 @group
 (defun capitalize-backwards ()
-  "Upcase the last letter of the word at point."
+  "Установить слову в точке заглавную букву."
   (interactive)
   (backward-word 1)
   (forward-word 1)
@@ -633,132 +633,133 @@ Here are some examples:
 
 @cindex override existing functions
 @cindex redefine existing functions
-Be careful not to redefine existing functions unintentionally.
-@code{defun} redefines even primitive functions such as @code{car}
-without any hesitation or notification.  Emacs does not prevent you
-from doing this, because redefining a function is sometimes done
-deliberately, and there is no way to distinguish deliberate
-redefinition from unintentional redefinition.
+Будьте осторожны, чтобы не переопределить существующие функции неумышленно.
+@code{defun} переопределяет даже примитивные функции, такие как @code{car},
+без каких-либо колебаний или уведомления.  Emacs не мешает вам делать это,
+потому что переопределение функции иногда делается намеренно, и нет никакого
+способа отличить намеренное переопределение от непреднамеренного
+переопределения.
 @end defmac
 
 @cindex function aliases
 @cindex alias, for functions
 @defun defalias name definition &optional doc
 @anchor{Definition of defalias}
-This function defines the symbol @var{name} as a function, with
-definition @var{definition} (which can be any valid Lisp function).
-Its return value is @emph{undefined}.
+Эта функция определяет символ @var{name} как функцию, с определением
+@var{definition} (который может быть любой действительной функцией Lisp).
+Возвращаемое значение @emph{неопределенно}.
 
-If @var{doc} is non-@code{nil}, it becomes the function documentation
-of @var{name}.  Otherwise, any documentation provided by
-@var{definition} is used.
+Если @var{doc} является не-@code{nil}, функции @var{name} устанавливается
+документация.  В противном случае, используется документация, представленная
+@var{definition}.
 
 @cindex defalias-fset-function property
-Internally, @code{defalias} normally uses @code{fset} to set the definition.
-If @var{name} has a @code{defalias-fset-function} property, however,
-the associated value is used as a function to call in place of @code{fset}.
+Внутри @code{defalias} обычно использует @code{fset} для установки
+определения.  Однако, если @var{name} имеет свойство
+@code{defalias-fset-function}, тогда ассоциированное с этим свойством
+значение используется в качестве функции определения вместо @code{fset}.
 
-The proper place to use @code{defalias} is where a specific function
-name is being defined---especially where that name appears explicitly in
-the source file being loaded.  This is because @code{defalias} records
-which file defined the function, just like @code{defun}
-(@pxref{Unloading}).
+Правильное место для использования @code{defalias}, то где специфическое имя
+функции определяется --- особенно там, где это имя появляется в явном виде в
+исходном загружаемом файле.  Это происходит потому, что @code{defalias}
+записывает, в каком файле находится определение функции, так же, как и
+@code{defun} (@pxref{Unloading}). (ВопросFunctions666)
 
 By contrast, in programs that manipulate function definitions for other
 purposes, it is better to use @code{fset}, which does not keep such
 records.  @xref{Function Cells}.
 @end defun
 
-  You cannot create a new primitive function with @code{defun} or
-@code{defalias}, but you can use them to change the function definition of
-any symbol, even one such as @code{car} or @code{x-popup-menu} whose
-normal definition is a primitive.  However, this is risky: for
-instance, it is next to impossible to redefine @code{car} without
-breaking Lisp completely.  Redefining an obscure function such as
-@code{x-popup-menu} is less dangerous, but it still may not work as
-you expect.  If there are calls to the primitive from C code, they
-call the primitive's C definition directly, so changing the symbol's
-definition will have no effect on them.
+  Нельзя создать новую примитивную функцию используя @code{defun} или
+  @code{defalias}, но можно использовать их, чтобы изменить определение
+  функции любого символа, даже таких как @code{car} или @code{x-popup-menu},
+  у которых нормальное определение является примитивным.  Тем не менее, это
+  рискованно: к примеру, это почти невозможно, чтобы переопределить
+  @code{car} без полного разрушения Lisp.  Переопределение неясной функции,
+  такой как @code{x-popup-menu} менее опасно, но она все равно может работать
+  не так, как ожидалось.  Если есть вызовы примитива из кода C, вызов
+  происходит непосредственно, поэтому изменение определения символа не будет
+  иметь никакого влияния на это.
 
-  See also @code{defsubst}, which defines a function like @code{defun}
-and tells the Lisp compiler to perform inline expansion on it.
-@xref{Inline Functions}.
+  Смотреть также @code{defsubst}, определение функции как и  @code{defun} с
+  выводом сообщающений Lisp компилятора при выполнения встроенного
+  расширения.  @xref{Inline Functions}.
 
-  Alternatively, you can define a function by providing the code which
-will inline it as a compiler macro.  The following macros make this
-possible.
+  Кроме того, можно определить функцию, предоставляя код, который будет
+  сделает её встоеной как макрос компилятора.  Следующие макросы делают это
+  возможным.
 
-@c FIXME: Can define-inline use the interactive spec?
+@c Исправте: Можно определить на месте использовать интерактивную
+@c спецификацию?
 @defmac define-inline name args [doc] [declare] body@dots{}
-Define a function @var{name} by providing code that does its inlining,
-as a compiler macro.  The function will accept the argument list
-@var{args} and will have the specified @var{body}.
+Определим функцию @var{name}, предоставляя код, который делает её
+встраиваемой, как макрос компилятора.  Функция принимает список аргументов
+@var{args} и будет иметь указанное тело @var{body}.
 
-If present, @var{doc} should be the function's documentation string
-(@pxref{Function Documentation}); @var{declare}, if present, should be
-a @code{declare} form (@pxref{Declare Form}) specifying the function's
-metadata.
+Если присутствует, @var{doc} это должно быть строкой документации функции
+(@pxref{Function Documentation}); @var{declare}, если присутствует, должно
+быть формой @code{declare} (@pxref{Declare Form}) задающей метаданные
+функции.
 @end defmac
 
-Functions defined via @code{define-inline} have several advantages
-with respect to macros defined by @code{defsubst} or @code{defmacro}:
+Функции, определенные с помощью @code{define-inline} имеют ряд преимуществ
+по сравнению с макросами, определяемой @code{defsubst} или @code{defmacro}:
 
 @itemize @minus
 @item
-They can be passed to @code{mapcar} (@pxref{Mapping Functions}).
+Они могут быть переданы @code{mapcar} (@pxref{Mapping Functions}).
 
 @item
-They are more efficient.
+Они более эффективны.
 
 @item
-They can be used as @dfn{place forms} to store values
-(@pxref{Generalized Variables}).
+Они могут быть использованы в качестве @dfn{мест формы} для хранения
+оценки (@pxref{Generalized Variables}).
 
 @item
-They behave in a more predictable way than @code{cl-defsubst}
+Они ведут себя более предсказуемо, чем @code{cl-defsubst}
 (@pxref{Argument Lists,,, cl, Common Lisp Extensions for GNU Emacs
 Lisp}).
 @end itemize
 
-Like @code{defmacro}, a function inlined with @code{define-inline}
-inherits the scoping rules, either dynamic or lexical, from the call
-site.  @xref{Variable Scoping}.
+Как функция полученная с использованием @code{defmacro}, так и встраиваемая
+функция полученная с использованием  @code{define-inline}, наследует правила
+видимости, либо динамическое или лексическое, из контекста вызова.
+@xref{Variable Scoping}.
 
-The following macros should be used in the body of a function defined
-by @code{define-inline}.
+Следующие макросы должны использоваться в теле функции, определенной
+@code{define-inline}.
 
 @defmac inline-quote expression
-Quote @var{expression} for @code{define-inline}.  This is similar to
-the backquote (@pxref{Backquote}), but quotes code and accepts only
-@code{,}, not @code{,@@}.
+Цитирует @var{expression} для @code{define-inline}. Это похоже на цитирование
+(@pxref{Backquote}), но код котировки принимает только @code{,}, а не
+@code{,@@}.
 @end defmac
 
 @defmac inline-letevals (bindings@dots{}) body@dots{}
-This is similar to @code{let} (@pxref{Local Variables}): it sets up
-local variables as specified by @var{bindings}, and then evaluates
-@var{body} with those bindings in effect.  Each element of
-@var{bindings} should be either a symbol or a list of the form
-@w{@code{(@var{var} @var{expr})}}; the result is to evaluate
-@var{expr} and bind @var{var} to the result.  The tail of
-@var{bindings} can be either @code{nil} or a symbol which should hold
-a list of arguments, in which case each argument is evaluated, and the
-symbol is bound to the resulting list.
+Это похоже на @code{let} (@pxref{Local Variables}): устанавливаются локальные
+привязки переменных, заданные @var{bindings}, а затем оценивается тело
+@var{body} с полученными этими привязками.  Каждый элемент @var{bindings}
+должен быть символом или списком вида @w{@code{(@var{var} @var{expr})}};
+результат заключается в оценке @var{expr} и привязки @var{var} к результату.
+Хвост @var{bindings} может быть @code{nil} или символом, который должен
+содержать список аргументов, в этом случае вычисляется каждый аргумент, и
+символ связывается с результирующим списком.  (ВопросFunctions747)
 @end defmac
 
 @defmac inline-const-p expression
-Return non-@code{nil} if the value of @var{expression} is already
-known.
+Возврат не-@code{nil} если значение @var{expression} уже известно.
 @end defmac
 
 @defmac inline-const-val expression
-Return the value of @var{expression}.
+Возвращает значение @var{expression}.
 @end defmac
 
 @defmac inline-error format &rest args
-Signal an error, formatting @var{args} according to @var{format}.
+Сигнал ошибки, форматирование @var{args} согласно @var{format}.
 @end defmac
 
-Here's an example of using @code{define-inline}:
+Вот пример использования @code{define-inline}:
 
 @lisp
 (define-inline myaccessor (obj)
@@ -767,7 +768,7 @@ Here's an example of using @code{define-inline}:
 @end lisp
 
 @noindent
-This is equivalent to
+Это эквивалентно
 
 @lisp
 (defsubst myaccessor (obj)
@@ -779,45 +780,44 @@ This is equivalent to
 @cindex function invocation
 @cindex calling a function
 
-  Defining functions is only half the battle.  Functions don't do
-anything until you @dfn{call} them, i.e., tell them to run.  Calling a
-function is also known as @dfn{invocation}.
+  Определение функций только полдела.  Функции ничего не делают, пока их
+  @dfn{не вызовут}, то есть, обратятся к ним.  Обращение к функции также
+  известно как @dfn{вызов}.
 
-  The most common way of invoking a function is by evaluating a list.
-For example, evaluating the list @code{(concat "a" "b")} calls the
-function @code{concat} with arguments @code{"a"} and @code{"b"}.
-@xref{Evaluation}, for a description of evaluation.
+  Наиболее распространенный способ применения функции является оценка списка.
+  Например, оценка списка @code{(concat "a" "b")} вызывает функцию
+  @code{concat} с аргументами @code{"a"} и @code{"b"}.  @xref{Evaluation},
+  для описания оценки.
 
-  When you write a list as an expression in your program, you specify
-which function to call, and how many arguments to give it, in the text
-of the program.  Usually that's just what you want.  Occasionally you
-need to compute at run time which function to call.  To do that, use
-the function @code{funcall}.  When you also need to determine at run
-time how many arguments to pass, use @code{apply}.
+  Когда вы пишете список как выражение в вашей программе, необходимо указать
+  в тексте программы, какую функцию нужно вызвать и с какими аргументами.
+  Обычно это именно то, что требуется.  Иногда нужно вычислить уже во время
+  выполнения какую функции вызвать.  Чтобы сделать это, используется
+  функция @code{funcall}.  Когда также необходимо определить во время
+  выполнения, какие аргументы передать, используется @code{apply}.
 
 @defun funcall function &rest arguments
-@code{funcall} calls @var{function} with @var{arguments}, and returns
-whatever @var{function} returns.
+@code{funcall} вызывает функцию @var{function} с аргументами @var{arguments},
+и возвращает то, что возвращает функция @var{function}.
 
-Since @code{funcall} is a function, all of its arguments, including
-@var{function}, are evaluated before @code{funcall} is called.  This
-means that you can use any expression to obtain the function to be
-called.  It also means that @code{funcall} does not see the
-expressions you write for the @var{arguments}, only their values.
-These values are @emph{not} evaluated a second time in the act of
-calling @var{function}; the operation of @code{funcall} is like the
-normal procedure for calling a function, once its arguments have
-already been evaluated.
+Поскольку @code{funcall} функция, все его аргументы, в том числе аргумент
+@var{function}, вычисляются до вызова @code{funcall}.  Это означает, что
+можно использовать любое выражение, чтобы получить функцию, которая будет
+вызвана.  Это также означает, что @code{funcall} не видит выражения
+используемые для оценки аргументов @var{arguments}, оперирует уже их
+значениями.  Эти значения @emph{не} оценеваются во второй раз в момент
+вызова функции @var{function}; работа @code{funcall} подобна обычному
+вызова функции, когда её аргументы уже были оценены.
 
-The argument @var{function} must be either a Lisp function or a
-primitive function.  Special forms and macros are not allowed, because
-they make sense only when given the unevaluated argument
-expressions.  @code{funcall} cannot provide these because, as we saw
-above, it never knows them in the first place.
+Аргумент @var{function} должен быть функцией Lisp или примитивной функцией.
+Специальные формы и макросы не разрешены, потому что они имеют смысл только
+тогда, когда заданы неоценённые выражение аргументов.  @code{funcall} не
+может обеспечить этого, потому что, как описано выше, не обрабатывает их
+перед непосредственным вызовом указанной функции.
 
-If you need to use @code{funcall} to call a command and make it behave
-as if invoked interactively, use @code{funcall-interactively}
-(@pxref{Interactive Call}).
+Если требуется использовать @code{funcall} для вызова функции как команды и
+заставить её вести себя так, как будто вызов происходит в интерактивном
+режиме, используется @code{funcall-interactively} (@pxref{Interactive Call}).
 
 @example
 @group
@@ -834,25 +834,25 @@ as if invoked interactively, use @code{funcall-interactively}
 @end group
 @group
 (funcall 'and t nil)
-@error{} Invalid function: #<subr and>
+@error{} Неверная функция: #<subr and>
 @end group
 @end example
 
-Compare these examples with the examples of @code{apply}.
+Сравните эти примеры с примерами @code{apply}.
 @end defun
 
 @defun apply function &rest arguments
-@code{apply} calls @var{function} with @var{arguments}, just like
-@code{funcall} but with one difference: the last of @var{arguments} is a
-list of objects, which are passed to @var{function} as separate
-arguments, rather than a single list.  We say that @code{apply}
-@dfn{spreads} this list so that each individual element becomes an
-argument.
+@code{apply} вызывает функцию @var{function} с аргументами @var{arguments},
+так же, как и @code{funcall}, но с одним отличием: аргумент @var{arguments}
+представляет собой список объектов, который передаётся в @var{function} с
+разбором на отдельные аргументы, а не готовым списком аргументов.  Понимается
+@code{apply} @dfn{расширяет} этот список, так что каждый отдельный элемент
+становится аргументом.
 
-@code{apply} returns the result of calling @var{function}.  As with
-@code{funcall}, @var{function} must either be a Lisp function or a
-primitive function; special forms and macros do not make sense in
-@code{apply}.
+@code{apply} возвращает результат вызова функции @var{function}.  Как и в
+случае @code{funcall}, @var{function} должен либо быть функцией Lisp или
+примитивной функции; специальные формы и макросы не имеют смысла при
+использовании с @code{apply}.
 
 @example
 @group
@@ -861,7 +861,7 @@ primitive function; special forms and macros do not make sense in
 @end group
 @group
 (apply f 'x 'y 'z)
-@error{} Wrong type argument: listp, z
+@error{} Неправильный тип аргумента: listp, z
 @end group
 @group
 (apply '+ 1 2 '(3 4))
@@ -878,42 +878,40 @@ primitive function; special forms and macros do not make sense in
 @end group
 @end example
 
-For an interesting example of using @code{apply}, see @ref{Definition
-of mapcar}.
+Интересный пример использования @code{apply}, смотреть
+@ref{Definition of mapcar}.
 @end defun
 
 @cindex partial application of functions
 @cindex currying
-  Sometimes it is useful to fix some of the function's arguments at
-certain values, and leave the rest of arguments for when the function
-is actually called.  The act of fixing some of the function's
-arguments is called @dfn{partial application} of the function@footnote{
-This is related to, but different from @dfn{currying}, which
-transforms a function that takes multiple arguments in such a way that
-it can be called as a chain of functions, each one with a single
-argument.}.
-The result is a new function that accepts the rest of
-arguments and calls the original function with all the arguments
-combined.
+  Иногда бывает полезно, привязать некоторые из аргументов функции к
+  определенным значениях, не затрагивая остальные аргументы, когда функция
+  на самом деле вызывается.  Акт такой фиксации некоторых из аргументов
+  функции называется @dfn{частичным применением} функции@footnote{Это сходно,
+  но отличается от @dfn{currying}, которое преобразует функцию, которая
+  обрабатывает аргументы по очереди, получая цепочку вызова функции для
+  каждого аргумента.}.  Результатом является новая функция, которая принимает
+  остальные аргументы и вызывает исходную функцию со всеми аргументами,
+  вместе взятыми.
 
-  Here's how to do partial application in Emacs Lisp:
+  Вот как сделать частичное применение в Emacs Lisp:
 
 @defun apply-partially func &rest args
-This function returns a new function which, when called, will call
-@var{func} with the list of arguments composed from @var{args} and
-additional arguments specified at the time of the call.  If @var{func}
-accepts @var{n} arguments, then a call to @code{apply-partially} with
-@w{@code{@var{m} < @var{n}}} arguments will produce a new function of
-@w{@code{@var{n} - @var{m}}} arguments.
+Эта функция возвращает новую функцию, которая при вызове будет вызывать
+@var{func} со списком аргументов, состоящих из @var{args} и дополнительных
+аргументов, указанных в момент вызова.  Если @var{func} принимает @var{n}
+аргументов, то вызов @code{apply-partially} с аргументами
+@w{@code{@var{m} < @var{n}}} преобразуется в вызов функции с новыми
+аргументами @w{@code{@var{n} - @var{m}}}.  (ВопросFunctions905)
 
-Here's how we could define the built-in function @code{1+}, if it
-didn't exist, using @code{apply-partially} and @code{+}, another
-built-in function:
+Вот как можно было определить встроенную функцию @code{1+}, если её не
+не существовало, используя @code{apply-partially} и другой встроенной функции
+@code{+}:
 
 @example
 @group
 (defalias '1+ (apply-partially '+ 1)
-  "Increment argument by one.")
+  "Приращение еденицы к аргументу.")
 @end group
 @group
 (1+ 10)
@@ -923,55 +921,58 @@ built-in function:
 @end defun
 
 @cindex functionals
-  It is common for Lisp functions to accept functions as arguments or
-find them in data structures (especially in hook variables and property
-lists) and call them using @code{funcall} or @code{apply}.  Functions
-that accept function arguments are often called @dfn{functionals}.
+  Функции Lisp принимающие функции в качестве своих аргументов или
+  использующие аргументы находящиеся в структурах данных (особенно в
+  переменных-ловушках и списках свойств) обрабатывают их с помощью
+  @code{funcall} или @code{apply}.  Функции, которые принимают в аргументах
+  функции, часто называют @dfn{функциональными}.
 
-  Sometimes, when you call a functional, it is useful to supply a no-op
-function as the argument.  Here are two different kinds of no-op
-function:
+  Иногда, когда требуется получить функционал, полезно указать функцию в
+  качестве аргумента без действия.  Вот два разных вида такого вызова
+  бездействующей функции:
 
 @defun identity arg
-This function returns @var{arg} and has no side effects.
+Функция возвращает @var{arg} и не имеет побочных эффектов.
 @end defun
 
 @defun ignore &rest args
-This function ignores any arguments and returns @code{nil}.
+Функция игнорирует все аргументы и возвращает @code{nil}.
 @end defun
 
-  Some functions are user-visible @dfn{commands}, which can be called
-interactively (usually by a key sequence).  It is possible to invoke
-such a command exactly as though it was called interactively, by using
-the @code{call-interactively} function.  @xref{Interactive Call}.
+  Некоторые функции представляются пользователю как @dfn{команды}, которые
+  могут быть вызваны в интерактивном режиме (обычно с помощью
+  нажатия последовательности клавиш).  Можно вызвать такую ​​команду в
+  точности так, как если бы был её вызов в интерактивном режиме, используя
+  функцию @code{call-interactively}.  @xref{Interactive Call}.
 
 @node Mapping Functions
-@section Mapping Functions
+@section Сопоставление Функций
 @cindex mapping functions
 
-  A @dfn{mapping function} applies a given function (@emph{not} a
-special form or macro) to each element of a list or other collection.
-Emacs Lisp has several such functions; this section describes
-@code{mapcar}, @code{mapc}, @code{mapconcat}, and @code{mapcan}, which
-map over a list.  @xref{Definition of mapatoms}, for the function
-@code{mapatoms} which maps over the symbols in an obarray.
-@xref{Definition of maphash}, for the function @code{maphash} which
-maps over key/value associations in a hash table.
+  @dfn{Сопоставление функции} применяет данную функцию (@emph{не} специальную
+  форму или макрос) к каждому элементу списка или другой коллекции.  Emacs
+  Lisp имеет несколько таких функций; В данном разделе описаны @code{mapcar},
+  @code{mapc}, @code{mapconcat}, и @code{mapcan}, которые сопоставляют
+  функцию к списку.  @xref{Definition of mapatoms} для функции
+  @code{mapatoms}, сопоставляющая с символами массива obarray.
+  @xref{Definition of maphash} для функции @code{maphash}, отображающая
+  ключ/значение ассоциаций в хэш-таблице.  (ВопросFunctions959)
 
-  These mapping functions do not allow char-tables because a char-table
-is a sparse array whose nominal range of indices is very large.  To map
-over a char-table in a way that deals properly with its sparse nature,
-use the function @code{map-char-table} (@pxref{Char-Tables}).
+  Эти функции сопоставления не позволяют использовать символ-таблицу, так как
+  символ-таблица представляет собой разреженный массив, чей номинальный
+  диапазон индексов очень велик.  Чтобы отобразить символ-таблицу таким
+  способом с должным образом, учитывая её разреженую природу, используется
+  функция @code{map-char-table} (@pxref {Char-Tables}).
 
 @defun mapcar function sequence
 @anchor{Definition of mapcar}
-@code{mapcar} applies @var{function} to each element of @var{sequence}
-in turn, and returns a list of the results.
+@code{mapcar} соотносит функцию @var{function} по очереди  к каждому элементу
+последовательности @var{sequence} и возвращает список результатов.
 
-The argument @var{sequence} can be any kind of sequence except a
-char-table; that is, a list, a vector, a bool-vector, or a string.  The
-result is always a list.  The length of the result is the same as the
-length of @var{sequence}.  For example:
+Аргумент @var{sequence} может быть любым видом последовательности, кроме
+символ-таблицы; то есть представлять список, вектор, булев-вектор или строку.
+Результат всегда список.  Длина результата такая же, как длина
+последовательности @var{sequence}. Например:
 
 @example
 @group
@@ -984,20 +985,20 @@ length of @var{sequence}.  For example:
 @end group
 
 @group
-;; @r{Call each function in @code{my-hooks}.}
+;; @r{Вызов функции для каждого элемента в @code{my-hooks}.}
 (mapcar 'funcall my-hooks)
 @end group
 
 @group
 (defun mapcar* (function &rest args)
-  "Apply FUNCTION to successive cars of all ARGS.
-Return the list of results."
-  ;; @r{If no list is exhausted,}
+  "Сопоставляет последовательно FUNCTION к каждой предней части аргументов
+ARGS. Возвращает список результатов."
+  ;; @r{Пока список не будет исчерпан,}
   (if (not (memq nil args))
-      ;; @r{apply function to @sc{car}s.}
+      ;; @r{применить функцию @sc{car}.}
       (cons (apply function (mapcar 'car args))
             (apply 'mapcar* function
-                   ;; @r{Recurse for rest of elements.}
+                   ;; @r{Рекурсивный вызов для остальных аргументов.}
                    (mapcar 'cdr args)))))
 @end group
 
@@ -1009,19 +1010,20 @@ Return the list of results."
 @end defun
 
 @defun mapcan function sequence
-This function applies @var{function} to each element of
-@var{sequence}, like @code{mapcar}, but instead of collecting the
-results into a list, it returns a single list with all the elements of
-the results (which must be lists), by altering the results (using
-@code{nconc}; @pxref{Rearrangement}).  Like with @code{mapcar},
-@var{sequence} can be of any type except a char-table.
+Функция сопоставляет @var{function} к каждому элементу последовательности
+@var{sequence}, как и @code{mapcar}, но вместо того, чтобы собирать
+результаты в виде списка, возвращает один список со всеми элементами
+результатов (которые должны быть списками), изменяя результаты (с
+использованием @code{nconc}; @pxref{Rearrangement}).  Как и у @code{mapcar},
+последовательность @var{sequence} может быть любого типа, кроме
+символ-таблицы.
 
 @example
 @group
-;; @r{Contrast this:}
+;; @r{Сравнить это:}
 (mapcar 'list '(a b c d))
      @result{} ((a) (b) (c) (d))
-;; @r{with this:}
+;; @r{с этим:}
 (mapcan 'list '(a b c d))
      @result{} (a b c d)
 @end group
@@ -1029,32 +1031,32 @@ the results (which must be lists), by altering the results (using
 @end defun
 
 @defun mapc function sequence
-@code{mapc} is like @code{mapcar} except that @var{function} is used for
-side-effects only---the values it returns are ignored, not collected
-into a list.  @code{mapc} always returns @var{sequence}.
+@code{mapc}, как и @code{mapcar} за исключением того, что @var{function}
+используется только для побочных эффектов --- возвращаемые значения
+игнорируются, не собираются в списке.  @code{mapc} всегда возвращает
+последовательность @var{sequence}.
 @end defun
 
 @defun mapconcat function sequence separator
-@code{mapconcat} applies @var{function} to each element of
-@var{sequence}; the results, which must be sequences of characters
-(strings, vectors, or lists), are concatenated into a single string
-return value.  Between each pair of result sequences, @code{mapconcat}
-inserts the characters from @var{separator}, which also must be a
-string, or a vector or list of characters.  @xref{Sequences Arrays
-Vectors}.
+@code{mapconcat} сопоставляет функцию @var{function} к каждому элементу
+последовательности @var{sequence}; результаты, которые должны быть
+последовательностью символов (строки, векторы, или списки), объединяются в
+одно строковое значение возврата.  Между каждой парой последовательности в
+возвращаемом значении, @code{mapconcat} вставляет символы из @var{separator},
+который также должен быть строкой вектором или списком символов.
+@xref{Sequences Arrays Vectors}.
 
-The argument @var{function} must be a function that can take one
-argument and returns a sequence of characters: a string, a vector, or
-a list.  The argument @var{sequence} can be any kind of sequence
-except a char-table; that is, a list, a vector, a bool-vector, or a
-string.
+Аргумент @var{function} должен быть функцией, которая может принимать один
+аргумент и возвращает последовательность символов: строку, вектор или список.
+Аргумент @var{sequence} может быть любым видом последовательности, кроме
+символ-таблицы; то есть списком, вектором, булевым-вектором или строкой.
 
 @example
 @group
 (mapconcat 'symbol-name
-           '(The cat in the hat)
+           '(Кот в шляпе)
            " ")
-     @result{} "The cat in the hat"
+     @result{} "Кот в шляпе"
 @end group
 
 @group
@@ -1067,28 +1069,29 @@ string.
 @end defun
 
 @node Anonymous Functions
-@section Anonymous Functions
+@section Анонимные Функции
 @cindex anonymous function
 
-  Although functions are usually defined with @code{defun} and given
-names at the same time, it is sometimes convenient to use an explicit
-lambda expression---an @dfn{anonymous function}.  Anonymous functions
-are valid wherever function names are.  They are often assigned as
-variable values, or as arguments to functions; for instance, you might
-pass one as the @var{function} argument to @code{mapcar}, which
-applies that function to each element of a list (@pxref{Mapping
-Functions}).  @xref{describe-symbols example}, for a realistic example
-of this.
+  Хотя функции, как правило, определяются с @code{defun} и получают имена в
+  то же время, иногда удобно использовать явное выражение лямбды --- в
+  @dfn{анонимной функции}.  Анонимные функции действуют везде, где и
+  именованные функции.  Они часто назначается в качестве значений переменных
+  или в качестве функций аргументов; например, можно передать анонимную
+  функцию в качестве аргумента @var{function} к функции @code{mapcar},
+  которая применит эту функцию к каждому элементу списка аргументов
+  (@pxref{Mapping Functions}).  @xref{describe-symbols example}, более
+  реалистичный пример этого.
 
-  When defining a lambda expression that is to be used as an anonymous
-function, you can in principle use any method to construct the list.
-But typically you should use the @code{lambda} macro, or the
-@code{function} special form, or the @code{#'} read syntax:
+  При определении лямбда-выражения, которое будет использоваться в качестве
+  анонимной функции, можно в принципе использовать любой метод построения
+  списка.  Но, как правило, нужно использовать @code{lambda} макрос или
+  специальную форму @code{function}, или же @code{#'} синтакс чтения:
 
 @defmac lambda args [doc] [interactive] body@dots{}
-This macro returns an anonymous function with argument list
-@var{args}, documentation string @var{doc} (if any), interactive spec
-@var{interactive} (if any), and body forms given by @var{body}.
+Макрос возвращает анонимную функцию с со списком аргументов @var{args}, со
+строкой документации @var{doc} (если таковая предоставляется), с
+интерактивной формой @var{interactive} (если таковая предоставляется), и с
+формой тела @var{body} с данными.
 
 Under dynamic binding, this macro effectively makes @code{lambda}
 forms self-quoting: evaluating a form whose @sc{car} is @code{lambda}
