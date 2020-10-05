@@ -1252,72 +1252,71 @@ ARGS. Возвращает список результатов."
 с помощью этой формы переопределяется и аргументы рассматриваются в
 соответствии с указанным порядком в этой форме, а не слева направо.
 @item (:method [@var{qualifiers}@dots{}] args &rest body)
-This form defines a method like @code{cl-defmethod} does.
+Эта форма определяет метод, такой как @code{cl-defmethod}.
 @end table
 @end defmac
 
 @defmac cl-defmethod name [qualifier] arguments &rest [docstring] body
-This macro defines a particular implementation for the generic
-function called @var{name}.  The implementation code is given by
-@var{body}.  If present, @var{docstring} is the documentation string
-for the method.  The @var{arguments} list, which must be identical in
-all the methods that implement a generic function, and must match the
-argument list of that function, provides argument specializers of the
-form @code{(@var{arg} @var{spec})}, where @var{arg} is the argument
-name as specified in the @code{cl-defgeneric} call, and @var{spec} is
-one of the following specializer forms:
+Этот макрос определяет конкретную реализацию обобщённой функции, с именем
+@var{name}.  Код реализации задается телом @var{body}.  Если присутствует,
+@var{docstring} является строкой документации для метода.  Список
+@var{arguments}, должен быть одинаковым во всех методах, которые реализуют
+обобщенную функцию, и должен соответствовать списку аргументов этой функции,
+аргументы обеспечиваются специализацией вида @code{(@var{arg} @var{spec})},
+где @var{arg} это имя аргумента, как указано в вызове @code{cl-defgeneric} и
+@var{spec} является одной из следующих форм специализации:
 
 @table @code
 @item @var{type}
-This specializer requires the argument to be of the given @var{type},
-one of the types from the type hierarchy described below.
+Специализация требует, чтобы аргумент был заданного типа @var{type}, одним из
+типов иерархии типов, описанной ниже.
 @item (eql @var{object})
-This specializer requires the argument be @code{eql} to the given
+Специализация требует, чтобы аргумент удовлетворял @code{eql} к данному
 @var{object}.
 @item (head @var{object})
-The argument must be a cons cell whose @code{car} is @code{eql} to
+Аргумент должен быть cons-ячейкой @code{car} которой @code{eql} к
 @var{object}.
 @item @var{struct-type}
-The argument must be an instance of a class named @var{struct-type}
-defined with @code{cl-defstruct} (@pxref{Structures,,, cl, Common Lisp
-Extensions for GNU Emacs Lisp}), or of one of its child classes.
+Аргумент должен быть экземпляром набора с именем @var{struct-type},
+определенного с момощью @code{cl-defstruct}
+(@pxref{Structures,,, cl, Common Lisp Extensions for GNU Emacs Lisp}), или
+одного из его дочерних наборов.
 @end table
 
-Alternatively, the argument specializer can be of the form
-@code{&context (@var{expr} @var{spec})}, in which case the value of
-@var{expr} must be compatible with the specializer provided by
-@var{spec}; @var{spec} can be any of the forms described above.  In
-other words, this form of specializer uses the value of @var{expr}
-instead of arguments for the decision whether the method is
-applicable.  For example, @code{&context (overwrite-mode (eql t))}
-will make the method compatible only when @code{overwrite-mode} is
-turned on.
+В качестве альтернативы, специализация аргумента может иметь вид
+@code{&context (@var{expr} @var{spec})}, в этом случае значение @var{expr}
+должно быть совместимо с специализацией @var{spec}; @var{spec} может быть
+любой из форм, описанных выше.  Другими словами, эта форма специализации
+использует значение @var{expr} вместе с аргументом для решения, является ли
+метод применимым.  Например, @code{&context (overwrite-mode (eql t))} сделает
+метод совместим только тогда, когда @code{overwrite-mode} включен.
+(ВопросFunctions1293)
 
-The type specializer, @code{(@var{arg} @var{type})}, can specify one
-of the @dfn{system types} in the following list.  When a parent type
-is specified, an argument whose type is any of its more specific child
-types, as well as grand-children, grand-grand-children, etc. will also
-be compatible.
+Спецификация типа, @code{(@var{arg} @var{type})}, может указать один из
+@dfn{системных типов} в следующем списке.  Если указан родительский тип,
+аргумент, тип которого является любым наследником более конкретного типа,
+а также наследником наследника и т.д., метод также будет применним.
+(ВопросFunctions1299)
 
 @table @code
 @item integer
-Parent type: @code{number}.
+Родительский тип: @code{number}.
 @item number
 @item null
-Parent type: @code{symbol}
+Родительский тип: @code{symbol}
 @item symbol
 @item string
-Parent type: @code{array}.
+Родительский тип: @code{array}.
 @item array
-Parent type: @code{sequence}.
+Родительский тип: @code{sequence}.
 @item cons
-Parent type: @code{list}.
+Родительский тип: @code{list}.
 @item list
-Parent type: @code{sequence}.
+Родительский тип: @code{sequence}.
 @item marker
 @item overlay
 @item float
-Parent type: @code{number}.
+Родительский тип: @code{number}.
 @item window-configuration
 @item process
 @item window
@@ -1325,11 +1324,11 @@ Parent type: @code{number}.
 @item compiled-function
 @item buffer
 @item char-table
-Parent type: @code{array}.
+Родительский тип: @code{array}.
 @item bool-vector
-Parent type: @code{array}.
+Родительский тип: @code{array}.
 @item vector
-Parent type: @code{array}.
+Родительский тип: @code{array}.
 @item frame
 @item hash-table
 @item font-spec
@@ -1337,100 +1336,100 @@ Parent type: @code{array}.
 @item font-object
 @end table
 
-The optional @var{qualifier} allows combining several applicable
-methods.  If it is not present, the defined method is a @dfn{primary}
-method, responsible for providing the primary implementation of the
-generic function for the specialized arguments.  You can also define
-@dfn{auxiliary methods}, by using one of the following values as
-@var{qualifier}:
+Опция @var{qualifier} (спецификатор) позволяет комбинировать несколько
+применимых методов.  Если нет, то описываемый метод представляет собой метод
+@dfn{primary} (основной), ответственный за предоставление первичной
+реализации обобщенной функции для специализированных аргументов.  Можно также
+определить @dfn{auxiliary methods} (вспомогательные методы), с помощью одного
+из следующих значений в качестве квалификатора @var{qualifier}:
 
 @table @code
 @item :before
-This auxiliary method will run before the primary method.  More
-accurately, all the @code{:before} methods will run before the
-primary, in the most-specific-first order.
+Вспомогательный метод будет назначаться до основного метода.  Точнее, все
+методы @code{:before} будут назначаться до основного, в порядке от наиболее
+специфичных.
 @item :after
-This auxiliary method will run after the primary method.  More
-accurately, all such methods will run after the primary, in the
-most-specific-last order.
+Вспомогательный метод будет назначаться после основного метода.  Точнее, все
+такие методы будут работать после основного, в порядке от наиболее
+специфичного до последнего.
 @item :around
-This auxiliary method will run @emph{instead} of the primary method.
-The most specific of such methods will be run before any other method.
-Such methods normally use @code{cl-call-next-method}, described below,
-to invoke the other auxiliary or primary methods.
+Вспомогательный метод будет работать @emph{вместо} основного метода.
+Наиболее специфичный из таких методов будет выполняться перед любым другим
+методом.  Такие методы обычно используют @code{cl-call-next-method},
+описанных ниже, чтобы ссылаться на другие вспомогательные или основные
+методы.
 @item :extra @var{string}
-This allows you to add more methods, distinguished by @var{string},
-for the same specializers and qualifiers.
+Позволяет добавить дополнительные методы, отличающиеся @var{string}, для
+одних и тех же специализаций и классификаторов.
 @end table
 
-Functions defined using @code{cl-defmethod} cannot be made
-interactive, i.e.@: commands (@pxref{Defining Commands}), by adding
-the @code{interactive} form to them.  If you need a polymorphic
-command, we recommend defining a normal command that calls a
-polymorphic function defined via @code{cl-defgeneric} and
-@code{cl-defmethod}.
+Функции, определенные с помощью @code{cl-defmethod} не могут быть сделаны
+интерактивными, то есть @: командами (@pxref{Defining Commands}), путем
+добавления формы @code{interactive} к ним.  Если нужна полиморфная команда,
+рекомендуется определение нормальной команды, которая вызывает полиморфную
+функцию, определенную с помощью @code{cl-defgeneric} и @code{cl-defmethod}.
 @end defmac
 
 @cindex dispatch of methods for generic function
 @cindex multiple-dispatch methods
-Each time a generic function is called, it builds the @dfn{effective
-method} which will handle this invocation by combining the applicable
-methods defined for the function.  The process of finding the
-applicable methods and producing the effective method is called
-@dfn{dispatch}.  The applicable methods are those all of whose
-specializers are compatible with the actual arguments of the call.
-Since all of the arguments must be compatible with the specializers,
-they all determine whether a method is applicable.  Methods that
-explicitly specialize more than one argument are called
-@dfn{multiple-dispatch methods}.
+Каждый раз, когда вызывается обобщённая функция, строится
+@dfn{эффективный метод}, который будет обрабатывать этот вызов путем
+комбинирования применимых методов, определенные для функции.  Процесс поиска
+применимых методов и получение эффективного метода называют @dfn{dispatch}
+(отправкой).  Применимые методы это те, у которых все специализации
+совместимы с фактическими аргументами вызова.  Поскольку все аргументы должны
+быть совместимы со спецификациями, все они определяют, является ли метод
+применимым.  Методы, которые явно специализируют более одного аргумента,
+называются @dfn{multiple-dispatch methods} (методы множественной-отправки).
 
-The applicable methods are sorted into the order in which they will be
-combined.  The method whose left-most argument specializer is the most
-specific one will come first in the order.  (Specifying
-@code{:argument-precedence-order} as part of @code{cl-defmethod}
-overrides that, as described above.)  If the method body calls
-@code{cl-call-next-method}, the next most-specific method will run.
-If there are applicable @code{:around} methods, the most-specific of
-them will run first; it should call @code{cl-call-next-method} to run
-any of the less specific @code{:around} methods.  Next, the
-@code{:before} methods run in the order of their specificity, followed
-by the primary method, and lastly the @code{:after} methods in the
-reverse order of their specificity.
+Применимые методы сортируются в порядке, в котором они будут объединены.
+Метод, чей левый аргумент наиболее конкретен спкциализации будет первым в
+порядке.  (Определение @code{:argument-precedence-order} как часть
+@code{cl-defmethod} переопределение этого, как описано выше.) Если тело
+метода вызывает @code{cl-call-next-method}, следующий наиболее специфический
+метод будет работать.  Если есть применимые методы @code{:around}, наиболее
+специфичные из них будут работать в первую очередь; это должно произвести
+вызов @code{cl-call-next-method} запускающий любой из менее конкретных
+методов @code{:around}.  Далее, методы @code{:before} выполняются в порядке
+их специфичности, с последующим первичным методом, и, наконец, методы
+@code{:after} в порядке, обратном порядку их специфичности.
+(ВопросFunctions1395)
 
 @defun cl-call-next-method &rest args
-When invoked from within the lexical body of a primary or an
-@code{:around} auxiliary method, call the next applicable method for
-the same generic function.  Normally, it is called with no arguments,
-which means to call the next applicable method with the same arguments
-that the calling method was invoked.  Otherwise, the specified
-arguments are used instead.
+Когда вызываются из первичного лексического тела или @code{:around}
+вспомогательного метода, вызывается следующий метод, применимый для одной и
+той же обобщенной функции.  Как правило, она вызывается без аргументов, что
+прводит к вызову следующего применимого метода с теми же аргументами, с
+которыми метод был вызван.  В противном случае указанные аргументы
+используются вместо этого.  (ВопросыFunctions1404)
 @end defun
 
 @defun cl-next-method-p
-This function, when called from within the lexical body of a primary
-or an @code{:around} auxiliary method, returns non-@code{nil} if there
-is a next method to call.
+Функция, когда вызывается из первичного лексического тела или @code{:around}
+вспомогательного метода, возвращает не-@code{nil}, если существует следующий
+метод вызова.
 @end defun
 
 
 @node Function Cells
-@section Accessing Function Cell Contents
+@section Доступ к Компоненте Символа Ячейки Функции
 
-  The @dfn{function definition} of a symbol is the object stored in the
-function cell of the symbol.  The functions described here access, test,
-and set the function cell of symbols.
+  @dfn{Определение функции} символа - является объект, хранящийся в
+  компоненте символа ячейки функции.  Описанные здесь функции осуществляют
+  доступ, тестирование и установку ячейки функции компоненты символа.
 
-  See also the function @code{indirect-function}.  @xref{Definition of
-indirect-function}.
+  Смотреть также функцию @code{indirect-function}.
+  @xref{Definition of indirect-function}.
 
 @defun symbol-function symbol
 @kindex void-function
-This returns the object in the function cell of @var{symbol}.  It does
-not check that the returned object is a legitimate function.
+Возвращает объект находящийся в компоненте символа @var{symbol} его ячейки
+функции.  Не проверяется, что возвращаемый объект является допустимой
+функцией.
 
-If the function cell is void, the return value is @code{nil}.  To
-distinguish between a function cell that is void and one set to
-@code{nil}, use @code{fboundp} (see below).
+Если ячейка функции недействительна, возвращается значение @code{nil}.  Для
+того, чтобы различать ячейки функции, которые является недействительными и
+установленные в @code{nil}, используется @code{fboundp} (смотри ниже).
 
 @example
 @group
@@ -1450,32 +1449,35 @@ distinguish between a function cell that is void and one set to
 @end defun
 
 @cindex void function cell
-  If you have never given a symbol any function definition, we say
-that that symbol's function cell is @dfn{void}.  In other words, the
-function cell does not have any Lisp object in it.  If you try to call
-the symbol as a function, Emacs signals a @code{void-function} error.
+  Если не присваивалось символу никакого определения функции, то понимается,
+  что ячейка функции этого символа является @dfn{void} (недействительна).
+  Другими словами, ячейка функции символа не содержит какой-либо объект Lisp.
+  Если попытаться вызвать символ как функция, Emacs сигнализирует об ошибке
+  @code{void-function} (недействительная-функция).
 
-  Note that void is not the same as @code{nil} or the symbol
-@code{void}.  The symbols @code{nil} and @code{void} are Lisp objects,
-and can be stored into a function cell just as any other object can be
-(and they can be valid functions if you define them in turn with
-@code{defun}).  A void function cell contains no object whatsoever.
+  Обратите внимание, что недействительное не то же самое, что @code{nil} или
+  символ @code{void}.  Символы @code{nil} и @code{void} являются Lisp
+  объектами, и могут быть сохранены в ячейки функции так же, как и любые
+  другие объекты (и они могут быть действительными функциями, если
+  определены как функции в свою очередь, с @code{defun}).  Недействительная
+  ячейка функции не содержит объекта вообще.
 
-  You can test the voidness of a symbol's function definition with
-@code{fboundp}.  After you have given a symbol a function definition, you
-can make it void once more using @code{fmakunbound}.
+  Можете проверить недействительность определения функции символа с
+  помощью @code{fboundp}.  После того, как символ получил определение
+  функции, можно снова сделать его недействительным с помощью
+  @code{fmakunbound}.
 
 @defun fboundp symbol
-This function returns @code{t} if the symbol has an object in its
-function cell, @code{nil} otherwise.  It does not check that the object
-is a legitimate function.
+Функция возвращает @code{t} если символ имеет объект в его ячейке функции и
+@code{nil} в противном случае.  Не проверяется, что объект является
+допустимой функцией.
 @end defun
 
 @defun fmakunbound symbol
-This function makes @var{symbol}'s function cell void, so that a
-subsequent attempt to access this cell will cause a
-@code{void-function} error.  It returns @var{symbol}.  (See also
-@code{makunbound}, in @ref{Void Variables}.)
+Функция делает ячейку функции символа @var{symbol} недействительной, так что
+последующие попытки получить доступ к этой ячейке будут вызывать ошибку
+@code{void-function}.  Возвращает @var{symbol}. (Смотри также
+@code{makunbound}, в @ref{Void Variables}.)
 
 @example
 @group
@@ -1489,94 +1491,96 @@ subsequent attempt to access this cell will cause a
 @end group
 @group
 (foo 1)
-@error{} Symbol's function definition is void: foo
+@error{} Symbol's function definition is void (Определение функции символа является недействительным): foo
 @end group
 @end example
 @end defun
 
 @defun fset symbol definition
-This function stores @var{definition} in the function cell of
-@var{symbol}.  The result is @var{definition}.  Normally
-@var{definition} should be a function or the name of a function, but
-this is not checked.  The argument @var{symbol} is an ordinary evaluated
-argument.
+Функция сохраняет определение @var{definition} в ячейки функции символа
+@var{symbol}.  Возвращаемый результате определение @var{definition}.  Обычно
+@var{definition} должно быть функцией или именем функции, но это не
+проверяется.  Аргумент @var{symbol} обычный оцениваемый аргумент.
 
-The primary use of this function is as a subroutine by constructs that define
-or alter functions, like @code{defun} or @code{advice-add} (@pxref{Advising
-Functions}).  You can also use it to give a symbol a function definition that
-is not a function, e.g., a keyboard macro (@pxref{Keyboard Macros}):
+Основное применение этой функции в качестве подпрограммы применение
+конструкций, которые определяют или изменяют функцию, таких как @code{defun}
+или @code{advice-add} (@pxref{Advising Functions}).  Можно также использовать
+это, чтобы дать символу определение функции, которая не является функцией,
+например, представляет собой клавиатурный макрос (@pxref{Keyboard Macros}):
 
 @example
-;; @r{Define a named keyboard macro.}
+;; @r{Определение имени макроса клавиатуры.}
 (fset 'kill-two-lines "\^u2\^k")
      @result{} "\^u2\^k"
 @end example
 
-It you wish to use @code{fset} to make an alternate name for a
-function, consider using @code{defalias} instead.  @xref{Definition of
-defalias}.
+Вместо использования @code{fset} для получения альтернативного имени для
+функции, рассмотрите возможность использования @code{defalias} вместо этого.
+@xref{Definition of defalias}.
 @end defun
 
 @node Closures
-@section Closures
+@section Замыкания
 
-  As explained in @ref{Variable Scoping}, Emacs can optionally enable
-lexical binding of variables.  When lexical binding is enabled, any
-named function that you create (e.g., with @code{defun}), as well as
-any anonymous function that you create using the @code{lambda} macro
-or the @code{function} special form or the @code{#'} syntax
-(@pxref{Anonymous Functions}), is automatically converted into a
-@dfn{closure}.
+  Как пояснялось в разделе @ref{Variable Scoping}, Emacs может дополнительно
+  включить лексическое связывание переменных. Когда  действует правило
+  лексической привязки, любая именованная функция, которая создаётся
+  (например, с @code{defun}), а также любая анонимная функция, которая
+  создаётся с использованием @code{lambda} макроса или специальной формы
+  @code{function} или с использованием синтаксиса чтения  @code{#'}
+  (@pxref{Anonymous Functions}), автоматически превращается в
+  @dfn{замыкание}.
 
 @cindex closure
-  A closure is a function that also carries a record of the lexical
-environment that existed when the function was defined.  When it is
-invoked, any lexical variable references within its definition use the
-retained lexical environment.  In all other respects, closures behave
-much like ordinary functions; in particular, they can be called in the
-same way as ordinary functions.
+  Замыкание это функция, которая также содержит запись лексической среды,
+  которая существовала, когда функция была определена.  Когда она вызывается,
+  любые ссылки на лексические переменные в пределах её определения используют
+  её нераспределенную лексическую среду.  Во всех других отношениях,
+  замыкания ведут себя так же, как и обычные функции; в частности, они могут
+  быть вызваны таким же образом, как и обычные функции.
 
-  @xref{Lexical Binding}, for an example of using a closure.
+  @xref{Lexical Binding}, для примера использования замыкания.
 
-  Currently, an Emacs Lisp closure object is represented by a list
-with the symbol @code{closure} as the first element, a list
-representing the lexical environment as the second element, and the
-argument list and body forms as the remaining elements:
+  В настоящее время объект замыкания Emacs Lisp представляется списком с
+  условным обозначением символа @code{closure} в качестве первого элемента,
+  списком, представляющим лексическую среду в качестве второго элемента и
+  списка аргументов и формы тела, в качестве остальных элементов:
 
 @example
-;; @r{lexical binding is enabled.}
+;; @r{Включено правило лексического связывания.}
 (lambda (x) (* x x))
      @result{} (closure (t) (x) (* x x))
 @end example
-
+        
 @noindent
-However, the fact that the internal structure of a closure is
-exposed to the rest of the Lisp world is considered an internal
-implementation detail.  For this reason, we recommend against directly
-examining or altering the structure of closure objects.
+Тем не менее, тот факт, что внутренняя структура замыкания открыта для
+воздействия остального мира Lisp, это считается внутренней деталью
+реализации.  По этой причине не рекомендуется непосредственно изучение или
+изменение структуры объекта замыкания.
 
 @node Advising Functions
-@section Advising Emacs Lisp Functions
+@section Рекомендации по Функциям Emacs Lisp
 @cindex advising functions
 @cindex piece of advice
 
-When you need to modify a function defined in another library, or when you need
-to modify a hook like @code{@var{foo}-function}, a process filter, or basically
-any variable or object field which holds a function value, you can use the
-appropriate setter function, such as @code{fset} or @code{defun} for named
-functions, @code{setq} for hook variables, or @code{set-process-filter} for
-process filters, but those are often too blunt, completely throwing away the
-previous value.
+Если необходимо изменить функцию, определенную в другой библиотеке, или когда
+нужно изменить ловушку, такую как @code{@var{foo}-function}, отдельный
+процесс, поле объекта или любую переменную, где хранится значение функции,
+можно использовать соответствующую функцию установки, например, @code{fset}
+или @code{defun} для именованной функции, @code{setq} для переменных-ловушек
+или @code{set-process-filter} для отдельных процессов, однако это слишком
+грубый способ, полностью выбрасывается предыдущее значение.
 
-  The @dfn{advice} feature lets you add to the existing definition of
-a function, by @dfn{advising the function}.  This is a cleaner method
-than redefining the whole function.
+  @dfn{advice} функция позволяет добавить к существующему определению
+  функции, @dfn{рекомендации к функции}.  Это метод мягче, чем
+  переопределение всей функции.
 
-Emacs's advice system provides two sets of primitives for that: the core set,
-for function values held in variables and object fields (with the corresponding
-primitives being @code{add-function} and @code{remove-function}) and another
-set layered on top of it for named functions (with the main primitives being
-@code{advice-add} and @code{advice-remove}).
+Система советов Emacs предоставляет два набора примитивов для этого:
+основной набор, для значений функций, содержащихся в переменных и полях
+объектов (соответствующие примитивы @code{add-function} и
+@code{remove-function}) и другой набор, базирующийся поверх него для
+именованных функций (с основными примитивами @code{advice-add} и
+@code{advice-remove} ). (ВопросFunctions1583)
 
 For example, in order to trace the calls to the process filter of a process
 @var{proc}, you could use:
