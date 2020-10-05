@@ -1093,46 +1093,46 @@ ARGS. Возвращает список результатов."
 интерактивной формой @var{interactive} (если таковая предоставляется), и с
 формой тела @var{body} с данными.
 
-Under dynamic binding, this macro effectively makes @code{lambda}
-forms self-quoting: evaluating a form whose @sc{car} is @code{lambda}
-yields the form itself:
+При динамическом связывании, этот макрос фактически делает форму
+@code{lambda} само-цитированой: оценка @sc{car} формы @code{lambda} дает
+саму форму:  (ВопросFunctions1098)
 
 @example
 (lambda (x) (* x x))
      @result{} (lambda (x) (* x x))
 @end example
 
-Note that when evaluating under lexical binding the result is a
-closure object (@pxref{Closures}).
+Следует отметить, что при оценке в соответствии с лексическим правилом
+связывания, результатом является объект замыкание (@pxref{Closures}).
 
-The @code{lambda} form has one other effect: it tells the Emacs
-evaluator and byte-compiler that its argument is a function, by using
-@code{function} as a subroutine (see below).
+Форма @code{lambda} имеет ещё один эффект: она сообщает оценщику и
+байт-компилятору Emacs, что ее аргумент является функцией, с помощью
+@code{function} в качестве подпрограммы (смотрим ниже).
 @end defmac
 
 @defspec function function-object
 @cindex function quoting
-This special form returns @var{function-object} without evaluating it.
-In this, it is similar to @code{quote} (@pxref{Quoting}).  But unlike
-@code{quote}, it also serves as a note to the Emacs evaluator and
-byte-compiler that @var{function-object} is intended to be used as a
-function.  Assuming @var{function-object} is a valid lambda
-expression, this has two effects:
+Специальная форма возвращает @var{function-object} без его оценки.  В этом
+есть сходство с @code{quote} (@pxref{Quoting}).  Но в отличие от
+@code{quote}, это также служит в качестве примечания к оценщику и
+байт-компилятору Emacs, что @var{function-object} предназначен для
+использования в качестве функции.  Предполагая, что @var{function-object}
+является допустимым лямбда-выражением, получается два эффекта:
 
 @itemize
 @item
-When the code is byte-compiled, @var{function-object} is compiled into
-a byte-code function object (@pxref{Byte Compilation}).
+Когда производиться байт-компиляция @var{function-object}, код компилируется
+в байт-компилированный объект функции (@pxref{Byte Compilation}).
 
 @item
-When lexical binding is enabled, @var{function-object} is converted
-into a closure.  @xref{Closures}.
+Когда действуют правила лексической привязки, @var{function-object}
+превращается в замыкание.  @xref{Closures}.
 @end itemize
 @end defspec
 
 @cindex @samp{#'} syntax
-The read syntax @code{#'} is a short-hand for using @code{function}.
-The following forms are all equivalent:
+Синтаксис чтения @code{#'} это стенография для использования @code{function}.
+Следующие формы эквивалентны:
 
 @example
 (lambda (x) (* x x))
@@ -1140,10 +1140,10 @@ The following forms are all equivalent:
 #'(lambda (x) (* x x))
 @end example
 
-  In the following example, we define a @code{change-property}
-function that takes a function as its third argument, followed by a
-@code{double-property} function that makes use of
-@code{change-property} by passing it an anonymous function:
+  В следующем примере определяется функция @code{change-property}, которая
+  принимает функцию в качестве третьего аргумента, а затем с помощью функции
+  @code{double-property}, позволяет использовать @code{change-property},
+  передавая ей анонимную функцию:
 
 @example
 @group
@@ -1159,13 +1159,13 @@ function that takes a function as its third argument, followed by a
 @end example
 
 @noindent
-Note that we do not quote the @code{lambda} form.
+Обратите внимание, что мы не цитируем форму @code{lambda}.
 
-  If you compile the above code, the anonymous function is also
-compiled.  This would not happen if, say, you had constructed the
-anonymous function by quoting it as a list:
+  Если скомпилировать код выше, анонимная функция также будет скомпилирована.
+  Этого бы не произошло, если, скажем, построить анонимную функцию,
+  процитировав её в виде списка:
 
-@c Do not unquote this lambda!
+@c Нет цитате это лямбда!
 @example
 @group
 (defun double-property (symbol prop)
@@ -1174,80 +1174,83 @@ anonymous function by quoting it as a list:
 @end example
 
 @noindent
-In that case, the anonymous function is kept as a lambda expression in
-the compiled code.  The byte-compiler cannot assume this list is a
-function, even though it looks like one, since it does not know that
-@code{change-property} intends to use it as a function.
+В этом случае анонимная функция переходит как лямбда-выражения в
+скомпилированный код.  Байт-компилятор не сможет принять этот список как
+функцию, даже если он выглядит как функция, так как не берётся во внимание
+то, что @code{change-property} будет использовать этот код в качестве
+функции.
 
 @node Generic Functions
-@section Generic Functions
+@section Обобщённые Функции
 @cindex generic functions
 @cindex polymorphism
 
-  Functions defined using @code{defun} have a hard-coded set of
-assumptions about the types and expected values of their arguments.
-For example, a function that was designed to handle values of its
-argument that are either numbers or lists of numbers will fail or
-signal an error if called with a value of any other type, such as a
-vector or a string.  This happens because the implementation of the
-function is not prepared to deal with types other than those assumed
-during the design.
+  Функции, определенные с помощью @code{defun} имеют жестко
+  запрограммированный набор предположений о типах и ожидаемых значений своих
+  аргументов.  Например, функция, которая была разработана для обработки
+  значений своего аргумента, которые может быть числом или списком чисел,
+  утратят достоверность или получат сигнал об ошибке при вызове со значением
+  любого другого типа, например, в качестве вектора или строки.  Это
+  происходит потому, что реализация функции не готова иметь дело с другими
+  типами значения аргумента, чем те, которые предполагались при
+  проектировании функции.
 
-  By contrast, object-oriented programs use @dfn{polymorphic
-functions}: a set of specialized functions having the same name, each
-one of which was written for a certain specific set of argument types.
-Which of the functions is actually called is decided at run time based
-on the types of the actual arguments.
+  Напротив, объектно-ориентированные программы используют
+  @dfn{полиморфные функции}: набор специализированных функций, имеющие
+  одинаковые имена, каждая из которых написана для определенного конкретного
+  набора типов аргументов.  Какая из функций фактически будет вызвана,
+  определяется во время выполнения вызова на основе типов фактических
+  аргументов.
 
 @cindex CLOS
-  Emacs provides support for polymorphism.  Like other Lisp
-environments, notably Common Lisp and its Common Lisp Object System
-(@acronym{CLOS}), this support is based on @dfn{generic functions}.
-The Emacs generic functions closely follow @acronym{CLOS}, including
-use of similar names, so if you have experience with @acronym{CLOS},
-the rest of this section will sound very familiar.
+  Emacs обеспечивает поддержку полиморфизма.  Как и в других средах, в
+  частности Lisp диалекта Common Lisp и его Common Lisp Object System
+  (@acronym{CLOS}), эта поддержка основана на @dfn{обобщённых функциях}.
+  Обобщенные функции Emacs тесно связаны с @acronym{CLOS}, включая
+  использование подобных имен, так что если есть опыт работы с
+  @acronym{CLOS}, остальная часть этого раздела будет звучать очень знакомо.
 
-  A generic function specifies an abstract operation, by defining its
-name and list of arguments, but (usually) no implementation.  The
-actual implementation for several specific classes of arguments is
-provided by @dfn{methods}, which should be defined separately.  Each
-method that implements a generic function has the same name as the
-generic function, but the method's definition indicates what kinds of
-arguments it can handle by @dfn{specializing} the arguments defined by
-the generic function.  These @dfn{argument specializers} can be more
-or less specific; for example, a @code{string} type is more specific
-than a more general type, such as @code{sequence}.
+  Обобщенная функция определяет абстрактную операцию, определяется её имя и
+  список аргументов, но (как правило) без реализации.  Фактическая реализация
+  для нескольких конкретных наборов типов аргументов обеспечивается
+  @dfn{методами}, которые определяются отдельно.  Каждый метод, который
+  реализует обобщённую функцию имеет то же имя, родительская обобщённая
+  функция, но определение метода указует, какие аргументы он может
+  обрабатывать с помощью @dfn{специализации} своих аргументов, определенных
+  обобщенной функцией.  @dfn{Специализация аргумента} может быть более или
+  менее конкретной; например, тип @code{строка} более конкретно, чем
+  специализация более общего типа, такого, как @code{последовательность}.
 
-  Note that, unlike in message-based OO languages, such as C@t{++} and
-Simula, methods that implement generic functions don't belong to a
-class, they belong to the generic function they implement.
+  Обратите внимание, что, в отличие от объектно-ориентированных языков
+  основанных на сообщениях, таких как C@t{++} и Simula, методы, которые
+  реализуют обобщённые функции не принадлежат к самому набору, они
+  принадлежат к обобщённой функции, которую они реализуют.
 
-  When a generic function is invoked, it selects the applicable
-methods by comparing the actual arguments passed by the caller with
-the argument specializers of each method.  A method is applicable if
-the actual arguments of the call are compatible with the method's
-specializers.  If more than one method is applicable, they are
-combined using certain rules, described below, and the combination
-then handles the call.
+  Когда происходит вызов обобщённой функции, выбираются применимые методы,
+  путем сравнения переданных фактических аргументов, специализаторами каждого
+  метода.  Метод применяется, если фактические аргументы вызова совместимы с
+  специализациями метода.  Если более чем один метод применим, они
+  объединяются с помощью определенных правил, описанных ниже, и их комбинация
+  затем обрабатывает вызов.
 
 @defmac cl-defgeneric name arguments [documentation] [options-and-methods@dots{}] &rest body
-This macro defines a generic function with the specified @var{name}
-and @var{arguments}.  If @var{body} is present, it provides the
-default implementation.  If @var{documentation} is present (it should
-always be), it specifies the documentation string for the generic
-function, in the form @code{(:documentation @var{docstring})}.  The
-optional @var{options-and-methods} can be one of the following forms:
+Макрос определяет обобщенную функцию с указанным именем @var{name} и
+аргументами @var{arguments}.  Если тело @var{body} присутствует, то оно
+обеспечивает реализацию по умолчанию.  Если @var{documentation} присутствует
+(оно всегда должно быть), это помещает строку документации для обобщенной
+функции, в виде @code{(:documentation @var{docstring})}.  Дополнительно
+@var{options-and-methods} можно предоставить в одной из следующих форм:
 
 @table @code
 @item (declare @var{declarations})
-A declare form, as described in @ref{Declare Form}.
+Форма объявления, как описано в @ref{Declare Form}.
 @item (:argument-precedence-order &rest @var{args})
-This form affects the sorting order for combining applicable methods.
-Normally, when two methods are compared during combination, method
-arguments are examined left to right, and the first method whose
-argument specializer is more specific will come before the other one.
-The order defined by this form overrides that, and the arguments are
-examined according to their order in this form, and not left to right.
+Форма влияет на порядок сортировки при объединении применимых методов.
+Обычно, когда два метода сравниваются во время комбинации, аргументы методов
+рассматриваются слева направо, и первый метод, чья специализация аргумента
+более конкретна, преуспевает перед другим методом.  Порядок установленный
+с помощью этой формы переопределяется и аргументы рассматриваются в
+соответствии с указанным порядком в этой форме, а не слева направо.
 @item (:method [@var{qualifiers}@dots{}] args &rest body)
 This form defines a method like @code{cl-defmethod} does.
 @end table
