@@ -1564,26 +1564,26 @@ ARGS. Возвращает список результатов."
 @cindex piece of advice
 
 Если необходимо изменить функцию, определенную в другой библиотеке, или когда
-нужно изменить ловушку, такую как @code{@var{foo}-function}, отдельный
+нужно изменить ловушку, такую как @code{@var{foo}-function}, трассировать
 процесс, поле объекта или любую переменную, где хранится значение функции,
 можно использовать соответствующую функцию установки, например, @code{fset}
 или @code{defun} для именованной функции, @code{setq} для переменных-ловушек
-или @code{set-process-filter} для отдельных процессов, однако это слишком
+или @code{set-process-filter} для трассировки процессов, однако это слишком
 грубый способ, полностью выбрасывается предыдущее значение.
 
-  @dfn{advice} функция позволяет добавить к существующему определению
-  функции, @dfn{рекомендации к функции}.  Это метод мягче, чем
+  Функция @dfn{совета} позволяет добавлять код к существующему определению
+  функции, @dfn{рекомендации к функции}.  Этот метод мягче, чем
   переопределение всей функции.
 
-Система советов Emacs предоставляет два набора примитивов для этого:
+Система рекомендаций Emacs предоставляет два набора примитивов для этого:
 основной набор, для значений функций, содержащихся в переменных и полях
-объектов (соответствующие примитивы @code{add-function} и
+объектов (основанный на соответствующих примитивах @code{add-function} и
 @code{remove-function}) и другой набор, базирующийся поверх него для
-именованных функций (с основными примитивами @code{advice-add} и
+именованных функций (основанный на примитивах @code{advice-add} и
 @code{advice-remove} ). (ВопросFunctions1583)
 
-For example, in order to trace the calls to the process filter of a process
-@var{proc}, you could use:
+Например, для того, чтобы трассировать отслеживаемый процесс @var{proc},
+можно использовать:
 
 @example
 (defun my-tracing-function (proc string)
@@ -1592,80 +1592,83 @@ For example, in order to trace the calls to the process filter of a process
 (add-function :before (process-filter @var{proc}) #'my-tracing-function)
 @end example
 
-This will cause the process's output to be passed to @code{my-tracing-function}
-before being passed to the original process filter.  @code{my-tracing-function}
-receives the same arguments as the original function.  When you're done with
-it, you can revert to the untraced behavior with:
+Это приведет к тому, что выходные данные процесса будут передены
+@code{my-tracing-function} перед началом трассировки исходного процесса.
+@code{my-tracing-function} получает те же аргументы, что и исходная функция.
+Когда трассировка более не требуется, можно вернуться к нетрассируемому
+поведению: (ВопросFunctions1599)
 
 @example
 (remove-function (process-filter @var{proc}) #'my-tracing-function)
 @end example
 
-Similarly, if you want to trace the execution of the function named
-@code{display-buffer}, you could use:
+Точно так же, если требуется отслеживать выполнение именованной функции
+@code{display-buffer}, можно использовать:
 
 @example
 (defun his-tracing-function (orig-fun &rest args)
-  (message "display-buffer called with args %S" args)
+  (message "Отображение-буфера вызывается с аргументами %S" args)
   (let ((res (apply orig-fun args)))
-    (message "display-buffer returned %S" res)
+    (message "Отображение-буфера, возврат без трассировки %S" res)
     res))
 
 (advice-add 'display-buffer :around #'his-tracing-function)
 @end example
 
-Here, @code{his-tracing-function} is called instead of the original function
-and receives the original function (additionally to that function's arguments)
-as argument, so it can call it if and when it needs to.
-When you're tired of seeing this output, you can revert to the untraced
-behavior with:
+(ВопросFunctions1618)
+
+Здесь @code{his-tracing-function} вызывается вместо исходной функции и
+получает исходную функцию (в дополнение к аргументам этой функции) в качестве
+аргумента, так что можно сделать вызов функции, если это понадобится.  Когда
+вывод этот более не требуется, можно вернуться к нетрассируемому поведению:
 
 @example
 (advice-remove 'display-buffer #'his-tracing-function)
 @end example
 
-The arguments @code{:before} and @code{:around} used in the above examples
-specify how the two functions are composed, since there are many different
-ways to do it.  The added function is also called a piece of @emph{advice}.
+Аргументы @code{:before} и @code{:around} в приведенных выше примерах
+указывают, каким образом эти две функции состовляются, так как существует
+много различных способов сделать это.  Добавленная часть функции также
+называется @emph{рекомендацией}.
 
 @menu
-* Core Advising Primitives::    Primitives to manipulate advice.
-* Advising Named Functions::    Advising named functions.
-* Advice combinators::          Ways to compose advice.
-* Porting old advice::          Adapting code using the old defadvice.
+* Core Advising Primitives::    Примитивы манипулирования рекомендациями.
+* Advising Named Functions::    Рекомендация именованных функций.
+* Advice combinators::          Способы составления пекомендации.
+* Porting old advice::          Адаптация кода прежднего @code{defadvice}.
 @end menu
 
 @node Core Advising Primitives
-@subsection Primitives to manipulate advices
+@subsection Примитивы Управления Рекомендациями
 @cindex advice, add and remove
 
 @defmac add-function where place function &optional props
-This macro is the handy way to add the advice @var{function} to the function
-stored in @var{place} (@pxref{Generalized Variables}).
+Макрос является удобным способом добавить рекомендацию @var{function}, к
+функции, хранящейся в месте @var{place} (@pxref{Generalized Variables}).
 
-@var{where} determines how @var{function} is composed with the
-existing function, e.g., whether @var{function} should be called before, or
-after the original function.  @xref{Advice combinators}, for the list of
-available ways to compose the two functions.
+@var{where} определяет, как @var{function} составляется с существующей
+функцией, например, следует ли @var{function} вызываться до или после
+исходной функции.  @xref{Advice combinators}, для списка доступных способов,
+чтобы составить две функции.
 
-When modifying a variable (whose name will usually end with @code{-function}),
-you can choose whether @var{function} is used globally or only in the current
-buffer: if @var{place} is just a symbol, then @var{function} is added to the
-global value of @var{place}.  Whereas if @var{place} is of the form
-@code{(local @var{symbol})}, where @var{symbol} is an expression which returns
-the variable name, then @var{function} will only be added in the
-current buffer.  Finally, if you want to modify a lexical variable, you will
-have to use @code{(var @var{variable})}.
+При изменении переменной (чье имя обычно заканчиваются на @code{-function}),
+можно выбрать, используется ли @var{function} глобально или только в текущем
+буфере: если @var{place} это просто символ, @var{function} добавить к
+глобальному значению @var{place}.  Если место @var{place} имеет форму вида
+@code{(local @var{symbol})}, где @var{symbol} это выражение, которое
+возвращает имя переменной, тогда @var{function} будет привязана только к
+текущему буферу.  И, наконец, если требуется изменить лексически связанную
+переменную, нужно использовать @code{(var @var{variable})}.
 
-Every function added with @code{add-function} can be accompanied by an
-association list of properties @var{props}.  Currently only two of those
-properties have a special meaning:
+Каждая функция, добавленная с @code{add-function} может сопровождаться
+ассоциативным списком свойств @var{props}.  В настоящее время только два из
+этих свойств имеют особое значение:
 
 @table @code
 @item name
-This gives a name to the advice, which @code{remove-function} can use to
-identify which function to remove.  Typically used when @var{function} is an
-anonymous function.
+Это даёт название рекомендации, которое можно использовать c
+@code{remove-function} для определения того, какие функции удалить.  Обычно
+используется, когда @var{function} является анонимной функцией.
 
 @item depth
 This specifies how to order the advice, should several pieces of
