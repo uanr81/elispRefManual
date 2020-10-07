@@ -1671,264 +1671,276 @@ ARGS. Возвращает список результатов."
 используется, когда @var{function} является анонимной функцией.
 
 @item depth
-This specifies how to order the advice, should several pieces of
-advice be present.  By default, the depth is 0.  A depth of 100
-indicates that this piece of advice should be kept as deep as
-possible, whereas a depth of @minus{}100 indicates that it should stay as the
-outermost piece.  When two pieces of advice specify the same depth,
-the most recently added one will be outermost.
+Это указывает, какую рекомендацию использовать, если присутствует несколько
+рекомендаций.  По умолчанию глубина равна 0.  Глубина 100 указывает, что эта
+рекомендация может быть настолько глубоко, насколько это возможно, в то время
+как глубина @minus{}100 указывает на то, что она должна быть самой внешней.
+Когда две рекомендации указывают одну и ту же глубину, последняя добавленная
+будет преуспевать.
 
-For @code{:before} advice, being outermost means that this advice will
-be run first, before any other advice, whereas being innermost means
-that it will run right before the original function, with no other
-advice run between itself and the original function.  Similarly, for
-@code{:after} advice innermost means that it will run right after the
-original function, with no other advice run in between, whereas
-outermost means that it will be run right at the end after all other
-advice.  An innermost @code{:override} piece of advice will only
-override the original function and other pieces of advice will apply
-to it, whereas an outermost @code{:override} piece of advice will
-override not only the original function but all other advice applied
-to it as well.
+Для рекомендации @code{:before}, наиболее внешней означает, что эта
+рекомендация будет обработана первой, перед любой другой рекомендацией, в то
+время как самая внутренняя рекомендация означает, что она будет обработана
+прямо перед исходной функцией, без обработки других рекомендаций между этой
+рекомендацией и исходной функцией.  Аналогично, для самых внутренних
+@code{:after} рекомендаций означает, что рекомендация будет отработана сразу
+после исходной функции, без обработки других рекомедаций между ними, в то
+время самая внешняя рекомендация означает то, что рекомендация будет
+выполнятся прямо в конце после всех других рекомендаций.  Самая внутренняя
+@code{:override} рекомендация перекрывает только исходную функцию и другие
+рекомендации будут применяться к ней, в то время как внешний @code{:override}
+рекомендация перекроет не только исходную функцию, но и также все другие
+рекомендации применимые к ней.  (ВопросFunctions1693)
 @end table
 
-If @var{function} is not interactive, then the combined function will inherit
-the interactive spec, if any, of the original function.  Else, the combined
-function will be interactive and will use the interactive spec of
-@var{function}.  One exception: if the interactive spec of @var{function}
-is a function (rather than an expression or a string), then the interactive
-spec of the combined function will be a call to that function with as sole
-argument the interactive spec of the original function.  To interpret the spec
-received as argument, use @code{advice-eval-interactive-spec}.
+Если @var{function} не является интерактивной, то объединенная функция
+наследует интерактивную спецификацию, если таковые имеются, исходной функции.
+В противном случае, объединенная функция будет интерактивной и будет использо
+интерактивную спецификацию @var{function}.  Одно исключение: если
+интерактивная спецификация из @var{function} является функцией (а не
+выражение или строкой), то интерактивная спецификации объединённой функции
+будет вызовом этой функции в качестве единственного аргументом интерактивной
+спецификации исходной функции.  Для того, чтобы интерпретировать спецификацию
+полученную в качестве аргумента, используйте
+@code{advice-eval-interactive-spec}.
 
-Note: The interactive spec of @var{function} will apply to the combined
-function and should hence obey the calling convention of the combined function
-rather than that of @var{function}.  In many cases, it makes no difference
-since they are identical, but it does matter for @code{:around},
-@code{:filter-args}, and @code{:filter-return}, where @var{function}
-receives different arguments than the original function stored in
-@var{place}.
+Примечание: Интерактивная спецификация от функции @var{function} должна будет
+применяться к обобщённой функции и, следовательно, подчиняться соглашениям
+вызыва обобщённой функции, а не @var{function}.  Во многих случаях это не
+имеет никакого значения, так как они идентичны, но это имеет значения для
+@code{:around}, @code{:filter-args}, и @code{:filter-return}, где
+@var{function} принимает различные аргументы, чем исходная функция,
+хранящейся в месте @var{place}.
 @end defmac
 
 @defmac remove-function place function
-This macro removes @var{function} from the function stored in
-@var{place}.  This only works if @var{function} was added to @var{place}
-using @code{add-function}.
+Макрос удаляет @var{function} из обобщённой функции, хранящуюся в месте
+@var{place}.  Это работает только если @var{function} была добавлен в
+место @var{place} с использованием @code{add-function}.
 
-@var{function} is compared with functions added to @var{place} using
-@code{equal}, to try and make it work also with lambda expressions.  It is
-additionally compared also with the @code{name} property of the functions added
-to @var{place}, which can be more reliable than comparing lambda expressions
-using @code{equal}.
+@var{function} сравнивается с добавленной функцией в месте @var{place} с
+использованием @code{equal}, чтобы попытаться работать это также с
+лямбда-выражениями.  Также дополнительно сравнивают свойство функции
+@code{name}, добавленной к месту @var{place}, что может быть более надежным,
+чем сравнение лямбда-выражения с использованием @code{equal}.
 @end defmac
 
 @defun advice-function-member-p advice function-def
-Return non-@code{nil} if @var{advice} is already in @var{function-def}.
-Like for @code{remove-function} above, instead of @var{advice} being the actual
-function, it can also be the @code{name} of the piece of advice.
+Возвращение не-@code{nil} если рекомендация @var{advice} уже присутствует к
+функции @var{function-def}.  Как и для @code{remove-function} выше, вместо
+фактической функции рекомендации @var{advice}, также может быть указано имя
+@code{name} рекомендации.
 @end defun
 
 @defun advice-function-mapc f function-def
-Call the function @var{f} for every piece of advice that was added to
-@var{function-def}.  @var{f} is called with two arguments: the advice function
-and its properties.
+Вызов функции @var{f} для каждой рекомендации, добавленной к
+@var{function-def}.  Функция @var{f} вызывается с двумя аргументами: функцией
+рекомендации и её свойствами.  (ВопросFunctions1738)
 @end defun
 
 @defun advice-eval-interactive-spec spec
-Evaluate the interactive @var{spec} just like an interactive call to a function
-with such a spec would, and then return the corresponding list of arguments
-that was built.  E.g., @code{(advice-eval-interactive-spec "r\nP")} will
-return a list of three elements, containing the boundaries of the region and
-the current prefix argument.
+Оценит интерактивную спецификацию @var{spec} так же, как интерактивный вызов
+функции с такой спецификацией, а затем вернёт соответствующий список
+аргументов, который был построен. НАПРИМЕР,
+@code{(advice-eval-interactive-spec "r\nP")} возвращает список из трех
+элементов, содержащие границы области и текущий префиксный аргумент.
+(ВопросFunctions1747 в html пример кода был)
 @end defun
 
 @node Advising Named Functions
-@subsection Advising Named Functions
+@subsection Рекомендации Именованных Функций
 @cindex advising named functions
 
-A common use of advice is for named functions and macros.
-You could just use @code{add-function} as in:
+Обычно используют рекомендации с именованными функциями и макросами.
+Можно просто использовать @code{add-function} как здесь:
 
 @example
 (add-function :around (symbol-function '@var{fun}) #'his-tracing-function)
 @end example
 
-  But you should use @code{advice-add} and @code{advice-remove} for that
-instead.  This separate set of functions to manipulate pieces of advice applied
-to named functions, offers the following extra features compared to
-@code{add-function}: they know how to deal with macros and autoloaded
-functions, they let @code{describe-function} preserve the original docstring as
-well as document the added advice, and they let you add and remove advice
-before a function is even defined.
+  Вместо этого требуется использовать @code{advice-add} и
+  @code{advice-remove}.  Это отдельный набор функций для манипулирования
+  рекомендациями, применяемый к именованным функциям, предоставляет следующие
+  дополнительные возможности по сравнению с @code{add-function}: работают с
+  макросами и автозагружаемыми функциями, позволяют @code{describe-function}
+  сохранить первоначальную строку документации, а также документации
+  добавляемых рекомедаций, позволяют добавлять и удалять рекомендации, прежде
+  чем функция даже определена.
 
-  @code{advice-add} can be useful for altering the behavior of existing calls
-to an existing function without having to redefine the whole function.
-However, it can be a source of bugs, since existing callers to the function may
-assume the old behavior, and work incorrectly when the behavior is changed by
-advice.  Advice can also cause confusion in debugging, if the person doing the
-debugging does not notice or remember that the function has been modified
-by advice.
+  @code{advice-add} может быть полезным для изменения поведения вызова
+  существующих функции без необходимости переопределения всей
+  функции.  Тем не менее, это может быть источником ошибок, так как
+  существующее использование функции может предполагать старое поведение, и
+  работать неправильно, когда поведение функции изменяется рекомендацией.
+  Рекомендация также может вызвать путаницу в отладке, если человек делает
+  отладку не замечает или не помнит, что функция была изменена рекомендацией.
 
-  For these reasons, advice should be reserved for the cases where you
-cannot modify a function's behavior in any other way.  If it is
-possible to do the same thing via a hook, that is preferable
-(@pxref{Hooks}).  If you simply want to change what a particular key
-does, it may be better to write a new command, and remap the old
-command's key bindings to the new one (@pxref{Remapping Commands}).
-In particular, Emacs's own source files should not put advice on
-functions in Emacs.  (There are currently a few exceptions to this
-convention, but we aim to correct them.)
+  По этим причинам, рекомендации нужно использовать в тех случаях, когда нет
+  возможности изменить поведение функции любым другим способом.  Если это
+  можно сделать с помощью ловушки, это является предпочтительным
+  (@pxref{Hooks}).  Если вы просто хотите, изменить конкретное сочетание
+  клавиш вызова команды, то может быть лучше, написать новую команду, и
+  переназначить набор управляющих клавиши на новый
+  (@pxref{Remapping Commands}).  В частности, исходные файлы Emacs не должны
+  содержать в функциях рекомендации к функциям Emacs. (Есть в настоящее время
+  несколько исключений из этого соглашения, но мы стремимся, исправить это.)
 
-  Special forms (@pxref{Special Forms}) cannot be advised, however macros can
-be advised, in much the same way as functions.  Of course, this will not affect
-code that has already been macro-expanded, so you need to make sure the advice
-is installed before the macro is expanded.
+  Специальные формы (@pxref{Special Forms}) не могут включать рекомендации,
+  однако макросы это поддерживают, во многом таким же образом, как и функции.
+  Конечно, это не повлияет на код, который был уже расширен макросом, так что
+  вам нужно, убедиться, что рекомендация установлена до того, как макрос
+  расширяется.
 
-  It is possible to advise a primitive (@pxref{What Is a Function}),
-but one should typically @emph{not} do so, for two reasons.  Firstly,
-some primitives are used by the advice mechanism, and advising them
-could cause an infinite recursion.  Secondly, many primitives are
-called directly from C, and such calls ignore advice; hence, one ends
-up in a confusing situation where some calls (occurring from Lisp
-code) obey the advice and other calls (from C code) do not.
+  Можно посоветовать примитив (@pxref{What Is a Function}), но обычно этого
+  @emph{не} требуется делать по двум причинам.  Во-первых, некоторые
+  примитивы используются механизмом рекомендация и рекомендация к ним, может
+  привести к бесконечной рекурсии.  Во-вторых, многие примитивы вызываются
+  непосредственно из C, и такие вызовы, игнорируют рекомендации;
+  следовательно, складывается запутанная ситуация, когда некоторые вызовы
+  (происходящие из Lisp кода) подчиняются рекомендациям а другие вызовы (из
+  кода C) нет.
 
 @defmac define-advice symbol (where lambda-list &optional name depth) &rest body
-This macro defines a piece of advice and adds it to the function named
-@var{symbol}.  The advice is an anonymous function if @var{name} is
-@code{nil} or a function named @code{symbol@@name}.  See
-@code{advice-add} for explanation of other arguments.
+Макрос определяет рекомендацию и добавляет её к функции с именем
+@var{symbol}.  Рекомендация является анонимной функцией, если @var{name}
+установлено в @code{nil} или функцией с именем @code{symbol@@name}.  Смотреть
+@code{advice-add} для объяснения других аргументов.
 @end defmac
 
 @defun advice-add symbol where function &optional props
-Add the advice @var{function} to the named function @var{symbol}.
-@var{where} and @var{props} have the same meaning as for @code{add-function}
-(@pxref{Core Advising Primitives}).
+Добавьте рекомендацию @var{function} к именованной функции @var{symbol}.
+@var{where} и @var{props} имеют такое же значение, как и для
+@code{add-function} (@pxref{Core Advising Primitives}).
 @end defun
 
 @defun advice-remove symbol function
-Remove the advice @var{function} from the named function @var{symbol}.
-@var{function} can also be the @code{name} of a piece of advice.
+Удаляет рекомендацию @var{function} у именованной функции @var{symbol}.
+@var{function} также может быть именованной @code{name} рекомендацией.
 @end defun
 
 @defun advice-member-p function symbol
-Return non-@code{nil} if the advice @var{function} is already in the named
-function @var{symbol}.  @var{function} can also be the @code{name} of
-a piece of advice.
+Возвращает не-@code{nil}, если рекомендацият @var{function} уже присутствует
+в именованной функции @var{symbol}.  @var{function} также может быть
+именованной @code{name} рекомендацией.
 @end defun
 
 @defun advice-mapc function symbol
-Call @var{function} for every piece of advice that was added to the
-named function @var{symbol}.  @var{function} is called with two
-arguments: the advice function and its properties.
+Производит вызов каждой рекомендации @var{function} добавленной к именованной
+функции @var{symbol}.  @var{function} вызывается с двумя аргументами: функция
+рекомендация и её свойства.  (ВопросFunctions1830)
 @end defun
 
 @node Advice combinators
-@subsection Ways to compose advice
+@subsection Способы Построения Рекомендаций
 
-Here are the different possible values for the @var{where} argument of
-@code{add-function} and @code{advice-add}, specifying how the advice
-@var{function} and the original function should be composed.
+Вот различные возможные значения для @var{where} аргумента
+@code{add-function} и @code{advice-add}, определяющие, как должна быть
+построена обобобщённая функция, путём сопостовления рекомендации
+@var{function} и оригинальной функции.
 
 @table @code
 @item :before
-Call @var{function} before the old function.  Both functions receive the
-same arguments, and the return value of the composition is the return value of
-the old function.  More specifically, the composition of the two functions
-behaves like:
+Вызов рекомендации @var{function} перед исходной функцией.  Обе функции
+получают одни и те же аргументы а возвращаемое значение обобщённой функции -
+это возвращаемое значение исходной функции.  Более конкретно, композиция двух
+функций ведет себя, как:
 @example
 (lambda (&rest r) (apply @var{function} r) (apply @var{oldfun} r))
 @end example
-@code{(add-function :before @var{funvar} @var{function})} is comparable for
-single-function hooks to @code{(add-hook '@var{hookvar} @var{function})} for
-normal hooks.
+@code{(add-function :before @var{funvar} @var{function})} сравнимо как
+однофункциональные ловушки с обычными ловушками.
+@code{(add-hook '@var{hookvar} @var{function})} для обычных ловушек.
+(ВопросFunctions1853)
 
 @item :after
-Call @var{function} after the old function.  Both functions receive the
-same arguments, and the return value of the composition is the return value of
-the old function.  More specifically, the composition of the two functions
-behaves like:
+Вызов @var{function} после исходной функции.  Обе функции получают одни и те
+же аргументы и итоговое возвращаемое значение, является значением исходной
+функции.  Более конкретно, композиция двух функций ведет себя как:
 @example
 (lambda (&rest r) (prog1 (apply @var{oldfun} r) (apply @var{function} r)))
 @end example
-@code{(add-function :after @var{funvar} @var{function})} is comparable for
-single-function hooks to @code{(add-hook '@var{hookvar} @var{function}
-'append)} for normal hooks.
+@code{(add-function :after @var{funvar} @var{function})} сравнима с
+однофункциональными ловушками к обычным ловушкам
+@code{(add-hook '@var{hookvar} @var{function} 'append)}.(ВопросFunctions1864)
 
 @item :override
-This completely replaces the old function with the new one.  The old function
-can of course be recovered if you later call @code{remove-function}.
+Это полностью заменяет исходную функцию новой.  Преждняя функция, конечно,
+может быть снова восстановлена, если потом вызвать @code{remove-function}.
 
 @item :around
-Call @var{function} instead of the old function, but provide the old function
-as an extra argument to @var{function}.  This is the most flexible composition.
-For example, it lets you call the old function with different arguments, or
-many times, or within a let-binding, or you can sometimes delegate the work to
-the old function and sometimes override it completely.  More specifically, the
-composition of the two functions behaves like:
+Вызов @var{function} вместо исходной функции, но обеспечивает исходную
+функцию в качестве дополнительного аргумента @var{function}.  Это наиболее
+гибкое составление.  Например, это позволяет вызвать исходную функцию с
+различными аргументами, или много раз, или в рамках let-связывания, или
+можно иногда делегировать работу исходной функции, а иногда полностью
+заменять её определение.  Более конкретно, композиция двух функций ведет
+себя, как:
 @example
 (lambda (&rest r) (apply @var{function} @var{oldfun} r))
 @end example
 
 @item :before-while
-Call @var{function} before the old function and don't call the old
-function if @var{function} returns @code{nil}.  Both functions receive the
-same arguments, and the return value of the composition is the return value of
-the old function.  More specifically, the composition of the two functions
-behaves like:
+Вызов @var{function} перед исходной функцией без её вызова, если
+@var{function} возвращает @code{nil}.  Обе функции получают одни и те же
+аргументы и возвращаемое значение композиции - возвращаемое значения исходной
+функции.  Более конкретно, композиция двух функций ведет себя как:
 @example
 (lambda (&rest r) (and (apply @var{function} r) (apply @var{oldfun} r)))
 @end example
-@code{(add-function :before-while @var{funvar} @var{function})} is comparable
-for single-function hooks to @code{(add-hook '@var{hookvar} @var{function})}
-when @var{hookvar} is run via @code{run-hook-with-args-until-failure}.
+@code{(add-function :before-while @var{funvar} @var{function})} сравнима по
+отношению однофункциональных ловушек к
+@code{(add-hook '@var{hookvar} @var{function})}, когда @var{hookvar}
+запускается с помощью @code{run-hook-with-args-until-failure}.(ВопросFunctions1893)
 
 @item :before-until
-Call @var{function} before the old function and only call the old function if
-@var{function} returns @code{nil}.  More specifically, the composition of the
-two functions behaves like:
+Вызов @var{function} перед исходной функцией и вызывает исходную функцию
+только если, @var{function} возвращает @code{nil}.  Более конкретно,
+композиция двух функций ведет себя как:
 @example
 (lambda (&rest r) (or (apply @var{function} r) (apply @var{oldfun} r)))
 @end example
-@code{(add-function :before-until @var{funvar} @var{function})} is comparable
-for single-function hooks to @code{(add-hook '@var{hookvar} @var{function})}
-when @var{hookvar} is run via @code{run-hook-with-args-until-success}.
+@code{(add-function :before-until @var{funvar} @var{function})} сравнима по
+отношению однофункциональных ловушек к
+@code{(add-hook '@var{hookvar} @var{function})}, когда @var{hookvar}
+запускается с помощью @code{run-hook-with-args-until-success}.
+(ВопросFunctions1906)
 
 @item :after-while
-Call @var{function} after the old function and only if the old function
-returned non-@code{nil}.  Both functions receive the same arguments, and the
-return value of the composition is the return value of @var{function}.
-More specifically, the composition of the two functions behaves like:
+Вызов @var{function} после исходной функции и только тогда, когда исходная
+функция вернула не-@code{nil}.  Обе функции получают одни и те же аргументы
+и возвращаемое значение композиции - это возвращаемое значение
+@var{function}. Более конкретно, композиция двух функций ведет себя как:
 @example
 (lambda (&rest r) (and (apply @var{oldfun} r) (apply @var{function} r)))
 @end example
-@code{(add-function :after-while @var{funvar} @var{function})} is comparable
-for single-function hooks to @code{(add-hook '@var{hookvar} @var{function}
-'append)} when @var{hookvar} is run via
-@code{run-hook-with-args-until-failure}.
+@code{(add-function :after-while @var{funvar} @var{function})} сравнима с
+однофункциональными ловушками
+@code{(add-hook '@var{hookvar} @var{function} 'append)}, где @var{hookvar}
+выполняются с помощью @code{run-hook-with-args-until-failure}.
 
 @item :after-until
-Call @var{function} after the old function and only if the old function
-returned @code{nil}.  More specifically, the composition of the two functions
-behaves like:
+Вызов @var{function} после исходной функции и только тогда, когда исходная
+функция вернёт @code{nil}.  Более конкретно, композиция двух функций ведет
+себя как:
 @example
 (lambda (&rest r) (or  (apply @var{oldfun} r) (apply @var{function} r)))
 @end example
-@code{(add-function :after-until @var{funvar} @var{function})} is comparable
-for single-function hooks to @code{(add-hook '@var{hookvar} @var{function}
-'append)} when @var{hookvar} is run via
-@code{run-hook-with-args-until-success}.
+@code{(add-function :after-until @var{funvar} @var{function})} сравнима с
+однофункциональными ловушками с
+@code{(add-hook '@var{hookvar} @var{function} 'append)}, когда @var{hookvar}
+запускается с помощью @code{run-hook-with-args-until-success}.
 
 @item :filter-args
-Call @var{function} first and use the result (which should be a list) as the
-new arguments to pass to the old function.  More specifically, the composition
-of the two functions behaves like:
+Вначале производит вызов @var{function} и использует результат (который
+должен быть списком) как новые аргументы для вызова с исходной функцией.
+Более конкретно, композиция двух функций ведет себя как:
 @example
 (lambda (&rest r) (apply @var{oldfun} (funcall @var{function} r)))
 @end example
 
 @item :filter-return
-Call the old function first and pass the result to @var{function}.
-More specifically, the composition of the two functions behaves like:
+Вызов первой исходной функции и передача результата в вызов @var{function}.
+Более конкретно, композиция двух функций ведет себя как:
 @example
 (lambda (&rest r) (funcall @var{function} (apply @var{oldfun} r)))
 @end example
@@ -1936,7 +1948,7 @@ More specifically, the composition of the two functions behaves like:
 
 
 @node Porting old advice
-@subsection Adapting code using the old defadvice
+@subsection Адаптация Кода с Использованием Раннего defadvice
 @cindex old advices, porting
 @c NB: The following index entries deliberately avoid ``old'',
 @c an adjective that does not come to mind for those who grew up
