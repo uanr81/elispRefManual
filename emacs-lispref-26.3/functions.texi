@@ -2082,9 +2082,9 @@ could translate into:
 @end defun
 
 @defmac define-obsolete-function-alias obsolete-name current-name &optional when doc
-This convenience macro marks the function @var{obsolete-name} obsolete
-and also defines it as an alias for the function @var{current-name}.
-It is equivalent to the following:
+Удобный макрос, отмечает функцию @var{obsolete-name} устаревшей, а также
+определяет её в качестве псевдонима для функции @var{current-name}.  Это
+эквивалентно следующему:
 
 @example
 (defalias @var{obsolete-name} @var{current-name} @var{doc})
@@ -2096,24 +2096,23 @@ In addition, you can mark a particular calling convention for a
 function as obsolete:
 
 @defun set-advertised-calling-convention function signature when
-This function specifies the argument list @var{signature} as the
-correct way to call @var{function}.  This causes the Emacs byte
-compiler to issue a warning whenever it comes across an Emacs Lisp
-program that calls @var{function} any other way (however, it will
-still allow the code to be byte compiled).  @var{when} should be a
-string indicating when the variable was first made obsolete (usually a
-version number string).
+Функция определяет список аргументов @var{signature} как правильный способ
+вызова функции @var{function}.  Это приводит к тому, байт-компилятор Emacs
+выдаёт предупреждение каждый раз, когда в программе Emacs Lisp, вызов
+функции @var{function}  происходит любым другим способом (однако, всё равно
+будет позволять байт-коду скомпилироваться).  Условие @var{when} должно быть
+строкой, указывающей, когда переменная впервые была сделана устаревшей (как
+правило, строка номер версии).
 
-For instance, in old versions of Emacs the @code{sit-for} function
-accepted three arguments, like this
+Например, в старых версиях Emacs @code{sit-for} функция принимала три
+аргумента, как здесь
 
 @example
   (sit-for seconds milliseconds nodisp)
 @end example
 
-However, calling @code{sit-for} this way is considered obsolete
-(@pxref{Waiting}).  The old calling convention is deprecated like
-this:
+Однако, вызов @code{sit-for}, считается устаревшим (@pxref{Waiting}).  Раннее
+соглашение о вызовах осуждается, как это:
 
 @example
 (set-advertised-calling-convention
@@ -2122,113 +2121,116 @@ this:
 @end defun
 
 @node Inline Functions
-@section Inline Functions
+@section Встроенные Функции
 @cindex inline functions
 
-  An @dfn{inline function} is a function that works just like an
-ordinary function, except for one thing: when you byte-compile a call
-to the function (@pxref{Byte Compilation}), the function's definition
-is expanded into the caller.  To define an inline function, use
-@code{defsubst} instead of @code{defun}.
+  @dfn{Встроенная функция} это функция, которая работает так же, как обычная
+  функция, за исключением одной вещи: при байт-компиляции вызов функции
+  (@pxref{Byte Compilation}) расширяет определение функции в вызывающей
+  программе.  Для того, чтобы определить встроенную функцию, используется
+  @code{defsubst} вместо @code{defun}. (ВопросFunctions2131)
 
 @defmac defsubst name args [doc] [declare] [interactive] body@dots{}
-This macro defines an inline function.  Its syntax is exactly the same
-as @code{defun} (@pxref{Defining Functions}).
+Макрос определяет встроенную функцию.  Синтаксис точно такой же, как
+у @code{defun} (@pxref{Defining Functions}).
 @end defmac
 
-  Making a function inline often makes its function calls run faster.
-But it also has disadvantages.  For one thing, it reduces flexibility;
-if you change the definition of the function, calls already inlined
-still use the old definition until you recompile them.
+  Создание встроенной функции часто позволяет выполнять вызов функции
+  быстрее.  Это также имеет свои недостатки.  С одной стороны, это снижает
+  гибкость; если изменить определение функции, встроенные вызовы используют
+  раннее определение функции, пока не перекомпилировать снова определение.
 
-  Another disadvantage is that making a large function inline can
-increase the size of compiled code both in files and in memory.  Since
-the speed advantage of inline functions is greatest for small
-functions, you generally should not make large functions inline.
+  Другим недостатком является то, что создание большой встраиваемой функция
+  может увеличить размер скомпилированного кода, как в файлах, так и в
+  памяти.  Поскольку преимущество в скорости встроенных функций является
+  наибольшим для малых функций, вообще не следует делать большие функции
+  встроенными.
 
-  Also, inline functions do not behave well with respect to debugging,
-tracing, and advising (@pxref{Advising Functions}).  Since ease of
-debugging and the flexibility of redefining functions are important
-features of Emacs, you should not make a function inline, even if it's
-small, unless its speed is really crucial, and you've timed the code
-to verify that using @code{defun} actually has performance problems.
+  Кроме того, встроенные функции не хорошо ведут себя в отношении отладки,
+  трассировки и рекомендаций (@pxref{Advising Functions}).  Лёгкость отладки
+  и гибкостью переопределения функций являются важными особенностями Emacs,
+  не следует делать функцию втроенной, даже если она маленькая и если её
+  скорость не очень важна. Перед тем как сделать функцию встроенной,
+  требуется проанальзировать показатели выполнения кода с помощью
+  @code{defun} и убедиться о наличии проблемы с производительностью.
 
-  After an inline function is defined, its inline expansion can be
-performed later on in the same file, just like macros.
+  После того, как встроенная функция определена, её встроенное расширение
+  может быть выполнено позже в том же файле, так же, как расширение макроса.
 
-  It's possible to use @code{defmacro} to define a macro to expand
-into the same code that an inline function would execute
-(@pxref{Macros}).  But the macro would be limited to direct use in
-expressions---a macro cannot be called with @code{apply},
-@code{mapcar} and so on.  Also, it takes some work to convert an
-ordinary function into a macro.  To convert it into an inline function
-is easy; just replace @code{defun} with @code{defsubst}.  Since each
-argument of an inline function is evaluated exactly once, you needn't
-worry about how many times the body uses the arguments, as you do for
-macros.
+  Можно использовать определение макроса @code{defmacro} для расширения кода,
+  который встроенная функция будет выполнять (@pxref{Macros}).  Но макрос
+  будет ограничен прямым использованием в выражениях --- макрос не может быть
+  вызван с @code{apply}, @code{mapcar} и так далее.  Кроме того, это
+  добавляет определенную работу, чтобы превратить обычную функцию в макрос.
+  Для того, чтобы преобразовать в встроенную функции легко; просто заменить
+  @code{defun} на @code{defsubst}.  Так как каждый аргумент встроенной
+  функции оценивается ровно один раз, вам не нужно беспокоиться о том,
+  сколько раз тело использует аргументы, также как это делается для макросов.
 
-  As an alternative to @code{defsubst}, you can use
-@code{define-inline} to define functions via their exhaustive compiler
-macro.  @xref{Defining Functions, define-inline}.
+  В качестве альтернативы @code{defsubst}, можно использовать
+  @code{define-inline} для определения функций с помощью
+  макроса компилятора.  @xref{Defining Functions, define-inline}.
 
 @node Declare Form
-@section The @code{declare} Form
+@section Форма @code{declare}
 @findex declare
 
-  @code{declare} is a special macro which can be used to add meta
-properties to a function or macro: for example, marking it as
-obsolete, or giving its forms a special @key{TAB} indentation
-convention in Emacs Lisp mode.
+  @code{declare} специальный макрос, который может быть использован для
+  добавления мета-свойств функции или макроса: например, пометить его как
+  устаревший, или добавить его формам специальное соглашение об отстуах
+  @key{TAB} в Emacs Lisp режиме.
 
 @anchor{Definition of declare}
 @defmac declare specs@dots{}
-This macro ignores its arguments and evaluates to @code{nil}; it has
-no run-time effect.  However, when a @code{declare} form occurs in the
-@var{declare} argument of a @code{defun} or @code{defsubst} function
-definition (@pxref{Defining Functions}) or a @code{defmacro} macro
-definition (@pxref{Defining Macros}), it appends the properties
-specified by @var{specs} to the function or macro.  This work is
-specially performed by @code{defun}, @code{defsubst}, and
-@code{defmacro}.
+Макрос игнорирует аргументы и возвращает значение @code{nil}; он не имеет
+эффекта во время выполнения.  Тем не менее, когда форма @code{declare}
+встречается в аргументе @var{declare} функции определения @code{defun} или
+@code{defsubst} (@pxref{Defining Functions}) или при определении макроса
+@code{defmacro} (@pxref{Defining Macros}), это добавляет свойства,
+определенные спецификацией @var{specs} к функции или макросу.  Эта работа
+выполняется специально @code{defun}, @code{defsubst}, и @code{defmacro}.
 
-Each element in @var{specs} should have the form @code{(@var{property}
-@var{args}@dots{})}, which should not be quoted.  These have the
-following effects:
+Каждый элемент @var{specs} должен иметь форму вида
+@code{(@var{property} @var{args}@dots{})}, которая не должна цитироваться.
+Имются следующие эффекты:
 
 @table @code
 @item (advertised-calling-convention @var{signature} @var{when})
-This acts like a call to @code{set-advertised-calling-convention}
-(@pxref{Obsolete Functions}); @var{signature} specifies the correct
-argument list for calling the function or macro, and @var{when} should
-be a string indicating when the old argument list was first made obsolete.
+Это действует как вызов @code{set-advertised-calling-convention}
+(@pxref{Obsolete Functions}); @var{signature} указывает правильный список
+аргументов для вызова функции или макроса и условие @var{when} должно быть
+строкой, указывающей, когда старый список аргументов стал считаться
+устаревшим.
 
 @item (debug @var{edebug-form-spec})
-This is valid for macros only.  When stepping through the macro with
-Edebug, use @var{edebug-form-spec}.  @xref{Instrumenting Macro Calls}.
+Это справедливо только для макросов.  При выполнении по шагам макроса в
+Edebug, используйте @var{edebug-form-spec}.
+@xref{Instrumenting Macro Calls}.
 
 @item (doc-string @var{n})
-This is used when defining a function or macro which itself will be used to
-define entities like functions, macros, or variables.  It indicates that
-the @var{n}th argument, if any, should be considered
-as a documentation string.
+Это используется при определении функции или макроса, которые сами по себе
+будет использоваться для определения объектов, таких как функции, макросы или
+переменные.  Это указывает на то, что @var{n}ый аргумент, если таковой
+имеется, следует рассматривать как строку документации.
 
 @item (indent @var{indent-spec})
-Indent calls to this function or macro according to @var{indent-spec}.
-This is typically used for macros, though it works for functions too.
-@xref{Indenting Macros}.
+Задание отступов вызовы этой функции или макроса в соответствии с
+@var{indent-spec}.  Это, как правило, используется для макросов, хотя это
+также работает для функций тоже. @xref{Indenting Macros}.
+(ВопросFunctions2219)
 
 @item (interactive-only @var{value})
-Set the function's @code{interactive-only} property to @var{value}.
+Установка @code{interactive-only} свойству функции значение @var{value}.
 @xref{The interactive-only property}.
 
 @item (obsolete @var{current-name} @var{when})
-Mark the function or macro as obsolete, similar to a call to
-@code{make-obsolete} (@pxref{Obsolete Functions}).  @var{current-name}
-should be a symbol (in which case the warning message says to use that
-instead), a string (specifying the warning message), or @code{nil} (in
-which case the warning message gives no extra details).  @var{when}
-should be a string indicating when the function or macro was first
-made obsolete.
+Отмечает функцию или макрос как устаревшую, похоже на вызов
+@code{make-obsolete} (@pxref{Obsolete Functions}).  @var{current-name} должно
+быть символом (в этом случае, в предупреждение указывается использовать
+символ, вместо устаревшей функции), строкой (с указанием предупреждающего
+сообщения) или @code{nil} (в этом случае предупреждение не дает никаких
+дополнительных деталей).  Условие @var{when} должно быть строкой,
+указывающей, когда функция или макрос впервые помечены устаревшими.
 
 @item (compiler-macro @var{expander})
 This can only be used for functions, and tells the compiler to use
