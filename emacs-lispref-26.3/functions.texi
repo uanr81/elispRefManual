@@ -1950,24 +1950,24 @@ ARGS. Возвращает список результатов."
 @node Porting old advice
 @subsection Адаптация Кода с Использованием Раннего defadvice
 @cindex old advices, porting
-@c NB: The following index entries deliberately avoid ``old'',
-@c an adjective that does not come to mind for those who grew up
-@c on ‘defadvice’ et al.  For those folks, that way is ``current''.
-@c They discover its oldness reading this node.
+@c NB: Следующие записи индекса сознательно избегают ``old'',
+@c прилагательное, которое не приходит на ум для тех, кто вырос на
+@c ‘defadvice’ и др. Для тех людей, что путь ``current''. Они
+@c обнаруживают его ветхой чтение этого узла.
 @cindex advices, porting from @code{defadvice}
 @findex defadvice
 @findex ad-activate
 
-A lot of code uses the old @code{defadvice} mechanism, which is largely made
-obsolete by the new @code{advice-add}, whose implementation and semantics is
-significantly simpler.
+Много кода использует старый механизм @code{defadvice}, который в
+значительной степени устарел вследствие появления нового @code{advice-add},
+и реализация и семантика которого значительно проще.
 
-An old piece of advice such as:
+Преждние рекомендации, такие как:
 
 @example
 (defadvice previous-line (before next-line-at-end
                                  (&optional arg try-vscroll))
-  "Insert an empty line when moving up from the top line."
+  "Вставить пустую строку при движении вверх от верхней строки."
   (if (and next-line-add-newlines (= arg 1)
            (save-excursion (beginning-of-line) (bobp)))
       (progn
@@ -1975,11 +1975,11 @@ An old piece of advice such as:
         (newline))))
 @end example
 
-could be translated in the new advice mechanism into a plain function:
+можно получить в новом механизме рекомендаций посредствам простой функции:
 
 @example
 (defun previous-line--next-line-at-end (&optional arg try-vscroll)
-  "Insert an empty line when moving up from the top line."
+  "Вставить пустую строку при движении вверх от верхней строки."
   (if (and next-line-add-newlines (= arg 1)
            (save-excursion (beginning-of-line) (bobp)))
       (progn
@@ -1987,27 +1987,28 @@ could be translated in the new advice mechanism into a plain function:
         (newline))))
 @end example
 
-Obviously, this does not actually modify @code{previous-line}.  For that the
-old advice needed:
+Очевидно, это не меняет @code{previous-line}.  Для этого нужна
+преждняя рекомендация:
 @example
 (ad-activate 'previous-line)
 @end example
-whereas the new advice mechanism needs:
+в то время как новый механизма рекомендаций требует:
 @example
 (advice-add 'previous-line :before #'previous-line--next-line-at-end)
 @end example
 
-Note that @code{ad-activate} had a global effect: it activated all pieces of
-advice enabled for that specified function.  If you wanted to only activate or
-deactivate a particular piece, you needed to @emph{enable} or @emph{disable}
-it with @code{ad-enable-advice} and @code{ad-disable-advice}.
-The new mechanism does away with this distinction.
+Обратите внимание, что @code{ad-activate} имело глобальный эффект: оно
+активировало все части рекомендаций включённые для этой заданной функции.
+Если требуется только активировать или деактивировать определенные части,
+необходимо @emph{включить} или @emph{отключить} его с помощью
+@code{ad-enable-advice} и @code{ad-disable-advice}.  Новый механизм устраняет
+это различие. (ВопросFunctions2005)
 
-Around advice such as:
+Рассмотрим рекомендации такие как:
 
 @example
 (defadvice foo (around foo-around)
-  "Ignore case in `foo'."
+  "Игнорировать регистр в `foo'."
   (let ((case-fold-search t))
     ad-do-it))
 (ad-activate 'foo)
@@ -2017,64 +2018,67 @@ could translate into:
 
 @example
 (defun foo--foo-around (orig-fun &rest args)
-  "Ignore case in `foo'."
+  "Игнорировать регистр в `foo'."
   (let ((case-fold-search t))
     (apply orig-fun args)))
 (advice-add 'foo :around #'foo--foo-around)
 @end example
 
-Regarding the advice's @emph{class}, note that the new @code{:before} is not
-quite equivalent to the old @code{before}, because in the old advice you could
-modify the function's arguments (e.g., with @code{ad-set-arg}), and that would
-affect the argument values seen by the original function, whereas in the new
-@code{:before}, modifying an argument via @code{setq} in the advice has no
-effect on the arguments seen by the original function.
-When porting @code{before} advice which relied on this behavior, you'll need
-to turn it into new @code{:around} or @code{:filter-args} advice instead.
+Что касается @emph{класса} в рекомендации, отмечается, что новый
+@code{:before} не совсем соответствует старому @code{before}, потому что в
+старой рекомендации можно было бы изменить аргументы функции (например, с
+@code{ad-set-arg}), и это повлияло на значение аргументов исходной функции, в
+то время как в новом @code{:before}, изменение аргумента через @code{setq} в
+рекомендации не оказывает никакого влияния на аргументы, исходной функции.
+При адаптации рекомендаций @code{before}, которые полагались на это
+поведение, требуется превратить её в новую рекомендацию @code{:around} или
+@code{:filter-args} вместо этого.
 
-Similarly old @code{after} advice could modify the returned value by
-changing @code{ad-return-value}, whereas new @code{:after} advice cannot, so
-when porting such old @code{after} advice, you'll need to turn it into new
-@code{:around} or @code{:filter-return} advice instead.
+Точно так же старая рекомендация @code{after} может изменить возвращаемое
+значение путём изменения @code{ad-return-value}, в то время как новая
+рекомендация @code{:after} не может, поэтому при переводе такой старой
+рекомендации @code{after}, требуется превратить её в новую рекомендацию
+@code{:around} или @code{:filter-return} вместо этого.
 
 @node Obsolete Functions
-@section Declaring Functions Obsolete
+@section Объявление Функций Устаревшими
 @cindex obsolete functions
 
-  You can mark a named function as @dfn{obsolete}, meaning that it may
-be removed at some point in the future.  This causes Emacs to warn
-that the function is obsolete whenever it byte-compiles code
-containing that function, and whenever it displays the documentation
-for that function.  In all other respects, an obsolete function
-behaves like any other function.
+  Можете отметить именованную функцию как @dfn{устаревшей}, что означает,
+  она может быть удалена в какой-то момент в будущем.  Это заставляет Emacs
+  предупреждать о том, что функция является устаревшей, всякий раз, когда она
+  компилируется в байт-код, содержащего эту функцию, и всякий раз, когда
+  отображается документацию для этой функции.  Во всех других отношениях,
+  устаревшее функция ведет себя, как и любая другая функция.
 
-  The easiest way to mark a function as obsolete is to put a
-@code{(declare (obsolete @dots{}))} form in the function's
-@code{defun} definition.  @xref{Declare Form}.  Alternatively, you can
-use the @code{make-obsolete} function, described below.
+  Самый простой способ отметить функцию как устаревшей, поместить форму
+  @code{(declare (obsolete @dots{}))} в определении @code{defun} функции.
+  @xref{Declare Form}.  Кроме того, можно использовать функцию
+  @code{make-obsolete}, описанную ниже.
 
-  A macro (@pxref{Macros}) can also be marked obsolete with
-@code{make-obsolete}; this has the same effects as for a function.  An
-alias for a function or macro can also be marked as obsolete; this
-makes the alias itself obsolete, not the function or macro which it
-resolves to.
+  Макрос (@pxref{Macros}) также может быть отмечен устаревшим с помощью
+  @code{make-obsolete}; это имеет тот же эффект, как и для функции.
+  Псевдоним для функции или макроса также могут быть помечены как устаревшие;
+  это делает сам псевдоним устаревшим, но не функцию или макрос, которые
+  расширяет псевдоним.
 
 @defun make-obsolete obsolete-name current-name &optional when
-This function marks @var{obsolete-name} as obsolete.
-@var{obsolete-name} should be a symbol naming a function or macro, or
-an alias for a function or macro.
+Функция отмечает имя @var{obsolete-name} как устаревшее.  @var{obsolete-name}
+должно быть именем символа именованной функции или макроса или псевдонимом
+для функции или макроса.
 
-If @var{current-name} is a symbol, the warning message says to use
-@var{current-name} instead of @var{obsolete-name}.  @var{current-name}
-does not need to be an alias for @var{obsolete-name}; it can be a
-different function with similar functionality.  @var{current-name} can
-also be a string, which serves as the warning message.  The message
-should begin in lower case, and end with a period.  It can also be
-@code{nil}, in which case the warning message provides no additional
-details.
+Если @var{current-name} является именем символа, в предупреждающем сообщении
+предлагается использовать @var{current-name} имя вместо @var{obsolete-name}.
+@var{current-name} не должно быть обязательно псевдонимом для
+@var{obsolete-name}; это может быть другая функция с аналогичной
+функциональностью.  @var{current-name} также может быть строкой, которая
+служит в качестве предупреждающего сообщения.  Сообщение должно начинаться в
+нижнем регистре, а заканчиваться точкой.  Также может быть установлено в
+@code{nil}, в этом случае предупреждение не содержит никаких дополнительных
+деталей.
 
-If provided, @var{when} should be a string indicating when the function
-was first made obsolete---for example, a date or a release number.
+Аргумент условия @var{when}, должен быть строка, указывающая, когда функция
+впервые была сделана устаревшей --- например, дату или номер выпуска.
 @end defun
 
 @defmac define-obsolete-function-alias obsolete-name current-name &optional when doc
