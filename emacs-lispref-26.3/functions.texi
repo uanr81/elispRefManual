@@ -2233,268 +2233,272 @@ Edebug, используйте @var{edebug-form-spec}.
 указывающей, когда функция или макрос впервые помечены устаревшими.
 
 @item (compiler-macro @var{expander})
-This can only be used for functions, and tells the compiler to use
-@var{expander} as an optimization function.  When encountering a call to the
-function, of the form @code{(@var{function} @var{args}@dots{})}, the macro
-expander will call @var{expander} with that form as well as with
-@var{args}@dots{}, and @var{expander} can either return a new expression to use
-instead of the function call, or it can return just the form unchanged,
-to indicate that the function call should be left alone.  @var{expander} can
-be a symbol, or it can be a form @code{(lambda (@var{arg}) @var{body})} in
-which case @var{arg} will hold the original function call expression, and the
-(unevaluated) arguments to the function can be accessed using the function's
-formal arguments.
+Это может быть использовано только для функций, и указывает компилятору
+использовать в качестве функции оптимизации @var{expander}.  При встрече
+компилятором вызов функции, вида @code{(@var{function} @var{args}@dots{})},
+макрос расширитель будет вызывать @var{expander} с этой формой, а также с
+@var{args}@dots{} и @var{expander} может либо вернуть новое выражение для
+использования вместо вызова функции, или может вернуть только форму без
+изменений, чтобы указать, что вызов функции следует оставить в покое.
+@var{expander} может быть символом, или это может быть форма
+@code{(lambda (@var{arg}) @var{body})} в этом случае @var{arg} будет
+удерживать исходное выражение вызова функции, и (невычисленные) аргументы
+функции можно получить с помощью формальных аргументов функции.
 
 @item (gv-expander @var{expander})
-Declare @var{expander} to be the function to handle calls to the macro (or
-function) as a generalized variable, similarly to @code{gv-define-expander}.
-@var{expander} can be a symbol or it can be of the form @code{(lambda
-(@var{arg}) @var{body})} in which case that function will additionally have
-access to the macro (or function)'s arguments.
+Объявляет @var{expander} как функцию для обработки вызовов макроса (или
+функции) в качестве обобщенной переменной, аналогично
+@code{gv-define-expander}. @var{expander} может быть символом, или может
+иметь форму @code{(lambda (@var{arg}) @var{body})} и в этом случае, функция
+будет дополнительно иметь доступ к макросу (или функции) 'с аргументамиx.
 
 @item (gv-setter @var{setter})
-Declare @var{setter} to be the function to handle calls to the macro (or
-function) as a generalized variable.  @var{setter} can be a symbol in which
-case it will be passed to @code{gv-define-simple-setter}, or it can be of the
-form @code{(lambda (@var{arg}) @var{body})} in which case that function will
-additionally have access to the macro (or function)'s arguments and it will
-passed to @code{gv-define-setter}.
+Объявляет функцию @var{setter} для обработки вызовов макроса (или функции) в
+качестве обобщенной переменной.  @var{setter} может быть символом, в этом
+случае он будет передан @code{gv-define-simple-setter}, или же может иметь
+форму @code{(lambda (@var{arg}) @var{body})}, в этом случае, функция будет
+дополнительно иметь доступ к макросу (или функции) 'с аргументами, и будет
+передана @code{gv-define-setter}.
 
 @end table
 
 @end defmac
 
 @node Declaring Functions
-@section Telling the Compiler that a Function is Defined
+@section Сообщение Компилятору, что Функция Определена
 @cindex function declaration
 @cindex declaring functions
 @findex declare-function
 
-Byte-compiling a file often produces warnings about functions that the
-compiler doesn't know about (@pxref{Compiler Errors}).  Sometimes this
-indicates a real problem, but usually the functions in question are
-defined in other files which would be loaded if that code is run.  For
-example, byte-compiling @file{simple.el} used to warn:
+Байт-компиляция файла часто приводит к предупреждениям о функциях, которые
+компилятор не знает (@pxref{Compiler Errors}).  Иногда это указывает на
+реальную проблему, но, как правило, рассматриваемые функции определены в
+других файлах, которые будут загружены, если этот код выполнится.  Так,
+например, байт-компиляции файла @file{simple.el} выводит предупреждения:
 
 @example
 simple.el:8727:1:Warning: the function ‘shell-mode’ is not known to be
     defined.
 @end example
 
-In fact, @code{shell-mode} is used only in a function that executes
-@code{(require 'shell)} before calling @code{shell-mode}, so
-@code{shell-mode} will be defined properly at run-time.  When you know
-that such a warning does not indicate a real problem, it is good to
-suppress the warning.  That makes new warnings which might mean real
-problems more visible.  You do that with @code{declare-function}.
+На самом деле, @code{shell-mode} используется только в функции, которая
+выполняет @code{(require 'shell)} перед вызовом @code{shell-mode}, поэтому
+@code{shell-mode} будет определена правильно во время выполнения.  Когда
+известно, что такое предупреждение не указывает на реальную проблему, его
+можно подавить.  Это делает новые предупреждения, которые могут означать
+реальные проблемы более заметными.  Делается это с @code{declare-function}.
 
-All you need to do is add a @code{declare-function} statement before the
-first use of the function in question:
+Все, что вам нужно сделать, это добавить @code{declare-function} заявление
+перед первым использованием функции в вопросе:
 
 @example
 (declare-function shell-mode "shell" ())
 @end example
 
-This says that @code{shell-mode} is defined in @file{shell.el} (the
-@samp{.el} can be omitted).  The compiler takes for granted that that file
-really defines the function, and does not check.
+Это говорит о том, что @code{shell-mode} определяется в @file{shell.el}
+(@samp{.el} можно опустить).  Компилятор принимает как само собой
+разумеющееся, что этот файл действительно определяет функцию, и не проверяет.
 
-  The optional third argument specifies the argument list of
-@code{shell-mode}.  In this case, it takes no arguments
-(@code{nil} is different from not specifying a value).  In other
-cases, this might be something like @code{(file &optional overwrite)}.
-You don't have to specify the argument list, but if you do the
-byte compiler can check that the calls match the declaration.
+  Необязательный третий аргумент задает список параметров @code{shell-mode}.
+  Если опущен, тогда не принимается никаких аргументов (@code{nil} отличается
+  от опущенного значения).  В других случаях это может быть что-то вроде
+  @code{(file &optional overwrite)}.  Не нужно указывать список аргументов,
+  но если это сделано байт-компилятор может проверить, соответствуют ли
+  вызовы объявлению.
 
 @defmac declare-function function file &optional arglist fileonly
-Tell the byte compiler to assume that @var{function} is defined in the
-file @var{file}.  The optional third argument @var{arglist} is either
-@code{t}, meaning the argument list is unspecified, or a list of
-formal parameters in the same style as @code{defun}.  An omitted
-@var{arglist} defaults to @code{t}, not @code{nil}; this is atypical
-behavior for omitted arguments, and it means that to supply a fourth
-but not third argument one must specify @code{t} for the third-argument
-placeholder instead of the usual @code{nil}.  The optional fourth
-argument @var{fileonly} non-@code{nil} means check only that
-@var{file} exists, not that it actually defines @var{function}.
+Указание байт-компилятору считать, что @var{function} определяется в файле
+@var{file}.  Необязательный третий аргумент @var{arglist} либо @code{t}, то
+есть список аргументов не задан, или список формальных параметров, в том же
+стиле, как в @code{defun}.  Пропущенной @var{arglist} по умолчанию @code{t},
+не @code{nil}; это нетипичное поведение для опущенных аргументов, и это
+означает, что поставить четвертый, но не третий аргумент нужно указав
+заполнитель @code{t} для третьего аргумента, вместо обычного @code{nil}.
+Необязательные четвертый аргумент @var{fileonly} не-@code{nil} означает
+только проверить, что @var{file} существует, не то, что в нём на самом деле
+существует определение функции @var{function}.
 @end defmac
 
-  To verify that these functions really are declared where
-@code{declare-function} says they are, use @code{check-declare-file}
-to check all @code{declare-function} calls in one source file, or use
-@code{check-declare-directory} check all the files in and under a
-certain directory.
+  Для того, чтобы убедиться, что эти функции действительно объявлены, на что
+  указывает @code{declare-function}, используется @code{check-declare-file}
+  для проверки всех вызовов @code{declare-function} в одном исходном файле,
+  или использовать @code{check-declare-directory}, для проверки всех файлов
+  при определенной директории.
 
-  These commands find the file that ought to contain a function's
-definition using @code{locate-library}; if that finds no file, they
-expand the definition file name relative to the directory of the file
-that contains the @code{declare-function} call.
+  Эти команды находят файл, который должен содержать определение функции
+  используя @code{locate-library}; если не находится этот файл, расширяется
+  имя файла определения относительно директории файла, который содержит
+  вызов @code{declare-function}.
 
-  You can also say that a function is a primitive by specifying a file
-name ending in @samp{.c} or @samp{.m}.  This is useful only when you
-call a primitive that is defined only on certain systems.  Most
-primitives are always defined, so they will never give you a warning.
+  Также можно указать о том, что функция является примитивной, указав имя
+  файла, заканчивающееся на @samp{.c} или @samp{.m}.  Это полезно только при
+  вызове примитива, который определяется только на некоторых системах.
+  Большинство примитивов всегда определены, поэтому никогда не будет
+  предупреждение.
 
-  Sometimes a file will optionally use functions from an external package.
-If you prefix the filename in the @code{declare-function} statement with
-@samp{ext:}, then it will be checked if it is found, otherwise skipped
-without error.
+  Иногда файл может использовать функции из внешнего пакета.  Если префикс
+  имени файла в операторе @code{declare-function} записан с @samp{ext:}, то
+  будет проверено его наличие, в противном случае пропускается без ошибок.
 
-  There are some function definitions that @samp{check-declare} does not
-understand (e.g., @code{defstruct} and some other macros).  In such cases,
-you can pass a non-@code{nil} @var{fileonly} argument to
-@code{declare-function}, meaning to only check that the file exists, not
-that it actually defines the function.  Note that to do this without
-having to specify an argument list, you should set the @var{arglist}
-argument to @code{t} (because @code{nil} means an empty argument list, as
-opposed to an unspecified one).
+  Есть некоторые определения функций, которые не понимает
+  @samp{check-declare} (например, @code{defstruct} и некоторые другие
+  макросы).  В таких случаях, вы можете передать не-@code{nil} @var{fileonly}
+  аргумент @code{declare-function}, то есть только проверить, что файл
+  существует, а не то, что он на самом деле определяет функцию.  Обратите
+  внимание, чтобы это без указания списка аргументов, нужно установить
+  @var{arglist} аргумент @code{t} (потому что @code{nil} означает пустой
+  список аргументов, в отличие от незаданного).
 
 @node Function Safety
-@section Determining whether a Function is Safe to Call
+@section Определение Безопасного Вызова Функции
 @cindex function safety
 @cindex safety of functions
 
-Some major modes, such as SES, call functions that are stored in user
-files.  (@inforef{Top, ,ses}, for more information on SES@.)  User
-files sometimes have poor pedigrees---you can get a spreadsheet from
-someone you've just met, or you can get one through email from someone
-you've never met.  So it is risky to call a function whose source code
-is stored in a user file until you have determined that it is safe.
+Некоторые основные режимы, такие как SES, вызывают функции, которые хранятся
+в пользовательских файлах.  (@inforef{Top, ,ses}, для детальной информации
+о SES @.)   Пользовательские файлы иногда имеют не достоверные источники
+получения --- может быть получена таблица от того, с кем-то только что
+познакомились, или можно получить по электронной почте что-то, от того с кем
+никогда не встречались.  Так что это рискованно - вызов функции, исходный код
+которой хранится в файле пользователя, пока нет определения, что вызов этой
+функции безопасен.
 
 @defun unsafep form &optional unsafep-vars
-Returns @code{nil} if @var{form} is a @dfn{safe} Lisp expression, or
-returns a list that describes why it might be unsafe.  The argument
-@var{unsafep-vars} is a list of symbols known to have temporary
-bindings at this point; it is mainly used for internal recursive
-calls.  The current buffer is an implicit argument, which provides a
-list of buffer-local bindings.
+Возвращает @code{nil}, если форма @var{form} это @dfn{безопасное} выражение
+Lisp, или возвращает список, который описывает, почему это может быть
+небезопасно.  Аргумент @var{unsafep-vars} представляет собой список символов,
+которые имеют временные привязки в этой точке; это используется в основном
+для внутренних рекурсивных вызовов.  Текущий буфер является неявным
+аргументом, который содержит список буфера локальной привязки.
 @end defun
 
-Being quick and simple, @code{unsafep} does a very light analysis and
-rejects many Lisp expressions that are actually safe.  There are no
-known cases where @code{unsafep} returns @code{nil} for an unsafe
-expression.  However, a safe Lisp expression can return a string
-with a @code{display} property, containing an associated Lisp
-expression to be executed after the string is inserted into a buffer.
-This associated expression can be a virus.  In order to be safe, you
-must delete properties from all strings calculated by user code before
-inserting them into buffers.
+Будучи простым и быстрым, @code{unsafep} делает очень легкий анализ и
+отвергает многие выражения Lisp, которые на самом деле безопасны.  Нет
+известных случаев, когда @code{unsafep} возвращается @code{nil} для
+небезопасного выражения.  Однако, безопасное выражение Lisp может возвращать
+строку со свойством @code{display}, содержащее связанное с ним выражение Lisp
+которое должно быть выполнено после того, как строка будет вставлена в буфер.
+Этим связаным выражением может быть вирус.  Для того, чтобы быть в
+безопасности, требуется свойства всех строк, вычисленных с помощью кода
+пользователя, прежде чем вставить их в буфер.
 
 @ignore
-What is a safe Lisp expression?  Basically, it's an expression that
-calls only built-in functions with no side effects (or only innocuous
-ones).  Innocuous side effects include displaying messages and
-altering non-risky buffer-local variables (but not global variables).
+Что такое безопасное выражение Lisp?  В основном, это выражение, вызывающее
+только встроенные функции без побочных эффектов (или только безобидные из
+ них).  Безобидные побочные эффекты включают в себя отображение сообщений и
+ изменение безопасных локальных переменных буфера (но не глобальных
+ переменных).
 
 @table @dfn
-@item Safe expression
+@item Безопасные выражения
 @itemize
 @item
-An atom or quoted thing.
+Атом или цитируемая форма.
 @item
 A call to a safe function (see below), if all its arguments are
 safe expressions.
 @item
-One of the special forms @code{and}, @code{catch}, @code{cond},
-@code{if}, @code{or}, @code{prog1}, @code{prog2}, @code{progn},
-@code{while}, and @code{unwind-protect}], if all its arguments are
-safe.
+Одно из специальных форм @code{and}, @code{catch}, @code{cond}, @code{if},
+ @code{or}, @code{prog1}, @code{prog2}, @code{progn}, @code{while}, и
+ @code{unwind-protect}], если все их аргументы являются безопасными.
 @item
-A form that creates temporary bindings (@code{condition-case},
-@code{dolist}, @code{dotimes}, @code{lambda}, @code{let}, or
-@code{let*}), if all args are safe and the symbols to be bound are not
-explicitly risky (@pxref{File Local Variables}).
+Формы, которые создают временные привязки (@code{condition-case},
+@code{dolist}, @code{dotimes}, @code{lambda}, @code{let}, или
+@code{let*}), если все аргументы являются безопасными и символы, которые
+ими должны быть связаны известны как безопасные
+(@pxref{File Local Variables}).
 @item
-An assignment using @code{add-to-list}, @code{setq}, @code{push}, or
-@code{pop}, if all args are safe and the symbols to be assigned are
-not explicitly risky and they already have temporary or buffer-local
-bindings.
+Формы привязки, использующие @code{add-to-list}, @code{setq}, @code{push},
+или @code{pop}, если все аргументы являются безопасными и символы, которые
+должны быть назначен явно безопасные, и они уже имеют временные или
+локальные привязки буфера.
 @item
-One of [apply, mapc, mapcar, mapconcat] if the first argument is a
-safe explicit lambda and the other args are safe expressions.
+Один из [apply, mapc, mapcar, mapconcat], если первый аргумент является
+явно безопасным лямбда а другие аргументы являются безопасными выражениями.
 @end itemize
 
-@item Safe function
+@item Безопасные Функции
 @itemize
 @item
-A lambda containing safe expressions.
+Лямбда выражение, содержащее безопасные выражения.
 @item
-A symbol on the list @code{safe-functions}, so the user says it's safe.
+Символ добавлен пользователем в список @code{safe-functions}, что указывает
+на то, что это безопасно.
 @item
-A symbol with a non-@code{nil} @code{side-effect-free} property.
+Символ со свойством не-@code{nil} @code{side-effect-free}.
 @item
-A symbol with a non-@code{nil} @code{safe-function} property.  The
-value @code{t} indicates a function that is safe but has innocuous
-side effects.  Other values will someday indicate functions with
-classes of side effects that are not always safe.
+Символ со свойством не-@code{nil} @code{safe-function}.  Значение @code{t}
+ обозначает функцию, которая является безопасной, но имеет безвредные
+ побочные эффекты.  Другие значения будут когда-нибудь указывают на функции
+ с классами побочных эффектов, которые не всегда безопасны.
 @end itemize
 
-The @code{side-effect-free} and @code{safe-function} properties are
-provided for built-in functions and for low-level functions and macros
-defined in @file{subr.el}.  You can assign these properties for the
-functions you write.
+Свойства @code{side-effect-free} и @code{safe-function} предусмотрены
+встроенными функциями и функциями низкого уровня и макросами, определенными
+в файле @file{subr.el}.  Можно задать эти свойства для функций, которые вы
+ пишете.
 @end table
 @end ignore
 
 @node Related Topics
-@section Other Topics Related to Functions
+@section Другие Темы, Связанные с Функциями
 
-  Here is a table of several functions that do things related to
-function calling and function definitions.  They are documented
-elsewhere, but we provide cross references here.
+  Вот таблица из нескольких функций, которые выполняют действия, связанные с
+  вызовом и определением функций.  Они задокументированы в другом месте
+  руководства, но предлагаются перекрестные ссылки на них.
 
 @table @code
 @item apply
-See @ref{Calling Functions}.
+Смотреть @ref{Calling Functions}.
 
 @item autoload
-See @ref{Autoload}.
+Смотреть @ref{Autoload}.
 
 @item call-interactively
-See @ref{Interactive Call}.
+Смотреть @ref{Interactive Call}.
 
 @item called-interactively-p
-See @ref{Distinguish Interactive}.
+Смотреть @ref{Distinguish Interactive}.
 
 @item commandp
-See @ref{Interactive Call}.
+Смотреть @ref{Interactive Call}.
 
 @item documentation
-See @ref{Accessing Documentation}.
+Смотреть @ref{Accessing Documentation}.
 
 @item eval
-See @ref{Eval}.
+Смотреть @ref{Eval}.
 
 @item funcall
-See @ref{Calling Functions}.
+Смотреть @ref{Calling Functions}.
 
 @item function
-See @ref{Anonymous Functions}.
+Смотреть @ref{Anonymous Functions}.
 
 @item ignore
-See @ref{Calling Functions}.
+Смотреть @ref{Calling Functions}.
 
 @item indirect-function
-See @ref{Function Indirection}.
+Смотреть @ref{Function Indirection}.
 
 @item interactive
-See @ref{Using Interactive}.
+Смотреть @ref{Using Interactive}.
 
 @item interactive-p
-See @ref{Distinguish Interactive}.
+Смотреть @ref{Distinguish Interactive}.
 
 @item mapatoms
-See @ref{Creating Symbols}.
+Смотреть @ref{Creating Symbols}.
 
 @item mapcar
-See @ref{Mapping Functions}.
+Смотреть @ref{Mapping Functions}.
 
 @item map-char-table
-See @ref{Char-Tables}.
+Смотреть @ref{Char-Tables}.
 
 @item mapconcat
-See @ref{Mapping Functions}.
+Смотреть @ref{Mapping Functions}.
 
 @item undefined
-See @ref{Functions for Key Lookup}.
+Смотреть @ref{Functions for Key Lookup}.
 @end table
