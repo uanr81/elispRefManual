@@ -588,7 +588,7 @@
 в @code{(empty-object)}.
 
 @node Indenting Macros
-@section Indenting Macros
+@section Отступы в Макросах
 
   В определении макроса вы можете использовать @code{declare} форму
   (@pxref{Defining Macros}), чтобы указать, как @key{TAB} должна

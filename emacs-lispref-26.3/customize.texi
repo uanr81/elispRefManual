@@ -3,172 +3,176 @@
 @c Copyright (C) 1997-2019 Free Software Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Customization
-@chapter Customization Settings
+@chapter Персональные Настройки
 
 @cindex customization item
-  Users of Emacs can customize variables and faces without writing
-Lisp code, by using the Customize interface.  @xref{Easy
-Customization,,, emacs, The GNU Emacs Manual}.  This chapter describes
-how to define @dfn{customization items} that users can interact with
-through the Customize interface.
+  Пользователи Emacs могут настроить переменные и отображение текста
+  без написания кода Lisp, с помощью интерфейса Настройки.
+  @xref{Easy Customization,,, emacs, The GNU Emacs Manual}.  В этой главе
+  описывается, как определить @dfn{элементы настройки}, с помощью которых
+  пользователи смогут взаимодействовать с настройкой, используя интерфейс
+  Настройки.
 
-  Customization items include customizable variables, which are
-defined with the
+  Элементы персонализации включают настраиваемые переменные, которые
+  определяются с помощью
 @ifinfo
-@code{defcustom} macro (@pxref{Variable Definitions});
+@code{defcustom} макроса (@pxref{Variable Definitions});
 @end ifinfo
 @ifnotinfo
-@code{defcustom} macro;
+@code{defcustom} макроса;
 @end ifnotinfo
-customizable faces, which are defined with @code{defface} (described
-separately in @ref{Defining Faces}); and @dfn{customization groups},
-defined with
+настраиваемое отображение текста, которые определено с @code{defface}
+(описаны отдельно в @ref{Defining Faces}) и @dfn{групп настройки},
+определяется
 @ifinfo
 @code{defgroup} (@pxref{Group Definitions}),
 @end ifinfo
 @ifnotinfo
 @code{defgroup},
 @end ifnotinfo
-which act as containers for groups of related customization items.
+которые действуют как контейнеры для групп связанных элементов настройки.
 
 @menu
-* Common Keywords::         Common keyword arguments for all kinds of
-                             customization declarations.
-* Group Definitions::       Writing customization group definitions.
-* Variable Definitions::    Declaring user options.
-* Customization Types::     Specifying the type of a user option.
-* Applying Customizations:: Functions to apply customization settings.
-* Custom Themes::           Writing Custom themes.
+* Common Keywords::         Ключевые слова общих аргументов для всех видов
+                            объявления настройки.
+* Group Definitions::       Написание определений групп настройки.
+* Variable Definitions::    Объявление параметров пользователя.
+* Customization Types::     Определение типа пользовательского параметра.
+* Applying Customizations:: Функции для применения параметров настройки.
+* Custom Themes::           Написание пользовательских тем.
 @end menu
 
 @node Common Keywords
 @section Common Item Keywords
 
 @cindex customization keywords
-  The customization declarations that we will describe in the next few
-sections---@code{defcustom}, @code{defgroup}, etc.---all accept
-keyword arguments (@pxref{Constant Variables}) for specifying various
-information.  This section describes keywords that apply to all types
-of customization declarations.
+  Создание настройки, которое описывается в следующих разделах ---
+  @code{defcustom}, @code{defgroup} и так далее.  Принимаются ключевые слова
+  в аргументах (@pxref{Constant Variables}) для указания различной
+  информации.  В этом разделе описываются ключевые слова, которые относятся
+  ко всем типам определений настройки.
 
-  All of these keywords, except @code{:tag}, can be used more than once
-in a given item.  Each use of the keyword has an independent effect.
-The keyword @code{:tag} is an exception because any given item can only
-display one name.
+  Все эти ключевые слова, за исключением @code{:tag}, можно использовать
+  более чем один раз в определённом элементе.  Каждое использование ключевого
+  слова имеет независимый эффект.  Ключевое слово @code{:tag} является
+  исключением, потому что любой конкретный элемент может отображать только
+  одно имя.
 
 @table @code
 @item :tag @var{label}
 @kindex tag@r{, customization keyword}
-Use @var{label}, a string, instead of the item's name, to label the
-item in customization menus and buffers.  @strong{Don't use a tag
-which is substantially different from the item's real name; that would
-cause confusion.}
+Использует тег @var{label}, строку, вместо имени элемента, для отметки
+элемента пункта меню настройки и буферах.   @strong{Не используйте тег,
+который существенно отличается от реального имени элемента; это может
+вызвать путаницу.}
 
 @kindex group@r{, customization keyword}
 @item :group @var{group}
-Put this customization item in group @var{group}.  If this keyword is
-missing from a customization item, it'll be placed in the same group
-that was last defined (in the current file).
+Помещает этот элемент настройки в группе @var{group}.  Если это ключевое
+слово отсутствует в элементе настройки, оно будет помещено в ту же группу,
+которая была определена последней (в текущем файле).
 
-When you use @code{:group} in a @code{defgroup}, it makes the new
-group a subgroup of @var{group}.
+При использовании @code{:group} в @code{defgroup}, новая группа становится
+подгруппой группы @var{group}.
 
-If you use this keyword more than once, you can put a single item into
-more than one group.  Displaying any of those groups will show this
-item.  Please don't overdo this, since the result would be annoying.
+Если использовать это ключевое слово более чем один раз, можно поместить
+один элемент в более чем одну группу.  Отображение любой из этих групп будет
+показывать этот элемент.  Пожалуйста, не переусердствуйте, так как результат
+будет раздражать.
 
 @item :link @var{link-data}
 @kindex link@r{, customization keyword}
-Include an external link after the documentation string for this item.
-This is a sentence containing a button that references some
-other documentation.
+Включает внешнюю ссылку после строки документации для элемента.  Это
+предложение, содержит ссылку для перехода на некоторую другую документацию.
 
-There are several alternatives you can use for @var{link-data}:
+Есть несколько вариантов, которые можно использовать для @var{link-data}:
 
 @table @code
 @item (custom-manual @var{info-node})
-Link to an Info node; @var{info-node} is a string which specifies the
-node name, as in @code{"(emacs)Top"}.  The link appears as
-@samp{[Manual]} in the customization buffer and enters the built-in
-Info reader on @var{info-node}.
+Ссылка на узел Info; @var{info-node} является строкой, которая определяет
+имя узла, как и в @code{"(emacs)Top"}.  Ссылка выглядит как @samp{[Manual]} в
+буфере настройки и запускает встроенную программу справки Info, ноду
+@var{info-node}.
 
 @item (info-link @var{info-node})
-Like @code{custom-manual} except that the link appears
-in the customization buffer with the Info node name.
+Как @code{custom-manual} за исключением того, что ссылка появляется в
+настройках буфера с именем узла Info.
 
 @item (url-link @var{url})
-Link to a web page; @var{url} is a string which specifies the
-@acronym{URL}.  The link appears in the customization buffer as
-@var{url} and invokes the WWW browser specified by
-@code{browse-url-browser-function}.
+Ссылка на веб-страницу; @var{url} является строкой, которая определяет
+@acronym{URL}.  Отображается ссылка в настройках буфера как @var{url} и
+вызывает WWW-браузер, указанный в @code{browse-url-browser-function}.
 
 @item (emacs-commentary-link @var{library})
-Link to the commentary section of a library; @var{library} is a string
-which specifies the library name.  @xref{Library Headers}.
+Ссылка на раздел комментариев библиотеки; @var{library} является строкой,
+которая определяет имя библиотеки.  @xref{Library Headers}.
 
 @item (emacs-library-link @var{library})
-Link to an Emacs Lisp library file; @var{library} is a string which
-specifies the library name.
+Ссылка на файл библиотеки Emacs Lisp; @var{library} является строкой, которая
+определяет имя библиотеки.
 
 @item (file-link @var{file})
-Link to a file; @var{file} is a string which specifies the name of the
-file to visit with @code{find-file} when the user invokes this link.
+Ссылка на файл; @var{file} является строкой, которая определяет имя файла
+для посещения с использованием @code{find-file}, когда пользователь вызывает
+эту ссылку.
 
 @item (function-link @var{function})
-Link to the documentation of a function; @var{function} is a string
-which specifies the name of the function to describe with
-@code{describe-function} when the user invokes this link.
+Ссылка на документацию функции; @var{function} является строкой, которая
+определяет имя функции, чтобы использовать с @code{describe-function}, когда
+пользователь кликает эту ссылку.
 
 @item (variable-link @var{variable})
-Link to the documentation of a variable; @var{variable} is a string
-which specifies the name of the variable to describe with
-@code{describe-variable} when the user invokes this link.
+Ссылка на документацию переменной; @var{variable} является строкой, которая
+определяет имя переменной, чтобы использовать с @code{describe-variable},
+когда пользователь кликает эту ссылку.
 
 @item (custom-group-link @var{group})
-Link to another customization group.  Invoking it creates a new
-customization buffer for @var{group}.
+Ссылка на другую группу настройки.  Вызов создает новый буфер настройки
+@var{group}.
 @end table
 
-You can specify the text to use in the customization buffer by adding
-@code{:tag @var{name}} after the first element of the @var{link-data};
-for example, @code{(info-link :tag "foo" "(emacs)Top")} makes a link to
-the Emacs manual which appears in the buffer as @samp{foo}.
+Можно задать текст для использования в буфере настройки путем добавления
+@code{:tag @var{name}} после первого элемента @var{link-data}; например,
+@code{(info-link :tag "foo" "(emacs)Top")} создаёт ссылку на руководство
+Emacs, которое появляется в буфере с именем @samp{foo}.
 
-You can use this keyword more than once, to add multiple links.
+Можно использовать это ключевое слово более чем один раз, чтобы добавить
+несколько ссылок.
 
 @item :load @var{file}
 @kindex load@r{, customization keyword}
-Load file @var{file} (a string) before displaying this customization
-item (@pxref{Loading}).  Loading is done with @code{load}, and only if
-the file is not already loaded.
+Загрузить файл @var{file} (строку) перед отображением этого элемента
+настройки (@pxref{Loading}).  Загрузка выполняется используя @code{load}, и
+только если файл ещё не был загружен.
 
 @item :require @var{feature}
 @kindex require@r{, customization keyword}
-Execute @code{(require '@var{feature})} when your saved customizations
-set the value of this item.  @var{feature} should be a symbol.
+Выполнить @code{(require '@var{feature})} чтобы применить сохраненные
+настройки значения этого элемента. @var{feature} должен быть символом.
+(ВопросCustomize152)
 
-The most common reason to use @code{:require} is when a variable enables
-a feature such as a minor mode, and just setting the variable won't have
-any effect unless the code which implements the mode is loaded.
+Наиболее распространенная причина использования @code{:require}, когда
+переменная включает функцию, такую как второстепенный режим, и простая
+установка переменной не будет иметь никакого эффекта, если не загружен код,
+который реализуется загружаемым режимом.
 
 @item :version @var{version}
 @kindex version@r{, customization keyword}
-This keyword specifies that the item was first introduced in Emacs
-version @var{version}, or that its default value was changed in that
-version.  The value @var{version} must be a string.
+Это ключевое слово указывает, что элемент был впервые введен в Emacs в
+версии @var{version}, или его значение по умолчанию было изменено в
+указанной версии.  Значение @var{version} должно быть строкой.
 
 @item :package-version '(@var{package} . @var{version})
 @kindex package-version@r{, customization keyword}
-This keyword specifies that the item was first introduced in
-@var{package} version @var{version}, or that its meaning or default
-value was changed in that version.  This keyword takes priority over
-@code{:version}.
+Это ключевое слово указывает, что элемент был впервые введен в пакете
+@var{package} с версией @var{version}, или что его значение или значение по
+умолчанию было изменено в этой версии.  Это ключевое слово имеет приоритет
+над @code{:version}.
 
-@var{package} should be the official name of the package, as a symbol
-(e.g., @code{MH-E}).  @var{version} should be a string.  If the
-package @var{package} is released as part of Emacs, @var{package} and
-@var{version} should appear in the value of
-@code{customize-package-emacs-version-alist}.
+@var{package} должно быть официальным названием пакета, как символ
+(такой как, @code{MH-E}).  @var{version} должно быть строкой.  Если пакет
+@var{package} выпущен как часть Emacs, @var{package} и @var{version} должны
+появиться в значении @code{customize-package-emacs-version-alist}.
 @end table
 
 Packages distributed as part of Emacs that use the

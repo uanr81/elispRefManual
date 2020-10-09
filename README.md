@@ -1,3 +1,4 @@
+файл			Вычитка
 macros.texi +
 sequences.texi +
 objects.texi + 
