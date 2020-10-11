@@ -175,26 +175,25 @@ Emacs, которое появляется в буфере с именем @samp
 появиться в значении @code{customize-package-emacs-version-alist}.
 @end table
 
-Packages distributed as part of Emacs that use the
-@code{:package-version} keyword must also update the
-@code{customize-package-emacs-version-alist} variable.
+Пакеты распространяемые как часть Emacs, использующие ключевое слово
+@code{:package-version} длжны также обновлять переменную
+@code{customize-package-emacs-version-alist}.
 
 @defvar customize-package-emacs-version-alist
-This alist provides a mapping for the versions of Emacs that are
-associated with versions of a package listed in the
-@code{:package-version} keyword.  Its elements are:
+Ассоциативный список обеспечивает отображение связи версий Emacs с версиями
+пакета, указанной в @code{:package-version} ключевом слове. Ее элементы:
 
 @example
 (@var{package} (@var{pversion} . @var{eversion})@dots{})
 @end example
 
-For each @var{package}, which is a symbol, there are one or more
-elements that contain a package version @var{pversion} with an
-associated Emacs version @var{eversion}.  These versions are strings.
-For example, the MH-E package updates this alist with the following:
+Для каждого пакета @var{package}, который является символом, есть один или
+несколько элементов, которые содержат версии пакета @var{pversion} с
+соответствующей версии Emacs @var{eversion}.  Эти версии являются строками.
+Например, MH-E пакет обновляет этот ассоциативный список с нижеследующим:
 
-@c Must be small else too wide.
-@c FIXME obviously this is out of date (in the code).
+@c Должен быть маленьким, а этот еще слишком широк.
+@c Исправте: Очевидно, что это устаревший (в коде).
 @smallexample
 (add-to-list 'customize-package-emacs-version-alist
              '(MH-E ("6.0" . "22.1") ("6.1" . "22.1") ("7.0" . "22.1")
@@ -202,275 +201,278 @@ For example, the MH-E package updates this alist with the following:
                     ("7.4" . "22.1") ("8.0" . "22.1")))
 @end smallexample
 
-The value of @var{package} needs to be unique and it needs to match
-the @var{package} value appearing in the @code{:package-version}
-keyword.  Since the user might see the value in an error message, a good
-choice is the official name of the package, such as MH-E or Gnus.
+Значение @var{package} должно быть уникальным, и должно соответствовать
+значению @var{package} появляющегося в  ключевом слове
+@code{:package-version}.  Так как пользователь может увидеть в сообщении об
+ошибке это значение, хороший выбор официальное название пакета, такое как
+MH-E или Gnus.
 @end defvar
 
 @node Group Definitions
-@section Defining Customization Groups
+@section Определение Групп Настройки
 @cindex define customization group
 @cindex customization groups, defining
 
-  Each Emacs Lisp package should have one main customization group
-which contains all the options, faces and other groups in the package.
-If the package has a small number of options and faces, use just one
-group and put everything in it.  When there are more than twenty or so
-options and faces, then you should structure them into subgroups, and
-put the subgroups under the package's main customization group.  It is
-OK to put some of the options and faces in the package's main group
-alongside the subgroups.
+  Каждый пакет Emacs Lisp должен иметь одну основную группу настройки,
+  которая содержит все варианты, текстовое отображение и другие группы в
+  пакете.  Если пакет имеет небольшое количество опций и отображений текста,
+  лучше использовать только одну группу и разместить все в ней.  При наличии
+  более чем двадцати вариантов и отображений текста, лучше разделить их на
+  подгруппы, и поставить подгруппы под основной настройки группы пакета.  Это
+  применимо, чтобы расположить некоторые из вариантов и отображений текста
+  на одном уровне с основной группой программ пакета вместе с подгруппами.
 
-  The package's main or only group should be a member of one or more of
-the standard customization groups.  (To display the full list of them,
-use @kbd{M-x customize}.)  Choose one or more of them (but not too
-many), and add your group to each of them using the @code{:group}
-keyword.
+  Основная или единственная группа пакета должна быть членом одной или
+  нескольких стандартных групп настройки.  (Чтобы отобразить полный список,
+  используется @kbd{M-x customize}.)  Выберается один или несколько из них
+  (но не слишком много), и добавляется группа к каждому из них с помощью
+  @code{:group} ключевого слова.
 
-  The way to declare new customization groups is with @code{defgroup}.
+  Способ объявить новые группы настройки с помощью @code{defgroup}.
 
 @defmac defgroup group members doc [keyword value]@dots{}
-Declare @var{group} as a customization group containing @var{members}.
-Do not quote the symbol @var{group}.  The argument @var{doc} specifies
-the documentation string for the group.
+Объявляет @var{group} в качестве группы настройки, содержащей @var{members}.
+Не указывайте символ @var{group}.  Аргумент @var{doc} указывает строку
+документации для группы.  (ВопросCustomize236)
 
-The argument @var{members} is a list specifying an initial set of
-customization items to be members of the group.  However, most often
-@var{members} is @code{nil}, and you specify the group's members by
-using the @code{:group} keyword when defining those members.
+Аргумент @var{members} представляет собой список с указанием исходного
+набора элементов членов группы настройки.  Тем не менее, чаще всего
+@var{members} установлен в @code{nil}, а указываются участники группы,
+используя ключевое слово @code{:group} при их определении.
 
-If you want to specify group members through @var{members}, each element
-should have the form @code{(@var{name} @var{widget})}.  Here @var{name}
-is a symbol, and @var{widget} is a widget type for editing that symbol.
-Useful widgets are @code{custom-variable} for a variable,
-@code{custom-face} for a face, and @code{custom-group} for a group.
+Если требуется указать член группы через @var{members}, каждый элемент должен
+иметь вид @code{(@var{name} @var{widget})}.  Здесь @var{name} является
+символом, а @var{widget} виджетом типа для редактирования этого символа.
+Полезные виджеты для переменных @code{custom-variable}, @code{custom-face}
+для отображения текста, и @code{custom-group} для группы.
 
-When you introduce a new group into Emacs, use the @code{:version}
-keyword in the @code{defgroup}; then you need not use it for
-the individual members of the group.
+Когда вводится новая группа настроек в Emacs, используется ключевое слово
+@code{:version} в @code{defgroup}; его не нужно использовать для отдельных
+членов группы.
 
-In addition to the common keywords (@pxref{Common Keywords}), you can
-also use this keyword in @code{defgroup}:
+В дополнении к (@pxref{Common Keywords}) общим ключевым словам, также можно
+использовать это ключевое слово в @code{defgroup}:
 
 @table @code
 @item :prefix @var{prefix}
 @kindex prefix@r{, @code{defgroup} keyword}
-If the name of an item in the group starts with @var{prefix}, and the
-customizable variable @code{custom-unlispify-remove-prefixes} is
-non-@code{nil}, the item's tag will omit @var{prefix}.  A group can
-have any number of prefixes.
+Если имя элемента в группе начинается с @var{prefix} и настраиваемая
+переменная @code{custom-unlispify-remove-prefixes} установленна в
+не-@code{nil}, тег элемента будет опускать @var{prefix}.  Группа может иметь
+любое количество префиксов.
 @end table
 
 @cindex @code{custom-group} property
-The variables and subgroups of a group are stored in the
-@code{custom-group} property of the group's symbol.  @xref{Symbol
-Plists}.  The value of that property is a list of pairs whose
-@code{car} is the variable or subgroup symbol and the @code{cdr} is
-either @code{custom-variable} or @code{custom-group}.
+Переменные и подгруппы группы сохраняются в @code{custom-group} свойстве
+символа группы.  @xref{Symbol Plists}.  Значение этого свойства представляет
+собой список пар, где @code{car} является символом переменной или подгруппы,
+а @code{cdr} это либо @code{custom-variable} либо @code{custom-group}.
 @end defmac
 
 @defopt custom-unlispify-remove-prefixes
-If this variable is non-@code{nil}, the prefixes specified by a
-group's @code{:prefix} keyword are omitted from tag names, whenever
-the user customizes the group.
+Если эта переменная установленна в не-@code{nil}, префиксы, указанные
+ключевым словом @code{:prefix} какой-либо группы опускаются в именах тегов,
+когда пользователь настраивает группу.
 
-The default value is @code{nil}, i.e., the prefix-discarding feature
-is disabled.  This is because discarding prefixes often leads to
-confusing names for options and faces.
+Значение по умолчанию @code{nil}, т.е. функция отбрасывания префикса имени
+отключена.  Это происходит потому, что отбрасывание префикса часто приводит к
+запутанным имена опций и отображениям текста.
 @end defopt
 
 @node Variable Definitions
-@section Defining Customization Variables
+@section Определение Переменных Настройки
 @cindex define customization options
 @cindex customizable variables, how to define
 @cindex user options, how to define
 
-  @dfn{Customizable variables}, also called @dfn{user options}, are
-global Lisp variables whose values can be set through the Customize
-interface.  Unlike other global variables, which are defined with
-@code{defvar} (@pxref{Defining Variables}), customizable variables are
-defined using the @code{defcustom} macro.  In addition to calling
-@code{defvar} as a subroutine, @code{defcustom} states how the
-variable should be displayed in the Customize interface, the values it
-is allowed to take, etc.
+  @dfn{Настраиваемые переменные}, называемый также
+  @dfn{опциями пользователя}, являются глобальными Lisp переменными,значения
+  которых могут быть установлены через интерфейс Настройки.  В отличие от
+  других глобальных переменных, которые определяются с использованием
+  @code{defvar} (@pxref{Defining Variables}), настраиваемые переменные
+  определяются с помощью @code{defcustom} макроса.  Помимо вызова
+  @code{defvar} в качестве подпрограммы, @code{defcustom} устанавливает, как
+  переменная должна отображаться в интерфейсе Настройка, какие значения
+  допускается ей принимать и так далее.
 
 @defmac defcustom option standard doc [keyword value]@dots{}
-This macro declares @var{option} as a user option (i.e., a
-customizable variable).  You should not quote @var{option}.
+Макрос объявляет @var{option} в качестве опции пользователя (то есть,
+настраиваемый переменной).  Не нужно цитировать @var{option}.
 
-The argument @var{standard} is an expression that specifies the
-standard value for @var{option}.  Evaluating the @code{defcustom} form
-evaluates @var{standard}, but does not necessarily bind the option to
-that value.  If @var{option} already has a default value, it is left
-unchanged.  If the user has already saved a customization for
-@var{option}, the user's customized value is installed as the default
-value.  Otherwise, the result of evaluating @var{standard} is
-installed as the default value.
+Аргумент @var{standard} содержит выражение, которое задает стандартное
+значение для @var{option}.  Оценивая форму @code{defcustom} оценивает
+@var{standard}, но не обязательно привязывать опцию к этому значению.  Если
+@var{option} уже имеет значение по умолчанию, оно остается неизменным.  Если
+пользователь уже сохранил настройки для @var{option}, индивидуальные значения
+пользователя устанавливается в качестве значения по умолчанию.  В противном
+случае, результат вычисления @var{standard} устанавливается в качестве
+значения по умолчанию.
 
-Like @code{defvar}, this macro marks @code{option} as a special
-variable, meaning that it should always be dynamically bound.  If
-@var{option} is already lexically bound, that lexical binding remains
-in effect until the binding construct exits.  @xref{Variable Scoping}.
+Как и макрос @code{defvar}, этот макрос отмечает @code{option} в качестве
+специальной переменной, а это означает, что она должен всегда быть
+динамически связана.  Если @var{option} уже лексически связана, то
+лексическое связывания остается в силе до выхода из конструкции связывания.
+@xref{Variable Scoping}.  (ВопросCustomize315)
 
-The expression @var{standard} can be evaluated at various other times,
-too---whenever the customization facility needs to know @var{option}'s
-standard value.  So be sure to use an expression which is harmless to
-evaluate at any time.
+Выражение @var{standard} может быть оценено в различных других случаях, очень
+часто, когда при настройки объекта необходимо знать @var{option}'s
+стандартное значение.  Поэтому обязательно нужно использовать выражение,
+которое безвредно для оценки в любое время.  (ВопросCustomize320)
 
-The argument @var{doc} specifies the documentation string for the
-variable.
+Аргумент @var{doc} указывает строку документации для переменной.
 
-If a @code{defcustom} does not specify any @code{:group}, the last group
-defined with @code{defgroup} in the same file will be used.  This way, most
-@code{defcustom} do not need an explicit @code{:group}.
+Если @code{defcustom} не определяет @code{:group}, последняя группа,
+определенная с использованием @code{defgroup} в том же файле, будет
+использована.  Таким образом, в большинстве случаев в @code{defcustom} не
+нужно явно задавать @code{:group}.
 
 @cindex @code{eval-defun}, and @code{defcustom} forms
-When you evaluate a @code{defcustom} form with @kbd{C-M-x} in Emacs Lisp
-mode (@code{eval-defun}), a special feature of @code{eval-defun}
-arranges to set the variable unconditionally, without testing whether
-its value is void.  (The same feature applies to @code{defvar},
-@pxref{Defining Variables}.)  Using @code{eval-defun} on a defcustom
-that is already defined calls the @code{:set} function (see below),
-if there is one.
+Когда оценивается форма @code{defcustom} с использованием @kbd{C-M-x} в Emacs
+Lisp режиме (@code{eval-defun}), специальная функция @code{eval-defun}
+безоговорочно установит переменную, не проверяя, является ли её значение
+действительным.  (Та же функция применимп км@code{defvar},
+@pxref{Defining Variables}.).  Использование @code{eval-defun} в форме
+defcustom, с переменной которая уже определена, вызывает функцию @code{:set}
+(смотрим ниже).  (ВопросCustomize336)
 
-If you put a @code{defcustom} in a pre-loaded Emacs Lisp file
-(@pxref{Building Emacs}), the standard value installed at dump time
-might be incorrect, e.g., because another variable that it depends on
-has not been assigned the right value yet.  In that case, use
-@code{custom-reevaluate-setting}, described below, to re-evaluate the
-standard value after Emacs starts up.
+Если установить @code{defcustom} в предварительно загружаемый Emacs Lisp файл
+(@pxref{Building Emacs}), стандартное значение устанавливаемое во время
+дампа может быть неправильным, например, потому что другая переменная,
+которая влияет на установку, не получила ещё правильное значение.  В этом
+случае рекомендуется использовать @code{custom-reevaluate-setting}, описанно
+ниже, чтобы повторно оценивать стандартное значение после того, как Emacs
+запустится.
 @end defmac
 
-  In addition to the keywords listed in @ref{Common Keywords}, this
-macro accepts the following keywords:
+  В дополнение к ключевым словам, перечисленных в @ref{Common Keywords},
+  этот макрос принимает следующие ключевые слова:
 
 @table @code
 @item :type @var{type}
-Use @var{type} as the data type for this option.  It specifies which
-values are legitimate, and how to display the value
-(@pxref{Customization Types}).  Every @code{defcustom} should specify
-a value for this keyword.
+Назначает тип @var{type} как тип данных для этой опции.  Определяет, какие
+значения являются допустимыми, и как отображать это значение
+(@pxref{Customization Types}).  При каждом использовании @code{defcustom}
+требуется указывать значение для этого ключевого слова.
 
 @item :options @var{value-list}
 @kindex options@r{, @code{defcustom} keyword}
-Specify the list of reasonable values for use in this
-option.  The user is not restricted to using only these values, but they
-are offered as convenient alternatives.
+Указывает список подходящих значений для использования в этой опции.
+Пользователь не ограничивается использованием только этих значений, но они
+предлагаются в качестве удобных альтернатив.
 
-This is meaningful only for certain types, currently including
-@code{hook}, @code{plist} and @code{alist}.  See the definition of the
-individual types for a description of how to use @code{:options}.
+Это имеет смысл только для определенных типов, в настоящее время в их числе
+@code{hook}, @code{plist} и @code{alist}.  Смотреть определение описания
+отдельных типов с использованием @code{:options}.
 
 @item :set @var{setfunction}
 @kindex set@r{, @code{defcustom} keyword}
-Specify @var{setfunction} as the way to change the value of this
-option when using the Customize interface.  The function
-@var{setfunction} should take two arguments, a symbol (the option
-name) and the new value, and should do whatever is necessary to update
-the value properly for this option (which may not mean simply setting
-the option as a Lisp variable); preferably, though, it should not
-modify its value argument destructively.  The default for
-@var{setfunction} is @code{set-default}.
+Указывает функцию @var{setfunction} используемую для изменения значения этого
+параметра при использовании интерфейса Настройки.  Функция @var{setfunction}
+должна принимать два аргумента, символ (имя параметра) и новое значение,
+также должна сделать все необходимое, чтобы обновить допустимое значение
+для этой опции (которое не может означать просто установку параметра в
+качестве переменной Lisp); предпочтительно не изменяя свое значение аргумента
+деструктивно.  По умолчанию @var{setfunction} установлено в
+@code{set-default}.
 
-If you specify this keyword, the variable's documentation string
-should describe how to do the same job in hand-written Lisp code.
+Если указать это ключевое слово, строка документации переменной должна
+описать, как сделать эту же работу самостоятельно написанном коде Lisp.
 
 @item :get @var{getfunction}
 @kindex get@r{, @code{defcustom} keyword}
-Specify @var{getfunction} as the way to extract the value of this
-option.  The function @var{getfunction} should take one argument, a
-symbol, and should return whatever customize should use as the
-current value for that symbol (which need not be the symbol's Lisp
-value).  The default is @code{default-value}.
+Указывает функцию @var{getfunction} как способ извлечь значение этого
+параметра.  Функция @var{getfunction} должна принимать один аргумент, символ,
+и должна вернуть все настройки, которые следует использовать в качестве
+текущего значения этого символа (которое не обязательно должно быть значением
+Lisp символа). По умолчанию @code{default-value}.  (ВопросCustomize387)
 
-You have to really understand the workings of Custom to use
-@code{:get} correctly.  It is meant for values that are treated in
-Custom as variables but are not actually stored in Lisp variables.  It
-is almost surely a mistake to specify @var{getfunction} for a value
-that really is stored in a Lisp variable.
+Требуется действительно понять работу Настройки, для правильного
+использования @code{:get}.  Оно предназначено для значений, которые
+рассматриваются в Настройке как переменные, но на самом деле не хранятся в
+Lisp как переменные.  Это почти наверняка приведёт к ошибке, указать
+@var{getfunction} для значения, которое на самом деле хранится в переменной
+Lisp.
 
 @item :initialize @var{function}
 @kindex initialize@r{, @code{defcustom} keyword}
-@var{function} should be a function used to initialize the variable
-when the @code{defcustom} is evaluated.  It should take two arguments,
-the option name (a symbol) and the value.  Here are some predefined
-functions meant for use in this way:
+@var{function} должно быть функцией, которая используется для инициализации
+переменной, когда @code{defcustom} оценивается.  Должна принимать два
+аргумента, имя параметра (символ) и значение.  Вот некоторые предопределенные
+функции, предназначенные для использования таким образом:
 
 @table @code
 @item custom-initialize-set
-Use the variable's @code{:set} function to initialize the variable, but
-do not reinitialize it if it is already non-void.
+Используйте функцию @code{:set} для инициализации переменной, но не для
+повторной инициализации, если переменная уже не недействительна.
 
 @item custom-initialize-default
-Like @code{custom-initialize-set}, but use the function
-@code{set-default} to set the variable, instead of the variable's
-@code{:set} function.  This is the usual choice for a variable whose
-@code{:set} function enables or disables a minor mode; with this choice,
-defining the variable will not call the minor mode function, but
-customizing the variable will do so.
+Как и @code{custom-initialize-set}, но использует функцию @code{set-default}
+для установки переменной, вместо функции @code{:set}.  Это обычный выбор для
+переменной, @code{:set} функция включает или выключает второстепенный режим;
+если определять переменную таким образом не будет вызываться функция
+второстепенного режима, в отличии от настройки переменной.
 
 @item custom-initialize-reset
-Always use the @code{:set} function to initialize the variable.  If
-the variable is already non-void, reset it by calling the @code{:set}
-function using the current value (returned by the @code{:get} method).
-This is the default @code{:initialize} function.
+Всегда используется функция @code{:set} для инициализации переменной.  Если
+переменная уже не недействительна, сбросит её с помощью вызова функции
+@code{:set} с использованием текущего значения (возвращаемое методом
+@code{:get}).  Функция @code{:initialize} по умолчанию.
 
 @item custom-initialize-changed
-Use the @code{:set} function to initialize the variable, if it is
-already set or has been customized; otherwise, just use
+Используется функция @code{:set} для инициализации переменной, если она уже
+установлена или настроена; в противном случае, просто используется
 @code{set-default}.
 
 @item custom-initialize-delay
-This functions behaves like @code{custom-initialize-set}, but it
-delays the actual initialization to the next Emacs start.  This should
-be used in files that are preloaded (or for autoloaded variables), so
-that the initialization is done in the run-time context rather than
-the build-time context.  This also has the side-effect that the
-(delayed) initialization is performed with the @code{:set} function.
-@xref{Building Emacs}.
+Функция ведет себя как и @code{custom-initialize-set}, но задерживает
+фактическую инициализацию до начала следующего запуска Emacs. Это должно быть
+использовано в файлах, которые являются предварительно загруженными (или для
+автозагружаемых переменных), так что их инициализация выполняется в время
+выполнения контекста, а не в контексте времени выполнения.  Это также имеет
+побочный эффект, такой как (задержка) выполнение инициализации с помощью
+функции @code{:set}.  @xref{Building Emacs}.
 @end table
 
 @item :risky @var{value}
 @kindex risky@r{, @code{defcustom} keyword}
-Set the variable's @code{risky-local-variable} property to
+Установка свойство переменной @code{risky-local-variable} в значение
 @var{value} (@pxref{File Local Variables}).
 
 @item :safe @var{function}
 @kindex safe@r{, @code{defcustom} keyword}
-Set the variable's @code{safe-local-variable} property to
+Установка свойства переменной @code{safe-local-variable} в значение
 @var{function} (@pxref{File Local Variables}).
 
 @item :set-after @var{variables}
 @kindex set-after@r{, @code{defcustom} keyword}
-When setting variables according to saved customizations, make sure to
-set the variables @var{variables} before this one; i.e., delay
-setting this variable until after those others have been handled.  Use
-@code{:set-after} if setting this variable won't work properly unless
-those other variables already have their intended values.
+Установка переменных в соответствии с сохраненными настройками, убедиться,
+что переменные @var{variables} уже установлены перед этой; то есть отложить
+настройку этой переменной до тех пор, пока не будут обработаны другие.
+Использовать @code{:set-after}, если установка этой переменной не зависит от
+установленных значений других переменных.
 @end table
 
-  It is useful to specify the @code{:require} keyword for an option
-that turns on a certain feature.  This causes Emacs to load the
-feature, if it is not already loaded, whenever the option is set.
-@xref{Common Keywords}.  Here is an example:
+  Полезно указать ключевое слово @code{:require} для опции, в которой
+  установлено определение функции.  Это приводит к тому, что Emacs загрузит
+  эту функцию, если она еще не загружена, когда этот параметр будет
+  устанавливаться. @xref{Common Keywords}. Вот пример:
 
 @example
 (defcustom frobnicate-automatically nil
-  "Non-nil means automatically frobnicate all buffers."
+  "Не-nil значение устанавливает автомотическое сохранение для всех буферов."
   :type 'boolean
   :require 'frobnicate-mode
   :group 'frobnicate)
 @end example
 
-If a customization item has a type such as @code{hook} or
-@code{alist}, which supports @code{:options}, you can add additional
-values to the list from outside the @code{defcustom} declaration by
-calling @code{custom-add-frequent-value}.  For example, if you define a
-function @code{my-lisp-mode-initialization} intended to be called from
-@code{emacs-lisp-mode-hook}, you might want to add that to the list of
-reasonable values for @code{emacs-lisp-mode-hook}, but not by editing
-its definition.  You can do it thus:
+Если элемент настройки имеет тип, такой как @code{hook} или @code{alist} и
+поддерживает @code{:options}, можно добавить дополнительные значения в список
+за пределами объявления @code{defcustom} вызвав функцию
+@code{custom-add-frequent-value}.  Например, если определить функцию
+@code{my-lisp-mode-initialization} предназначенную для вызова из
+@code{emacs-lisp-mode-hook}, можно добавить в список подходящих значений
+@code{emacs-lisp-mode-hook}, без редактирования её определения.  Можно
+сделать это следующим образом:
 
 @example
 (custom-add-frequent-value 'emacs-lisp-mode-hook
@@ -478,166 +480,167 @@ its definition.  You can do it thus:
 @end example
 
 @defun custom-add-frequent-value symbol value
-For the customization option @var{symbol}, add @var{value} to the
-list of reasonable values.
+Опция настройки @var{symbol}, добавление значения @var{value} в список
+рекомендуемых значений.
 
-The precise effect of adding a value depends on the customization type
-of @var{symbol}.
+Точный эффект добавления значения зависит от типа настройки @var{symbol}.
 @end defun
 
-Internally, @code{defcustom} uses the symbol property
-@code{standard-value} to record the expression for the standard value,
-@code{saved-value} to record the value saved by the user with the
-customization buffer, and @code{customized-value} to record the value
-set by the user with the customization buffer, but not saved.
-@xref{Symbol Properties}.  These properties are lists, the car of
-which is an expression that evaluates to the value.
+Внутри @code{defcustom} используется свойство символа @code{standard-value}
+записывается выражение для стандартного значения, @code{saved-value}
+записывает значение, сохраненное пользователем с помощью буфера настройки, и
+@code{customized-value} записывает установленное значение пользователя с
+помощью буфера настройки, но без сохранения.  @xref{Symbol Properties}.  Эти
+свойства являются списками, @code{car}, которых является выражением,
+определяющее значение.
 
 @defun custom-reevaluate-setting symbol
-This function re-evaluates the standard value of @var{symbol}, which
-should be a user option declared via @code{defcustom}.  If the
-variable was customized, this function re-evaluates the saved value
-instead.  Then it sets the user option to that value (using the
-option's @code{:set} property if that is defined).
+Функция повторно вычисляет стандартное значение @var{symbol}, которое должно
+быть объявлено ​​по желанию пользователя с помощью @code{defcustom}.  Если
+переменная была настроена, то эта функция переоценивает сохраненное значение.
+Затем устанавливается параметр пользователя к этому значению (используя
+свойство опции @code{:set}, если это определено).
 
-This is useful for customizable options that are defined before their
-value could be computed correctly.  For example, during startup Emacs
-calls this function for some user options that were defined in
-pre-loaded Emacs Lisp files, but whose initial values depend on
-information available only at run-time.
+Это полезно для настраиваемых опций, которые определяются, прежде чем их
+значения могут быть вычислены правильно.  Например, во время запуска, Emacs
+вызывает эту функцию для некоторых пользовательских параметров, которые были
+определены в предварительно загруженных Emacs Lisp файлах, но чьи
+первоначальные значения зависят от информации, доступной только во время
+выполнения.
 @end defun
 
 @defun custom-variable-p arg
-This function returns non-@code{nil} if @var{arg} is a customizable
-variable.  A customizable variable is either a variable that has a
-@code{standard-value} or @code{custom-autoload} property (usually
-meaning it was declared with @code{defcustom}), or an alias for
-another customizable variable.
+Функция возвращает не-@code{nil} если @var{arg} это настраиваемая переменная.
+Настраиваемая переменная это переменная, которая имеет свойство
+@code{standard-value} или @code{custom-autoload} (как правило, означает, что
+она была объявлена ​​с @code{defcustom}) или псевдонимом для другой
+настраиваемой переменной.
 @end defun
 
 @node Customization Types
-@section Customization Types
+@section Настройка Типы
 
 @cindex customization types
-  When you define a user option with @code{defcustom}, you must specify
-its @dfn{customization type}.  That is a Lisp object which describes (1)
-which values are legitimate and (2) how to display the value in the
-customization buffer for editing.
+  При определении параметра пользователя с использованием @code{defcustom},
+  необходимо указать его @dfn{тип настройки}.  То есть:  (1) объект Lisp,
+  который описывает допустимые значения и (2) как отображать значение в
+  буфере для редактирования настройки.
 
 @kindex type@r{, @code{defcustom} keyword}
-  You specify the customization type in @code{defcustom} with the
-@code{:type} keyword.  The argument of @code{:type} is evaluated, but
-only once when the @code{defcustom} is executed, so it isn't useful
-for the value to vary.  Normally we use a quoted constant.  For
-example:
+  Необходимо указать тип настройки в @code{defcustom} свойству с ключевым
+  словом @code{:type}.  Аргумент @code{:type} оценивается один раз, когда
+  выполняется @code{defcustom}, так что это не полезно для изменения
+  значений.  Обычно используется цитируемая константа. Например:
 
 @example
 (defcustom diff-command "diff"
-  "The command to use to run diff."
+  "Команда, используемая для запуска diff."
   :type '(string)
   :group 'diff)
 @end example
 
-  In general, a customization type is a list whose first element is a
-symbol, one of the customization type names defined in the following
-sections.  After this symbol come a number of arguments, depending on
-the symbol.  Between the type symbol and its arguments, you can
-optionally write keyword-value pairs (@pxref{Type Keywords}).
+  В общем, тип настройки представляет собой список, первый элементом которого
+  является символ, одного из имен типов настройки, определенных в следующих
+  разделах.  После этого символа следует ряд аргументов, в зависимости от
+  указанного символа.  Между символом типа и его аргументами, можно при
+  желании написать ключевые пары слово-значение (@pxref{Type Keywords}).
 
-  Some type symbols do not use any arguments; those are called
-@dfn{simple types}.  For a simple type, if you do not use any
-keyword-value pairs, you can omit the parentheses around the type
-symbol.  For example just @code{string} as a customization type is
-equivalent to @code{(string)}.
+  Некоторые символы типа, не используют аргументы; они называются
+  @dfn{простыми типами}.  Для простого типа, если не используется какие-либо
+  ключевые пары слово-значение, можно опустить скобки вокруг символа типа.
+  Например просто @code{string} как тип настройки эквивалентно
+  @code{(string)}.
 
-  All customization types are implemented as widgets; see @ref{Top, ,
-Introduction, widget, The Emacs Widget Library}, for details.
+  Все типы настроек реализованы в виде виджетов; смотреть @ref{Top, ,
+Introduction, widget, The Emacs Widget Library}, для деталей.
 
 @menu
-* Simple Types::            Simple customization types: sexp, integer, etc.
-* Composite Types::         Build new types from other types or data.
-* Splicing into Lists::     Splice elements into list with @code{:inline}.
-* Type Keywords::           Keyword-argument pairs in a customization type.
-* Defining New Types::      Give your type a name.
+* Simple Types::            Простые типы настройки: sexp, integer и т.д..
+* Composite Types::         Создание новых типов из других типов или данных.
+* Splicing into Lists::     Сращивание элементов в список с @code{:inline}.
+* Type Keywords::           Ключевые пары слово-аргумент в типе настройки.
+* Defining New Types::      Задайте вашему типу имя.
 @end menu
 
 @node Simple Types
-@subsection Simple Types
+@subsection Простые Типы
 
-  This section describes all the simple customization types.  For
-several of these customization types, the customization widget
-provides inline completion with @kbd{C-M-i} or @kbd{M-@key{TAB}}.
+  В этом разделе описаны все простые типы настройки.  Для некоторых из этих
+  типов настройки, настройки виджета обеспечивает встроенное завершение с
+  использованием @kbd{C-M-i} или @kbd{M-@key{TAB}}.
 
 @table @code
 @item sexp
-The value may be any Lisp object that can be printed and read back.
-You can use @code{sexp} as a fall-back for any option, if you don't
-want to take the time to work out a more specific type to use.
+Значение может быть любым Lisp объект, который можно вывести и прочитать
+обратно.  Можно использовать @code{sexp} как запасной вариант для любого
+варианта, если нет желания тратить время, чтобы разработать более конкретный
+тип для использования.
 
 @item integer
-The value must be an integer.
+Значение должно быть целым числом.
 
 @item number
-The value must be a number (floating point or integer).
+Значение должно быть числом (с плавающей точкой или целым числом).
 
 @item float
-The value must be floating point.
+Значение должно быть с плавающей точкой.
 
 @item string
-The value must be a string.  The customization buffer shows the string
-without delimiting @samp{"} characters or @samp{\} quotes.
+Значение должно быть строкой. В буфере настройки показывает строку без
+цитирования разделительных символов @samp{"} или @samp{\}.
+(ВопросCustomize590)
 
 @item regexp
-Like @code{string} except that the string must be a valid regular
-expression.
+Как и @code{string} за исключением того, что строка должна быть регулярным
+выражением.
 
 @item character
-The value must be a character code.  A character code is actually an
-integer, but this type shows the value by inserting the character in the
-buffer, rather than by showing the number.
+Значение должно быть кодом символа.  Код символа на самом деле является целым
+числом, и этот тип показывает значение путем вставки символа в буфер, а не
+путем вставки числа.
 
 @item file
-The value must be a file name.  The widget provides completion.
+Значение должно быть именем файла. Виджет обеспечивает завершение.
 
 @item (file :must-match t)
-The value must be a file name for an existing file.  The widget
-provides completion.
+Значение должно быть именем существующего файла.  Виджет обеспечивает
+завершение.
 
 @item directory
 The value must be a directory.  The widget provides completion.
 
 @item hook
-The value must be a list of functions.  This customization type is
-used for hook variables.  You can use the @code{:options} keyword in a
-hook variable's @code{defcustom} to specify a list of functions
-recommended for use in the hook; @xref{Variable Definitions}.
+Значение должно быть списком функций.  Этот тип настройки используется для
+переменных ловушек.  Можно также использовать ключевое слово @code{:options}
+в переменной ловушке в @code{defcustom}, чтобы определить список функций,
+рекомендованный для использования в ловушке; @xref{Variable Definitions}.
 
 @item symbol
-The value must be a symbol.  It appears in the customization buffer as
-the symbol name.  The widget provides completion.
+Значение должно быть символом.  Оно появляется в буфере настройки в качестве
+имени символа.  Виджет обеспечивает завершение.
 
 @item function
-The value must be either a lambda expression or a function name.  The
-widget provides completion for function names.
+Значение должно быть либо лямбда-выражением или именем функции.  Виджет
+обеспечивает завершение для имён функций.
 
 @item variable
-The value must be a variable name.  The widget provides completion.
+Значение должно быть именем переменной.  Виджет обеспечивает завершение.
 
 @item face
-The value must be a symbol which is a face name.  The widget provides
-completion.
+Значение должно быть символом, которое является именем отображения текста.
+Виджет обеспечивает завершение.
 
 @item boolean
-The value is boolean---either @code{nil} or @code{t}.  Note that by
-using @code{choice} and @code{const} together (see the next section),
-you can specify that the value must be @code{nil} or @code{t}, but also
-specify the text to describe each value in a way that fits the specific
-meaning of the alternative.
+Булево значение --- либо @code{nil} или @code{t}.  Обратите внимание, что
+при использовании @code{choice} и @code{const} вместе (смотрите следующий
+раздел), можно указать, что значение должно быть @code{nil} или @code{t}, а
+также указать текст для описания каждого значения таким образом, при
+выборе конкретного значения альтернативы.  (ВопросCustomize638)
 
 @item key-sequence
-The value is a key sequence.  The customization buffer shows the key
-sequence using the same syntax as the @kbd{kbd} function.  @xref{Key
-Sequences}.
+Значение представляет собой последовательность клавиш.  Буфер настройки
+показывает ключевую последовательность, используя тот же синтаксис, что и
+функция @kbd{kbd}.  @xref{Key Sequences}.
 
 @item coding-system
 The value must be a coding-system name, and you can do completion with

@@ -11,23 +11,24 @@
   определить их.
 
 @menu
-* What Is a Function::          Lisp функции против примитивов; терминология.
-* Lambda Expressions::          Выражение функции как объекта Lisp.
+* What Is a Function::          Lisp функции, сравнение с примитивами; терминология.
+* Lambda Expressions::          Выражение функции как объект Lisp.
 * Function Names::              Символ может служить именем функции.
-* Defining Functions::          Lisp выражения для определения функций.
+* Defining Functions::          Lisp выражение для определения функции.
 * Calling Functions::           Как использовать существующую функцию.
 * Mapping Functions::           Применение функции к каждому элементу списка и т.д.
-* Anonymous Functions::         Lambda выражения функции без каких-либо имен.
-* Generic Functions::           Полиморфизм, Emacs-стиль.
+* Anonymous Functions::         Lambda выражение функции без какого-либо имени.
+* Generic Functions::           Полиморфизм, в Emacs-стиле.
 * Function Cells::              Доступ к настройке или определение функции символа.
-* Closures::                    Функции, вмещающие лексическую среду.
+* Closures::                    Функции, использующие лексическую среду.
 * Advising Functions::          Дополнение к определению функции.
-* Obsolete Functions::          Объявление функцию устаревшей.
+* Obsolete Functions::          Объявление функции как устаревшей.
 * Inline Functions::            Встроенные Функции, которые расширяет компилятор.(ВопросFunction26)
 * Declare Form::                Добавление дополнительной информации о функции.
 * Declaring Functions::         Собщение компилятору, что функция определена.(ВопросFunction28)
 * Function Safety::             Определение, является ли функция безопасна для вызова.
-* Related Topics::              Перекрестные ссылки на конкретные Lisp примитивы, которые имеют особое отношение к работе функций.
+* Related Topics::              Перекрестные ссылки на конкретные Lisp примитивы,
+                                которые имеют особое отношение к работе функций.
 @end menu
 
 @node What Is a Function
