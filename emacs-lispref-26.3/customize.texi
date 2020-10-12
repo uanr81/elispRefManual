@@ -643,118 +643,117 @@ The value must be a directory.  The widget provides completion.
 функция @kbd{kbd}.  @xref{Key Sequences}.
 
 @item coding-system
-The value must be a coding-system name, and you can do completion with
-@kbd{M-@key{TAB}}.
+Значение должно быть именем системы кодирования, можно производить завершение
+с комбинацией @kbd{M-@key{TAB}}.
 
 @item color
-The value must be a valid color name.  The widget provides completion
-for color names, as well as a sample and a button for selecting a
-color name from a list of color names shown in a @file{*Colors*}
-buffer.
+Значение должно быть допустимым именем цвета.  Виджет предусматривает
+завершение для названий цветов, а также образец и кнопку для выбора имени
+цвета из списка названий цветов, показанных в буфере @file{*Colors*}.
 @end table
 
 @node Composite Types
-@subsection Composite Types
+@subsection Составные Типы
 @cindex composite types (customization)
 
-  When none of the simple types is appropriate, you can use composite
-types, which build new types from other types or from specified data.
-The specified types or data are called the @dfn{arguments} of the
-composite type.  The composite type normally looks like this:
+  Когда ни один из простых типов не подходит, можно использовать составные
+  типы, которые строят новые типы из других типов или уточненных данных.
+  Указанные типы или данные называются @dfn{аргументами} составного типа.
+  Составной тип обычно выглядит следующим образом:
 
 @example
 (@var{constructor} @var{arguments}@dots{})
 @end example
 
 @noindent
-but you can also add keyword-value pairs before the arguments, like
-this:
+также можно добавлять пары ключевое слово-значение перед аргументами, как
+здесь:
 
 @example
 (@var{constructor} @r{@{}@var{keyword} @var{value}@r{@}}@dots{} @var{arguments}@dots{})
 @end example
 
-  Here is a table of constructors and how to use them to write
-composite types:
+  Вот таблица конструкторов и как использовать их для написания составных
+  типов:
 
 @table @code
 @item (cons @var{car-type} @var{cdr-type})
-The value must be a cons cell, its @sc{car} must fit @var{car-type}, and
-its @sc{cdr} must fit @var{cdr-type}.  For example, @code{(cons string
-symbol)} is a customization type which matches values such as
-@code{("foo" . foo)}.
+Значение должно быть cons-ячецкой , её @sc{car} должен соответствовать
+@var{car-type}, и его @sc{cdr} должен соответствовать @var{cdr-type}.
+Например, @code{(cons string symbol)} представляет собой тип настройки,
+который соответствует значениям, таким как @code{("foo" . foo)}.
 
-In the customization buffer, the @sc{car} and @sc{cdr} are displayed
-and edited separately, each according to their specified type.
+В буфере настройки, @sc{car} и @sc{cdr} отображаются и редактируются
+отдельно, каждый в соответствии со своим указанным типом.
 
 @item (list @var{element-types}@dots{})
-The value must be a list with exactly as many elements as the
-@var{element-types} given; and each element must fit the
-corresponding @var{element-type}.
+Значение должно быть списком с точно таким количеством элементов, как
+заданно в @var{element-types}; и каждый элемент должен соответствовать
+каждому своему соответствующему @var{element-type}.
 
-For example, @code{(list integer string function)} describes a list of
-three elements; the first element must be an integer, the second a
-string, and the third a function.
+Например, @code{(list integer string function)} описывает список из трех
+элементов; первый элемент должен быть целым числом, второй строкай, третий
+функцией.
 
-In the customization buffer, each element is displayed and edited
-separately, according to the type specified for it.
+В буфере настройки, каждый элемент отображается и редактируются отдельно, в
+зависимости от типа, установленного для него.
 
 @item (group @var{element-types}@dots{})
-This works like @code{list} except for the formatting
-of text in the Custom buffer.  @code{list} labels each
-element value with its tag; @code{group} does not.
+Это работает как @code{list} за исключением того, что для форматирования
+текста используется буфер пользователя.  @code{list} отмечает каждое значение
+элемента его тегом; @code{group} нет.
 
 @item (vector @var{element-types}@dots{})
-Like @code{list} except that the value must be a vector instead of a
-list.  The elements work the same as in @code{list}.
+Как и @code{list} за исключением того, что значение должно быть вектором, а
+не списком.  Элементы отработают так же, как и в @code{list}.
 
 @item (alist :key-type @var{key-type} :value-type @var{value-type})
-The value must be a list of cons-cells, the @sc{car} of each cell
-representing a key of customization type @var{key-type}, and the
-@sc{cdr} of the same cell representing a value of customization type
-@var{value-type}.  The user can add and delete key/value pairs, and
-edit both the key and the value of each pair.
+Значение должно быть списком cons-ячеек, @sc{car} каждой ячейки,
+представлять собой ключ типа настройки @var{key-type} и @sc{cdr} той же
+ячейки, представлять значение типа настройки @var{value-type}.  Пользователь
+может добавлять и удалять пары ключ/значение, а также редактировать и ключ и
+значение каждой пары.
 
-If omitted, @var{key-type} and @var{value-type} default to
+Если этот параметр опущен, @var{key-type} и @var{value-type} по умолчанию
 @code{sexp}.
 
-The user can add any key matching the specified key type, but you can
-give some keys a preferential treatment by specifying them with the
-@code{:options} (see @ref{Variable Definitions}).  The specified keys
-will always be shown in the customize buffer (together with a suitable
-value), with a checkbox to include or exclude or disable the key/value
-pair from the alist.  The user will not be able to edit the keys
-specified by the @code{:options} keyword argument.
+Пользователь может добавить любой ключ, соответствующий указанному типу
+ключа, но можно задать некоторым ключам приоритетный режим, указав это с
+помощью @code{:options} (смотреть @ref{Variable Definitions}).  Указанные
+ключи всегда будут отображаться в буфере настройки (вместе с соответствующим
+значением), с помощью флажка, чтобы включить, исключить или отключить пару
+ключ/значение из ALIST.  Пользователь не сможет редактировать ключи,
+указанные в аргументе с ключевым словом @code{:options}.
 
-The argument to the @code{:options} keywords should be a list of
-specifications for reasonable keys in the alist.  Ordinarily, they are
-simply atoms, which stand for themselves.  For example:
+Аргумент с ключевым словом @code{:options}, должен быть списком спецификаций
+допустимых ключей в ассоциативном списке.  Как правило, это просто атомы,
+которые оценивают сами себя. Например:
 
 @example
 :options '("foo" "bar" "baz")
 @end example
 
 @noindent
-specifies that there are three known keys, namely @code{"foo"},
-@code{"bar"} and @code{"baz"}, which will always be shown first.
+указывает на то, что есть три известных ключа, а именно @code{"foo"},
+@code{"bar"} и @code{"baz"}, которые всегда будут показаны первыми.
 
-You may want to restrict the value type for specific keys, for
-example, the value associated with the @code{"bar"} key can only be an
-integer.  You can specify this by using a list instead of an atom in
-the list.  The first element will specify the key, like before, while
-the second element will specify the value type.  For example:
+Можете ограничить тип значения для конкретных ключей, например, значение,
+связанное с ключом @code{"bar"} может быть только целым числом.  Можете
+указать это в списке с помощью списка вместо атома.  Первый элемент будет
+указывать ключ, как и раньше, в то время как второй элемент будет указать
+тип значения. Например:
 
 @example
 :options '("foo" ("bar" integer) "baz")
 @end example
 
-Finally, you may want to change how the key is presented.  By default,
-the key is simply shown as a @code{const}, since the user cannot change
-the special keys specified with the @code{:options} keyword.  However,
-you may want to use a more specialized type for presenting the key, like
-@code{function-item} if you know it is a symbol with a function binding.
-This is done by using a customization type specification instead of a
-symbol for the key.
+Наконец, можно изменить то, как представляется ключ.  По умолчанию ключ
+просто представляется как @code{const}, так как пользователь не может
+изменить специальные клавиши, указанные с ключевым словом @code{:options}.
+Тем не менее, можно использовать более специализированный тип для
+представления ключа, как @code{function-item}, если известно, что это символ
+с действительной функцией.  Это делается с помощью спецификации типа
+настройки вместо символа ключа.
 
 @example
 :options '("foo"
@@ -762,13 +761,13 @@ symbol for the key.
            "baz")
 @end example
 
-Many alists use lists with two elements, instead of cons cells.  For
-example,
+Многие ассоциативные списки используют списки с двумя элементами, вместо
+cons-ячейки. Например,
 
 @example
 (defcustom list-alist
   '(("foo" 1) ("bar" 2) ("baz" 3))
-  "Each element is a list of the form (KEY VALUE).")
+  "Каждый элемент представляет собой список вида (KEY VALUE).")
 @end example
 
 @noindent
@@ -777,71 +776,71 @@ instead of
 @example
 (defcustom cons-alist
   '(("foo" . 1) ("bar" . 2) ("baz" . 3))
-  "Each element is a cons-cell (KEY . VALUE).")
+  "Каждый элемент является cons-ячейкой (KEY . VALUE).")
 @end example
 
-Because of the way lists are implemented on top of cons cells, you can
-treat @code{list-alist} in the example above as a cons cell alist, where
-the value type is a list with a single element containing the real
-value.
+Благодаря тому, как реализована работа со списками вместо cons-ячеек, можно
+представить @code{list-alist} в приведенном выше примере, как cons-ячейкой
+ALIST, где тип значения представляет собой список с одним элементом,
+содержащим реальное значение.
 
 @example
 (defcustom list-alist '(("foo" 1) ("bar" 2) ("baz" 3))
-  "Each element is a list of the form (KEY VALUE)."
+  "Каждый элемент представляет собой список вида (KEY VALUE)."
   :type '(alist :value-type (group integer)))
 @end example
 
-The @code{group} widget is used here instead of @code{list} only because
-the formatting is better suited for the purpose.
+@code{group} виджет здесь используется вместо @code{list} только потому, что
+форматирование лучше подходит для этой цели.
 
-Similarly, you can have alists with more values associated with each
-key, using variations of this trick:
+Кроме того, можно иметь alists с большим количеством значений, связанными с
+каждым ключом, используя вариацию этого трюка:
 
 @example
 (defcustom person-data '(("brian"  50 t)
                          ("dorith" 55 nil)
                          ("ken"    52 t))
-  "Alist of basic info about people.
-Each element has the form (NAME AGE MALE-FLAG)."
+  "ALIST базовой информации о людях.
+Каждый элемент имеет вид (NAME AGE MALE-FLAG)."
   :type '(alist :value-type (group integer boolean)))
 @end example
 
 @item (plist :key-type @var{key-type} :value-type @var{value-type})
-This customization type is similar to @code{alist} (see above), except
-that (i) the information is stored as a property list,
-(@pxref{Property Lists}), and (ii) @var{key-type}, if omitted,
-defaults to @code{symbol} rather than @code{sexp}.
+Этот тип настройки похож на @code{alist} (смотри выше), за исключением того,
+что (1) информация хранится в виде списка свойств, (@pxref{Property Lists}),
+и (2) @var{key-type}, если не указано, используется по умолчанию
+@code{symbol}, а не @code{sexp}.
 
 @item (choice @var{alternative-types}@dots{})
-The value must fit one of @var{alternative-types}.  For example,
-@code{(choice integer string)} allows either an integer or a string.
+Значение должно соответствовать одному из типов @var{alternative-types}.
+Например, @code{(choice integer string)} допускает к использованию целое
+число или строку.
 
-In the customization buffer, the user selects an alternative
-using a menu, and can then edit the value in the usual way for that
-alternative.
+В буфере настройки, пользователь выбирает альтернативу с помощью меню, а
+затем может изменить значение обычным способом для этой альтернативы.
 
-Normally the strings in this menu are determined automatically from the
-choices; however, you can specify different strings for the menu by
-including the @code{:tag} keyword in the alternatives.  For example, if
-an integer stands for a number of spaces, while a string is text to use
-verbatim, you might write the customization type this way,
+Обычно строки в этом меню определяется автоматически из вариантов; Однако,
+можно задать различные строки для меню, включая @code{:tag} ключевое слово в
+альтернативах.  Например, если целое число обозначает количество пробелов, а
+строка текста используется дословно, можно написать настройки типа таким
+образом,
 
 @example
-(choice (integer :tag "Number of spaces")
-        (string :tag "Literal text"))
+(choice (integer :tag "Количество мест")
+        (string :tag "Дословный текст"))
 @end example
 
 @noindent
-so that the menu offers @samp{Number of spaces} and @samp{Literal text}.
+так что меню будет предлагать @samp{Количество мест} и
+@samp{Дословный текст}.  В какой-либо альтернативы, для которых @code{nil}
+не является допустимым значением, кроме @code{const}, нужно указать
+допустимое значение по умолчанию для этой альтернативы, используя ключевое
+слово @code{:value}.  @xref{Type Keywords}.
 
-In any alternative for which @code{nil} is not a valid value, other than
-a @code{const}, you should specify a valid default for that alternative
-using the @code{:value} keyword.  @xref{Type Keywords}.
-
-If some values are covered by more than one of the alternatives,
-customize will choose the first alternative that the value fits.  This
-means you should always list the most specific types first, and the
-most general last.  Here's an example of proper usage:
+Если некоторые значения предназначены более чем для одной из альтернатив,
+при настройке выберется первый вариант, которому соответствует значение.  Это
+означает, что всегда нужно вначале перечислить более конкретные типы, а затем
+более общие типы.  Вот пример правильного использования:
 
 @example
 (choice (const :tag "Off" nil)
@@ -849,122 +848,123 @@ most general last.  Here's an example of proper usage:
 @end example
 
 @noindent
-This way, the special value @code{nil} is not treated like other
-symbols, and symbols are not treated like other Lisp expressions.
+Таким образом, как и значение @code{nil}, так другие символы и другие
+выражения Lisp не обрабатываются.  (ВопросCustomize852)
 
 @cindex radio, customization types
 @item (radio @var{element-types}@dots{})
-This is similar to @code{choice}, except that the choices are displayed
-using radio buttons rather than a menu.  This has the advantage of
-displaying documentation for the choices when applicable and so is often
-a good choice for a choice between constant functions
-(@code{function-item} customization types).
+Это похоже на @code{choice}, за исключением того, что варианты отображается с
+помощью с помощью переключателя, а не меню.  Это имеет преимущество
+отображения документации для выбора, когда это применимо, и поэтому часто
+является хорошим выбором для выбора между постоянными функциями (типы
+настройки @code{function-item}).  (ВопросCustomize860)
 
 @item (const @var{value})
-The value must be @var{value}---nothing else is allowed.
+Значение должно быть @var{value} --- другое ничего не допускается.
 
-The main use of @code{const} is inside of @code{choice}.  For example,
-@code{(choice integer (const nil))} allows either an integer or
-@code{nil}.
+Основное применение @code{const} - это внутри @code{choice}.  Например,
+@code{(choice integer (const nil))} допускаем целое число или @code{nil}.
 
-@code{:tag} is often used with @code{const}, inside of @code{choice}.
-For example,
+@code{:tag} часто используется с @code{const}, внутри @code{choice}.
+Пример,
 
 @example
-(choice (const :tag "Yes" t)
-        (const :tag "No" nil)
-        (const :tag "Ask" foo))
+(choice (const :tag "Да" t)
+        (const :tag "Нет" nil)
+        (const :tag "Вопрос" foo))
 @end example
 
 @noindent
-describes a variable for which @code{t} means yes, @code{nil} means no,
-and @code{foo} means ``ask''.
+описывает переменную, для которой @code{t} означает ``Да'', @code{nil}
+означает ``Нет'', и @code{foo} означает ``Вопрос''.
 
 @item (other @var{value})
-This alternative can match any Lisp value, but if the user chooses this
-alternative, that selects the value @var{value}.
+Эта альтернатива может соответствовать любому Lisp значению, но если
+пользователь выбирает этот вариант, он выбирает значение @var{value}.
 
-The main use of @code{other} is as the last element of @code{choice}.
-For example,
+Основное применение @code{other} в качестве последнего элемента
+@code{choice}.  Например,
 
 @example
-(choice (const :tag "Yes" t)
-        (const :tag "No" nil)
-        (other :tag "Ask" foo))
+(choice (const :tag "Да" t)
+        (const :tag "Нет" nil)
+        (other :tag "Вопрос" foo))
 @end example
 
 @noindent
-describes a variable for which @code{t} means yes, @code{nil} means no,
-and anything else means ``ask''.  If the user chooses @samp{Ask} from
-the menu of alternatives, that specifies the value @code{foo}; but any
-other value (not @code{t}, @code{nil} or @code{foo}) displays as
-@samp{Ask}, just like @code{foo}.
+описывает переменную, для которой @code{t} означает ``Да'', @code{nil}
+означает ``Нет'', а всё остальное означает ``Вопрос''.  Если пользователь
+выбирает @samp{Вопрос} из меню альтернатив, это задает значение @code{foo};
+но любое другое значение (не @code{t}, @code{nil} или @code{foo})
+отличное от @samp{Вопрос}, так же, отображается как @code{foo}.
+(ВопросCustomize900)
 
 @item (function-item @var{function})
-Like @code{const}, but used for values which are functions.  This
-displays the documentation string as well as the function name.
-The documentation string is either the one you specify with
-@code{:doc}, or @var{function}'s own documentation string.
+Также Как @code{const}, но используются для значений, которые являются
+функциями.  Это показывает строку документации, а также имя функции.  Строка
+документации либо задана с @code{:doc} или собственной строкой документации
+функции @var{function}.
 
 @item (variable-item @var{variable})
-Like @code{const}, but used for values which are variable names.  This
-displays the documentation string as well as the variable name.  The
-documentation string is either the one you specify with @code{:doc}, or
-@var{variable}'s own documentation string.
+Также как @code{const}, но используется для значений, которые являются
+именами переменных.  Это выводит строку документации, а также имя переменной.
+Строка документации либо задана с @code{:doc} или собственной строкой
+документации переменной @var{variable}.
 
 @item (set @var{types}@dots{})
-The value must be a list, and each element of the list must match one of
-the @var{types} specified.
+Значение должно быть списком, и каждый элемент списка должен совпадать с
+одним из указанных типов @var{types}.
 
-This appears in the customization buffer as a checklist, so that each of
-@var{types} may have either one corresponding element or none.  It is
-not possible to specify two different elements that match the same one
-of @var{types}.  For example, @code{(set integer symbol)} allows one
-integer and/or one symbol in the list; it does not allow multiple
-integers or multiple symbols.  As a result, it is rare to use
-nonspecific types such as @code{integer} in a @code{set}.
+Это представляется буфере настройки в качестве контрольного списка, где
+каждый из типов @var{types} может иметь либо один соответствующий элемент или
+либо не иметь ни одного.  Не представляется возможным определить два
+различных элемента, которые соответствуют одному и томуже типу в @var{types}.
+Например, @code{(set integer symbol)} допускает одно целое число и/или один
+символ в списке; не допускается несколько целых чисел или несколько символов.
+В результате, редко используются неспецифические типы, такие как
+@code{integer} в @code{set}.
 
-Most often, the @var{types} in a @code{set} are @code{const} types, as
-shown here:
+Чаще всего, типы @var{types} в @code{set} являются @code{const} типами, как
+показано здесь:
 
 @example
 (set (const :bold) (const :italic))
 @end example
 
-Sometimes they describe possible elements in an alist:
+Иногда они описывают возможные элементы в ALIST:
 
 @example
-(set (cons :tag "Height" (const height) integer)
-     (cons :tag "Width" (const width) integer))
+(set (cons :tag "Высота" (const height) integer)
+     (cons :tag "Ширина" (const width) integer))
 @end example
 
 @noindent
-That lets the user specify a height value optionally
-and a width value optionally.
+Это позволяет пользователю определить необязательное значение высоты и
+необязательное значение ширины.
 
 @item (repeat @var{element-type})
-The value must be a list and each element of the list must fit the type
-@var{element-type}.  This appears in the customization buffer as a
-list of elements, with @samp{[INS]} and @samp{[DEL]} buttons for adding
-more elements or removing elements.
+Значение должно быть списком, и каждый элемент которого должен
+соответствовать типу @var{element-type}.  Это появляется в буфере настройки в
+виде списка элементов, отображаемых с помощью кнопок @samp{[INS]} и
+@samp{[DEL]} для добавления дополнительных элементов или удаления элементов.
 
 @cindex restricted-sexp, customization types
 @item (restricted-sexp :match-alternatives @var{criteria})
-This is the most general composite type construct.  The value may be
-any Lisp object that satisfies one of @var{criteria}.  @var{criteria}
-should be a list, and each element should be one of these
-possibilities:
+Это самый общий тип составной конструкции.  Значение может быть любым
+объектом Lisp, удовлетворяющий одному из условий @var{criteria}.
+Условие @var{criteria} должно быть списком, и каждый элемент должен быть один
+из этих возможных:
 
 @itemize @bullet
 @item
-A predicate---that is, a function of one argument that returns either
-@code{nil} or non-@code{nil} according to the argument.  Using a
-predicate in the list says that objects for which the predicate
-returns non-@code{nil} are acceptable.
+Предикат --- то есть функция одного аргумента, которая возвращает либо
+@code{nil} либо не-@code{nil} в соответствии с аргументом.  Использование
+предиката в списке говорит о том, что объекты, для которых предикат
+возвращает не-@code{nil} являются допустимыми.
 
 @item
-A quoted constant---that is, @code{'@var{object}}.  This sort of element
-in the list says that @var{object} itself is an acceptable value.
+Цитируемая константа --- то есть, @code{'@var{object}}.  Этот вид элемента в
+списке говорит, что сам объект @var{object} является допустимым значением.
 @end itemize
 
 For example,
@@ -975,43 +975,42 @@ For example,
 @end example
 
 @noindent
-allows integers, @code{t} and @code{nil} as legitimate values.
+допускаются целые числа, @code{t} и @code{nil} в качестве значений.
 
-The customization buffer shows all legitimate values using their read
-syntax, and the user edits them textually.
+Буфер настройки показывает все допустимые значения, используя их синтаксис
+для чтения, и пользователь редактирует их текстуально.
 @end table
 
-  Here is a table of the keywords you can use in keyword-value pairs
-in a composite type:
+  Вот таблица из ключевых слов, которые можно использовать в парах
+  ключевое слово-значение в составном типе настройки:
 
 @table @code
 @item :tag @var{tag}
-Use @var{tag} as the name of this alternative, for user communication
-purposes.  This is useful for a type that appears inside of a
+Использовать тег  @var{tag} как имя альтернативы, для взаимодействия  с
+пользователем.  Это полезно для того типа, который появляется внутри
 @code{choice}.
 
 @item :match-alternatives @var{criteria}
 @kindex match-alternatives@r{, customization keyword}
-Use @var{criteria} to match possible values.  This is used only in
-@code{restricted-sexp}.
+Использовать условие @var{criteria} для сопоставления с возможными
+значениями.  Это используется только в @code{restricted-sexp}.
 
 @item :args @var{argument-list}
 @kindex args@r{, customization keyword}
-Use the elements of @var{argument-list} as the arguments of the type
-construct.  For instance, @code{(const :args (foo))} is equivalent to
-@code{(const foo)}.  You rarely need to write @code{:args} explicitly,
-because normally the arguments are recognized automatically as
-whatever follows the last keyword-value pair.
+Использовать элементы @var{argument-list} как аргументы типа конструкции.
+Например, @code{(const :args (foo))} эквивалентно @code{(const foo)}.  Редко
+нужно писать @code{:args} явно, потому что обычно аргументы распознаются
+автоматически, как все, что следует за последней парой ключевого
+слова-значения.
 @end table
 
 @node Splicing into Lists
-@subsection Splicing into Lists
+@subsection Сращивание в Cписки
 
-  The @code{:inline} feature lets you splice a variable number of
-elements into the middle of a @code{list} or @code{vector}
-customization type.  You use it by adding @code{:inline t} to a type
-specification which is contained in a @code{list} or @code{vector}
-specification.
+  Функция @code{:inline} позволяет сращивать переменное число элементов в
+  середину списка @code{list} или вектора @code{vector} типа настройки.
+  Можно использовать это, добавляя @code{:inline t} к спецификации типа,
+  соответствующей спецификации @code{list} или @code{vector}.
 
   Normally, each entry in a @code{list} or @code{vector} type
 specification describes a single element type.  But when an entry
