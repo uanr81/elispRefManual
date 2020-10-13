@@ -1012,32 +1012,33 @@ For example,
   Можно использовать это, добавляя @code{:inline t} к спецификации типа,
   соответствующей спецификации @code{list} или @code{vector}.
 
-  Normally, each entry in a @code{list} or @code{vector} type
-specification describes a single element type.  But when an entry
-contains @code{:inline t}, the value it matches is merged directly
-into the containing sequence.  For example, if the entry matches a
-list with three elements, those become three elements of the overall
-sequence.  This is analogous to @samp{,@@} in a backquote construct
-(@pxref{Backquote}).
+  Как правило, каждая запись в спецификации типа @code{list} или
+  @code{vector} описывает один элемент типа.  Но когда запись содержит
+  @code{:inline t}, соответствующее этому значение объединяется
+  непосредственно с содержащейся в ней последовательностью.  Например, если
+  запись соответствует списку с тремя элементами, они становятся тремя
+  элементами общей последовательности.  Это аналогично @samp{,@@} в
+  конструкции обратной кавычки (@pxref{Backquote}).
 
-  For example, to specify a list whose first element must be @code{baz}
-and whose remaining arguments should be zero or more of @code{foo} and
-@code{bar}, use this customization type:
+  Например, чтобы задать список, чей первый элемент должен быть @code{baz} а
+  оставшиеся аргументы должны быть необязательно заданны такими как
+  @code{foo} и @code{bar}, используется эта настройка типа:
 
 @example
 (list (const baz) (set :inline t (const foo) (const bar)))
 @end example
 
+(ВопросCustomize1031)
 @noindent
-This matches values such as @code{(baz)}, @code{(baz foo)}, @code{(baz bar)}
-and @code{(baz foo bar)}.
+Это соответствует таким значениям, как @code{(baz)}, @code{(baz foo)},
+@code{(baz bar)} и @code{(baz foo bar)}.
 
 @cindex choice, customization types
-  When the element-type is a @code{choice}, you use @code{:inline} not
-in the @code{choice} itself, but in (some of) the alternatives of the
-@code{choice}.  For example, to match a list which must start with a
-file name, followed either by the symbol @code{t} or two strings, use
-this customization type:
+  Когда элемент типа является @code{choice}, используется @code{:inline} не
+  в самом @code{choice}, а в (самих) альтернативах @code{choice}.  Например,
+  чтобы сопоставить список, который должен начинаться с имени файла, за
+  которым следует либо символ @code{t} либо две строки, используется этот тип
+  настройки:
 
 @example
 (list file
@@ -1046,69 +1047,70 @@ this customization type:
 @end example
 
 @noindent
-If the user chooses the first alternative in the choice, then the
-overall list has two elements and the second element is @code{t}.  If
-the user chooses the second alternative, then the overall list has three
-elements and the second and third must be strings.
+Если пользователь выбирает первую альтернативу в выборе, то общий список
+содержит два элемента, и второй элемент @code{t}.  Если пользователь выбирает
+второй вариант, то общий список состоит из трех элементов, второй и третий
+варианты должны быть строки.
 
 @node Type Keywords
-@subsection Type Keywords
+@subsection Тип Ключевые Cлова
 
-You can specify keyword-argument pairs in a customization type after the
-type name symbol.  Here are the keywords you can use, and their
-meanings:
+Можно указать пары ключевых слов аргументов в настройки типа после символа
+имени типа.  Вот ключевые слова и их значения, которые можно использовать:
 
 @table @code
 @item :value @var{default}
-Provide a default value.
+Предоставлять значение по умолчанию.
 
-If @code{nil} is not a valid value for the alternative, then it is
-essential to specify a valid default with @code{:value}.
+Если @code{nil} не является допустимым значением для альтернативы, то
+необходимо указать действующее значение по умолчанию @code{:value}.
 
-If you use this for a type that appears as an alternative inside of
-@code{choice}; it specifies the default value to use, at first, if and
-when the user selects this alternative with the menu in the
-customization buffer.
+Если используется это для такого типа, который появляется в качестве
+альтернативы внутри @code{choice}; тогда, во-первых, определяется значение по
+умолчанию для использования, если и когда пользователь выбирает этот вариант
+с меню в буфере настройки.
 
-Of course, if the actual value of the option fits this alternative, it
-will appear showing the actual value, not @var{default}.
+Конечно, если фактическое значение опции соответствует этому варианту, оно
+будет отображаться, а не значение по умолчанию @var{default}.
 
 @item :format @var{format-string}
 @kindex format@r{, customization keyword}
-This string will be inserted in the buffer to represent the value
-corresponding to the type.  The following @samp{%} escapes are available
-for use in @var{format-string}:
+Строка будет вставлена ​​в буфере для представления значения, соответствующего
+типу.  Следующие символы за символом @samp{%}, рассматриваются как
+escape-символы и доступны для использования в форматной строке
+@var{format-string}:
 
 @table @samp
 @item %[@var{button}%]
-Display the text @var{button} marked as a button.  The @code{:action}
-attribute specifies what the button will do if the user invokes it;
-its value is a function which takes two arguments---the widget which
-the button appears in, and the event.
+Отображение текста @var{button} помеченного как кнопка.  Атрибут
+@code{:action} указывает, что кнопка будет делать, если пользователь
+вызывает кликнет её; значением является функция, которая принимает два
+аргумента --- виджет, в котором появляется кнопка и событие.
 
-There is no way to specify two different buttons with different
-actions.
+Там нет никакого способа определить две различные кнопки с различными
+действиями. (ВопросCustomize1091)
 
 @item %@{@var{sample}%@}
-Show @var{sample} in a special face specified by @code{:sample-face}.
+Показать @var{sample} в специальном отображении указанным
+@code{:sample-face}.
 
 @item %v
-Substitute the item's value.  How the value is represented depends on
-the kind of item, and (for variables) on the customization type.
+Подставить значение элемента.  Как представляется значение, зависит от типа
+элемента и (для переменных) от типа настройки.
 
 @item %d
-Substitute the item's documentation string.
+Подставить строку документации по элементу.
 
 @item %h
-Like @samp{%d}, but if the documentation string is more than one line,
-add a button to control whether to show all of it or just the first line.
+Как и @samp{%d}, но если строка документации состоит более чем из одной
+строки, добавить кнопку, для указания показывать ли всю документацию или
+только первую строку.
 
 @item %t
-Substitute the tag here.  You specify the tag with the @code{:tag}
-keyword.
+Подставить тег здесь. Необходимо указать тег с @code{:tag} ключевым словом.
 
 @item %%
-Display a literal @samp{%}.
+Отобразить буквально @samp{%}.
 @end table
 
 @item :action @var{action}
