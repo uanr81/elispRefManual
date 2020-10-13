@@ -14,3 +14,4 @@ control.texi +
 variables.texi +
 hooks.texi +
 functions.texi +         50
+customize +
