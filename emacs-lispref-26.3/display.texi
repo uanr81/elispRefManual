@@ -3,79 +3,80 @@
 @c Copyright (C) 1990-1995, 1998-2019 Free Software Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Display
-@chapter Emacs Display
+@chapter Изображение в Emacs
 
-  This chapter describes a number of features related to the display
-that Emacs presents to the user.
+  В этой главе описывается ряд особенностей, связанных с отображением,
+  которое Emacs представляет пользователю.
 
 @menu
-* Refresh Screen::      Clearing the screen and redrawing everything on it.
-* Forcing Redisplay::   Forcing redisplay.
-* Truncation::          Folding or wrapping long text lines.
-* The Echo Area::       Displaying messages at the bottom of the screen.
-* Warnings::            Displaying warning messages for the user.
-* Invisible Text::      Hiding part of the buffer text.
-* Selective Display::   Hiding part of the buffer text (the old way).
-* Temporary Displays::  Displays that go away automatically.
-* Overlays::            Use overlays to highlight parts of the buffer.
-* Size of Displayed Text::  How large displayed text is.
-* Line Height::         Controlling the height of lines.
-* Faces::               A face defines a graphics style for text characters:
-                          font, colors, etc.
-* Fringes::             Controlling window fringes.
-* Scroll Bars::         Controlling scroll bars.
-* Window Dividers::     Separating windows visually.
-* Display Property::    Enabling special display features.
-* Images::              Displaying images in Emacs buffers.
-* Xwidgets::            Displaying native widgets in Emacs buffers.
-* Buttons::             Adding clickable buttons to Emacs buffers.
-* Abstract Display::    Emacs's Widget for Object Collections.
-* Blinking::            How Emacs shows the matching open parenthesis.
-* Character Display::   How Emacs displays individual characters.
-* Beeping::             Audible signal to the user.
-* Window Systems::      Which window system is being used.
-* Tooltips::            Tooltip display in Emacs.
-* Bidirectional Display:: Display of bidirectional scripts, such as
-                             Arabic and Farsi.
+* Refresh Screen::      Очистка экрана и перерисовка всего на нём.
+* Forcing Redisplay::   Принудительное восстановление изображения.
+* Truncation::          Соединение и перенос длинных текстовых строк.
+* The Echo Area::       Отображение сообщений в нижней части экрана.
+* Warnings::            Отображение предупреждений пользователю.
+* Invisible Text::      Сокрытие части текста буфера.
+* Selective Display::   Сокрытие части текста буфера (старый способ).
+* Temporary Displays::  Автоматическое закрытие изображения.
+* Overlays::            Использование наложений, чтобы выделить части буфера.
+* Size of Displayed Text::  Размер отображаемого текста.
+* Line Height::         Контроль высоты строк.
+* Faces::               Определение графического стиля для текстовых
+                        символов: шрифт, цвет и т.д.
+* Fringes::             Управление оконного обрамления.
+* Scroll Bars::         Управление полосой прокрутки.
+* Window Dividers::     Визуальное разделение окна.
+* Display Property::    Включение специальных функций вывода изображения.
+* Images::              Отображение изображений в Emacs буфере.
+* Xwidgets::            Отображение собственных виджетов Emacs в буферах.
+* Buttons::             Добавление интерактивных кнопок Emacs в буферах.
+* Abstract Display::    Emacs Коллекция Виджет Объектов.
+* Blinking::            Как Emacs показывает парную открывающую скобку.
+* Character Display::   Как Emacs отображает отдельные символы.
+* Beeping::             Звуковой сигнал для пользователя.
+* Window Systems::      Какое окно системы используется.
+* Tooltips::            Отображение подсказки в Emacs.
+* Bidirectional Display:: Отображение двунаправленных сценариев,
+                          таких как арабский и фарси. (ВопросDisplay39)
 @end menu
 
 @node Refresh Screen
-@section Refreshing the Screen
+@section Обновление Экрана
 @cindex refresh the screen
 @cindex screen refresh
 
-  The function @code{redraw-frame} clears and redisplays the entire
-contents of a given frame (@pxref{Frames}).  This is useful if the
-screen is corrupted.
+  В функции @code{redraw-frame} очищается и повторно отображатся все
+  содержимое определённого кадра (@pxref{Frames}).  Это полезно, если
+  вывод на экран испорчен.
 
 @defun redraw-frame &optional frame
-This function clears and redisplays frame @var{frame}.  If @var{frame}
-is omitted or @code{nil}, it redraws the selected frame.
+Функция очищает и вновь восстанавливает рамку @var{frame}.  Если @var{frame}
+опущен или @code{nil}, он перерисовывает текущий кадр.  (ВопросDisplay53)
 @end defun
 
-  Even more powerful is @code{redraw-display}:
+  Еще более мощным средством является @code{redraw-display}:
 
 @deffn Command redraw-display
-This function clears and redisplays all visible frames.
+Функция очищает и вновь восстанавливает все видимые рамки.
 @end deffn
 
-  In Emacs, processing user input takes priority over redisplay.  If
-you call these functions when input is available, they don't redisplay
-immediately, but the requested redisplay does happen
-eventually---after all the input has been processed.
+  В Emacs обработка пользовательского ввода имеет приоритет над перерисовкой.
+  При вызове этих функций при доступном пользовательском вводе, повторное
+  отображение не сразу происходит, а только после обработки всего доступного
+  ввода пользователя.
 
-  On text terminals, suspending and resuming Emacs normally also
-refreshes the screen.  Some terminal emulators record separate
-contents for display-oriented programs such as Emacs and for ordinary
-sequential display.  If you are using such a terminal, you might want
-to inhibit the redisplay on resumption.
+  На текстовых терминалах, приостановка и возобновление Emacs обычно также
+  обновляет экран.  Некоторые эмуляторы терминала записывают отдельно
+  это содержимое программ, ориентированных на отображение, таких как Emacs, и
+  для обычного последовательного отображения.  Если используется такой
+  терминал, можно препятствовать перерисовки при возобновлении.
 
 @defopt no-redraw-on-reenter
 @cindex suspend (cf. @code{no-redraw-on-reenter})
 @cindex resume (cf. @code{no-redraw-on-reenter})
-This variable controls whether Emacs redraws the entire screen after it
-has been suspended and resumed.  Non-@code{nil} means there is no need
-to redraw, @code{nil} means redrawing is needed.  The default is @code{nil}.
+Эта переменная управляет перерисовкой Emacs всего экрана после того, как была
+приостановка и возобновление.   Установка в не-@code{nil} указвает на то, что
+нет необходимости перерисовывать, установка в @code{nil} требует перерисовки.
+По умолчанию установлено в @code{nil}.
 @end defopt
 
 @node Forcing Redisplay
