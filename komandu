@@ -4,7 +4,9 @@ make
 
 cd ..
 
-texi2any --html --no-split /home/ub18/Документы/myProect/emacs/elispTexi/emacs-lispref-26.3/elisp.texi -o /home/ub18/Документы/myProect/emacs/elispTexi/Proizvodnoe/elisp.html
+texi2any --html --no-split /home/ub20/Документы/myProect/emacs/elispTexi/emacs-lispref-26.3/elisp.texi -o /home/ub20/Документы/myProect/emacs/elispTexi/Proizvodnoe/elisp.html
+
+git push -u origin master
 
 firefox /home/ub18/Документы/myProect/emacs/elispTexi/Proizvodnoe/elisp.html &
 

@@ -3,86 +3,89 @@
 @c Copyright (C) 1990-1994, 1998-2019 Free Software Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Keymaps
-@chapter Keymaps
+@chapter Ключевые Карты
 @cindex keymap
 
-  The command bindings of input events are recorded in data structures
-called @dfn{keymaps}.  Each entry in a keymap associates (or
-@dfn{binds}) an individual event type, either to another keymap or to
-a command.  When an event type is bound to a keymap, that keymap is
-used to look up the next input event; this continues until a command
-is found.  The whole process is called @dfn{key lookup}.
+  Привязки команд входных событий записываются в структуры
+данных, называемые @dfn{keymaps (ключевая карта)}.  Каждая
+запись такой карты связывает (или @dfn{binds}) отдельный
+тип события либо с другой картой, либо с командой.  Когда тип
+события привязан к карте, эта карта используется для поиска
+следующего события ввода; это продолжается до тех пор, пока
+не будет найдена команда.  Весь процесс называется @dfn{key lookup (поиском ключа)}.
 
 @menu
-* Key Sequences::               Key sequences as Lisp objects.
-* Keymap Basics::               Basic concepts of keymaps.
-* Format of Keymaps::           What a keymap looks like as a Lisp object.
-* Creating Keymaps::            Functions to create and copy keymaps.
-* Inheritance and Keymaps::     How one keymap can inherit the bindings
-                                   of another keymap.
-* Prefix Keys::                 Defining a key with a keymap as its definition.
-* Active Keymaps::              How Emacs searches the active keymaps
-                                   for a key binding.
-* Searching Keymaps::           A pseudo-Lisp summary of searching active maps.
-* Controlling Active Maps::     Each buffer has a local keymap
-                                   to override the standard (global) bindings.
-                                   A minor mode can also override them.
-* Key Lookup::                  Finding a key's binding in one keymap.
-* Functions for Key Lookup::    How to request key lookup.
-* Changing Key Bindings::       Redefining a key in a keymap.
-* Remapping Commands::          A keymap can translate one command to another.
-* Translation Keymaps::         Keymaps for translating sequences of events.
-* Key Binding Commands::        Interactive interfaces for redefining keys.
-* Scanning Keymaps::            Looking through all keymaps, for printing help.
-* Menu Keymaps::                Defining a menu as a keymap.
+* Key Sequences::               Ключевые карты как объекты Lisp.
+* Keymap Basics::               Основные понятия ключевой карты.
+* Format of Keymaps::           Представление ключевой карты как объект Lisp.
+* Creating Keymaps::            Функции для создания и копирования ключевых карт.
+* Inheritance and Keymaps::     Как одна ключевая карта может наследовать привязки другой карты.
+* Prefix Keys::                 Определение ключа с помощью ключевой карты в качестве его определения.
+* Active Keymaps::              Как Emacs ищет в активных таблицах ключей привязку клавиш.
+* Searching Keymaps::           Псевдо-Lisp-сводка поиска активных карт.
+* Controlling Active Maps::     Каждый буфер имеет локальную карту ключей для переопределения стандартных (глобальных) привязок.  Второстепенный режим также может их отменять.
+* Key Lookup::                  Нахождение привязки ключа в одной ключевой карте.
+* Functions for Key Lookup::    Как запросить поиск ключа.
+* Changing Key Bindings::       Переопределение ключа в ключевой карте.
+* Remapping Commands::          Ключевая карта может переопределить одну команду в другую.
+* Translation Keymaps::         Ключевые карты для перевода последовательностей событий.
+* Key Binding Commands::        Интерактивные интерфейсы для переопределения ключей.
+* Scanning Keymaps::            Сканирование ключевых карт, вывод справки.
+* Menu Keymaps::                Определение меню как ключевой карты.
 @end menu
 
 @node Key Sequences
-@section Key Sequences
+@section Ключевая Последовательнасть
 @cindex key
 @cindex keystroke
 @cindex key sequence
 
-  A @dfn{key sequence}, or @dfn{key} for short, is a sequence of one
-or more input events that form a unit.  Input events include
-characters, function keys, mouse actions, or system events external to
-Emacs, such as @code{iconify-frame} (@pxref{Input Events}).
-The Emacs Lisp representation for a key sequence is a string or
-vector.  Unless otherwise stated, any Emacs Lisp function that accepts
-a key sequence as an argument can handle both representations.
+  @dfn{Ключевая последовательность}, или для краткости
+@dfn{ключ}, представляет собой последовательность из одного
+или нескольких входных событий, образующих единое целое.
+Входные события включают символы, функциональные клавиши,
+действия мыши или системные события, внешние по отношению к
+Emacs, такие как @code{iconify-frame} (@pxref{Input Events}).
+Для Emacs Lisp представление ключевой последовательности -
+это строка или вектор.  Если не указано иное, любая функция
+Emacs Lisp, которая принимает ключевую последовательность в
+качестве аргумента, может обрабатывать оба представления.
 
-  In the string representation, alphanumeric characters ordinarily
-stand for themselves; for example, @code{"a"} represents @kbd{a}
-and @code{"2"} represents @kbd{2}.  Control character events are
-prefixed by the substring @code{"\C-"}, and meta characters by
-@code{"\M-"}; for example, @code{"\C-x"} represents the key @kbd{C-x}.
-In addition, the @key{TAB}, @key{RET}, @key{ESC}, and @key{DEL} events
-are represented by @code{"\t"}, @code{"\r"}, @code{"\e"}, and
-@code{"\d"} respectively.  The string representation of a complete key
-sequence is the concatenation of the string representations of the
-constituent events; thus, @code{"\C-xl"} represents the key sequence
-@kbd{C-x l}.
+  В строковом представлении буквенно-цифровые символы обычно
+обозначают сами себя; например, @code{"a"} представляет
+@kbd{a}, а @code{"2"} представляет @kbd{2}.  Символы
+управляющих событий имеют префикс подстроки @code{"\C-"}, а
+метасимволы - @code{"\M-"}; например, @code{"\C-x"}
+представляет собой ключ @kbd{\-x}.  Кроме того, события
+@key{TAB}, @key{RET}, @key{ESC}, и @key{DEL} представлены
+соответственно @code{"\t"}, @code{"\r"}, @code{"\e"} и
+@code{"\d"}.  Строковое представление полной ключевой
+последовательности - это конкатенация строковых представлений
+составляющих событий; таким образом, @code{"\C-xl"}
+представляет собой последовательность клавиш @kbd{C-x l}.
 
-  Key sequences containing function keys, mouse button events, system
-events, or non-@acronym{ASCII} characters such as @kbd{C-=} or
-@kbd{H-a} cannot be represented as strings; they have to be
-represented as vectors.
+  Последовательности клавиш, содержащие функциональные
+клавиши, события кнопок мыши, системные события или символы
+не-@acronym{ASCII}, такие как @kbd{C-=} или @kbd{H-a}, не
+могут быть представлены в виде строк; они должны быть
+представлены в виде векторов.
 
-  In the vector representation, each element of the vector represents
-an input event, in its Lisp form.  @xref{Input Events}.  For example,
-the vector @code{[?\C-x ?l]} represents the key sequence @kbd{C-x l}.
+  В векторном представлении каждый элемент вектора
+представляет входное событие в его форме Lisp.
+@xref{Input Events}.  Например, вектор @code{[?\C-x ?l]}
+представляет собой последовательность клавиш @kbd{C-x l}.
 
-  For examples of key sequences written in string and vector
-representations, @ref{Init Rebinding,,, emacs, The GNU Emacs Manual}.
+  Примеры последовательностей клавиш, записанных в строковом
+и векторном представлениях., @ref{Init Rebinding,,, emacs, Руководство GNU Emacs Manual}.
 
 @defun kbd keyseq-text
-This function converts the text @var{keyseq-text} (a string constant)
-into a key sequence (a string or vector constant).  The contents of
-@var{keyseq-text} should use the same syntax as in the buffer invoked
-by the @kbd{C-x C-k @key{RET}} (@code{kmacro-edit-macro}) command; in
-particular, you must surround function key names with
-@samp{<@dots{}>}.  @xref{Edit Keyboard Macro,,, emacs, The GNU Emacs
-Manual}.
+Эта функция преобразует текст @var{keyseq-text} (строковую
+константу) в ключевую последовательность (строковую или
+векторную константу).  Содержимое @var{keyseq-text} должно
+использовать тот же синтаксис, что и в буфере, вызываемом
+командой @kbd{C-x C-k @key{RET}} (@code{kmacro-edit-macro});
+в частности, имена функциональных клавиш должны быть
+заключены в @samp{<@dots{}>}.  @xref{Edit Keyboard Macro,,, emacs, The GNU Emacs Manual}.
 
 @example
 (kbd "C-x") @result{} "\C-x"
@@ -97,156 +100,190 @@ Manual}.
 @end defun
 
 @node Keymap Basics
-@section Keymap Basics
+@section Ключевые Карты Основы
 @cindex key binding
 @cindex binding of a key
 @cindex complete key
 @cindex undefined key
 
-  A keymap is a Lisp data structure that specifies @dfn{key bindings}
-for various key sequences.
+  Ключевая карта - это структура данных Lisp, которая
+определяет @dfn{key bindings} для различных
+последовательностей ключей.
 
-  A single keymap directly specifies definitions for individual
-events.  When a key sequence consists of a single event, its binding
-in a keymap is the keymap's definition for that event.  The binding of
-a longer key sequence is found by an iterative process: first find the
-definition of the first event (which must itself be a keymap); then
-find the second event's definition in that keymap, and so on until all
-the events in the key sequence have been processed.
+  Единая ключевая карта напрямую определяет определения для
+  отдельных событий.  Когда карта состоит из одного события,
+  ее привязка ключа в карте является ее определением для
+  этого события.  Связывание более длинной ключевой
+  последовательности обнаруживается итеративным процессом:
+  сначала находится определение первого события (которое само
+  должно быть картой); затем ищется определение второго
+  события в этой карте и так далее, пока все события
+  ключевой последовательности карты не будут обработаны.
 
-  If the binding of a key sequence is a keymap, we call the key sequence
-a @dfn{prefix key}.  Otherwise, we call it a @dfn{complete key} (because
-no more events can be added to it).  If the binding is @code{nil},
-we call the key @dfn{undefined}.  Examples of prefix keys are @kbd{C-c},
-@kbd{C-x}, and @kbd{C-x 4}.  Examples of defined complete keys are
-@kbd{X}, @key{RET}, and @kbd{C-x 4 C-f}.  Examples of undefined complete
-keys are @kbd{C-x C-g}, and @kbd{C-c 3}.  @xref{Prefix Keys}, for more
-details.
+  Если привязка ключевой последовательности является ключевой
+картой, эта последовательность ключей называется
+@dfn{prefix key (префиксным ключем)}.  В противном случае это
+называется @dfn{complete key (полный ключ)} (потому что к
+нему нельзя добавлять больше событий).  Если привязка -
+@code{nil}, ключ называется @dfn{undefined (неопределенным)}.
+Примеры префиксных ключей: @kbd{C-c}, @kbd{C-x} и
+@kbd{C-x 4}.  Примеры определенных полных ключей: @kbd{X},
+@key{RET}, и @kbd{C-x 4 C-f}.  Примеры неопределенных полных
+ключей: @kbd{C-x C-g} и @kbd{C-c 3}. @xref{Prefix Keys}, для
+деталей.
 
-  The rule for finding the binding of a key sequence assumes that the
-intermediate bindings (found for the events before the last) are all
-keymaps; if this is not so, the sequence of events does not form a
-unit---it is not really one key sequence.  In other words, removing one
-or more events from the end of any valid key sequence must always yield
-a prefix key.  For example, @kbd{C-f C-n} is not a key sequence;
-@kbd{C-f} is not a prefix key, so a longer sequence starting with
-@kbd{C-f} cannot be a key sequence.
+  Правило поиска привязки ключевой последовательности
+предполагает, что все промежуточные привязки (найденные для
+событий перед последним) представляют собой ключевые карты;
+если это не так, последовательность событий не образует
+единое целое - на самом деле это не одна ключевая
+последовательность.  Другими словами, удаление одного или
+нескольких событий из конца любой допустимой
+последовательности ключей всегда должно давать префиксный
+ключ.  Например, @kbd{C-f C-n} не является ключевой
+последовательностью; @kbd{C-f} не является префиксным ключом,
+поэтому более длинная последовательность, начинающаяся с
+@kbd{C-f}, не может быть ключевой последовательностью.
 
-  The set of possible multi-event key sequences depends on the bindings
-for prefix keys; therefore, it can be different for different keymaps,
-and can change when bindings are changed.  However, a one-event sequence
-is always a key sequence, because it does not depend on any prefix keys
-for its well-formedness.
+  Набор возможных ключевых последовательностей с несколькими
+событиями зависит от привязки префиксных ключей;
+следовательно, он может быть разным для разных ключевых карт
+и может меняться при изменении привязок.  Однако
+последовательность из одного события всегда является ключевой
+последовательностью, потому что ее правильность не зависит
+от каких-либо префиксных ключей.
 
-  At any time, several primary keymaps are @dfn{active}---that is, in
-use for finding key bindings.  These are the @dfn{global map}, which is
-shared by all buffers; the @dfn{local keymap}, which is usually
-associated with a specific major mode; and zero or more @dfn{minor mode
-keymaps}, which belong to currently enabled minor modes.  (Not all minor
-modes have keymaps.)  The local keymap bindings shadow (i.e., take
-precedence over) the corresponding global bindings.  The minor mode
-keymaps shadow both local and global keymaps.  @xref{Active Keymaps},
-for details.
+  В любое время несколько первичных ключевых карт являются
+@dfn{active (активными)} --- то есть используются для
+поиска привязок ключей.  Это
+@dfn{global map (глобальная карта)}, используется всеми
+буферами; @dfn{local keymap (локальная ключевая карта)},
+которая обычно связана с определенным основным режимом; и
+ноль или более @dfn{minor mode keymaps} (ключевых карт
+дополнительных режимов), которые относятся к текущим
+включенным второстепенным режимам.  (Не все второстепенные
+режимы имеют ключевые карты.)  Привязки локальной ключевой
+затеняют (тоесть имеют приоритет) соответствующим глобальным
+привязкам.  Ключевые карты вспомогательного режима затеняют
+как локальные, так и глобальные ключевые карты.
+@xref{Active Keymaps}, для деталей.
 
 @node Format of Keymaps
-@section Format of Keymaps
+@section Формат Ключевых Карт
 @cindex format of keymaps
 @cindex keymap format
 @cindex full keymap
 @cindex sparse keymap
 
-  Each keymap is a list whose @sc{car} is the symbol @code{keymap}.  The
-remaining elements of the list define the key bindings of the keymap.
-A symbol whose function definition is a keymap is also a keymap.  Use
-the function @code{keymapp} (see below) to test whether an object is a
-keymap.
+  Каждая ключевая карта - это список, в котором @sc{car}
+является символом @code{keymap}.  Остальные элементы списка
+определяют ключевые привязки ключевой карты.  Символ, чьим
+определением функции является ключевая карта, также является
+ключевой картой.  Используйте функцию @code{keymapp} (см.
+Ниже), чтобы проверить, является ли объект ключевой картой.
 
-  Several kinds of elements may appear in a keymap, after the symbol
-@code{keymap} that begins it:
+  После символа @code{keymap}, с которого она начинается, в
+ключевой карте могут появиться несколько видов элементов:
 
 @table @code
 @item (@var{type} .@: @var{binding})
-This specifies one binding, for events of type @var{type}.  Each
-ordinary binding applies to events of a particular @dfn{event type},
-which is always a character or a symbol.  @xref{Classifying Events}.
-In this kind of binding, @var{binding} is a command.
+Это указывает одну привязку для событий типа @var{type}.
+Каждая обычная привязка применяется к событиям определенного
+@dfn{event type}, который всегда является символом или
+символом.  @xref{Classifying Events}.  В этом виде привязки
+@var{binding} - это команда.
 
 @item (@var{type} @var{item-name} .@: @var{binding})
-This specifies a binding which is also a simple menu item that
-displays as @var{item-name} in the menu.  @xref{Simple Menu Items}.
+Это определяет привязку, которая также является простым
+пунктом меню, который отображается в меню как
+@var{item-name}.  @xref{Simple Menu Items}.
 
 @item (@var{type} @var{item-name} @var{help-string} .@: @var{binding})
-This is a simple menu item with help string @var{help-string}.
+Это простой пункт меню со строкой справки @var{help-string}.
 
 @item (@var{type} menu-item .@: @var{details})
-This specifies a binding which is also an extended menu item.  This
-allows use of other features.  @xref{Extended Menu Items}.
+Это указывает привязку, которая также является элементом
+расширенного меню.  Это позволяет использовать другие
+функции.  @xref{Extended Menu Items}.
 
 @item (t .@: @var{binding})
 @cindex default key binding
-This specifies a @dfn{default key binding}; any event not bound by other
-elements of the keymap is given @var{binding} as its binding.  Default
-bindings allow a keymap to bind all possible event types without having
-to enumerate all of them.  A keymap that has a default binding
-completely masks any lower-precedence keymap, except for events
-explicitly bound to @code{nil} (see below).
+Это указывает @dfn{default key binding}; любому событию, не
+связанному с другими элементами раскладки клавиатуры,
+проводится @var{binding} в качестве привязки.  Привязки по
+умолчанию позволяют ключевой карте связывать все возможные
+типы событий без необходимости перечислять их все.  Ключевая
+карта с привязкой по умолчанию полностью маскирует любую
+ключевую карту с более низким приоритетом, за исключением
+событий, явно привязанных к @code{nil} (см. Ниже).
 
 @item @var{char-table}
-If an element of a keymap is a char-table, it counts as holding
-bindings for all character events with no modifier bits
-(@pxref{modifier bits}): the element whose index is @var{c} is the
-binding for the character @var{c}.  This is a compact way to record
-lots of bindings.  A keymap with such a char-table is called a
-@dfn{full keymap}.  Other keymaps are called @dfn{sparse keymaps}.
+Если элемент ключевой карты является символьной таблицей, он
+считается удерживающим привязки для всех событий символов без
+битов модификатора (@pxref{modifier bits}): элемент с
+индексом @var{c} является привязкой для символа @var{c}.  Это
+компактный способ записать множество привязок.  Ключевая
+карта с такой символьной таблицей называется
+@dfn{full keymap (полная ключевая карта)}.  Другие карты
+называются @dfn{sparse keymaps (разреженные ключевые карты)}.
 
 @item @var{vector}
-This kind of element is similar to a char-table: the element whose
-index is @var{c} is the binding for the character @var{c}.  Since the
-range of characters that can be bound this way is limited by the
-vector size, and vector creation allocates space for all character
-codes from 0 up, this format should not be used except for creating
-menu keymaps (@pxref{Menu Keymaps}), where the bindings themselves
-don't matter.
+Этот тип элементов похож на символьную таблицу: элемент с
+индексом @var{c} является привязкой для символа @var{c}.
+Поскольку диапазон символов, которые могут быть связаны таким
+образом, ограничен размером вектора, а создание вектора
+выделяет пространство для всех кодов символов от 0, этот
+формат не следует использовать, за исключением создания
+ключевых карт меню (@pxref{Menu Keymaps}), где сами привязки
+не используются значение установленное в @code{t}.
 
 @item @var{string}
 @cindex keymap prompt string
 @cindex overall prompt string
 @cindex prompt string of keymap
-Aside from elements that specify bindings for keys, a keymap can also
-have a string as an element.  This is called the @dfn{overall prompt
-string} and makes it possible to use the keymap as a menu.
+Помимо элементов, которые задают ключевые привязки, ключевая
+карта может иметь строку в качестве элемента.  Это называется
+@dfn{overall prompt string (общая строка приглашения)} и
+позволяет использовать ключевую карту в качестве меню.
 @xref{Defining Menus}.
 
 @item (keymap @dots{})
-If an element of a keymap is itself a keymap, it counts as if this inner keymap
-were inlined in the outer keymap.  This is used for multiple-inheritance, such
-as in @code{make-composed-keymap}.
+Если элемент ключевой карты сам по себе является ключевой
+картой, он считается так, как если эта внутренняя карта была
+встроена во внешнюю карту.  Это используется для
+множественного наследования, например, в
+@code{make-composed-keymap}.
 @end table
 
-When the binding is @code{nil}, it doesn't constitute a definition
-but it does take precedence over a default binding or a binding in the
-parent keymap.  On the other hand, a binding of @code{nil} does
-@emph{not} override lower-precedence keymaps; thus, if the local map
-gives a binding of @code{nil}, Emacs uses the binding from the
-global map.
+Когда привязка - @code{nil}, она не является определением, но
+имеет приоритет над привязкой по умолчанию или привязкой в
+родительской ключевой карте.  С другой стороны, привязка
+@code{nil} действительно @emph{not} переопределяет ключевых
+карт с более низким приоритетом; таким образом, если
+локальная карта дает привязку @code{nil}, Emacs использует
+привязку из глобальной карты.
 
 @cindex meta characters lookup
-  Keymaps do not directly record bindings for the meta characters.
-Instead, meta characters are regarded for purposes of key lookup as
-sequences of two characters, the first of which is @key{ESC} (or
-whatever is currently the value of @code{meta-prefix-char}).  Thus, the
-key @kbd{M-a} is internally represented as @kbd{@key{ESC} a}, and its
-global binding is found at the slot for @kbd{a} in @code{esc-map}
+  Ключевые карты не записывают напрямую привязки для
+метасимволов.  Вместо этого метасимволы рассматриваются в
+целях поиска по ключу как последовательности из двух
+символов, первый из которых - @key{ESC} (или любое другое
+значение, которое в настоящее время является значением
+@code{meta-prefix-char}).  Таким образом, ключ @kbd{M-a}
+внутренне представлен как @kbd{@key{ESC} a}, а его глобальная
+привязка находится в слоте для @kbd{a} в @code{esc-map}.
 (@pxref{Prefix Keys}).
 
-  This conversion applies only to characters, not to function keys or
-other input events; thus, @kbd{M-@key{end}} has nothing to do with
+  Это преобразование применяется только к символам, а не к
+функциональным клавишам или другим событиям ввода; таким
+образом, @kbd{M-@key{end}} не имеет ничего общего с
 @kbd{@key{ESC} @key{end}}.
 
-  Here as an example is the local keymap for Lisp mode, a sparse
-keymap.  It defines bindings for @key{DEL}, @kbd{C-c C-z},
-@kbd{C-M-q}, and @kbd{C-M-x} (the actual value also contains a menu
-binding, which is omitted here for the sake of brevity).
+  Вот как пример - локальная ключевая карта для режима Lisp,
+разреженная ключевая карта.  Она определяет привязки для
+@key{DEL}, @kbd{C-c C-z}, @kbd{C-M-q}, и @kbd{C-M-x}
+(фактическое значение также содержит привязку меню, которая
+здесь для краткости опущено).
 
 @example
 @group
@@ -265,23 +302,24 @@ lisp-mode-map
      (24 . lisp-send-defun))
 @end group
 @group
- ;; @r{This part is inherited from @code{lisp-mode-shared-map}.}
+ ;; @r{Эта часть унаследована от @code{lisp-mode-shared-map}.}
  keymap
  ;; @key{DEL}
  (127 . backward-delete-char-untabify)
 @end group
 @group
  (27 keymap
-     ;; @r{@kbd{C-M-q}, treated as @kbd{@key{ESC} C-q}}
+     ;; @r{@kbd{C-M-q}, рассматриваемый как @kbd{@key{ESC} C-q}}
      (17 . indent-sexp)))
 @end group
 @end example
 
 @defun keymapp object
-This function returns @code{t} if @var{object} is a keymap, @code{nil}
-otherwise.  More precisely, this function tests for a list whose
-@sc{car} is @code{keymap}, or for a symbol whose function definition
-satisfies @code{keymapp}.
+Эта функция возвращает @code{t}, если @var{object} - это
+ключевая карта и @code{nil} в противном случае.  Точнее, эта
+функция проверяет список, @sc{car} которого равен
+@code{keymap} или символом, определение функции которого
+удовлетворяет @code{keymapp}.
 
 @example
 @group
@@ -301,16 +339,17 @@ satisfies @code{keymapp}.
 @end defun
 
 @node Creating Keymaps
-@section Creating Keymaps
+@section Создание Ключевых Карт
 @cindex creating keymaps
 
-  Here we describe the functions for creating keymaps.
+  Здесь описываются функции для создания ключевых карт.
 
 @defun make-sparse-keymap &optional prompt
-This function creates and returns a new sparse keymap with no entries.
-(A sparse keymap is the kind of keymap you usually want.)  The new
-keymap does not contain a char-table, unlike @code{make-keymap}, and
-does not bind any events.
+Эта функция создает и возвращает новую разреженную ключевую
+карту без записей.  (Разреженная ключевая карта - это тип
+ключевой карты, который обычно требуется.)  Новая ключевая
+карта не содержит символ-таблицы, в отличие от
+@code{make-keymap}, и не связывает никаких событий.
 
 @example
 @group
@@ -319,25 +358,29 @@ does not bind any events.
 @end group
 @end example
 
-If you specify @var{prompt}, that becomes the overall prompt string
-for the keymap.  You should specify this only for menu keymaps
-(@pxref{Defining Menus}).  A keymap with an overall prompt string will
-always present a mouse menu or a keyboard menu if it is active for
-looking up the next input event.  Don't specify an overall prompt string
-for the main map of a major or minor mode, because that would cause
-the command loop to present a keyboard menu every time.
+Если указано @var{prompt}, это будет общей строкой
+приглашения для ключевой карты.  Требуется указать это только
+для ключевых карт меню (@pxref{Defining Menus}).  Ключевая
+карта с общей строкой приглашения всегда будет представлять
+меню мыши или меню клавиатуры, если она активна для поиска
+следующего события ввода.  Не указывайте общую строку
+приглашения для основной карты основного или второстепенного
+режима, потому что это приведет к тому, что цикл команд будет
+каждый раз отображать клавиатурное меню.
 @end defun
 
 @defun make-keymap &optional prompt
-This function creates and returns a new full keymap.  That keymap
-contains a char-table (@pxref{Char-Tables}) with slots for all
-characters without modifiers.  The new keymap initially binds all
-these characters to @code{nil}, and does not bind any other kind of
-event.  The argument @var{prompt} specifies a
-prompt string, as in @code{make-sparse-keymap}.
+Эта функция создает и возвращает новую полную ключевую карту.
+Эта карта содержит символ-таблицу (@pxref{Char-Tables}) со
+слотами для всех символов без модификаторов.  Новая карта
+изначально связывает все эти символы с @code{nil} и не
+связывает никаких других событий.  Аргумент @var{prompt}
+указывает строку приглашения, как и в
+@code{make-sparse-keymap}.
 
-@c This example seems kind of pointless, but I guess it serves
-@c to contrast the result with make-sparse-keymap above.
+@c Этот пример кажется бессмысленным, но я предполагаю, что
+@c он служит для сравнения результата с make-sparse-keymap
+@c описаной выше.
 @example
 @group
 (make-keymap)
@@ -345,15 +388,17 @@ prompt string, as in @code{make-sparse-keymap}.
 @end group
 @end example
 
-A full keymap is more efficient than a sparse keymap when it holds
-lots of bindings; for just a few, the sparse keymap is better.
+Полная ключевая карта более эффективна, чем разреженная,
+когда содержит много привязок; иногда лучше использовать
+разреженную ключевую карту.
 @end defun
 
 @defun copy-keymap keymap
-This function returns a copy of @var{keymap}.  This is almost never
-needed.  If you want a keymap that's like another yet with a few
-changes, you should use map inheritance rather than copying.
-I.e., something like:
+Эта функция возвращает копию @var{keymap}.  В этом почти
+никогда не бывает необходимости.  Если требуется карта,
+схожая с другой, но с некоторыми изменениями, следует
+использовать наследование карты, а не копирование.  То есть
+что-то вроде:
 
 @example
 @group
@@ -364,12 +409,14 @@ I.e., something like:
 @end group
 @end example
 
-When performing @code{copy-keymap}, any keymaps that
-appear directly as bindings in @var{keymap} are also copied recursively,
-and so on to any number of levels.  However, recursive copying does not
-take place when the definition of a character is a symbol whose function
-definition is a keymap; the same symbol appears in the new copy.
-@c Emacs 19 feature
+При выполнении @code{copy-keymap} любые ключевые карты,
+которые появляются непосредственно как привязки в
+@var{keymap}, также рекурсивно копируются и так далее на
+любое количество уровней.  Однако рекурсивное копирование не
+происходит, если определение символа является символом,
+определение функции которого является картой; тот же символ
+появляется в новой копии.
+@c Характерная черта для Emacs 19
 
 @example
 @group
@@ -377,7 +424,7 @@ definition is a keymap; the same symbol appears in the new copy.
 @result{} (keymap
 @end group
 @group
-     ;; @r{(This implements meta characters.)}
+     ;; @r{(Это реализует мета-символы.)}
      (27 keymap
          (83 . center-paragraph)
          (115 . center-line))
@@ -396,52 +443,60 @@ definition is a keymap; the same symbol appears in the new copy.
 @end defun
 
 @node Inheritance and Keymaps
-@section Inheritance and Keymaps
+@section Наследование и Ключевые Карты
 @cindex keymap inheritance
 @cindex inheritance, keymap
 
-  A keymap can inherit the bindings of another keymap, which we call the
-@dfn{parent keymap}.  Such a keymap looks like this:
+  Ключевая карта может наследовать привязки другой ключевой
+карты, которая называется
+@dfn{parent keymap (родительской ключевой картой)}.  Такая
+ключевая карта выглядит так:
 
 @example
 (keymap @var{elements}@dots{} . @var{parent-keymap})
 @end example
 
 @noindent
-The effect is that this keymap inherits all the bindings of
-@var{parent-keymap}, whatever they may be at the time a key is looked up,
-but can add to them or override them with @var{elements}.
+Эффект состоит в том, что эта карта наследует все привязки
+@var{parent-keymap} (родительской карты), какими бы они ни
+были во время поиска ключа, но может добавлять к ним или
+отменять их с помощью @var{elements}.
 
-If you change the bindings in @var{parent-keymap} using
-@code{define-key} or other key-binding functions, these changed
-bindings are visible in the inheriting keymap, unless shadowed by the
-bindings made by @var{elements}.  The converse is not true: if you use
-@code{define-key} to change bindings in the inheriting keymap, these
-changes are recorded in @var{elements}, but have no effect on
-@var{parent-keymap}.
+Если меняется привязка в @var{parent-keymap} с помощью
+@code{define-key} или других функций привязки ключей, эти
+измененные привязки будут видны в наследующей ключевой карте,
+если только они не затенены привязками, сделанными
+@var{elements}.  Обратное неверно: если используется
+@code{define-key} для изменения привязок в наследующей
+ключевой карте, эти изменения записываются в @var{elements},
+но не влияют на @var{parent-keymap}.
 
-The proper way to construct a keymap with a parent is to use
-@code{set-keymap-parent}; if you have code that directly constructs a
-keymap with a parent, please convert the program to use
-@code{set-keymap-parent} instead.
+Правильный способ создания ключевой карты с родительской -
+использовать @code{set-keymap-parent}; если есть код, который
+напрямую создает ключевую корту с родителем, пожалуйста,
+преобразуйте программу, чтобы вместо этого использовать
+@code{set-keymap-parent}.
 
 @defun keymap-parent keymap
-This returns the parent keymap of @var{keymap}.  If @var{keymap}
-has no parent, @code{keymap-parent} returns @code{nil}.
+Это возвращает родительскую ключевую карту @var{keymap}.
+Если @var{keymap} не имеет родителя, @code{keymap-parent}
+возвращает @code{nil}.
 @end defun
 
 @defun set-keymap-parent keymap parent
-This sets the parent keymap of @var{keymap} to @var{parent}, and returns
-@var{parent}.  If @var{parent} is @code{nil}, this function gives
-@var{keymap} no parent at all.
+Это устанавливает родительскую карту @var{parent} для карты
+@var{keymap} и возвращает @var{parent}.  Если @var{parent}
+равно @code{nil}, эта функция не устанавливает @var{keymap}
+никакого родителя.
 
-If @var{keymap} has submaps (bindings for prefix keys), they too receive
-new parent keymaps that reflect what @var{parent} specifies for those
-prefix keys.
+Если @var{keymap} имеет вложенные карты (привязки для
+префиксных ключей), они также получают новые родительские
+ключевые карты, которые отражают то, на что указывает
+@var{parent} для этих префиксных ключей.
 @end defun
 
-   Here is an example showing how to make a keymap that inherits
-from @code{text-mode-map}:
+   Вот пример, показывающий, как создать ключевую карту,
+унаследованную от @code{text-mode-map}:
 
 @example
 (let ((map (make-sparse-keymap)))
@@ -449,30 +504,33 @@ from @code{text-mode-map}:
   map)
 @end example
 
-  A non-sparse keymap can have a parent too, but this is not very
-useful.  A non-sparse keymap always specifies something as the binding
-for every numeric character code without modifier bits, even if it is
-@code{nil}, so these character's bindings are never inherited from
-the parent keymap.
+  У не разреженной карты тоже может быть родитель, но это не
+очень полезно.  Неразрезанная карта всегда указывает что-то в
+качестве привязки для каждого числового кода символа без
+битов модификатора, даже если это @code{nil}, поэтому
+привязки этих символов никогда не наследуются от родительской
+карты.
 
 @cindex keymap inheritance from multiple maps
-  Sometimes you want to make a keymap that inherits from more than one
-map.  You can use the function @code{make-composed-keymap} for this.
+  Иногда нужно создать ключевую карту, унаследованную от
+более чем одной карты.  Для этого можно использовать функцию
+@code{make-composed-keymap}.
 
 @defun make-composed-keymap maps &optional parent
-This function returns a new keymap composed of the existing keymap(s)
-@var{maps}, and optionally inheriting from a parent keymap
-@var{parent}.  @var{maps} can be a single keymap or a list of more
-than one.  When looking up a key in the resulting new map, Emacs
-searches in each of the @var{maps} in turn, and then in @var{parent},
-stopping at the first match.  A @code{nil} binding in any one of
-@var{maps} overrides any binding in @var{parent}, but it does not
-override any non-@code{nil} binding in any other of the @var{maps}.
+Эта функция возвращает новую ключевую карту, состоящую из
+существующих карт @var{maps}, и необязательно наследующую от
+родительской карты @var{parent}.  @var{maps} может быть одной
+картой или списком из более чем одной.  При поиске ключа в
+получившейся новой карте Emacs ищет по очереди в каждой из
+@var{maps}, а затем в @var{parent}, останавливаясь на первом
+совпадении.  Привязка @code{nil} в любой из @var{maps}
+отменяет любую привязку в @var{parent}, но не отменяет
+привязку не-@code{nil} в любой другой @var{maps}.
 @end defun
 
-@noindent For example, here is how Emacs sets the parent of
-@code{help-mode-map}, such that it inherits from both
-@code{button-buffer-map} and @code{special-mode-map}:
+@noindent Например, вот как Emacs устанавливает родителя
+@code{help-mode-map}, так что он наследуется от
+@code{button-buffer-map} и @code{special-mode-map}:
 
 @example
 (defvar help-mode-map
@@ -484,126 +542,138 @@ override any non-@code{nil} binding in any other of the @var{maps}.
 
 
 @node Prefix Keys
-@section Prefix Keys
+@section Префиксные Ключи
 @cindex prefix key
 
-  A @dfn{prefix key} is a key sequence whose binding is a keymap.  The
-keymap defines what to do with key sequences that extend the prefix key.
-For example, @kbd{C-x} is a prefix key, and it uses a keymap that is
-also stored in the variable @code{ctl-x-map}.  This keymap defines
-bindings for key sequences starting with @kbd{C-x}.
+  @dfn{prefix key} - это последовательность ключей, привязкой
+которой является ключевая карта.  Ключевая карта определяет,
+что делать с последовательностями ключей, расширяющими
+префиксный ключ.  Например, @kbd{C-x} - это префиксный ключ,
+и он использует ключевую карту, которая также хранится в
+переменной @code{ctl-x-map}.  Эта карта определяет привязки
+для последовательностей ключей, начинающихся с @kbd{C-x}.
 
-  Some of the standard Emacs prefix keys use keymaps that are
-also found in Lisp variables:
+  Некоторые из стандартных префиксных ключей Emacs используют
+ключевые карты, которые также находятся в переменных Lisp:
 
 @itemize @bullet
 @item
 @vindex esc-map
 @findex ESC-prefix
-@code{esc-map} is the global keymap for the @key{ESC} prefix key.  Thus,
-the global definitions of all meta characters are actually found here.
-This map is also the function definition of @code{ESC-prefix}.
+@code{esc-map} - это глобальная ключевая карта для
+префиксного ключа @key{ESC}.  Таким образом, здесь можно
+найти глобальные определения всех метасимволов.  Эта карта
+также является определением функции @code{ESC-prefix}.
 
 @item
 @cindex @kbd{C-h}
-@code{help-map} is the global keymap for the @kbd{C-h} prefix key.
+@code{help-map} - это глобальная ключевая карта для
+префиксного ключа @kbd{C-h}.
 
 @item
 @cindex @kbd{C-c}
 @vindex mode-specific-map
-@code{mode-specific-map} is the global keymap for the prefix key
-@kbd{C-c}.  This map is actually global, not mode-specific, but its name
-provides useful information about @kbd{C-c} in the output of @kbd{C-h b}
-(@code{display-bindings}), since the main use of this prefix key is for
-mode-specific bindings.
+@code{mode-specific-map} - это глобальная ключевая карта для
+префиксного ключа @kbd{C-c}.  Эта карта на самом деле
+является глобальной, а не зависящей от режима, но ее имя
+предоставляет полезную информацию об @kbd{C-c} в выводе
+@kbd{C-h b} (@code{display-bindings}), поскольку в основном
+этот префиксный ключ используется для привязок, зависящих от
+режима.
 
 @item
 @cindex @kbd{C-x}
 @vindex ctl-x-map
 @findex Control-X-prefix
-@code{ctl-x-map} is the global keymap used for the @kbd{C-x} prefix key.
-This map is found via the function cell of the symbol
-@code{Control-X-prefix}.
+@code{ctl-x-map} - это глобальная карта, используемая для
+префиксного ключа @kbd{C-x}.  Эта карта находится через
+функциональную ячейку символа @code{Control-X-prefix}.
 
 @item
 @cindex @kbd{C-x @key{RET}}
 @vindex mule-keymap
-@code{mule-keymap} is the global keymap used for the @kbd{C-x @key{RET}}
-prefix key.
+@code{mule-keymap} - это глобальная карта, используемая для
+префиксного ключа @kbd{C-x @key{RET}}.
 
 @item
 @cindex @kbd{C-x 4}
 @vindex ctl-x-4-map
-@code{ctl-x-4-map} is the global keymap used for the @kbd{C-x 4} prefix
-key.
+@code{ctl-x-4-map} - это глобальная карта, используемая для
+префиксного ключа @kbd{C-x 4}.
 
 @item
 @cindex @kbd{C-x 5}
 @vindex ctl-x-5-map
-@code{ctl-x-5-map} is the global keymap used for the @kbd{C-x 5} prefix
-key.
+@code{ctl-x-5-map} - это глобальная карта, используемая для
+префиксного ключа @kbd{C-x 5}.
 
 @item
 @cindex @kbd{C-x 6}
 @vindex 2C-mode-map
-@code{2C-mode-map} is the global keymap used for the @kbd{C-x 6} prefix
-key.
+@code{2C-mode-map} - это глобальная карта, используемая для
+префиксного ключа @kbd{C-x 6}.
 
 @item
 @cindex @kbd{C-x v}
 @vindex vc-prefix-map
-@code{vc-prefix-map} is the global keymap used for the @kbd{C-x v} prefix
-key.
+@code{vc-prefix-map} - это глобальная карта, используемая для
+префиксного ключа @kbd{C-x v}.
 
 @item
 @cindex @kbd{M-g}
 @vindex goto-map
-@code{goto-map} is the global keymap used for the @kbd{M-g} prefix
-key.
+@code{goto-map} - это глобальная карта, используемая для
+префиксного ключа @kbd{M-g}.
 
 @item
 @cindex @kbd{M-s}
 @vindex search-map
-@code{search-map} is the global keymap used for the @kbd{M-s} prefix
-key.
+@code{search-map} - это глобальная карта, используемая для
+префиксного ключа @kbd{M-s}.
 
 @item
 @cindex @kbd{M-o}
 @vindex facemenu-keymap
-@code{facemenu-keymap} is the global keymap used for the @kbd{M-o}
-prefix key.
+@code{facemenu-keymap} - это глобальная карта, используемая
+для префиксного ключа @kbd{M-o}.
 
 @item
-The other Emacs prefix keys are @kbd{C-x @@}, @kbd{C-x a i}, @kbd{C-x
-@key{ESC}} and @kbd{@key{ESC} @key{ESC}}.  They use keymaps that have
-no special names.
+Другие префиксные ключи Emacs - @kbd{C-x @@}, @kbd{C-x a i},
+@kbd{C-x @key{ESC}} и @kbd{@key{ESC} @key{ESC}}.  Они
+используют ключевые карты, у которых нет специальных имен.
 @end itemize
 
-  The keymap binding of a prefix key is used for looking up the event
-that follows the prefix key.  (It may instead be a symbol whose function
-definition is a keymap.  The effect is the same, but the symbol serves
-as a name for the prefix key.)  Thus, the binding of @kbd{C-x} is the
-symbol @code{Control-X-prefix}, whose function cell holds the keymap
-for @kbd{C-x} commands.  (The same keymap is also the value of
-@code{ctl-x-map}.)
+  Привязка префиксного ключа к карте используется для поиска
+события, следующего за префиксным ключом.  (Вместо этого это
+может быть символ, определение функции которого является
+ключевой картой.  Эффект тот же, но символ служит именем для
+префиксного ключа).  Таким образом, привязка @kbd{C-x} - это
+символ @code{Control-X-prefix}, функциональная ячейка
+которого содержит ключевую карту для команд @kbd{C-x}.  (Та
+же самая карта также является значением @code{ctl-x-map}.)
 
-  Prefix key definitions can appear in any active keymap.  The
-definitions of @kbd{C-c}, @kbd{C-x}, @kbd{C-h} and @key{ESC} as prefix
-keys appear in the global map, so these prefix keys are always
-available.  Major and minor modes can redefine a key as a prefix by
-putting a prefix key definition for it in the local map or the minor
-mode's map.  @xref{Active Keymaps}.
+  Определения префиксных ключей могут отображаться в любой
+активной ключевой карте.  Определения @kbd{C-c}, @kbd{C-x},
+@kbd{C-h} и @key{ESC} как префиксных ключей появляются на
+глобальной карте, поэтому эти префиксные ключи всегда
+доступны.  Основной и второстепенный режимы могут
+переопределить ключ как префикс, поместив определение
+префиксного ключа для него в локальную карту или карту
+второстепенного режима.  @xref{Active Keymaps}.
 
-  If a key is defined as a prefix in more than one active map, then its
-various definitions are in effect merged: the commands defined in the
-minor mode keymaps come first, followed by those in the local map's
-prefix definition, and then by those from the global map.
+  Если ключ определен как префикс более чем в одной активной
+карте, то его различные определения фактически объединяются:
+сначала идут команды, определенные в ключевых картах
+второстепенного режима, за ними следуют команды в определении
+префикса локальной карты, а затем - команды из глобальной
+карты.
 
-  In the following example, we make @kbd{C-p} a prefix key in the local
-keymap, in such a way that @kbd{C-p} is identical to @kbd{C-x}.  Then
-the binding for @kbd{C-p C-f} is the function @code{find-file}, just
-like @kbd{C-x C-f}.  The key sequence @kbd{C-p 6} is not found in any
-active keymap.
+  В следующем примере делается @kbd{C-p} префиксным ключом в
+локальной таблице ключей таким образом, чтобы @kbd{C-p} был
+идентичен @kbd{C-x}.  Тогда привязкой для @kbd{C-p C-f} будет
+функция @code{find-file}, как и для @kbd{C-x C-f}.
+Последовательность ключей @kbd{C-p 6} не найдена ни в одной
+активной ключевой карте.
 
 @example
 @group
@@ -628,121 +698,134 @@ active keymap.
 @defun define-prefix-command symbol &optional mapvar prompt
 @cindex prefix command
 @anchor{Definition of define-prefix-command}
-This function prepares @var{symbol} for use as a prefix key's binding:
-it creates a sparse keymap and stores it as @var{symbol}'s function
-definition.  Subsequently binding a key sequence to @var{symbol} will
-make that key sequence into a prefix key.  The return value is @code{symbol}.
+Эта функция подготавливает @var{symbol} для использования в
+качестве привязки префиксного ключа: она создает разреженную
+ключевую карту и сохраняет ее как определение функции
+@var{symbol}'s.  Последующее связывание ключевой
+последовательности с @var{symbol} превратит эту ключевую
+последовательность в префиксный ключ.  Возвращаемое значение
+- @code{symbol}.
 
-This function also sets @var{symbol} as a variable, with the keymap as
-its value.  But if @var{mapvar} is non-@code{nil}, it sets @var{mapvar}
-as a variable instead.
+Эта функция также устанавливает @var{symbol} как переменную
+со значением ключевой карты.  Но если @var{mapvar} равен
+не-@code{nil}, вместо этого он устанавливает @var{mapvar} в
+качестве переменной.
 
-If @var{prompt} is non-@code{nil}, that becomes the overall prompt
-string for the keymap.  The prompt string should be given for menu keymaps
-(@pxref{Defining Menus}).
+Если @var{prompt} равен не-@code{nil}, это становится общей
+строкой приглашения для ключевой карты.  Строка подсказки
+должна быть дана для раскладки меню (@pxref{Defining Menus}).
 @end defun
 
 @node Active Keymaps
-@section Active Keymaps
+@section Активные Ключевые Карты
 @cindex active keymap
 
-  Emacs contains many keymaps, but at any time only a few keymaps are
-@dfn{active}.  When Emacs receives user input, it translates the input
-event (@pxref{Translation Keymaps}), and looks for a key binding in
-the active keymaps.
+  Emacs содержит много ключевых карт, но в любой момент
+только несколько карт являются активными @dfn{active}.  Когда
+Emacs получает ввод пользователя, он переводит событие ввода
+(@pxref{Translation Keymaps}) и ищет привязку ключа в
+активных ключевых картах.
 
-  Usually, the active keymaps are: (i) the keymap specified by the
-@code{keymap} property, (ii) the keymaps of enabled minor modes, (iii)
-the current buffer's local keymap, and (iv) the global keymap, in that
-order.  Emacs searches for each input key sequence in all these
-keymaps.
+  Обычно активными ключевыми картами являются: (i) -
+карта, заданная свойством @code{keymap}, (ii) - карта
+задействованных второстепенных режимов, (iii) - локальная
+карта текущего буфера и (iv) - глобальная карта, в указанном
+порядке.  Emacs ищет каждую последовательность ключей ввода
+во всех этих картах.
 
-  Of these usual keymaps, the highest-precedence one is specified
-by the @code{keymap} text or overlay property at point, if any.  (For
-a mouse input event, Emacs uses the event position instead of point;
+  Из этих обычных ключевых карт наивысший приоритет задается
+с помощью свойства @code{keymap} text или overlay в точке,
+если таковые имеются.  (Для события ввода мыши Emacs
+использует позицию события вместо точки;
 @iftex
-see the next section for details.)
+подробности в следующем разделе.)
 @end iftex
 @ifnottex
 @pxref{Searching Keymaps}.)
 @end ifnottex
 
-  Next in precedence are keymaps specified by enabled minor modes.
-These keymaps, if any, are specified by the variables
+  Следующими по приоритету идут ключевые карты, заданные
+включенными второстепенными режимами.
+Эти карты, если они есть, задаются переменными
 @code{emulation-mode-map-alists},
-@code{minor-mode-overriding-map-alist}, and
+@code{minor-mode-overriding-map-alist} и
 @code{minor-mode-map-alist}.  @xref{Controlling Active Maps}.
 
 @cindex local keymap
-  Next in precedence is the buffer's @dfn{local keymap}, containing
-key bindings specific to the buffer.  The minibuffer also has a local
-keymap (@pxref{Intro to Minibuffers}).  If there is a @code{local-map}
-text or overlay property at point, that specifies the local keymap to
-use, in place of the buffer's default local keymap.
+  Следующим по приоритету идет локальная карта буфера
+@dfn{local keymap}, содержащая привязки ключей, специфичных
+для этого буфера.  В минибуфере также есть локальная ключевая
+карта (@pxref{Intro to Minibuffers}).  Если в точке есть
+текст @code{local-map} или свойство наложения, которое
+определяет используемую локальную ключевую карту вместо
+локальной ключевой карты по умолчанию.
 
 @cindex major mode keymap
-  The local keymap is normally set by the buffer's major mode, and
-every buffer with the same major mode shares the same local keymap.
-Hence, if you call @code{local-set-key} (@pxref{Key Binding Commands})
-to change the local keymap in one buffer, that also affects the local
-keymaps in other buffers with the same major mode.
+  Локальная ключевая карта обычно устанавливается основным режимом буфера, и
+каждый буфер с таким же основным режимом использует одну и ту же локальную
+карту.  Следовательно, если вызывается @code{local-set-key}
+(@pxref{Key Binding Commands}) для изменения локальной карты в одном буфере,
+это также влияет на локальные ключевые карты в других буферах с таким же
+основным режимом.
 
 @cindex global keymap
-  Finally, the @dfn{global keymap} contains key bindings that are
-defined regardless of the current buffer, such as @kbd{C-f}.  It is
-always active, and is bound to the variable @code{global-map}.
+  Наконец, @dfn{global keymap} содержит привязки ключей, которые
+определяются независимо от текущего буфера, например @kbd{C-f}.  Это
+действует всегда и привязано к переменной @code{global-map}.
 
-  Apart from the above usual keymaps, Emacs provides special ways
-for programs to make other keymaps active.  Firstly, the variable
-@code{overriding-local-map} specifies a keymap that replaces the usual
-active keymaps, except for the global keymap.  Secondly, the
-terminal-local variable @code{overriding-terminal-local-map} specifies
-a keymap that takes precedence over @emph{all} other keymaps
-(including @code{overriding-local-map}); this is normally used for
-modal/transient keybindings (the function @code{set-transient-map}
-provides a convenient interface for this).  @xref{Controlling Active
-Maps}, for details.
+  Помимо вышеуказанных обычных привязок ключей, Emacs предоставляет
+программам специальные способы сделать другие привязки активными.
+Во-первых, переменная @code{overriding-local-map} указывает привязку ключей,
+которая заменяет обычные активные привязки, за исключением глобальной
+привязки ключей.  Во-вторых, локальная для терминала переменная
+@code{overriding-terminal-local-map} указывает карту ключей, которая имеет
+приоритет над @emph{всеми} другими картами ключей (включая
+@code{overriding-local-map}); обычно это используется для
+модальных/временных привязок ключей (функция @code{set-transient-map}
+предоставляет для этого удобный интерфейс).  @xref{Controlling Active Maps},
+для деталей.
 
-  Making keymaps active is not the only way to use them.  Keymaps are
-also used in other ways, such as for translating events within
-@code{read-key-sequence}.  @xref{Translation Keymaps}.
+  Активизация ключевой карты - не единственный способ её использования.
+Карты также используются и другими способами, например, для перевода событий
+в @code{read-key-sequence}.  @xref{Translation Keymaps}.
 
-  @xref{Standard Keymaps}, for a list of some standard keymaps.
+  @xref{Standard Keymaps}, для списка некоторых стандартных раскладок.
 
 @defun current-active-maps &optional olp position
-This returns the list of active keymaps that would be used by the
-command loop in the current circumstances to look up a key sequence.
-Normally it ignores @code{overriding-local-map} and
-@code{overriding-terminal-local-map}, but if @var{olp} is non-@code{nil}
-then it pays attention to them.  @var{position} can optionally be either
-an event position as returned by @code{event-start} or a buffer
-position, and may change the keymaps as described for
-@code{key-binding}.
+Это возвращает список активных ключевых карт, которые будут использоваться
+циклом команд в текущих обстоятельствах для поиска последовательности
+ключей.  Обычно игнорирует @code{overriding-local-map} и
+@code{overriding-terminal-local-map}, но если @var{olp} равен не-@code{nil},
+обращается на них внимание.  @var{position} может быть либо позицией
+события, возвращаемой @code{event-start}, либо позицией буфера, и может
+изменять привязку ключей, как описано для @code{key-binding}.
 @end defun
 
 @defun key-binding key &optional accept-defaults no-remap position
-This function returns the binding for @var{key} according to the
-current active keymaps.  The result is @code{nil} if @var{key} is
-undefined in the keymaps.
+Эта функция возвращает привязку для @var{key} в соответствии с текущими
+активными ключевыми картами.  Результатом будет @code{nil}, если @var{key}
+не определен в ключевой карте.
 
-The argument @var{accept-defaults} controls checking for default
-bindings, as in @code{lookup-key} (@pxref{Functions for Key Lookup}).
+Аргумент @var{accept-defaults} управляет проверкой привязок по умолчанию,
+как в @code{lookup-key} (@pxref{Functions for Key Lookup}).
 
-When commands are remapped (@pxref{Remapping Commands}),
-@code{key-binding} normally processes command remappings so as to
-return the remapped command that will actually be executed.  However,
-if @var{no-remap} is non-@code{nil}, @code{key-binding} ignores
-remappings and returns the binding directly specified for @var{key}.
+Когда команды переназначены (@pxref{Remapping Commands}), @code{key-binding}
+обычно обрабатывает переназначения команд, чтобы вернуть переназначенную
+команду, которая будет фактически выполнена.  Однако, если @var{no-remap}
+установлено в не-@code{nil}, @code{key-binding} игнорирует переназначения и
+возвращает привязку, прямо заданную для @var{key}.
 
-If @var{key} starts with a mouse event (perhaps following a prefix
-event), the maps to be consulted are determined based on the event's
-position.  Otherwise, they are determined based on the value of point.
-However, you can override either of them by specifying @var{position}.
-If @var{position} is non-@code{nil}, it should be either a buffer
-position or an event position like the value of @code{event-start}.
-Then the maps consulted are determined based on @var{position}.
+Если @var{key} начинается с события мыши (возможно, после префиксного
+события), карты, к которым следует обращаться, определяются на основе
+положения события.  В противном случае они определяются на основе оценки
+стоимимости.  Однако можно переопределить любой из них, указав
+@var{position}.  Если @var{position} установлено в не-@code{nil}, это должна
+быть позиция в буфере или позиция события, такая как значение
+@code{event-start}.  Затем используемые карты определяются на основе
+@var{position}.
 
-Emacs signals an error if @var{key} is not a string or a vector.
+Emacs сигнализирует об ошибке, если @var{key} не является строкой или
+вектором.
 
 @example
 @group
@@ -753,11 +836,11 @@ Emacs signals an error if @var{key} is not a string or a vector.
 @end defun
 
 @node Searching Keymaps
-@section Searching the Active Keymaps
+@section Поиск Активных Ключевых Карт
 @cindex searching active keymaps for keys
 
-Here is a pseudo-Lisp summary of how Emacs searches the active
-keymaps:
+Вот краткое изложение кода псевдо-Lisp, описывающий как Emacs ищет активные
+ключевые карты:
 
 @lisp
 (or (if overriding-terminal-local-map
@@ -775,55 +858,51 @@ keymaps:
 @end lisp
 
 @noindent
-Here, @var{find-in} and @var{find-in-any} are pseudo functions that
-search in one keymap and in an alist of keymaps, respectively.  Note
-that the @code{set-transient-map} function works by setting
-@code{overriding-terminal-local-map} (@pxref{Controlling Active
-Maps}).
+Здесь @var{find-in} и @var{find-in-any} - это псевдофункции, выполняющие
+поиск по одной ключевой карте и по списку карт соответственно.  Обратите
+внимание, что функция @code{set-transient-map} работает, устанавливая
+@code{overriding-terminal-local-map} (@pxref{Controlling Active Maps}).
 
-  In the above pseudo-code, if a key sequence starts with a mouse
-event (@pxref{Mouse Events}), that event's position is used instead of
-point, and the event's buffer is used instead of the current buffer.
-In particular, this affects how the @code{keymap} and @code{local-map}
-properties are looked up.  If a mouse event occurs on a string
-embedded with a @code{display}, @code{before-string}, or
-@code{after-string} property (@pxref{Special Properties}), and the
-string has a non-@code{nil} @code{keymap} or @code{local-map}
-property, that overrides the corresponding property in the underlying
-buffer text (i.e., the property specified by the underlying text is
-ignored).
+  В приведенном выше псевдокоде, если последовательность ключей начинается с
+события мыши (@pxref{Mouse Events}), позиция этого события используется
+вместо точки, а буфер события используется вместо текущего буфера.  В
+частности, это влияет на поиск свойств @code{keymap} и @code{local-map}.
+Если событие мыши происходит в строке, содержащей свойство @code{display},
+@code{before-string} или @code{after-string} (@pxref{Special Properties}), и
+строка имеет свойство не-@code{nil} для  @code{keymap} или @code{local-map},
+которое переопределяет соответствующее свойство в тексте базового буфера
+(т. е. Свойство, указанное в базовом тексте, игнорируется).
 
-  When a key binding is found in one of the active keymaps, and that
-binding is a command, the search is over---the command is executed.
-However, if the binding is a symbol with a value or a string, Emacs
-replaces the input key sequences with the variable's value or the
-string, and restarts the search of the active keymaps.  @xref{Key
-Lookup}.
+  Когда привязка ключа обнаружена в одной из активных ключевых карт, и эта
+привязка является командой, поиск завершается - команда выполняется.
+Однако, если привязка является символом со значением или строкой, Emacs
+заменяет входные последовательности ключей значением переменной или строкой
+и перезапускает поиск активных ключевых таблиц.  @xref{Key Lookup}.
 
-  The command which is finally found might also be remapped.
+  Наконец, найденную команду можно переназначить.
 @xref{Remapping Commands}.
 
 @node Controlling Active Maps
-@section Controlling the Active Keymaps
+@section Управление Активными Ключевыми Картами
 @cindex active keymap, controlling
 
 @defvar global-map
-This variable contains the default global keymap that maps Emacs
-keyboard input to commands.  The global keymap is normally this
-keymap.  The default global keymap is a full keymap that binds
-@code{self-insert-command} to all of the printing characters.
+Эта переменная содержит глобальную ключевую карту по умолчанию, которая
+сопоставляет ввод с клавиатуры Emacs командам.  Глобальная карта ключей
+обычно является этой картой.  Глобальная ключевая карта по умолчанию - это
+полная карта, которая связывает @code{self-insert-command} со всеми
+печатными символами.
 
-It is normal practice to change the bindings in the global keymap, but you
-should not assign this variable any value other than the keymap it starts
-out with.
+Изменение привязки в глобальной ключевой карте является нормальной
+практикой, но не нужно присваивать этой переменной какое-либо значение,
+кроме ключевой карты, с которой всё начинается.
 @end defvar
 
 @defun current-global-map
-This function returns the current global keymap.  This is the same as
-the value of @code{global-map} unless you change one or the other.
-The return value is a reference, not a copy; if you use
-@code{define-key} or other functions on it you will alter global
-bindings.
+Эта функция возвращает текущую глобальную ключевую карту.  Это то же самое,
+что и значение @code{global-map}, если не изменено одно или другое.
+Возвращаемое значение является ссылкой, а не копией; если используется
+@code{define-key} или другие функции, изменяются глобальные привязки.
 
 @example
 @group
@@ -835,11 +914,11 @@ bindings.
 @end defun
 
 @defun current-local-map
-This function returns the current buffer's local keymap, or @code{nil}
-if it has none.  In the following example, the keymap for the
-@file{*scratch*} buffer (using Lisp Interaction mode) is a sparse keymap
-in which the entry for @key{ESC}, @acronym{ASCII} code 27, is another sparse
-keymap.
+Эта функция возвращает локальную ключевую карту текущего буфера или
+@code{nil}, если ее нет.  В следующем примере карта ключей для буфера
+@file{*scratch*} (с использованием режима взаимодействия с Lisp)
+представляет собой разреженную карту ключей, в которой запись для @key{ESC},
+код 27 @acronym{ASCII}, является еще одной разреженной ключевой картой.
 
 @example
 @group
@@ -857,267 +936,272 @@ keymap.
 @end example
 @end defun
 
-@code{current-local-map} returns a reference to the local keymap, not
-a copy of it; if you use @code{define-key} or other functions on it
-you will alter local bindings.
+@code{current-local-map} возвращает ссылку на локальную ключевую карту, а не
+ее копию; если используется @code{define-key} или другие функции, изменяются
+локальные привязки.
 
 @defun current-minor-mode-maps
-This function returns a list of the keymaps of currently enabled minor modes.
+Эта функция возвращает список ключевых карт включенных в данный момент
+второстепенными режимами.
 @end defun
 
 @defun use-global-map keymap
-This function makes @var{keymap} the new current global keymap.  It
-returns @code{nil}.
+Эта функция делает @var{keymap} новой текущей глобальной картой.  Возвращает
+@code{nil}.
 
-It is very unusual to change the global keymap.
+Очень необычно менять глобальную ключевую карту.
 @end defun
 
 @defun use-local-map keymap
-This function makes @var{keymap} the new local keymap of the current
-buffer.  If @var{keymap} is @code{nil}, then the buffer has no local
-keymap.  @code{use-local-map} returns @code{nil}.  Most major mode
-commands use this function.
+Эта функция делает @var{keymap} новой локальной ключевой картой текущего
+буфера.  Если @var{keymap} установлено в @code{nil}, то в буфере нет
+локальной ключевой карты.  @code{use-local-map} возвращает @code{nil}.
+Большинство команд основного режима используют эту функцию.
 @end defun
 
 @defvar minor-mode-map-alist
 @anchor{Definition of minor-mode-map-alist}
-This variable is an alist describing keymaps that may or may not be
-active according to the values of certain variables.  Its elements look
-like this:
+Эта переменная представляет собой список, описывающий карты ключей, которые
+могут быть или не быть активными в соответствии со значениями определенных
+переменных.  Его элементы выглядят так:
 
 @example
 (@var{variable} . @var{keymap})
 @end example
 
-The keymap @var{keymap} is active whenever @var{variable} has a
-non-@code{nil} value.  Typically @var{variable} is the variable that
-enables or disables a minor mode.  @xref{Keymaps and Minor Modes}.
+Карта @var{keymap} активна всякий раз, когда @var{variable} имеет значение
+не-@code{nil}.  Обычно @var{variable} - это переменная, которая включает или
+отключает второстепенный режим.  @xref{Keymaps and Minor Modes}.
 
-Note that elements of @code{minor-mode-map-alist} do not have the same
-structure as elements of @code{minor-mode-alist}.  The map must be the
-@sc{cdr} of the element; a list with the map as the second element will
-not do.  The @sc{cdr} can be either a keymap (a list) or a symbol whose
-function definition is a keymap.
+Обратите внимание, что элементы @code{minor-mode-map-alist} не имеют такой
+же структуры, как элементы @code{minor-mode-alist}.  Карта должна быть
+@sc{cdr} элемента; список с картой в качестве второго элемента не годится.
+@sc{cdr} может быть ключевой картой (списком) или символом, с ячейкой
+функции определением которой - ключевая карта.
 
-When more than one minor mode keymap is active, the earlier one in
-@code{minor-mode-map-alist} takes priority.  But you should design
-minor modes so that they don't interfere with each other.  If you do
-this properly, the order will not matter.
+Когда активна более чем одна карта ключей вспомогательного режима, более
+ранняя в @code{minor-mode-map-alist} имеет приоритет.  Требуется разработать
+второстепенные режимы так, чтобы они не мешали друг другу.  Если сделано это
+правильно, порядок не будет иметь значения.
 
-See @ref{Keymaps and Minor Modes}, for more information about minor
-modes.  See also @code{minor-mode-key-binding} (@pxref{Functions for Key
-Lookup}).
+Смотреть @ref{Keymaps and Minor Modes}, для получения дополнительной
+информации о второстепенных режимах.  See also @code{minor-mode-key-binding} (@pxref{Functions for Key Lookup}).
 @end defvar
 
 @defvar minor-mode-overriding-map-alist
-This variable allows major modes to override the key bindings for
-particular minor modes.  The elements of this alist look like the
-elements of @code{minor-mode-map-alist}: @code{(@var{variable}
-. @var{keymap})}.
+Эта переменная позволяет основным режимам отменять привязки ключей для
+определенных второстепенных режимов.  Элементы этого списка выглядят как
+элементы @code{minor-mode-map-alist}:
+@code{(@var{variable} . @var{keymap})}.
 
-If a variable appears as an element of
-@code{minor-mode-overriding-map-alist}, the map specified by that
-element totally replaces any map specified for the same variable in
+Если переменная появляется как элемент
+@code{minor-mode-overriding-map-alist}, карта, указанная этим элементом,
+полностью заменяет любую карту, указанную для той же переменной в
 @code{minor-mode-map-alist}.
 
-@code{minor-mode-overriding-map-alist} is automatically buffer-local in
-all buffers.
+@code{minor-mode-overriding-map-alist} автоматически является локальным для
+всех буферов.
 @end defvar
 
 @defvar overriding-local-map
-If non-@code{nil}, this variable holds a keymap to use instead of the
-buffer's local keymap, any text property or overlay keymaps, and any
-minor mode keymaps.  This keymap, if specified, overrides all other
-maps that would have been active, except for the current global map.
+Если установлена в не-@code{nil}, эта переменная содержит ключевую карту для
+использования вместо локальной ключевой карты буфера, любого текстового
+свойства или ключевой карты, а также любых карт вспомогательного режима.
+Эта карта, если указана, отменяет все другие карты, которые были активными,
+кроме текущей глобальной карты.
 @end defvar
 
 @defvar overriding-terminal-local-map
-If non-@code{nil}, this variable holds a keymap to use instead of
-@code{overriding-local-map}, the buffer's local keymap, text property
-or overlay keymaps, and all the minor mode keymaps.
+Если non-@code{nil}, эта переменная содержит ключевую карту для
+использования вместо @code{overriding-local-map}, локальных карт ключей
+буфера, текстовых свойств или налаживающихся ключевых карт, а также все
+карты вспомогательного режима.
 
-This variable is always local to the current terminal and cannot be
-buffer-local.  @xref{Multiple Terminals}.  It is used to implement
-incremental search mode.
+Эта переменная всегда является локальной для текущего терминала и не может
+быть локальной для буфера.  @xref{Multiple Terminals}.  Она используется для
+реализации режима инкрементного поиска.
 @end defvar
 
 @defvar overriding-local-map-menu-flag
-If this variable is non-@code{nil}, the value of
-@code{overriding-local-map} or @code{overriding-terminal-local-map} can
-affect the display of the menu bar.  The default value is @code{nil}, so
-those map variables have no effect on the menu bar.
+Если эта переменная - не-@code{nil}, значение @code{overriding-local-map}
+или @code{overriding-terminal-local-map} может повлиять на отображение строк
+и меню.  Значение по умолчанию - @code{nil}, поэтому эти переменные карт
+не влияют на строку меню.
 
-Note that these two map variables do affect the execution of key
-sequences entered using the menu bar, even if they do not affect the
-menu bar display.  So if a menu bar key sequence comes in, you should
-clear the variables before looking up and executing that key sequence.
-Modes that use the variables would typically do this anyway; normally
-they respond to events that they do not handle by ``unreading'' them and
-exiting.
+Обратите внимание, что эти две переменные карт действительно влияют на
+выполнение последовательностей ключей, вводимых с помощью строки меню, даже
+если они не влияют на отображение строки меню.  Поэтому, если появляется
+последовательность ключей в строке меню, требуется очистить переменные,
+прежде чем искать и выполнять эту последовательность ключей.  Режимы, в
+которых используются переменные, обычно делают это в любом случае; обычно
+реагируют на события, которые не обрабатывают, путем не чтения ``unreading''
+их и выхода.
 @end defvar
 
 @defvar special-event-map
-This variable holds a keymap for special events.  If an event type has a
-binding in this keymap, then it is special, and the binding for the
-event is run directly by @code{read-event}.  @xref{Special Events}.
+Эта переменная содержит ключевую карту для особых событий.  Если тип события
+имеет привязку в этой карте, то оно особенно, и привязка для события
+запускается непосредственно @code{read-event}.  @xref{Special Events}.
 @end defvar
 
 @defvar emulation-mode-map-alists
-This variable holds a list of keymap alists to use for emulation
-modes.  It is intended for modes or packages using multiple minor-mode
-keymaps.  Each element is a keymap alist which has the same format and
-meaning as @code{minor-mode-map-alist}, or a symbol with a variable
-binding which is such an alist.  The active keymaps in each alist
-are used before @code{minor-mode-map-alist} and
-@code{minor-mode-overriding-map-alist}.
+Эта переменная содержит список списков раскладок для использования в режимах
+эмуляции.  Она предназначен для режимов или пакетов, использующих несколько
+карт вспомогательных режимов.  Каждый элемент представляет собой список
+ключевой карты, который имеет тот же формат и значение, что и
+@code{minor-mode-map-alist}, или символ с привязкой переменных, который
+является таким списком.  Активные карты ключей в каждом списке используются
+перед @code{minor-mode-map-alist} и @code{minor-mode-overriding-map-alist}.
 @end defvar
 
 @cindex transient keymap
 @defun set-transient-map keymap &optional keep-pred on-exit
-This function adds @var{keymap} as a @dfn{transient} keymap, which
-takes precedence over other keymaps for one (or more) subsequent keys.
+Эта функция добавляет @var{keymap} в качестве ключевой карты
+@dfn{transient}, которая имеет приоритет над другими картами для одного (или
+нескольких) последующих ключей.
 
-Normally, @var{keymap} is used just once, to look up the very next key.
-If the optional argument @var{keep-pred} is @code{t}, the map stays
-active as long as the user types keys defined in @var{keymap}; when the
-user types a key that is not in @var{keymap}, the transient keymap is
-deactivated and normal key lookup continues for that key.
+Обычно @var{keymap} используется только один раз, чтобы найти следующий
+ключ.  Если необязательный аргумент @var{keep-pred} - @code{t}, карта
+остается активной, пока пользователь вводит ключи, определенные в
+@var{keymap}; когда пользователь вводит ключ, которого нет в @var{keymap},
+временная карта ключей деактивируется и для этого ключа продолжается обычный
+поиск ключа.
 
-The @var{keep-pred} argument can also be a function.  In that case, the
-function is called with no arguments, prior to running each command,
-while @var{keymap} is active; it should return non-@code{nil} if
-@var{keymap} should stay active.
+Аргумент @var{keep-pred} также может быть функцией.  В этом случае функция
+вызывается без аргументов перед запуском каждой команды, пока @var{keymap}
+активен; это должно вернуть не-@code{nil}, в случае если @var{keymap}
+остаётся в активном состоянии.
 
-The optional argument @var{on-exit}, if non-@code{nil}, specifies a
-function that is called, with no arguments, after @var{keymap} is
-deactivated.
+Необязательный аргумент @var{on-exit}, если не-@code{nil}, указывает
+функцию, которая вызывается без аргументов после деактивации @var{keymap}.
 
-This function works by adding and removing @var{keymap} from the
-variable @code{overriding-terminal-local-map}, which takes precedence
-over all other active keymaps (@pxref{Searching Keymaps}).
+Эта функция работает, добавляя и удаляя @var{keymap} из переменной
+@code{overriding-terminal-local-map}, которая имеет приоритет над всеми
+другими активными раскладками (@pxref{Searching Keymaps}).
 @end defun
 
 @node Key Lookup
-@section Key Lookup
+@section Ключевой Поиск
 @cindex key lookup
 @cindex keymap entry
 
-  @dfn{Key lookup} is the process of finding the binding of a key
-sequence from a given keymap.  The execution or use of the binding is
-not part of key lookup.
+  @dfn{Key lookup (Key lookup)} - это процесс поиска привязки ключевой
+последовательности из заданной ключевой карты.  Выполнение или использование
+привязки не является частью поиска ключа.
 
-  Key lookup uses just the event type of each event in the key sequence;
-the rest of the event is ignored.  In fact, a key sequence used for key
-lookup may designate a mouse event with just its types (a symbol)
-instead of the entire event (a list).  @xref{Input Events}.  Such
-a key sequence is insufficient for @code{command-execute} to run,
-but it is sufficient for looking up or rebinding a key.
+  Поиск ключа использует только тип события каждого события в
+последовательности ключей; остальная часть события игнорируется.
+Фактически, последовательность ключей, используемая для поиска ключа, может
+обозначать событие мыши только с его типами (символ) вместо всего события
+(список).  @xref{Input Events}.  Такой последовательности ключей
+недостаточно для запуска @code{command-execute}, но ее достаточно для поиска
+или повторной привязки ключа.
 
-  When the key sequence consists of multiple events, key lookup
-processes the events sequentially: the binding of the first event is
-found, and must be a keymap; then the second event's binding is found in
-that keymap, and so on until all the events in the key sequence are used
-up.  (The binding thus found for the last event may or may not be a
-keymap.)  Thus, the process of key lookup is defined in terms of a
-simpler process for looking up a single event in a keymap.  How that is
-done depends on the type of object associated with the event in that
-keymap.
+  Когда последовательность ключей состоит из нескольких событий, поиск
+ключей обрабатывает события последовательно: обнаруживается привязка первого
+события, и оно должно быть картой ключей; затем в этой карте будет найдена
+привязка второго события, и так до тех пор, пока не будут израсходованы все
+события в последовательности ключей.  (Обнаруженная таким образом привязка
+для последнего события может быть, а может и не быть ключевой картой). Таким
+образом, процесс поиска ключа определяется в терминах более простого
+процесса поиска одного события в карте ключей.  Как это делается, зависит от
+типа объекта, связанного с событием в этой карте.
 
-  Let's use the term @dfn{keymap entry} to describe the value found by
-looking up an event type in a keymap.  (This doesn't include the item
-string and other extra elements in a keymap element for a menu item, because
-@code{lookup-key} and other key lookup functions don't include them in
-the returned value.)  While any Lisp object may be stored in a keymap
-as a keymap entry, not all make sense for key lookup.  Here is a table
-of the meaningful types of keymap entries:
+  Давайте использовать термин @dfn{keymap entry} для описания значения,
+найденного при поиске типа события в карте ключей.  (Это не включает строку
+элемента и другие дополнительные элементы в элементе ключевой карты для
+пункта меню, потому что @code{lookup-key} и другие функции поиска ключей не
+включают их в возвращаемое значение).  Хотя любой объект Lisp может
+храниться в ключевой карте как запись ключевой карты, не все имеют смысл для
+поиска ключа.  Вот таблица значимых типов записей ключевой карты:
 
 @table @asis
 @item @code{nil}
 @cindex @code{nil} in keymap
-@code{nil} means that the events used so far in the lookup form an
-undefined key.  When a keymap fails to mention an event type at all, and
-has no default binding, that is equivalent to a binding of @code{nil}
-for that event type.
+@code{nil} означает, что события, использованные до сих пор в поиске,
+образуют неопределенный ключ.  Когда в ключевой карте вообще не упоминается
+тип события и нет привязки по умолчанию, это эквивалентно привязке
+@code{nil} для этого типа события.
 
 @item @var{command}
 @cindex command in keymap
-The events used so far in the lookup form a complete key,
-and @var{command} is its binding.  @xref{What Is a Function}.
+События, используемые до сих пор в поиске, образуют полный ключ, а
+@var{command} является его привязкой.  @xref{What Is a Function}.
 
 @item @var{array}
 @cindex string in keymap
-The array (either a string or a vector) is a keyboard macro.  The events
-used so far in the lookup form a complete key, and the array is its
-binding.  See @ref{Keyboard Macros}, for more information.
+Массив (строка или вектор) - это макрос клавиатуры.  События, использованные
+до сих пор в поиске, образуют полный ключ, а массив является его привязкой.
+Смотреть @ref{Keyboard Macros}, для детальной информации.
 
 @item @var{keymap}
 @cindex keymap in keymap
-The events used so far in the lookup form a prefix key.  The next
-event of the key sequence is looked up in @var{keymap}.
+События, использованные до сих пор в поиске, образуют префиксный ключ.
+Следующее событие ключевой последовательности ищется в @var{keymap}.
 
 @item @var{list}
 @cindex list in keymap
-The meaning of a list depends on what it contains:
+Значение списка зависит от того, что он содержит:
 
 @itemize @bullet
 @item
-If the @sc{car} of @var{list} is the symbol @code{keymap}, then the list
-is a keymap, and is treated as a keymap (see above).
+Если @sc{car} для @var{list} является символом @code{keymap}, то список
+является ключевой картой и рассматривается как карта (см. выше).
 
 @item
 @cindex @code{lambda} in keymap
-If the @sc{car} of @var{list} is @code{lambda}, then the list is a
-lambda expression.  This is presumed to be a function, and is treated
-as such (see above).  In order to execute properly as a key binding,
-this function must be a command---it must have an @code{interactive}
-specification.  @xref{Defining Commands}.
+Если @sc{car} для @var{list} - @code{lambda}, то список является
+лямбда-выражением.  Предполагается, что это функция, и она рассматривается
+как таковая (см. выше).  Чтобы правильно выполнять ключевую привязку, эта
+функция должна быть командой - она должна иметь спецификацию
+@code{interactive}.  @xref{Defining Commands}.
 @end itemize
 
 @item @var{symbol}
 @cindex symbol in keymap
-The function definition of @var{symbol} is used in place of
-@var{symbol}.  If that too is a symbol, then this process is repeated,
-any number of times.  Ultimately this should lead to an object that is
-a keymap, a command, or a keyboard macro.
+Определение функции @var{symbol} используется вместо @var{symbol}.  Если это
+тоже символ, то этот процесс повторяется любое количество раз.  В конечном
+итоге это должно привести к объекту, который является ключевой картой,
+командой или макросом клавиатуры.
 
-Note that keymaps and keyboard macros (strings and vectors) are not
-valid functions, so a symbol with a keymap, string, or vector as its
-function definition is invalid as a function.  It is, however, valid as
-a key binding.  If the definition is a keyboard macro, then the symbol
-is also valid as an argument to @code{command-execute}
-(@pxref{Interactive Call}).
+Обратите внимание, что ключевая карта и макросы клавиатуры (строки и
+векторы) не являются допустимыми функциями, поэтому символ с картой, строкой
+или вектором в качестве определения функции недействителен как функция.
+Однако он действителен как привязка ключа.  Если определение является
+клавиатурным макросом, то символ также действителен как аргумент для
+@code{command-execute} (@pxref{Interactive Call}).
 
 @cindex @code{undefined} in keymap
-The symbol @code{undefined} is worth special mention: it means to treat
-the key as undefined.  Strictly speaking, the key is defined, and its
-binding is the command @code{undefined}; but that command does the same
-thing that is done automatically for an undefined key: it rings the bell
-(by calling @code{ding}) but does not signal an error.
+Особого упоминания заслуживает символ @code{undefined}: он означает, что
+ключ считается неопределенным.  Строго говоря, ключ определен, а его
+привязка - это команда @code{undefined}; но эта команда делает то же самое,
+что автоматически делается для неопределенного ключа: она вызывает сигнал
+колокольчик (вызывая @code{ding}), но не сигнализирует об ошибке.
 
 @cindex preventing prefix key
-@code{undefined} is used in local keymaps to override a global key
-binding and make the key undefined locally.  A local binding of
-@code{nil} would fail to do this because it would not override the
-global binding.
+@code{undefined} используется в локальных катах ключей, чтобы переопределить
+привязку глобального ключа и сделать ключ неопределенным локально.
+Локальная привязка @code{nil} не сможет этого сделать, потому что она не
+переопределит глобальную привязку.
 
 @item @var{anything else}
-If any other type of object is found, the events used so far in the
-lookup form a complete key, and the object is its binding, but the
-binding is not executable as a command.
+Если обнаружен какой-либо другой тип объекта, события, использованные до
+сих пор в поиске, образуют полный ключ, а объект является его привязкой, но
+привязка не может быть выполнена как команда.
 @end table
 
-  In short, a keymap entry may be a keymap, a command, a keyboard
-macro, a symbol that leads to one of them, or @code{nil}.
+  Короче говоря, запись ключевой карты может быть картой, командой, макросом
+клавиатуры, символом, который ведет к одному из них, или @code{nil}.
 
 @node Functions for Key Lookup
-@section Functions for Key Lookup
+@section Функции Поиска Ключей
 
-  Here are the functions and variables pertaining to key lookup.
+  Вот функции и переменные, относящиеся к поиску ключей.
 
 @defun lookup-key keymap key &optional accept-defaults
-This function returns the definition of @var{key} in @var{keymap}.  All
-the other functions described in this chapter that look up keys use
-@code{lookup-key}.  Here are examples:
+Эта функция возвращает определение @var{key} в @var{keymap}.  Все другие
+функции, описанные в этой главе, которые используют ключи поиска, используют
+@code{lookup-key}.  Вот примеры:
 
 @example
 @group
@@ -1134,25 +1218,25 @@ the other functions described in this chapter that look up keys use
 @end group
 @end example
 
-If the string or vector @var{key} is not a valid key sequence according
-to the prefix keys specified in @var{keymap}, it must be too long
-and have extra events at the end that do not fit into a single key
-sequence.  Then the value is a number, the number of events at the front
-of @var{key} that compose a complete key.
+Если строка или вектор @var{key} не является допустимой последовательностью
+ключей в соответствии с префиксными ключами, указанными в @var{keymap}, она
+должна быть слишком длинной и иметь дополнительные события в конце, которые
+не помещаются в одну последовательность ключей.  Тогда значение - это число,
+количество событий перед @var{key}, которые составляют полный ключ.
 
 @c Emacs 19 feature
-If @var{accept-defaults} is non-@code{nil}, then @code{lookup-key}
-considers default bindings as well as bindings for the specific events
-in @var{key}.  Otherwise, @code{lookup-key} reports only bindings for
-the specific sequence @var{key}, ignoring default bindings except when
-you explicitly ask about them.  (To do this, supply @code{t} as an
-element of @var{key}; see @ref{Format of Keymaps}.)
+Если @var{accept-defaults} равен не-@code{nil}, то @code{lookup-key}
+учитывает привязки по умолчанию, а также привязки для определенных событий в
+@var{key}.  В противном случае @code{lookup-key} сообщает только привязки
+для конкретной последовательности @var{key}, игнорируя привязки по
+умолчанию, кроме случаев, когда вы явно спрашиваете о них. (Для этого
+поставьте @code{t} как элемент @var{key}; see @ref{Format of Keymaps}.)
 
-If @var{key} contains a meta character (not a function key), that
-character is implicitly replaced by a two-character sequence: the value
-of @code{meta-prefix-char}, followed by the corresponding non-meta
-character.  Thus, the first example below is handled by conversion into
-the second example.
+Если @var{key} содержит метасимвол (не функциональную клавишу), этот символ
+неявно заменяется двухсимвольной последовательностью: значением
+@code{meta-prefix-char}, за которым следует соответствующий немета-символ.
+Таким образом, первый пример ниже обрабатывается путем преобразования во
+второй пример.
 
 @example
 @group
@@ -1165,72 +1249,73 @@ the second example.
 @end group
 @end example
 
-Unlike @code{read-key-sequence}, this function does not modify the
-specified events in ways that discard information (@pxref{Key Sequence
-Input}).  In particular, it does not convert letters to lower case and
-it does not change drag events to clicks.
+В отличие от @code{read-key-sequence}, эта функция не изменяет указанные
+события способами, которые отбрасывают информацию
+(@pxref{Key Sequence Input}).  В частности, он не преобразует буквы в нижний
+регистр и не изменяет события перетаскивания на щелчки.
 @end defun
 
 @deffn Command undefined
-Used in keymaps to undefine keys.  It calls @code{ding}, but does
-not cause an error.
+Используется в картах для отмены определения ключей.  Вызывает @code{ding},
+но не вызывает ошибки.
 @end deffn
 
 @defun local-key-binding key &optional accept-defaults
-This function returns the binding for @var{key} in the current
-local keymap, or @code{nil} if it is undefined there.
+Эта функция возвращает привязку для @var{key} в текущей локальной карте
+ключей или @code{nil}, если она там не определена.
 
 @c Emacs 19 feature
-The argument @var{accept-defaults} controls checking for default bindings,
-as in @code{lookup-key} (above).
+Аргумент @var{accept-defaults} управляет проверкой привязок по умолчанию,
+как в @code{lookup-key} (выше).
 @end defun
 
 @defun global-key-binding key &optional accept-defaults
-This function returns the binding for command @var{key} in the
-current global keymap, or @code{nil} if it is undefined there.
+Эта функция возвращает привязку для команды @var{key} в текущей глобальной
+карте ключей или @code{nil}, если она там не определена.
 
 @c Emacs 19 feature
-The argument @var{accept-defaults} controls checking for default bindings,
-as in @code{lookup-key} (above).
+Аргумент @var{accept-defaults} управляет проверкой привязок по умолчанию,
+как в @code{lookup-key} (выше).
 @end defun
 
 @c Emacs 19 feature
 @defun minor-mode-key-binding key &optional accept-defaults
-This function returns a list of all the active minor mode bindings of
-@var{key}.  More precisely, it returns an alist of pairs
-@code{(@var{modename} . @var{binding})}, where @var{modename} is the
-variable that enables the minor mode, and @var{binding} is @var{key}'s
-binding in that mode.  If @var{key} has no minor-mode bindings, the
-value is @code{nil}.
+Эта функция возвращает список всех активных привязок второстепенного режима
+@var{key}.  Точнее, возвращает список пар
+@code{(@var{modename} . @var{binding})}, где @var{modename} - это
+переменная, которая включает второстепенный режим, а @var{binding} -
+привязка @var{key} в этом режиме.  Если @var{key} не имеет привязок
+второстепенного режима, значение будет @code{nil}..
 
-If the first binding found is not a prefix definition (a keymap or a
-symbol defined as a keymap), all subsequent bindings from other minor
-modes are omitted, since they would be completely shadowed.  Similarly,
-the list omits non-prefix bindings that follow prefix bindings.
+Если первая найденная привязка не является определением префикса (карта
+ключей или символ, определенный как ключевая карта), все последующие
+привязки из других второстепенных режимов опускаются, поскольку они будут
+полностью затенены.  Точно так же в списке отсутствуют привязки без
+префикса, следующие за привязками префикса.
 
-The argument @var{accept-defaults} controls checking for default
-bindings, as in @code{lookup-key} (above).
+Аргумент @var{accept-defaults} управляет проверкой привязок по умолчанию,
+как в @code{lookup-key} (выше).
 @end defun
 
 @defopt meta-prefix-char
 @cindex @key{ESC}
-This variable is the meta-prefix character code.  It is used for
-translating a meta character to a two-character sequence so it can be
-looked up in a keymap.  For useful results, the value should be a
-prefix event (@pxref{Prefix Keys}).  The default value is 27, which is
-the @acronym{ASCII} code for @key{ESC}.
+Эта переменная представляет собой код символа мета-префикса.  Используется
+для преобразования метасимвола в двухсимвольную последовательность, чтобы
+его можно было найти в карте ключей.  Для получения полезных результатов
+значение должно быть префиксом события (@pxref{Prefix Keys}).  Значение по
+умолчанию - 27, это код @acronym{ASCII} для @key{ESC}.
 
-As long as the value of @code{meta-prefix-char} remains 27, key lookup
-translates @kbd{M-b} into @kbd{@key{ESC} b}, which is normally defined
-as the @code{backward-word} command.  However, if you were to set
-@code{meta-prefix-char} to 24, the code for @kbd{C-x}, then Emacs will
-translate @kbd{M-b} into @kbd{C-x b}, whose standard binding is the
-@code{switch-to-buffer} command.  (Don't actually do this!)  Here is an
-illustration of what would happen:
+Пока значение @code{meta-prefix-char} остается равным 27, поиск по ключу
+преобразует @kbd{M-b} в @kbd{@key{ESC} b}, который обычно определяется как
+команда @code{backward-word}.  Однако, если уставливается для
+@code{meta-prefix-char} значение 24, код для @kbd{C-x}, то Emacs переведет
+@kbd{M-b} в @kbd{C-x b}, стандартной привязкой которого является команда
+@code{switch-to-buffer}.  (На самом деле не делайте этого!) Вот иллюстрация
+того, что произойдет:
 
 @smallexample
 @group
-meta-prefix-char                    ; @r{The default value.}
+meta-prefix-char                    ; @r{Значение по умолчанию.}
      @result{} 27
 @end group
 @group
@@ -1238,8 +1323,8 @@ meta-prefix-char                    ; @r{The default value.}
      @result{} backward-word
 @end group
 @group
-?\C-x                               ; @r{The print representation}
-     @result{} 24                          ;   @r{of a character.}
+?\C-x                               ; @r{Печатное представление}
+     @result{} 24                          ;   @r{символа.}
 @end group
 @group
 (setq meta-prefix-char 24)
@@ -1247,92 +1332,95 @@ meta-prefix-char                    ; @r{The default value.}
 @end group
 @group
 (key-binding "\M-b")
-     @result{} switch-to-buffer            ; @r{Now, typing @kbd{M-b} is}
-                                    ;   @r{like typing @kbd{C-x b}.}
+     @result{} switch-to-buffer            ; @r{Теперь ввод @kbd{M-b} }
+                                    ;   @r{похож на ввод @kbd{C-x b}.}
 
-(setq meta-prefix-char 27)          ; @r{Avoid confusion!}
-     @result{} 27                          ; @r{Restore the default value!}
+(setq meta-prefix-char 27)          ; @r{Избежать путаницы!}
+     @result{} 27                  ; @r{Восстановить значение по умолчанию!}
 @end group
 @end smallexample
 
-This translation of one event into two happens only for characters, not
-for other kinds of input events.  Thus, @kbd{M-@key{F1}}, a function
-key, is not converted into @kbd{@key{ESC} @key{F1}}.
+Такое преобразование одного события в два происходит только для сиволов, а
+не для других типов событий ввода.  Таким образом, @kbd{M-@key{F1}},
+функциональный ключ, не преобразуется в @kbd{@key{ESC} @key{F1}}.
 @end defopt
 
 @node Changing Key Bindings
-@section Changing Key Bindings
+@section Изменение Привязки Ключей
 @cindex changing key bindings
 @cindex rebinding
 
-  The way to rebind a key is to change its entry in a keymap.  If you
-change a binding in the global keymap, the change is effective in all
-buffers (though it has no direct effect in buffers that shadow the
-global binding with a local one).  If you change the current buffer's
-local map, that usually affects all buffers using the same major mode.
-The @code{global-set-key} and @code{local-set-key} functions are
-convenient interfaces for these operations (@pxref{Key Binding
-Commands}).  You can also use @code{define-key}, a more general
-function; then you must explicitly specify the map to change.
+  Способ перепривязки ключей - изменить ее запись в ключевой карте.  Если 
+изменяется привязка в глобальной ключевой карте, изменение будет действовать
+во всех буферах (хотя оно не имеет прямого эффекта в буферах, которые
+затеняют глобальную привязку локальной).  Если изменяется локальная карта
+текущего буфера, это обычно влияет на все буферы, использующие один и тот же
+основной режим.  Функции @code{global-set-key} и @code{local-set-key}
+являются удобными интерфейсами для этих операций
+(@pxref{Key Binding Commands}).  Также можно использовать @code{define-key},
+более общую функцию; только потребуется явно указать карту, которую нужно
+изменить.
 
-  When choosing the key sequences for Lisp programs to rebind, please
-follow the Emacs conventions for use of various keys (@pxref{Key
-Binding Conventions}).
+  При выборе последовательностей ключей для повторной привязки программ
+  Lisp, лучше, придерживаться соглашениям Emacs по использованию различных
+  ключей (@pxref{Key Binding Conventions}).
 
 @cindex meta character key constants
 @cindex control character key constants
-  In writing the key sequence to rebind, it is good to use the special
-escape sequences for control and meta characters (@pxref{String Type}).
-The syntax @samp{\C-} means that the following character is a control
-character and @samp{\M-} means that the following character is a meta
-character.  Thus, the string @code{"\M-x"} is read as containing a
-single @kbd{M-x}, @code{"\C-f"} is read as containing a single
-@kbd{C-f}, and @code{"\M-\C-x"} and @code{"\C-\M-x"} are both read as
-containing a single @kbd{C-M-x}.  You can also use this escape syntax in
-vectors, as well as others that aren't allowed in strings; one example
-is @samp{[?\C-\H-x home]}.  @xref{Character Type}.
+  При написании ключевой последовательности для повторной привязки хорошо
+использовать специальные escape-последовательности для управляющих и
+метасимволов (@pxref{String Type}).
+Синтаксис @samp{\C-} означает, что следующий символ является управляющим, а @samp{\M-} означает, что следующий символ является метасимволом. Таким образом, строка @code{"\M-x"} читается как содержащая единственный @kbd{M-x}, @code{"\C-f"}, читается как содержащая единственный @kbd{C-f}, и
+@code{"\M-\C-x"}, а @code{"\C-\M-x"} читается как содержащая единственный
+@kbd{C-M-x}.  Также можно использовать этот escape-синтаксис в векторах, а
+также там, где не разрешено в строках; один пример -
+@samp{[?\C-\H-x home]}.  @xref{Character Type}.
 
-  The key definition and lookup functions accept an alternate syntax for
-event types in a key sequence that is a vector: you can use a list
-containing modifier names plus one base event (a character or function
-key name).  For example, @code{(control ?a)} is equivalent to
-@code{?\C-a} and @code{(hyper control left)} is equivalent to
-@code{C-H-left}.  One advantage of such lists is that the precise
-numeric codes for the modifier bits don't appear in compiled files.
+  Функции определения ключа и поиска принимают альтернативный синтаксис для
+типов событий в последовательности ключей, которая является вектором: можно
+использовать список, содержащий имена модификаторов плюс одно базовое
+событие (имя символа или функционального ключа).  Например,
+@code{(control ?a)} эквивалентно @code{?\C-a}, а @code{(hyper control left)}
+эквивалентно @code{C-H-left}.  Одним из преимуществ таких списков является
+то, что точные числовые коды для битов модификатора не отображаются в
+скомпилированных файлах.
 
-  The functions below signal an error if @var{keymap} is not a keymap,
-or if @var{key} is not a string or vector representing a key sequence.
-You can use event types (symbols) as shorthand for events that are
-lists.  The @code{kbd} function (@pxref{Key Sequences}) is a
-convenient way to specify the key sequence.
+  Приведенные ниже функции сигнализируют об ошибке, если @var{keymap} не
+является ключевой картой или если @var{key} не является строкой или
+вектором, представляющим ключевую последовательность.  Можно использовать
+типы событий (символы) как сокращение для событий, которые являются
+списками.  @code{kbd} функция (@pxref{Key Sequences}) - удобный способ
+указать ключевую последовательность.
 
 @defun define-key keymap key binding
-This function sets the binding for @var{key} in @var{keymap}.  (If
-@var{key} is more than one event long, the change is actually made
-in another keymap reached from @var{keymap}.)  The argument
-@var{binding} can be any Lisp object, but only certain types are
-meaningful.  (For a list of meaningful types, see @ref{Key Lookup}.)
-The value returned by @code{define-key} is @var{binding}.
+Эта функция устанавливает привязку для @var{key} в @var{keymap}.  (Если
+@var{key} имеет длину более одного события, изменение фактически выполняется
+в другой ключевой карте, полученной из @var{keymap}).  Аргумент
+@var{binding} может быть любым объектом Lisp, но только определенные типы
+имеют смысл.  (Список значимых типов смотри в @ref{Key Lookup}).  Значение,
+возвращаемое @code{define-key}, - @var{binding}.
 
-If @var{key} is @code{[t]}, this sets the default binding in
-@var{keymap}.  When an event has no binding of its own, the Emacs
-command loop uses the keymap's default binding, if there is one.
+Если @var{key} - @code{[t]}, это устанавливает привязку по умолчанию в
+@var{keymap}.  Когда событие не имеет собственной привязки, командный цикл
+Emacs использует привязку по умолчанию для карты ключей, если таковая
+имеется.
 
 @cindex invalid prefix key error
 @cindex key sequence error
-Every prefix of @var{key} must be a prefix key (i.e., bound to a keymap)
-or undefined; otherwise an error is signaled.  If some prefix of
-@var{key} is undefined, then @code{define-key} defines it as a prefix
-key so that the rest of @var{key} can be defined as specified.
+Каждый префикс @var{key} должен быть префиксным ключом (т. е. привязанным к
+ключевой карте) или быть неопределенным; в противном случае сигнализируется
+ошибка.  Если какой-то префиксный @var{key} не определен, то
+@code{define-key} определяет его как префиксный ключ, так что остальная
+часть @var{key} может быть определена как указано.
 
-If there was previously no binding for @var{key} in @var{keymap}, the
-new binding is added at the beginning of @var{keymap}.  The order of
-bindings in a keymap makes no difference for keyboard input, but it
-does matter for menu keymaps (@pxref{Menu Keymaps}).
+Если ранее в @var{keymap} не было привязки для @var{key}, новая привязка
+добавляется в начало @var{keymap}.  Порядок привязок в ключевой карте не
+имеет значения для ключевой карты, но имеет значение для карт меню
+(@pxref{Menu Keymaps}).
 @end defun
 
-  This example creates a sparse keymap and makes a number of
-bindings in it:
+  В этом примере создается разреженная ключевая карта и выполняется
+  ряд привязок к ней:
 
 @smallexample
 @group
@@ -1349,7 +1437,7 @@ map
 @end group
 
 @group
-;; @r{Build sparse submap for @kbd{C-x} and bind @kbd{f} in that.}
+;;@r{Создайте разреженную подкарту для @kbd{C-x} и привяжите к ней @kbd{f}.}
 (define-key map (kbd "C-x f") 'forward-word)
     @result{} forward-word
 @end group
@@ -1362,20 +1450,20 @@ map
 @end group
 
 @group
-;; @r{Bind @kbd{C-p} to the @code{ctl-x-map}.}
+;; @r{Привязать @kbd{C-p} к @code{ctl-x-map}}.
 (define-key map (kbd "C-p") ctl-x-map)
 ;; @code{ctl-x-map}
 @result{} [nil @dots{} find-file @dots{} backward-kill-sentence]
 @end group
 
 @group
-;; @r{Bind @kbd{C-f} to @code{foo} in the @code{ctl-x-map}.}
+;; @r{Привязать @kbd{C-f} к @code{foo} в @code{ctl-x-map}.}
 (define-key map (kbd "C-p C-f") 'foo)
 @result{} 'foo
 @end group
 @group
 map
-@result{} (keymap     ; @r{Note @code{foo} in @code{ctl-x-map}.}
+@result{} (keymap  ; @r{Обратите внимание на @code{foo} в @code{ctl-x-map}.}
     (16 keymap [nil @dots{} foo @dots{} backward-kill-sentence])
     (24 keymap
         (102 . forward-word))
@@ -1384,26 +1472,26 @@ map
 @end smallexample
 
 @noindent
-Note that storing a new binding for @kbd{C-p C-f} actually works by
-changing an entry in @code{ctl-x-map}, and this has the effect of
-changing the bindings of both @kbd{C-p C-f} and @kbd{C-x C-f} in the
-default global map.
+Обратите внимание, что сохранение новой привязки для @kbd{C-p C-f} на самом
+деле работает путем изменения записи в @code{ctl-x-map}, и это имеет эффект
+изменения привязок как @kbd{C-p C-f}, так и @kbd{C-x C-f} на глобальной
+карте по умолчанию.
 
-  The function @code{substitute-key-definition} scans a keymap for
-keys that have a certain binding and rebinds them with a different
-binding.  Another feature which is cleaner and can often produce the
-same results is to remap one command into another (@pxref{Remapping
-Commands}).
+  Функция @code{substitute-key-definition} сканирует ключевую карту на
+предмет ключей с определенной привязкой и повторно связывает их с другой
+привязкой.  Еще одна функция, более понятная и часто приводящая к тем же
+результатам, - переназначение одной команды на другую
+(@pxref{Remapping Commands}).
 
 @defun substitute-key-definition olddef newdef keymap &optional oldmap
 @cindex replace bindings
-This function replaces @var{olddef} with @var{newdef} for any keys in
-@var{keymap} that were bound to @var{olddef}.  In other words,
-@var{olddef} is replaced with @var{newdef} wherever it appears.  The
-function returns @code{nil}.
+Эта функция заменяет @var{olddef} на @var{newdef} для любых ключей в
+@var{keymap}, которые были привязаны к @var{olddef}.  Другими словами,
+@var{olddef} заменяется на @var{newdef} везде, где это появляется.  Функция
+возвращает @code{nil}.
 
-For example, this redefines @kbd{C-x C-f}, if you do it in an Emacs with
-standard bindings:
+Например, это переопределяет @kbd{C-x C-f}, если вы делаете это в Emacs со
+стандартными привязками:
 
 @smallexample
 @group
@@ -1413,11 +1501,11 @@ standard bindings:
 @end smallexample
 
 @c Emacs 19 feature
-If @var{oldmap} is non-@code{nil}, that changes the behavior of
-@code{substitute-key-definition}: the bindings in @var{oldmap} determine
-which keys to rebind.  The rebindings still happen in @var{keymap}, not
-in @var{oldmap}.  Thus, you can change one map under the control of the
-bindings in another.  For example,
+Если @var{oldmap} равен не-@code{nil}, это меняет поведение
+@code{substitute-key-definition}: привязки в @var{oldmap} определяют, какие
+ключи нужно повторно привязать.  Повторные привязки по-прежнему происходят
+в @var{keymap}, а не в @var{oldmap}.  Таким образом, можно изменять одну
+карту под управлением привязок в другой.  Например,
 
 @smallexample
 (substitute-key-definition
@@ -1426,10 +1514,10 @@ bindings in another.  For example,
 @end smallexample
 
 @noindent
-puts the special deletion command in @code{my-map} for whichever keys
-are globally bound to the standard deletion command.
+помещает специальную команду удаления в @code{my-map} для тех ключей,
+которые глобально привязаны к стандартной команде удаления.
 
-Here is an example showing a keymap before and after substitution:
+Вот пример, показывающий ключевую карту до и после замены:
 
 @smallexample
 @group
@@ -1453,36 +1541,35 @@ map
 
 @defun suppress-keymap keymap &optional nodigits
 @cindex @code{self-insert-command} override
-This function changes the contents of the full keymap @var{keymap} by
-remapping @code{self-insert-command} to the command @code{undefined}
-(@pxref{Remapping Commands}).  This has the effect of undefining all
-printing characters, thus making ordinary insertion of text impossible.
-@code{suppress-keymap} returns @code{nil}.
+Эта функция изменяет содержимое полной ключевой карты @var{keymap} путем
+переназначения @code{self-insert-command} на команду @code{undefined}
+(@pxref{Remapping Commands}).  Это приводит к отмене определения всех
+печатных символов, что делает невозможным обычную вставку текста.
+@code{suppress-keymap} возвращает @code{nil}.
 
-If @var{nodigits} is @code{nil}, then @code{suppress-keymap} defines
-digits to run @code{digit-argument}, and @kbd{-} to run
-@code{negative-argument}.  Otherwise it makes them undefined like the
-rest of the printing characters.
+Если @var{nodigits} равен @code{nil}, тогда @code{suppress-keymap}
+определяет цифры для запуска @code{digit-argument}, а @kbd{-} - для
+@code{negative-argument}.  В противном случае он делает их неопределенными,
+как и остальные печатные символы.
 
 @cindex yank suppression
 @cindex @code{quoted-insert} suppression
-The @code{suppress-keymap} function does not make it impossible to
-modify a buffer, as it does not suppress commands such as @code{yank}
-and @code{quoted-insert}.  To prevent any modification of a buffer, make
-it read-only (@pxref{Read Only Buffers}).
+Функция @code{suppress-keymap} не делает невозможным изменение буфера, так
+как не подавляет такие команды, как @code{yank} и @code{quoted-insert}.
+Чтобы предотвратить любую модификацию буфера, сделайте его доступным только
+для чтения (@pxref{Read Only Buffers}).
 
-Since this function modifies @var{keymap}, you would normally use it
-on a newly created keymap.  Operating on an existing keymap
-that is used for some other purpose is likely to cause trouble; for
-example, suppressing @code{global-map} would make it impossible to use
-most of Emacs.
+Поскольку эта функция изменяет @var{keymap}, обычно используют ее для вновь
+созданной ключевой карты.  Работа с существующей ключевой картой, которая
+используется для других целей, может вызвать проблемы; например, подавление
+@code{global-map} сделало бы невозможным в большинстве использование Emacs.
 
-This function can be used to initialize the local keymap of a major
-mode for which insertion of text is not desirable.  But usually such a
-mode should be derived from @code{special-mode} (@pxref{Basic Major
-Modes}); then its keymap will automatically inherit from
-@code{special-mode-map}, which is already suppressed.  Here is how
-@code{special-mode-map} is defined:
+Эта функция может использоваться для инициализации локальной ключевой карты
+основного режима, для которого вставка текста нежелательна.  Но обычно такой
+режим должен быть производным от @code{special-mode}
+(@pxref{Basic Major Modes}); тогда его карта будет автоматически
+унаследована от @code{special-mode-map}, который уже подавлен.  Вот как
+определяется @code{special-mode-map}:
 
 @smallexample
 @group
@@ -1497,36 +1584,36 @@ Modes}); then its keymap will automatically inherit from
 @end defun
 
 @node Remapping Commands
-@section Remapping Commands
+@section Команды Переназначения
 @cindex remapping commands
 
-  A special kind of key binding can be used to @dfn{remap} one command
-to another, without having to refer to the key sequence(s) bound to
-the original command.  To use this feature, make a key binding for a
-key sequence that starts with the dummy event @code{remap}, followed
-by the command name you want to remap; for the binding, specify the
-new definition (usually a command name, but possibly any other valid
-definition for a key binding).
+  Для преобразования одной команды в другую можно использовать особый вид
+привязки ключей, не обращаясь к последовательности (последовательностям)
+ключей, привязанной к исходной команде.  Чтобы использовать эту функцию,
+сделайте привязку ключей для последовательности ключей, которая начинается с
+фиктивного события @code{remap}, за которым следует имя команды, которую вы
+хотите переназначить; для привязки укажите новое определение (обычно имя
+команды, но возможно любое другое допустимое определение для привязки
+ключа).
 
-  For example, suppose My mode provides a special command
-@code{my-kill-line}, which should be invoked instead of
-@code{kill-line}.  To establish this, its mode keymap should contain
-the following remapping:
+  Например, предположим, что в моем режиме есть специальная команда
+@code{my-kill-line}, которую нужно вызывать вместо @code{kill-line}.  Чтобы
+установить это, его карта режима должна содержать следующее переназначение:
 
 @smallexample
 (define-key my-mode-map [remap kill-line] 'my-kill-line)
 @end smallexample
 
 @noindent
-Then, whenever @code{my-mode-map} is active, if the user types
-@kbd{C-k} (the default global key sequence for @code{kill-line}) Emacs
-will instead run @code{my-kill-line}.
+Затем, всякий раз, когда @code{my-mode-map} активен, если пользователь
+вводит @kbd{C-k} (последовательность глобальных ключей по умолчанию для
+@code{kill-line}), Emacs вместо этого запускает @code{my-kill-line}).
 
-  Note that remapping only takes place through active keymaps; for
-example, putting a remapping in a prefix keymap like @code{ctl-x-map}
-typically has no effect, as such keymaps are not themselves active.
-In addition, remapping only works through a single level; in the
-following example,
+  Обратите внимание, что переназначение происходит только через активные
+ключевые карты; например, повторное отображение в префиксной ключевой карте,
+такой как @code{ctl-x-map}, обычно не имеет никакого эффекта, поскольку
+такие карты сами по себе не активны.  Кроме того, переназначение работает
+только на одном уровне; в следующем примере,
 
 @smallexample
 (define-key my-mode-map [remap kill-line] 'my-kill-line)
@@ -1534,109 +1621,115 @@ following example,
 @end smallexample
 
 @noindent
-@code{kill-line} is @emph{not} remapped to @code{my-other-kill-line}.
-Instead, if an ordinary key binding specifies @code{kill-line}, it is
-remapped to @code{my-kill-line}; if an ordinary binding specifies
-@code{my-kill-line}, it is remapped to @code{my-other-kill-line}.
+@code{kill-line} - это @emph{not}, преобразованный в
+@code{my-other-kill-line}.  Вместо этого, если обычная ключевая привязка
+@code{kill-line}, она преобразуется в @code{my-kill-line}; если обычная
+привязка указывает @code{my-kill-line}, она преобразуется в
+@code{my-other-kill-line}.
 
-To undo the remapping of a command, remap it to @code{nil}; e.g.,
+Чтобы отменить переназначение команды, переназначьте ее на @code{nil};
 
 @smallexample
 (define-key my-mode-map [remap kill-line] nil)
 @end smallexample
 
 @defun command-remapping command &optional position keymaps
-This function returns the remapping for @var{command} (a symbol),
-given the current active keymaps.  If @var{command} is not remapped
-(which is the usual situation), or not a symbol, the function returns
-@code{nil}.  @code{position} can optionally specify a buffer position
-or an event position to determine the keymaps to use, as in
+Эта функция возвращает переназначение для @var{command} (символа), учитывая
+текущие активные ключевые карты.  Если @var{command} не переназначено (что
+является обычной ситуацией) или не является символом, функция возвращает
+@code{nil}.  @code{position} может дополнительно указывать позицию в буфере
+или позицию события для определения используемых ключевых карт, как в
 @code{key-binding}.
 
-If the optional argument @code{keymaps} is non-@code{nil}, it
-specifies a list of keymaps to search in.  This argument is ignored if
-@code{position} is non-@code{nil}.
+Если необязательный аргумент @code{keymaps} - не-@code{nil}, он задает
+список таблиц ключей для поиска.  Этот аргумент игнорируется, если
+@code{position} - не-@code{nil}.
 @end defun
 
 @node Translation Keymaps
-@section Keymaps for Translating Sequences of Events
+@section Карты для Трансляции Последовательностей Событий
 @cindex translation keymap
 @cindex keymaps for translating events
 
-  When the @code{read-key-sequence} function reads a key sequence
-(@pxref{Key Sequence Input}), it uses @dfn{translation keymaps} to
-translate certain event sequences into others.  The translation
-keymaps are @code{input-decode-map}, @code{local-function-key-map},
-and @code{key-translation-map} (in order of priority).
+  Когда функция @code{read-key-sequence} считывает последовательность ключей
+(@pxref{Key Sequence Input}), она использует @dfn{translation keymaps} для
+преобразования одних последовательностей событий в другие.  Карты
+преобразования - @code{input-decode-map}, @code{local-function-key-map} и
+@code{key-translation-map} (в порядке приоритета).
 
-  Translation keymaps have the same structure as other keymaps, but
-are used differently: they specify translations to make while reading
-key sequences, rather than bindings for complete key sequences.  As
-each key sequence is read, it is checked against each translation
-keymap.  If one of the translation keymaps binds @var{k} to a
-vector @var{v}, then whenever @var{k} appears as a sub-sequence
-@emph{anywhere} in a key sequence, that sub-sequence is replaced with
-the events in @var{v}.
+  Ключевые карты трансляции имеют ту же структуру, что и другие карты
+ключей, но используются по-другому: они определяют переводы, которые
+необходимо сделать при чтении последовательностей ключей, а не привязки для
+полных последовательностей ключей.  При чтении каждой ключевой
+последовательности она проверяется на соответствие каждой карты перевода.
+Если одна из карт трансляции связывает @var{k} с вектором @var{v}, то всякий
+раз, когда @var{k} появляется как подпоследовательность @emph{anywhere} в
+ключевой последовательности, эта подпоследовательность заменяется событиями
+в @var{v}.
 
-  For example, VT100 terminals send @kbd{@key{ESC} O P} when the
-keypad key @key{PF1} is pressed.  On such terminals, Emacs must
-translate that sequence of events into a single event @code{pf1}.
-This is done by binding @kbd{@key{ESC} O P} to @code{[pf1]} in
-@code{input-decode-map}.  Thus, when you type @kbd{C-c @key{PF1}} on
-the terminal, the terminal emits the character sequence @kbd{C-c
-@key{ESC} O P}, and @code{read-key-sequence} translates this back into
-@kbd{C-c @key{PF1}} and returns it as the vector @code{[?\C-c pf1]}.
+  Например, терминалы VT100 отправляют @kbd{@key{ESC} O P} при нажатии на
+клавиатуре клавиши @key{PF1}. На таких терминалах Emacs должен преобразовать
+эту последовательность событий в одно событие @code{pf1}.  Это делается
+привязкой @kbd{@key{ESC} O P} к @code{[pf1]} в @code{input-decode-map}.
+Таким образом, когда вводитя @kbd{C-c @key{PF1}} на терминале, терминал
+выдает последовательность символов @kbd{C-c @key{ESC} O P}, а
+@code{read-key-sequence} переводит ее обратно в @kbd{C-c @key{PF1}} и
+возвращает его как вектор @code{[?\C-c pf1]}.
 
-  Translation keymaps take effect only after Emacs has decoded the
-keyboard input (via the input coding system specified by
+  Карты трансляции вступают в силу только после того, как Emacs декодирует
+ввод с клавиатуры (через систему кодирования ввода, заданную параметром
 @code{keyboard-coding-system}).  @xref{Terminal I/O Encoding}.
 
 @defvar input-decode-map
-This variable holds a keymap that describes the character sequences sent
-by function keys on an ordinary character terminal.
+Эта переменная содержит ключевую карьу, которая описывает последовательности
+символов, отправляемые функциональными клавишами на обычном символьном
+терминале.
 
-The value of @code{input-decode-map} is usually set up automatically
-according to the terminal's Terminfo or Termcap entry, but sometimes
-those need help from terminal-specific Lisp files.  Emacs comes with
-terminal-specific files for many common terminals; their main purpose is
-to make entries in @code{input-decode-map} beyond those that can be
-deduced from Termcap and Terminfo.  @xref{Terminal-Specific}.
+Значение @code{input-decode-map} обычно устанавливается автоматически в
+соответствии с записью Terminfo или Termcap терминала, но иногда им нужна
+помощь из файлов Lisp, специфичных для терминала.  Emacs поставляется со
+специфическими для терминала файлами для многих общих терминалов; их
+основная цель - делать записи в @code{input-decode-map} помимо тех, которые
+можно вывести из Termcap и Terminfo.  @xref{Terminal-Specific}.
 @end defvar
 
 @defvar local-function-key-map
-This variable holds a keymap similar to @code{input-decode-map} except
-that it describes key sequences which should be translated to
-alternative interpretations that are usually preferred.  It applies
-after @code{input-decode-map} and before @code{key-translation-map}.
+Эта переменная содержит ключевую карту, аналогичную @code{input-decode-map},
+за исключением того, что она описывает последовательности ключей, которые
+должны быть переведены в альтернативные интерпретации, которые обычно
+предпочтительнее.  Применяется после @code{input-decode-map} и до
+@code{key-translation-map}.
 
-Entries in @code{local-function-key-map} are ignored if they conflict
-with bindings made in the minor mode, local, or global keymaps.  I.e.,
-the remapping only applies if the original key sequence would
-otherwise not have any binding.
+Записи в @code{local-function-key-map} игнорируются, если они конфликтуют с
+привязками, сделанными в второстепенном режиме, локальных или глобальных
+ключевых картах.  То есть переназначение применяется только в том случае,
+если исходная последовательность ключей в противном случае не имела бы
+привязки.
 
-@code{local-function-key-map} inherits from @code{function-key-map},
-but the latter should not be used directly.
+@code{local-function-key-map} наследуется от @code{function-key-map}, но
+последний не следует использовать напрямую.
 @end defvar
 
 @defvar key-translation-map
-This variable is another keymap used just like @code{input-decode-map}
-to translate input events into other events.  It differs from
-@code{input-decode-map} in that it goes to work after
-@code{local-function-key-map} is finished rather than before; it
-receives the results of translation by @code{local-function-key-map}.
+Эта переменная - еще одна карта, используемая так же, как
+@code{input-decode-map}, для преобразования событий ввода в другие события.
+Это отличается от @code{input-decode-map} тем, что начинает работать после
+завершения @code{local-function-key-map}, а не до него; получаются
+результаты перевода по @code{local-function-key-map}.
 
-Just like @code{input-decode-map}, but unlike
-@code{local-function-key-map}, this keymap is applied regardless of
-whether the input key-sequence has a normal binding.  Note however
-that actual key bindings can have an effect on
-@code{key-translation-map}, even though they are overridden by it.
-Indeed, actual key bindings override @code{local-function-key-map} and
-thus may alter the key sequence that @code{key-translation-map}
-receives.  Clearly, it is better to avoid this type of situation.
+Как и @code{input-decode-map}, но в отличие от
+@code{local-function-key-map}, эта карта применяется независимо от того,
+имеет ли входная последовательность ключей нормальную привязку.  Однако
+обратите внимание, что фактические привязки ключей могут влиять на
+@code{key-translation-map}, даже если они там переопределяются.
+Действительно, фактические привязки ключей переопределяют
+@code{local-function-key-map} и, таким образом, могут изменять
+последовательность ключей, которую получает @code{key-translation-map}.
+Ясно, что таких ситуаций лучше избегать.
 
-The intent of @code{key-translation-map} is for users to map one
-character set to another, including ordinary characters normally bound
-to @code{self-insert-command}.
+Назначение @code{key-translation-map} состоит в том, чтобы пользователи
+отображали один набор символов в другой, включая обычные символы, обычно
+связанные с @code{self-insert-command}.
 @end defvar
 
 @cindex key translation function
