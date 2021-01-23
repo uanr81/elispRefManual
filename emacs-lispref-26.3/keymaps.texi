@@ -1733,20 +1733,20 @@ map
 @end defvar
 
 @cindex key translation function
-You can use @code{input-decode-map}, @code{local-function-key-map},
-and @code{key-translation-map} for more than simple aliases, by using
-a function, instead of a key sequence, as the translation of a
-key.  Then this function is called to compute the translation of that
-key.
+Вы можете использовать @code{input-decode-map},
+@code{local-function-key-map} и @code{key-translation-map} не только для
+простых псевдонимов, используя функцию вместо ключевой последовательности в
+качестве перевода ключей.  Затем эта функция вызывается для вычисления
+перевода этого ключа.
 
-The key translation function receives one argument, which is the prompt
-that was specified in @code{read-key-sequence}---or @code{nil} if the
-key sequence is being read by the editor command loop.  In most cases
-you can ignore the prompt value.
+Функция трансляции клавиш принимает один аргумент, который представляет
+собой приглашение, указанное в @code{read-key-sequence}---или @code{nil},
+если последовательность ключей считывается циклом команд редактора.  В
+большинстве случаев можно игнорировать значение подсказки.
 
-If the function reads input itself, it can have the effect of altering
-the event that follows.  For example, here's how to define @kbd{C-c h}
-to turn the character that follows into a Hyper character:
+Если функция сама считывает ввод, это может повлиять на изменение
+последующего события.  Например, вот как определить @kbd{C-c h}, чтобы
+превратить следующий за ним символ в гипер-символ:
 
 @example
 @group
@@ -1770,94 +1770,99 @@ to turn the character that follows into a Hyper character:
 @end group
 @end example
 
-@subsection Interaction with normal keymaps
+@subsection Взаимодействие с Обычными Ключевыми Картами
 
-The end of a key sequence is detected when that key sequence either is bound
-to a command, or when Emacs determines that no additional event can lead
-to a sequence that is bound to a command.
+Конец последовательности ключей обнаруживается, когда эта последовательность
+ключей либо привязана к команде, либо когда Emacs определяет, что никакое
+дополнительное событие не может привести к последовательности, связанной с
+командой.
 
-This means that, while @code{input-decode-map} and @code{key-translation-map}
-apply regardless of whether the original key sequence would have a binding, the
-presence of such a binding can still prevent translation from taking place.
-For example, let us return to our VT100 example above and add a binding for
-@kbd{C-c @key{ESC}} to the global map; now when the user hits @kbd{C-c
-@key{PF1}} Emacs will fail to decode @kbd{C-c @key{ESC} O P} into @kbd{C-c
-@key{PF1}} because it will stop reading keys right after @kbd{C-x @key{ESC}},
-leaving @kbd{O P} for later.  This is in case the user really hit @kbd{C-c
-@key{ESC}}, in which case Emacs should not sit there waiting for the next key
-to decide whether the user really pressed @kbd{@key{ESC}} or @kbd{@key{PF1}}.
+Это означает, что хотя @code{input-decode-map} и @code{key-translation-map}
+применяются независимо от того, будет ли исходная последовательность ключей
+иметь привязку, наличие такой привязки все же может препятствовать
+выполнению трансляции.  Например, давайте вернемся к нашему примеру с VT100
+выше и добавим привязку для @kbd{C-c @key{ESC}} к глобальной карте; теперь,
+когда пользователь нажимает @kbd{C-c @key{PF1}}, Emacs не сможет
+декодировать @kbd{C-c @key{ESC} O P} в @kbd{C-c @key{PF1}}, потому что он
+перестанет читать ключи сразу после @kbd{C-x @key{ESC}}, оставив @kbd{O P}
+на потом.  Это в случае, если пользователь действительно нажал
+@kbd{C-c @key{ESC}}, и в этом случае Emacs не должен ждать следующего ключа,
+чтобы решить, действительно ли пользователь нажал @kbd{@key{ESC}} или
+@kbd{@key{PF1}}.
 
-For that reason, it is better to avoid binding commands to key sequences where
-the end of the key sequence is a prefix of a key translation.  The main such
-problematic suffixes/prefixes are @kbd{@key{ESC}}, @kbd{M-O} (which is really
-@kbd{@key{ESC} O}) and @kbd{M-[} (which is really @kbd{@key{ESC} [}).
+По этой причине лучше избегать привязки команд к последовательностям ключей,
+в которых конец ключевой последовательности является префиксом трансляции
+ключей.  Основными такими проблемными суффиксами/префиксами являются
+@kbd{@key{ESC}}, @kbd{M-O} (который на самом деле является @kbd{@key{ESC} O}
+) и @kbd{M-[} (который на самом деле является @kbd{@key{ESC} [}).
 
 @node Key Binding Commands
-@section Commands for Binding Keys
+@section Команды для Привязки Ключей
 
-  This section describes some convenient interactive interfaces for
-changing key bindings.  They work by calling @code{define-key}.
+  В этом разделе описаны некоторые удобные интерактивные интерфейсы для
+изменения привязки ключей.  Они работают, вызывая @code{define-key}.
 
-  People often use @code{global-set-key} in their init files
-(@pxref{Init File}) for simple customization.  For example,
+  Люди часто используют @code{global-set-key} в своих файлах инициализации
+(@pxref{Init File}) для простой настройки. Например,
 
 @smallexample
 (global-set-key (kbd "C-x C-\\") 'next-line)
 @end smallexample
 
 @noindent
-or
+или
 
 @smallexample
 (global-set-key [?\C-x ?\C-\\] 'next-line)
 @end smallexample
 
 @noindent
-or
+или
 
 @smallexample
 (global-set-key [(control ?x) (control ?\\)] 'next-line)
 @end smallexample
 
 @noindent
-redefines @kbd{C-x C-\} to move down a line.
+переопределяет @kbd{C-x C-\} для перемещения вниз по строке.
 
 @smallexample
 (global-set-key [M-mouse-1] 'mouse-set-point)
 @end smallexample
 
 @noindent
-redefines the first (leftmost) mouse button, entered with the Meta key, to
-set point where you click.
+переопределяет первую (крайнюю левую) кнопку мыши, введенную с помощью
+клавиши Meta, для установки точки, в которой вы щелкаете.
 
 @cindex non-@acronym{ASCII} text in keybindings
-  Be careful when using non-@acronym{ASCII} text characters in Lisp
-specifications of keys to bind.  If these are read as multibyte text, as
-they usually will be in a Lisp file (@pxref{Loading Non-ASCII}), you
-must type the keys as multibyte too.  For instance, if you use this:
+  Будьте осторожны при использовании текстовых символов не-@acronym{ASCII} в
+спецификациях Lisp ключей для связывания.  Если они читаются как
+многобайтовый текст, как это обычно бывает в Lisp-файле
+(@pxref{Loading Non-ASCII}), потребуется вводить ключи как многобайтовые.
+Например, если использовать это:
 
 @smallexample
-(global-set-key "ö" 'my-function) ; bind o-umlaut
+(global-set-key "ö" 'my-function) ; связать о-умлаут
 @end smallexample
 
 @noindent
-or
+или
 
 @smallexample
-(global-set-key ?ö 'my-function) ; bind o-umlaut
+(global-set-key ?ö 'my-function) ; связать о-умлаут
 @end smallexample
 
 @noindent
-and your language environment is multibyte Latin-1, these commands
-actually bind the multibyte character with code 246, not the byte
-code 246 (@kbd{M-v}) sent by a Latin-1 terminal.  In order to use this
-binding, you need to teach Emacs how to decode the keyboard by using an
-appropriate input method (@pxref{Input Methods, , Input Methods, emacs, The GNU
-Emacs Manual}).
+а ваша языковая среда - многобайтовая Latin-1, эти команды фактически
+связывают многобайтовый символ с кодом 246, а не с байтовым кодом 246
+(@kbd{M-v}), отправленным терминалом Latin-1.  Чтобы использовать эту
+привязку, потребуется научить Emacs декодировать клавиатуру, используя
+соответствующий метод ввода
+(@pxref{Input Methods, , Input Methods, emacs, The GNU Emacs Manual}).
 
 @deffn Command global-set-key key binding
-This function sets the binding of @var{key} in the current global map
-to @var{binding}.
+Эта функция устанавливает привязку @var{key} в текущей глобальной карте к
+@var{binding}.
 
 @smallexample
 @group
@@ -1870,12 +1875,11 @@ to @var{binding}.
 
 @deffn Command global-unset-key key
 @cindex unbinding keys
-This function removes the binding of @var{key} from the current
-global map.
+Эта функция удаляет привязку @var{key} из текущей глобальной карты.
 
-One use of this function is in preparation for defining a longer key
-that uses @var{key} as a prefix---which would not be allowed if
-@var{key} has a non-prefix binding.  For example:
+Одно из применений этой функции - подготовка к определению более длинного
+ключа, который использует @var{key} в качестве префикса, что было бы
+запрещено, если @var{key} имеет привязку без префикса. Например:
 
 @smallexample
 @group
@@ -1888,7 +1892,7 @@ that uses @var{key} as a prefix---which would not be allowed if
 @end group
 @end smallexample
 
-This function is equivalent to using @code{define-key} as follows:
+Эта функция эквивалентна использованию @code{define-key} следующим образом:
 
 @smallexample
 @group
@@ -1900,8 +1904,8 @@ This function is equivalent to using @code{define-key} as follows:
 @end deffn
 
 @deffn Command local-set-key key binding
-This function sets the binding of @var{key} in the current local
-keymap to @var{binding}.
+Эта функция устанавливает привязку @var{key} в текущей локальной ключевой
+карте к @var{binding}.
 
 @smallexample
 @group
@@ -1913,8 +1917,7 @@ keymap to @var{binding}.
 @end deffn
 
 @deffn Command local-unset-key key
-This function removes the binding of @var{key} from the current
-local map.
+Эта функция удаляет привязку @var{key} из текущей локальной карты.
 
 @smallexample
 @group
@@ -1926,41 +1929,40 @@ local map.
 @end deffn
 
 @node Scanning Keymaps
-@section Scanning Keymaps
+@section Сканирование Ключевых Карт
 @cindex scanning keymaps
 @cindex keymaps, scanning
 
-  This section describes functions used to scan all the current keymaps
-for the sake of printing help information.
+  В этом разделе описываются функции, используемые для сканирования всех
+текущих ключевых карт с целью вывода справочной информации.
 
 @defun accessible-keymaps keymap &optional prefix
-This function returns a list of all the keymaps that can be reached (via
-zero or more prefix keys) from @var{keymap}.  The value is an
-association list with elements of the form @code{(@var{key} .@:
-@var{map})}, where @var{key} is a prefix key whose definition in
-@var{keymap} is @var{map}.
+Эта функция возвращает список всех ключевых карт, которые могут быть
+достигнуты (через ноль или более префиксных ключей) из @var{keymap}.
+Значение представляет собой ассоциативный список с элементами формы
+@code{(@var{key} .@: @var{map})}, где @var{key} - это префиксный ключ,
+определение которого в @var{keymap} - @var{map}.
 
-The elements of the alist are ordered so that the @var{key} increases
-in length.  The first element is always @code{([] .@: @var{keymap})},
-because the specified keymap is accessible from itself with a prefix of
-no events.
+Элементы списка упорядочены так, что длина @var{key} увеличивается.  Первым
+элементом всегда является @code{([] .@: @var{keymap})}, потому что указанная
+ключевая карта доступна сама по себе с префиксом отсутствия событий.
 
-If @var{prefix} is given, it should be a prefix key sequence; then
-@code{accessible-keymaps} includes only the submaps whose prefixes start
-with @var{prefix}.  These elements look just as they do in the value of
-@code{(accessible-keymaps)}; the only difference is that some elements
-are omitted.
+Если задано @var{prefix}, это должно быть последовательностью префиксных
+ключей; тогда @code{accessible-keymaps} включает только подкарты, префиксы
+которых начинаются с @var{prefix}.  Эти элементы выглядят точно так же, как
+и в значении @code{(accessible-keymaps)}; единственная разница в том, что
+некоторые элементы опущены.
 
-In the example below, the returned alist indicates that the key
-@key{ESC}, which is displayed as @samp{^[}, is a prefix key whose
-definition is the sparse keymap @code{(keymap (83 .@: center-paragraph)
-(115 .@: foo))}.
+В приведенном ниже примере возвращенный список указывает, что ключ
+@key{ESC}, который отображается как @samp{^[}, является префиксным ключом,
+определение которого - разреженная карта ключей
+@code{(keymap (83 .@: center-paragraph) (115 .@: foo))}.
 
 @smallexample
 @group
 (accessible-keymaps (current-local-map))
 @result{}(([] keymap
-      (27 keymap   ; @r{Note this keymap for @key{ESC} is repeated below.}
+      (27 keymap   ; @r{Обратите внимание, что эта ключевая карта для @key{ESC} повторяется ниже.}
           (83 . center-paragraph)
           (115 . center-line))
       (9 . tab-to-tab-stop))
@@ -1973,12 +1975,13 @@ definition is the sparse keymap @code{(keymap (83 .@: center-paragraph)
 @end group
 @end smallexample
 
-In the following example, @kbd{C-h} is a prefix key that uses a sparse
-keymap starting with @code{(keymap (118 . describe-variable)@dots{})}.
-Another prefix, @kbd{C-x 4}, uses a keymap which is also the value of
-the variable @code{ctl-x-4-map}.  The event @code{mode-line} is one of
-several dummy events used as prefixes for mouse actions in special parts
-of a window.
+В следующем примере @kbd{C-h} - это префиксный ключ, который использует
+разреженную ключевую карту, начинающуюся с
+@code{(keymap (118 . describe-variable)@dots{})}.  Другой префикс,
+@kbd{C-x 4}, использует ключевую карту, которая также является значением
+переменной @code{ctl-x-4-map}.  Событие @code{mode-line} - одно из
+нескольких фиктивных событий, используемых в качестве префиксов для действий
+мыши в определенных частях окна.
 
 @smallexample
 @group
@@ -2006,236 +2009,234 @@ of a window.
 @end smallexample
 
 @noindent
-These are not all the keymaps you would see in actuality.
+Это не все ключевые карты, которые можно увидеть на самом деле.
 @end defun
 
 @defun map-keymap function keymap
-The function @code{map-keymap} calls @var{function} once
-for each binding in @var{keymap}.  It passes two arguments,
-the event type and the value of the binding.  If @var{keymap}
-has a parent, the parent's bindings are included as well.
-This works recursively: if the parent has itself a parent, then the
-grandparent's bindings are also included and so on.
+Функция @code{map-keymap} вызывает @var{function} один раз для каждой
+привязки в @var{keymap}.  Она передает два аргумента: тип события и значение
+привязки.  Если @var{keymap} имеет родителя, привязки родителя также
+включаются.  Это работает рекурсивно: если у родителя есть сам родитель,
+тогда также включаются привязки дедушки и бабушки и так далее.
 
-This function is the cleanest way to examine all the bindings
-in a keymap.
+Эта функция - самый чистый способ проверить все привязки в ключевой карте.
 @end defun
 
 @defun where-is-internal command &optional keymap firstonly noindirect no-remap
-This function is a subroutine used by the @code{where-is} command
-(@pxref{Help, , Help, emacs,The GNU Emacs Manual}).  It returns a list
-of all key sequences (of any length) that are bound to @var{command} in a
-set of keymaps.
+Эта функция - подпрограмма, используемая командой @code{where-is}
+(@pxref{Help, , Help, emacs,The GNU Emacs Manual}).  Она возвращает список
+всех ключевых последовательностей (любой длины), которые привязаны к
+@var{command} в наборе ключевых карт.
 
-The argument @var{command} can be any object; it is compared with all
-keymap entries using @code{eq}.
+Аргументом @var{command} может быть любой объект; он сравнивается со всеми
+записями карты ключей с помощью @code{eq}.
 
-If @var{keymap} is @code{nil}, then the maps used are the current active
-keymaps, disregarding @code{overriding-local-map} (that is, pretending
-its value is @code{nil}).  If @var{keymap} is a keymap, then the
-maps searched are @var{keymap} and the global keymap.  If @var{keymap}
-is a list of keymaps, only those keymaps are searched.
+Если @var{keymap} - @code{nil}, то используемые карты - это текущие активные
+ключевые карты, не учитывая @code{overriding-local-map} (то есть
+притворяясь, что его значение - @code{nil}).  Если @var{keymap} - это карта,
+то ищутся карты @var{keymap} и глобальная карта.  Если @var{keymap} - это
+список раскладок, поиск выполняется только по этим раскладкам.
 
-Usually it's best to use @code{overriding-local-map} as the expression
-for @var{keymap}.  Then @code{where-is-internal} searches precisely
-the keymaps that are active.  To search only the global map, pass the
-value @code{(keymap)} (an empty keymap) as @var{keymap}.
+Обычно лучше использовать @code{overriding-local-map} как выражение для
+@var{keymap}.  Затем @code{where-is-internal} ищет именно активные ключевые
+карты.  Чтобы искать только глобальную карту, передайте значение
+@code{(keymap)} (пустая ключевая карта) как @var{keymap}.
 
-If @var{firstonly} is @code{non-ascii}, then the value is a single
-vector representing the first key sequence found, rather than a list of
-all possible key sequences.  If @var{firstonly} is @code{t}, then the
-value is the first key sequence, except that key sequences consisting
-entirely of @acronym{ASCII} characters (or meta variants of @acronym{ASCII}
-characters) are preferred to all other key sequences and that the
-return value can never be a menu binding.
+Если @var{firstonly} - @code{не-ascii}, то значение представляет собой
+единственный вектор, представляющий первую найденную ключевую
+последовательность, а не список всех возможных ключевых последовательностей.
+Если @var{firstonly} равен @code{t}, то значение является первой ключевой
+последовательностью, за исключением того, что последовательности ключей,
+состоящие полностью из символов @acronym{ASCII} (или мета-вариантов символов
+@acronym{ASCII}), предпочтительнее всех других последовательностей ключей и
+что возвращаемое значение никогда не может быть привязкой меню.
 
-If @var{noindirect} is non-@code{nil}, @code{where-is-internal} doesn't look
-inside menu-items to find their commands.  This makes it possible to search for
-a menu-item itself.
+Если @var{noindirect} равен не-@code{nil}, @code{where-is-internal} не
+заглядывает внутрь menu-items, чтобы найти свои команды.  Это дает
+возможность искать непосредственно сам menu-item.
 
-The fifth argument, @var{no-remap}, determines how this function
-treats command remappings (@pxref{Remapping Commands}).  There are two
-cases of interest:
+Пятый аргумент, @var{no-remap}, определяет, как эта функция обрабатывает
+переназначения команд (@pxref{Remapping Commands}). Есть два интересных
+случая:
 
 @table @asis
-@item If a command @var{other-command} is remapped to @var{command}:
-If @var{no-remap} is @code{nil}, find the bindings for
-@var{other-command} and treat them as though they are also bindings
-for @var{command}.  If @var{no-remap} is non-@code{nil}, include the
-vector @code{[remap @var{other-command}]} in the list of possible key
-sequences, instead of finding those bindings.
+@item Если команда @var{other-command} переназначена на @var{command}:
+Если @var{no-remap} равен @code{nil}, найдите привязки для
+@var{other-command} и относитесь к ним так, как будто они также являются
+привязками для @var{command}.  Если @var{no-remap} равен не-@code{nil},
+включите вектор @code{[remap @var{other-command}]} в список возможных
+ключевых последовательностей вместо поиска этих привязок.
 
-@item If @var{command} is remapped to @var{other-command}:
-If @var{no-remap} is @code{nil}, return the bindings for
-@var{other-command} rather than @var{command}.  If @var{no-remap} is
-non-@code{nil}, return the bindings for @var{command}, ignoring the
-fact that it is remapped.
+@item Если @var{command} переназначен на @var{other-command}:
+Если @var{no-remap} равен @code{nil}, верните привязки для
+@var{other-command}, а не для @var{command}.  Если @var{no-remap} -
+не-@code{nil}, вернуть привязки для @var{command}, игнорируя тот факт, что
+он переназначен.
 @end table
 @end defun
 
 @deffn Command describe-bindings &optional prefix buffer-or-name
-This function creates a listing of all current key bindings, and
-displays it in a buffer named @file{*Help*}.  The text is grouped by
-modes---minor modes first, then the major mode, then global bindings.
+Эта функция создает список всех текущих привязок ключей и отображает его в
+буфере с именем @file{*Help*}.  Текст сгруппирован по режимам - сначала
+второстепенные режимы, затем основной режим, затем глобальные привязки.
 
-If @var{prefix} is non-@code{nil}, it should be a prefix key; then the
-listing includes only keys that start with @var{prefix}.
+Если @var{prefix} равен не-@code{nil}, это должен быть префиксный ключ; то
+список включает только ключи, начинающиеся с @var{prefix}.
 
-When several characters with consecutive @acronym{ASCII} codes have the
-same definition, they are shown together, as
-@samp{@var{firstchar}..@var{lastchar}}.  In this instance, you need to
-know the @acronym{ASCII} codes to understand which characters this means.
-For example, in the default global map, the characters @samp{@key{SPC}
-..@: ~} are described by a single line.  @key{SPC} is @acronym{ASCII} 32,
-@kbd{~} is @acronym{ASCII} 126, and the characters between them include all
-the normal printing characters, (e.g., letters, digits, punctuation,
-etc.@:); all these characters are bound to @code{self-insert-command}.
+Когда несколько символов с последовательными кодами @acronym{ASCII} имеют
+одинаковое определение, они отображаются вместе как
+@samp{@var{firstchar}..@var{lastchar}}.  В этом случае вам нужно знать коды
+@acronym{ASCII}, чтобы понять, какие символы это означает.  Например, в
+глобальной карте по умолчанию символы @samp{@key{SPC} ..@: ~} описываются
+одной строкой.  @key{SPC} - @acronym{ASCII} 32, @kbd{~} -
+@acronym{ASCII} 126, а символы между ними включают все обычные печатные
+символы (например, буквы, цифры, знаки препинания и т. д. @:); все эти
+символы привязаны к @code{self-insert-command}.
 
-If @var{buffer-or-name} is non-@code{nil}, it should be a buffer or a
-buffer name.  Then @code{describe-bindings} lists that buffer's bindings,
-instead of the current buffer's.
+Если @var{buffer-or-name} - не-@code{nil}, это должен быть буфер или имя
+буфера.  Затем @code{describe-bindings} выводит список привязок этого буфера
+вместо текущего буфера.
 @end deffn
 
 @node Menu Keymaps
-@section Menu Keymaps
+@section Меню Ключевых Карт
 @cindex menu keymaps
 
-A keymap can operate as a menu as well as defining bindings for
-keyboard keys and mouse buttons.  Menus are usually actuated with the
-mouse, but they can function with the keyboard also.  If a menu keymap
-is active for the next input event, that activates the keyboard menu
-feature.
+Ключевая карта может работать как меню, а также определять привязки клавиш
+клавиатуры и кнопок мыши.  Меню обычно запускаются с помощью мыши, но они
+также могут работать с клавиатурой.  Если раскладка меню активна для
+следующего события ввода, это активирует функцию меню клавиатуры.
 
 @menu
-* Defining Menus::     How to make a keymap that defines a menu.
-* Mouse Menus::        How users actuate the menu with the mouse.
-* Keyboard Menus::     How users actuate the menu with the keyboard.
-* Menu Example::       Making a simple menu.
-* Menu Bar::           How to customize the menu bar.
-* Tool Bar::           A tool bar is a row of images.
-* Modifying Menus::    How to add new items to a menu.
-* Easy Menu::      A convenience macro for making menus.
+* Defining Menus::     Как сделать карту, определяющую меню.
+* Mouse Menus::        Как пользователи запускают меню с помощью мыши.
+* Keyboard Menus::     Как пользователи запускают меню с клавиатуры.
+* Menu Example::       Делаем простое меню.
+* Menu Bar::           Как настроить строку меню.
+* Tool Bar::           Панель инструментов представляет собой ряд изображений.
+* Modifying Menus::    Как добавить новые пункты в меню.
+* Easy Menu::      Удобный макрос для создания меню.
 @end menu
 
 @node Defining Menus
-@subsection Defining Menus
+@subsection Определение Меню
 @cindex defining menus
 @cindex menu prompt string
 @cindex prompt string (of menu)
 @cindex menu item
 
-A keymap acts as a menu if it has an @dfn{overall prompt string},
-which is a string that appears as an element of the keymap.
-(@xref{Format of Keymaps}.)  The string should describe the purpose of
-the menu's commands.  Emacs displays the overall prompt string as the
-menu title in some cases, depending on the toolkit (if any) used for
-displaying menus.@footnote{It is required for menus which do not use a
-toolkit, e.g., on a text terminal.}  Keyboard menus also display the
-overall prompt string.
+Ключевая карта действует как меню, если она имеет
+@dfn{общую строку приглашения}, который представляет собой строку, которая
+появляется как элемент ключевой карты.  (@xref{Format of Keymaps}).  Строка
+должна описывать назначение команд меню.  Emacs отображает общую строку
+приглашения как заголовок меню в некоторых случаях, в зависимости от
+инструментария (если есть), используемого для отображения меню.@footnote{Это требуется для меню, в котором не используется набор инструментов, например, в текстовом терминале.}.  В карте меню также отображается общая строка
+подсказки.
 
-The easiest way to construct a keymap with a prompt string is to
-specify the string as an argument when you call @code{make-keymap},
-@code{make-sparse-keymap} (@pxref{Creating Keymaps}), or
-@code{define-prefix-command} (@pxref{Definition of
-define-prefix-command}).  If you do not want the keymap to operate as
-a menu, don't specify a prompt string for it.
+Самый простой способ создать ключевую карту со строкой приглашения - указать
+эту строку в качестве аргумента при вызове @code{make-keymap},
+@code{make-sparse-keymap} (@pxref{Creating Keymaps}) или
+@code{define-prefix-command} (@pxref{Definition of define-prefix-command}).
+Если не требуется, чтобы ключевая карта работала как меню, не указывайте для
+нее строку приглашения.
 
 @defun keymap-prompt keymap
-This function returns the overall prompt string of @var{keymap},
-or @code{nil} if it has none.
+Эта функция возвращает общую строку приглашения @var{keymap} или
+@code{nil}, если ее нет.
 @end defun
 
-The menu's items are the bindings in the keymap.  Each binding
-associates an event type to a definition, but the event types have no
-significance for the menu appearance.  (Usually we use pseudo-events,
-symbols that the keyboard cannot generate, as the event types for menu
-item bindings.)  The menu is generated entirely from the bindings that
-correspond in the keymap to these events.
+Пункты меню - это привязки в ключевой карте.  Каждая привязка связывает тип
+события с определением, но типы событий не имеют значения для внешнего вида
+меню.  (Обычно используются псевдособытия, символы, которые клавиатура не
+может сгенерировать, в качестве типов событий для привязок пунктов меню.).
+Меню полностью создается из привязок, которые соответствуют этим событиям в
+ключевой карте.
 
-The order of items in the menu is the same as the order of bindings in
-the keymap.  Since @code{define-key} puts new bindings at the front, you
-should define the menu items starting at the bottom of the menu and
-moving to the top, if you care about the order.  When you add an item to
-an existing menu, you can specify its position in the menu using
+Порядок пунктов в меню такой же, как порядок привязок в ключевой карте.
+Поскольку @code{define-key} помещает новые привязки впереди, требуется
+определять пункты меню, начиная с нижней части меню и заканчивая
+перемещением вверх, если важен порядок.  Когда добавляете элемент в
+существующее меню, требуется его положение в меню с помощью
 @code{define-key-after} (@pxref{Modifying Menus}).
 
 @menu
-* Simple Menu Items::       A simple kind of menu key binding.
-* Extended Menu Items::     More complex menu item definitions.
-* Menu Separators::         Drawing a horizontal line through a menu.
-* Alias Menu Items::        Using command aliases in menu items.
+* Simple Menu Items::       Простой вид привязки ключей пунктам меню.
+* Extended Menu Items::     Более сложные определения пунктов меню.
+* Menu Separators::         Проведение горизонтальной линии через меню.
+* Alias Menu Items::        Использование псевдонимов команд в пунктах меню.
 @end menu
 
 @node Simple Menu Items
-@subsubsection Simple Menu Items
+@subsubsection Простые Пункты Меню
 
-  The simpler (and original) way to define a menu item is to bind some
-event type (it doesn't matter what event type) to a binding like this:
+  Более простой (и оригинальный) способ определить пункт меню - это
+привязать некоторый тип события (неважно, какой тип события) в такой
+форме привязки:
 
 @example
 (@var{item-string} . @var{real-binding})
 @end example
 
 @noindent
-The @sc{car}, @var{item-string}, is the string to be displayed in the
-menu.  It should be short---preferably one to three words.  It should
-describe the action of the command it corresponds to.  Note that not
-all graphical toolkits can display non-@acronym{ASCII} text in menus
-(it will work for keyboard menus and will work to a large extent with
-the GTK+ toolkit).
+@sc{car}, @var{item-string} - строка, отображаемая в меню.  Должна быть
+короткой - предпочтительно от одного до трех слов.  Должен описывать
+действие команды, которой соответствует.  Обратите внимание, что не все
+графические инструменты могут отображать текст не-@acronym{ASCII} в меню
+(будет работать для меню клавиатуры и будет работать в значительной степени
+с набором инструментов GTK+).
 
-  You can also supply a second string, called the help string, as follows:
+  Также можете указать вторую строку, называемую строкой справки, как
+  показано ниже.:
 
 @example
 (@var{item-string} @var{help} . @var{real-binding})
 @end example
 
 @noindent
-@var{help} specifies a help-echo string to display while the mouse
-is on that item in the same way as @code{help-echo} text properties
-(@pxref{Help display}).
+@var{help} задает строку help-echo, отображаемую, когда указатель мыши
+находится на этом элементе, точно так же, как текстовые свойства
+@code{help-echo} (@pxref{Help display}).
 
-  As far as @code{define-key} is concerned, @var{item-string} and
-@var{help-string} are part of the event's binding.  However,
-@code{lookup-key} returns just @var{real-binding}, and only
-@var{real-binding} is used for executing the key.
+  Что касается @code{define-key}, @var{item-string} и @var{help-string}
+являются частью привязки события.  Однако @code{lookup-key} возвращает
+только @var{real-binding}, и только @var{real-binding} используется для
+выполнения ключа.
 
-  If @var{real-binding} is @code{nil}, then @var{item-string} appears in
-the menu but cannot be selected.
+  Если @var{real-binding} равен @code{nil}, то @var{item-string} появляется
+в меню, но не может быть выбран.
 
-  If @var{real-binding} is a symbol and has a non-@code{nil}
-@code{menu-enable} property, that property is an expression that
-controls whether the menu item is enabled.  Every time the keymap is
-used to display a menu, Emacs evaluates the expression, and it enables
-the menu item only if the expression's value is non-@code{nil}.  When a
-menu item is disabled, it is displayed in a fuzzy fashion, and
-cannot be selected.
+  Если @var{real-binding} является символом и имеет свойство @code{menu-enable} установленное в не-@code{nil} , это свойство является выражением,
+которое определяет, включен ли пункт меню.  Каждый раз, когда ключевая карта
+используется для отображения меню, Emacs оценивает выражение и активирует
+пункт меню только в том случае, если значение выражения - не-@code{nil}.
+Когда пункт меню отключен, он отображается недоступным и не может быть
+выбран.
 
-  The menu bar does not recalculate which items are enabled every time you
-look at a menu.  This is because the X toolkit requires the whole tree
-of menus in advance.  To force recalculation of the menu bar, call
-@code{force-mode-line-update} (@pxref{Mode Line Format}).
+  Строка меню не пересчитывает, какие элементы включены каждый раз, когда
+просматривается меню.  Это связано с тем, что инструментарий X требует
+заранее получить всё дерево меню.  Чтобы принудительно пересчитать строку
+меню, вызывается @code{force-mode-line-update} (@pxref{Mode Line Format}).
 
 @node Extended Menu Items
-@subsubsection Extended Menu Items
+@subsubsection Пункты Расширенного Меню
 @kindex menu-item
 @cindex extended menu item
 
-  An extended-format menu item is a more flexible and also cleaner
-alternative to the simple format.  You define an event type with a
-binding that's a list starting with the symbol @code{menu-item}.
-For a non-selectable string, the binding looks like this:
+  Пункт меню расширенного формата является более гибкой и более чистой
+альтернативой простому формату.  Определяется тип события с привязкой к
+списку, начинающемуся с символа @code{menu-item}.  Для невыбираемой строки
+привязка выглядит так:
 
 @example
 (menu-item @var{item-name})
 @end example
 
 @noindent
-A string starting with two or more dashes specifies a separator line;
-see @ref{Menu Separators}.
+Строка, начинающаяся с двух или более дефисов, определяет разделительную
+линию; смотреть. @ref{Menu Separators}.
 
-  To define a real menu item which can be selected, the extended format
-binding looks like this:
+  Чтобы определить реальный пункт меню, который можно выбрать, привязка
+  расширенного формата выглядит так:
 
 @example
 (menu-item @var{item-name} @var{real-binding}
@@ -2243,192 +2244,193 @@ binding looks like this:
 @end example
 
 @noindent
-Here, @var{item-name} is an expression which evaluates to the menu item
-string.  Thus, the string need not be a constant.  The third element,
-@var{real-binding}, is the command to execute.  The tail of the list,
-@var{item-property-list}, has the form of a property list which contains
-other information.
+Здесь @var{item-name} - это выражение, вычисляющее строку пункта меню.
+Таким образом, строка не обязательно должна быть константой.  Третий
+элемент, @var{real-binding}, - это команда для выполнения.  Конец списка,
+@var{item-property-list}, имеет форму списка свойств, который содержит
+другую информацию.
 
-  Here is a table of the properties that are supported:
+  Вот таблица поддерживаемых свойств:
 
 @table @code
 @item :enable @var{form}
-The result of evaluating @var{form} determines whether the item is
-enabled (non-@code{nil} means yes).  If the item is not enabled,
-you can't really click on it.
+Результат оценки @var{form} определяет, включен ли элемент (не-@code{nil}
+означает да).  Если элемент не включен, вы не можете щелкнуть по нему.
 
 @item :visible @var{form}
-The result of evaluating @var{form} determines whether the item should
-actually appear in the menu (non-@code{nil} means yes).  If the item
-does not appear, then the menu is displayed as if this item were
-not defined at all.
+Результат оценки @var{form} определяет, должен ли элемент действительно
+отображаться в меню (не-@code{nil} означает да).  Если элемент не
+отображается, то меню отображается так, как если бы этот элемент вообще не
+был определен.
 
 @item :help @var{help}
-The value of this property, @var{help}, specifies a help-echo string
-to display while the mouse is on that item.  This is displayed in the
-same way as @code{help-echo} text properties (@pxref{Help display}).
-Note that this must be a constant string, unlike the @code{help-echo}
-property for text and overlays.
+Значение этого свойства, @var{help}, указывает строку всплывающей справки,
+отображаемую, пока указатель мыши находится на этом элементе.  Отображается
+так же, как текстовые свойства @code{help-echo} (@pxref{Help display}).
+Обратите внимание, что это должна быть строка константа, в отличие от
+свойства @code{help-echo} для текста и наложений.
 
 @item :button (@var{type} . @var{selected})
-This property provides a way to define radio buttons and toggle buttons.
-The @sc{car}, @var{type}, says which: it should be @code{:toggle} or
-@code{:radio}.  The @sc{cdr}, @var{selected}, should be a form; the
-result of evaluating it says whether this button is currently selected.
+Это свойство позволяет определять переключатели и кнопки.  @sc{car},
+@var{type}, говорит, что: это должно быть @code{:toggle} или @code{:radio}.
+@sc{cdr}, @var{selected}, должна быть форма; результат оценки которой
+говорит о том, выбрана ли эта кнопка в данный момент.
 
-A @dfn{toggle} is a menu item which is labeled as either on or off
-according to the value of @var{selected}.  The command itself should
-toggle @var{selected}, setting it to @code{t} if it is @code{nil},
-and to @code{nil} if it is @code{t}.  Here is how the menu item
-to toggle the @code{debug-on-error} flag is defined:
+@dfn{toggle} - это пункт меню, который помечается как «включено» или
+«выключено» в зависимости от значения @var{selected}.  Сама команда должна
+переключать @var{selected}, устанавливая для него @code{t}, если это
+@code{nil}, и @code{nil}, если это @code{t}.  Вот как определяется пункт
+меню для переключения флага @code{debug-on-error}:
 
 @example
-(menu-item "Debug on Error" toggle-debug-on-error
+(menu-item "Отладка при ошибке" toggle-debug-on-error
            :button (:toggle
                     . (and (boundp 'debug-on-error)
                            debug-on-error)))
 @end example
 
 @noindent
-This works because @code{toggle-debug-on-error} is defined as a command
-which toggles the variable @code{debug-on-error}.
+Это работает, потому что @code{toggle-debug-on-error} определяется как
+команда, которая переключает переменную @code{debug-on-error}.
 
-@dfn{Radio buttons} are a group of menu items, in which at any time one
-and only one is selected.  There should be a variable whose value
-says which one is selected at any time.  The @var{selected} form for
-each radio button in the group should check whether the variable has the
-right value for selecting that button.  Clicking on the button should
-set the variable so that the button you clicked on becomes selected.
+@dfn{Radio buttons} - это группа пунктов меню, в которой в любой момент
+выбирается только один.  Должна быть переменная, значение которой указывает,
+какая из них будет выбрана в любой момент.  @var{selected} форма для каждого
+переключателя в группе должна проверять, имеет ли переменная правильное
+значение для выбора этой кнопки.  Нажатие на кнопку должно установить
+переменную так, чтобы кнопка, на которую вы нажали, стала выбранной.
 
 @item :key-sequence @var{key-sequence}
-This property specifies which key sequence is likely to be bound to the
-same command invoked by this menu item.  If you specify the right key
-sequence, that makes preparing the menu for display run much faster.
+Это свойство указывает, какая последовательность ключей, вероятно, будет
+связана с той же командой, вызываемой этим пунктом меню.  Если указать
+правильную последовательность ключей, это значительно ускорит подготовку
+меню к отображению.
 
-If you specify the wrong key sequence, it has no effect; before Emacs
-displays @var{key-sequence} in the menu, it verifies that
-@var{key-sequence} is really equivalent to this menu item.
+Если указать неправильную последовательность ключей, это не повлияет;
+прежде чем Emacs отобразит @var{key-sequence} в меню, он проверяет, что
+@var{key-sequence} действительно эквивалентен этому пункту меню.
 
 @item :key-sequence nil
-This property indicates that there is normally no key binding which is
-equivalent to this menu item.  Using this property saves time in
-preparing the menu for display, because Emacs does not need to search
-the keymaps for a keyboard equivalent for this menu item.
+Это свойство указывает, что обычно нет привязки ключа, эквивалентного этому
+пункту меню.  Использование этого свойства экономит время при подготовке
+меню к отображению, поскольку Emacs не нуждается в поиске в ключевой карте
+эквивалента для этого пункта меню.
 
-However, if the user has rebound this item's definition to a key
-sequence, Emacs ignores the @code{:keys} property and finds the keyboard
-equivalent anyway.
+Однако, если пользователь повторно связал определение этого элемента с
+последовательностью ключей, Emacs игнорирует свойство @code{:keys} и все
+равно находит эквивалент ключа.
 
 @item :keys @var{string}
-This property specifies that @var{string} is the string to display
-as the keyboard equivalent for this menu item.  You can use
-the @samp{\\[...]} documentation construct in @var{string}.
+Это свойство указывает, что @var{string} - это строка, отображаемая как
+эквивалент ключа для этого пункта меню.  Можно использовать конструкцию
+документации @samp{\\[...]} в @var{string}.
 
 @item :filter @var{filter-fn}
-This property provides a way to compute the menu item dynamically.
-The property value @var{filter-fn} should be a function of one argument;
-when it is called, its argument will be @var{real-binding}.  The
-function should return the binding to use instead.
+Это свойство обеспечивает способ динамического вычисления пункта меню.
+Значение свойства @var{filter-fn} должно быть функцией одного аргумента;
+когда он вызывается, его аргумент будет @var{real-binding}.  Функция должна
+вернуть привязку для использования.
 
-Emacs can call this function at any time that it does redisplay or
-operates on menu data structures, so you should write it so it can
-safely be called at any time.
+Emacs может вызвать эту функцию в любое время, когда она повторно отображает
+или работает со структурами данных меню, поэтому вы должны написать ее,
+чтобы ее можно было безопасно вызывать в любое время.
 @end table
 
 @node Menu Separators
-@subsubsection Menu Separators
+@subsubsection Разделители Меню
 @cindex menu separators
 
-  A menu separator is a kind of menu item that doesn't display any
-text---instead, it divides the menu into subparts with a horizontal line.
-A separator looks like this in the menu keymap:
+  Разделитель меню - это своего рода элемент меню, который не отображает
+никакого текста - вместо этого он разделяет меню на части с помощью
+горизонтальной линии.  В ключевой карте разделитель выглядит так:
 
 @example
 (menu-item @var{separator-type})
 @end example
 
 @noindent
-where @var{separator-type} is a string starting with two or more dashes.
+где @var{separator-type} - строка, начинающаяся с двух или более дефисов.
 
-  In the simplest case, @var{separator-type} consists of only dashes.
-That specifies the default kind of separator.  (For compatibility,
-@code{""} and @code{-} also count as separators.)
+  В простейшем случае @var{separator-type} состоит только из тире.  Это
+определяет тип разделителя по умолчанию.  (Для совместимости @code{""} и
+@code{-} также считается разделителем.)
 
-  Certain other values of @var{separator-type} specify a different
-style of separator.  Here is a table of them:
+  Некоторые другие значения @var{separator-type} определяют другой стиль
+разделителя.  Вот их таблица:
 
 @table @code
 @item "--no-line"
 @itemx "--space"
-An extra vertical space, with no actual line.
+Дополнительное вертикальное пространство без реальной линии.
 
 @item "--single-line"
-A single line in the menu's foreground color.
+Одна строка в цвете переднего плана меню.
 
 @item "--double-line"
-A double line in the menu's foreground color.
+Двойная линия в цвете переднего плана меню.
 
 @item "--single-dashed-line"
-A single dashed line in the menu's foreground color.
+Одиночная пунктирная линия в цвете переднего плана меню.
 
 @item "--double-dashed-line"
-A double dashed line in the menu's foreground color.
+Двойная пунктирная линия в цвете переднего плана меню.
 
 @item "--shadow-etched-in"
-A single line with a 3D sunken appearance.  This is the default,
-used separators consisting of dashes only.
+Одиночная линия с трехмерным углублением.  По умолчанию используются
+разделители, состоящие только из тире.
 
 @item "--shadow-etched-out"
-A single line with a 3D raised appearance.
+Одиночная линия с выпуклым трехмерным изображением.
 
 @item "--shadow-etched-in-dash"
-A single dashed line with a 3D sunken appearance.
+Одиночная пунктирная линия с трехмерным углублением.
 
 @item "--shadow-etched-out-dash"
-A single dashed line with a 3D raised appearance.
+Одиночная пунктирная линия с выпуклым трехмерным изображением.
 
 @item "--shadow-double-etched-in"
-Two lines with a 3D sunken appearance.
+Две линии с трехмерным углублением.
 
 @item "--shadow-double-etched-out"
-Two lines with a 3D raised appearance.
+Две линии с трехмерным рельефом.
 
 @item "--shadow-double-etched-in-dash"
-Two dashed lines with a 3D sunken appearance.
+Две пунктирные линии с трехмерным изображением углубления.
 
 @item "--shadow-double-etched-out-dash"
-Two dashed lines with a 3D raised appearance.
+Две пунктирные линии с выпуклым трехмерным изображением.
 @end table
 
-  You can also give these names in another style, adding a colon after
-the double-dash and replacing each single dash with capitalization of
-the following word.  Thus, @code{"--:singleLine"}, is equivalent to
+  Вы также можете указать эти имена в другом стиле, добавив двоеточие после
+двойного тире и заменив каждое одиночное тире заглавными буквами следующего
+слова.  Таким образом, @code{"--:singleLine"}, эквивалентно
 @code{"--single-line"}.
 
-  You can use a longer form to specify keywords such as @code{:enable}
-and @code{:visible} for a menu separator:
+  Вы можете использовать более длинную форму, чтобы указать ключевые слова,
+такие как @code{:enable} и @code{:visible} для разделителя меню:
 
 @code{(menu-item @var{separator-type} nil . @var{item-property-list})}
 
-For example:
+Например:
 
 @example
 (menu-item "--" nil :visible (boundp 'foo))
 @end example
 
-  Some systems and display toolkits don't really handle all of these
-separator types.  If you use a type that isn't supported, the menu
-displays a similar kind of separator that is supported.
+  Некоторые системы и наборы инструментов отображения на самом деле не
+поддерживают все эти типы разделителей.  Если вы используете
+неподдерживаемый тип, в меню отображается разделитель аналогичного типа,
+который поддерживается.
 
 @node Alias Menu Items
-@subsubsection Alias Menu Items
+@subsubsection Псевдонимы Пунктов Меню
 
-  Sometimes it is useful to make menu items that use the same
-command but with different enable conditions.  The best way to do this
-in Emacs now is with extended menu items; before that feature existed,
-it could be done by defining alias commands and using them in menu
-items.  Here's an example that makes two aliases for
-@code{read-only-mode} and gives them different enable conditions:
+  Иногда бывает полезно создавать пункты меню, которые используют одну и ту
+же команду, но с разными условиями включения.  Лучший способ сделать это в
+Emacs сейчас - использовать расширенные пункты меню; до того, как эта
+функция существовала, это можно было сделать, задав псевдонимы команд и
+используя их в пунктах меню.  Вот пример, который создает два псевдонима для
+@code{read-only-mode} и задает им разные условия включения:
 
 @example
 (defalias 'make-read-only 'read-only-mode)
@@ -2437,11 +2439,11 @@ items.  Here's an example that makes two aliases for
 (put 'make-writable 'menu-enable 'buffer-read-only)
 @end example
 
-When using aliases in menus, often it is useful to display the
-equivalent key bindings for the real command name, not the aliases
-(which typically don't have any key bindings except for the menu
-itself).  To request this, give the alias symbol a non-@code{nil}
-@code{menu-alias} property.  Thus,
+При использовании псевдонимов в меню часто бывает полезно отображать
+эквивалентные привязки ключей для реального имени команды, а не псевдонимы
+(которые обычно не имеют привязок клавиш, кроме самого меню).  Чтобы
+запросить это, присвойте псевдониму свойство не-@code{nil}
+@code{menu-alias}.  Таким образом,
 
 @example
 (put 'make-read-only 'menu-alias t)
@@ -2449,90 +2451,88 @@ itself).  To request this, give the alias symbol a non-@code{nil}
 @end example
 
 @noindent
-causes menu items for @code{make-read-only} and @code{make-writable} to
-show the keyboard bindings for @code{read-only-mode}.
+заставляет пункты меню для @code{make-read-only} и @code{make-writable}
+отображать привязки клавиатуры для @code{read-only-mode}.
 
 @node Mouse Menus
-@subsection Menus and the Mouse
+@subsection Меню и Мышь
 
-  The usual way to make a menu keymap produce a menu is to make it the
-definition of a prefix key.  (A Lisp program can explicitly pop up a
-menu and receive the user's choice---see @ref{Pop-Up Menus}.)
+  Обычный способ заставить карту меню создавать меню - сделать ее
+определением префиксным ключём.  (Программа Lisp может явно вызывать меню и
+получать выбор пользователя --- смотреть @ref{Pop-Up Menus}).
 
-  If the prefix key ends with a mouse event, Emacs handles the menu keymap
-by popping up a visible menu, so that the user can select a choice with
-the mouse.  When the user clicks on a menu item, the event generated is
-whatever character or symbol has the binding that brought about that
-menu item.  (A menu item may generate a series of events if the menu has
-multiple levels or comes from the menu bar.)
+  Если префиксный ключ оканчивается событием мыши, Emacs обрабатывает
+карту меню, открывая видимое меню, так что пользователь может выбрать выбор
+с помощью мыши.  Когда пользователь щелкает по пункту меню, генерируется
+событие - любой символ или символ, имеющий привязку, которая привела к этому
+пункту меню.  (Пункт меню может генерировать серию событий, если меню имеет
+несколько уровней или происходит из строки меню).
 
-  It's often best to use a button-down event to trigger the menu.  Then
-the user can select a menu item by releasing the button.
+  Часто для запуска меню лучше использовать событие нажатия кнопки.  Затем
+пользователь может выбрать пункт меню, отпустив кнопку.
 
 @cindex submenu
-  If the menu keymap contains a binding to a nested keymap, the nested
-keymap specifies a @dfn{submenu}.  There will be a menu item, labeled
-by the nested keymap's item string, and clicking on this item
-automatically pops up the specified submenu.  As a special exception,
-if the menu keymap contains a single nested keymap and no other menu
-items, the menu shows the contents of the nested keymap directly, not
-as a submenu.
+  Если карта меню содержит привязку к вложенной ключевой карте, вложенная
+карта указывает @dfn{submenu}.  Там будет пункт меню, помеченный строкой
+элемента вложенной ключевой карты, и щелчок по этому пункту автоматически
+вызывает указанное подменю.  В качестве особого исключения, если карта меню
+содержит одну вложенную ключевую карту и никаких других пунктов меню, в меню
+отображается содержимое вложенной ключевой карты напрямую, а не как подменю.
 
-  However, if Emacs is compiled without X toolkit support, or on text
-terminals, submenus are not supported.  Each nested keymap is shown as
-a menu item, but clicking on it does not automatically pop up the
-submenu.  If you wish to imitate the effect of submenus, you can do
-that by giving a nested keymap an item string which starts with
-@samp{@@}.  This causes Emacs to display the nested keymap using a
-separate @dfn{menu pane}; the rest of the item string after the
-@samp{@@} is the pane label.  If Emacs is compiled without X toolkit
-support, or if a menu is displayed on a text terminal, menu panes are
-not used; in that case, a @samp{@@} at the beginning of an item string
-is omitted when the menu label is displayed, and has no other effect.
+  Однако, если Emacs скомпилирован без поддержки X toolkit или на текстовых
+терминалах, подменю не поддерживаются.  Каждая вложенная карта отображается
+как пункт меню, но щелчок по ней не вызывает автоматически подменю.  Если
+требуется имитировать эффект подменю, можно сделать это, задав для вложенной
+карты строку элемента, которая начинается с @samp{@@}.  Это заставляет Emacs
+отображать вложенную карту с использованием отдельного @dfn{menu pane};
+остальная часть строки элемента после @samp{@@} - это метка панели.  Если
+Emacs скомпилирован без поддержки X toolkit, или если меню отображается в
+текстовом терминале, панели меню не используются; в этом случае @samp{@@} в
+начале строки элемента опускается, когда отображается метка меню, и не имеет
+никакого другого эффекта.
 
 @node Keyboard Menus
-@subsection Menus and the Keyboard
+@subsection Меню и Клавиатура
 
-  When a prefix key ending with a keyboard event (a character or
-function key) has a definition that is a menu keymap, the keymap
-operates as a keyboard menu; the user specifies the next event by
-choosing a menu item with the keyboard.
+  Когда префиксный ключ, оканчивается событием клавиатуры (символом или
+функциональным ключём), имеет определение, которое является ключевой картой
+меню, он действует как меню клавиатуры; пользователь указывает следующее
+событие, выбирая пункт меню с помощью клавиатуры.
 
-  Emacs displays the keyboard menu with the map's overall prompt
-string, followed by the alternatives (the item strings of the map's
-bindings), in the echo area.  If the bindings don't all fit at once,
-the user can type @key{SPC} to see the next line of alternatives.
-Successive uses of @key{SPC} eventually get to the end of the menu and
-then cycle around to the beginning.  (The variable
-@code{menu-prompt-more-char} specifies which character is used for
-this; @key{SPC} is the default.)
+  Emacs отображает меню клавиатуры с общей строкой подсказки карты, за
+которой следуют альтернативы (строки элементов привязок карты) в
+эхо-области.  Если не все привязки подходят одновременно, пользователь может
+ввести @key{SPC}, чтобы увидеть следующую строку альтернатив.
+Последовательное использование @key{SPC} в конечном итоге приводит к концу
+меню, а затем циклически возвращается к началу.  (Переменная
+@code{menu-prompt-more-char} указывает, какой символ используется для этого;
+@key{SPC} используется по умолчанию.)
 
-  When the user has found the desired alternative from the menu, he or
-she should type the corresponding character---the one whose binding is
-that alternative.
+  Когда пользователь нашел желаемую альтернативу в меню, он или она должны
+ввести соответствующий символ - тот, чья привязка является этой
+альтернативой.
 
 @defvar menu-prompt-more-char
-This variable specifies the character to use to ask to see
-the next line of a menu.  Its initial value is 32, the code
-for @key{SPC}.
+Эта переменная определяет символ, который будет использоваться для запроса
+перехода к следующей строке меню.  Его начальное значение - 32, код для
+@key{SPC}.
 @end defvar
 
 @node Menu Example
-@subsection Menu Example
+@subsection Пример Меню
 @cindex menu definition example
 
-  Here is a complete example of defining a menu keymap.  It is the
-definition of the @samp{Replace} submenu in the @samp{Edit} menu in
-the menu bar, and it uses the extended menu item format
-(@pxref{Extended Menu Items}).  First we create the keymap, and give
-it a name:
+  Вот полный пример определения карты меню.  Это определение подменю
+@samp{Replace} в меню @samp{Edit} в строке меню, и оно использует
+расширенный формат пункта меню (@pxref{Extended Menu Items}).  Сначала мы
+создаем карту клавиатуры и даем ей имя:
 
 @smallexample
 (defvar menu-bar-replace-menu (make-sparse-keymap "Replace"))
 @end smallexample
 
 @noindent
-Next we define the menu items:
+Далее мы определяем пункты меню:
 
 @smallexample
 (define-key menu-bar-replace-menu [tags-repl-continue]
@@ -2547,27 +2547,26 @@ Next we define the menu items:
 @end smallexample
 
 @noindent
-Note the symbols which the bindings are made for; these appear
-inside square brackets, in the key sequence being defined.  In some
-cases, this symbol is the same as the command name; sometimes it is
-different.  These symbols are treated as function keys, but they are
-not real function keys on the keyboard.  They do not affect the
-functioning of the menu itself, but they are echoed in the echo area
-when the user selects from the menu, and they appear in the output of
-@code{where-is} and @code{apropos}.
+Обратите внимание на символы, для которых сделаны привязки; они появляются в
+квадратных скобках в определяемой последовательности ключей.  В некоторых
+случаях этот символ совпадает с именем команды; иногда бывает иначе.  Эти
+символы рассматриваются как функциональные ключи, но они не являются
+настоящими функциональными ключами на клавиатуре.  Они не влияют на работу
+самого меню, но они отражаются в эхо-области, когда пользователь выбирает
+из меню, и появляются в выводе @code{where-is} и @code{apropos}.
 
-  The menu in this example is intended for use with the mouse.  If a
-menu is intended for use with the keyboard, that is, if it is bound to
-a key sequence ending with a keyboard event, then the menu items
-should be bound to characters or real function keys, that can be
-typed with the keyboard.
+  Меню в этом примере предназначено для использования с мышью.  Если меню
+предназначено для использования с клавиатурой, то есть если оно привязано к
+последовательности клавиш, заканчивающейся событием клавиатуры, то элементы
+меню должны быть привязаны к символам или реальным функциональным клавишам,
+которые можно вводить с клавиатуры.
 
-  The binding whose definition is @code{("--")} is a separator line.
-Like a real menu item, the separator has a key symbol, in this case
-@code{separator-replace-tags}.  If one menu has two separators, they
-must have two different key symbols.
+  Привязка, определение которой - @code{("--")}, является разделительной
+линией.  Как и в реальном пункте меню, разделитель имеет символ ключа, в
+данном случае @code{separator-replace-tags}.  Если в одном меню есть два
+разделителя, они должны иметь два разных символа ключей.
 
-  Here is how we make this menu appear as an item in the parent menu:
+  Вот как мы делаем это меню как элемент в родительском меню:
 
 @example
 (define-key menu-bar-edit-menu [replace]
@@ -2575,14 +2574,14 @@ must have two different key symbols.
 @end example
 
 @noindent
-Note that this incorporates the submenu keymap, which is the value of
-the variable @code{menu-bar-replace-menu}, rather than the symbol
-@code{menu-bar-replace-menu} itself.  Using that symbol in the parent
-menu item would be meaningless because @code{menu-bar-replace-menu} is
-not a command.
+Обратите внимание, что это включает в себя карту подменю, которая
+представляет собой значение переменной @code{menu-bar-replace-menu}, а не
+сам символ @code{menu-bar-replace-menu}.  Использование этого символа в
+родительском пункте меню было бы бессмысленным, потому что
+@code{menu-bar-replace-menu} не является командой.
 
-  If you wanted to attach the same replace menu to a mouse click, you
-can do it this way:
+  Если хотите прикрепить то же меню замены к щелчку мыши, можете сделать это
+следующим образом:
 
 @example
 (define-key global-map [C-S-down-mouse-1]
@@ -2590,42 +2589,43 @@ can do it this way:
 @end example
 
 @node Menu Bar
-@subsection The Menu Bar
+@subsection Бар Меню
 @cindex menu bar
 
-  Emacs usually shows a @dfn{menu bar} at the top of each frame.
-@xref{Menu Bars,,,emacs, The GNU Emacs Manual}.  Menu bar items are
-subcommands of the fake function key @key{MENU-BAR}, as defined
-in the active keymaps.
+  Emacs обычно показывает @dfn{menu bar} вверху каждого кадра.
+@xref{Menu Bars,,,emacs, The GNU Emacs Manual}.  Пункты Бар меню - это
+подкоманды фальшивого функционального ключа @key{MENU-BAR}, как определено в
+активных картах ключей.
 
-  To add an item to the menu bar, invent a fake function key of your
-own (let's call it @var{key}), and make a binding for the key sequence
-@code{[menu-bar @var{key}]}.  Most often, the binding is a menu keymap,
-so that pressing a button on the menu bar item leads to another menu.
+  Чтобы добавить элемент в строку меню, придумайте собственный фальшивый
+функциональный ключ (назовем его @var{key}) и сделайте привязку для
+последовательности ключей @code{[menu-bar @var{key}]}.  Чаще всего привязка
+- это карта меню, так что нажатие кнопки в элементе строки меню приводит к
+другому меню.
 
-  When more than one active keymap defines the same function key
-for the menu bar, the item appears just once.  If the user clicks on
-that menu bar item, it brings up a single, combined menu containing
-all the subcommands of that item---the global subcommands, the local
-subcommands, and the minor mode subcommands.
+  Когда несколько активных карт определяют один и тот же функциональный ключ
+для строки меню, элемент появляется только один раз.  Если пользователь
+щелкает этот элемент строки меню, появляется единое комбинированное меню,
+содержащее все подкоманды этого элемента - глобальные подкоманды, локальные
+подкоманды и подкоманды второстепенного режима.
 
-  The variable @code{overriding-local-map} is normally ignored when
-determining the menu bar contents.  That is, the menu bar is computed
-from the keymaps that would be active if @code{overriding-local-map}
-were @code{nil}.  @xref{Active Keymaps}.
+  Переменная @code{overriding-local-map} обычно игнорируется при определении
+содержимого строки меню.  То есть строка меню вычисляется из карты ключей,
+которые были бы активны, если бы @code{overriding-local-map} был @code{nil}.
+@xref{Active Keymaps}.
 
-  Here's an example of setting up a menu bar item:
+  Вот пример настройки элемента строки меню:
 
 @example
 @group
-;; @r{Make a menu keymap (with a prompt string)}
-;; @r{and make it the menu bar item's definition.}
+;; @r{Создайте карту меню (со строкой подсказки)}
+;; @r{ и сделайте ее элементом определения строки меню.}
 (define-key global-map [menu-bar words]
   (cons "Words" (make-sparse-keymap "Words")))
 @end group
 
 @group
-;; @r{Define specific subcommands in this menu.}
+;; @r{Определите определенные подкоманды в этом меню.}
 (define-key global-map
   [menu-bar words forward]
   '("Forward word" . forward-word))
@@ -2637,139 +2637,141 @@ were @code{nil}.  @xref{Active Keymaps}.
 @end group
 @end example
 
-  A local keymap can cancel a menu bar item made by the global keymap by
-rebinding the same fake function key with @code{undefined} as the
-binding.  For example, this is how Dired suppresses the @samp{Edit} menu
-bar item:
+  Локальная ключевая карта может отменить пункт строки меню, созданный
+глобальной картой, путем повторного связывания того же фальшивого
+функционального ключа с @code{undefined} в качестве привязки.  Например, вот
+так Dired подавляет пункт меню @samp{Edit}:
 
 @example
 (define-key dired-mode-map [menu-bar edit] 'undefined)
 @end example
 
 @noindent
-Here, @code{edit} is the symbol produced by a fake function key, it is
-used by the global map for the @samp{Edit} menu bar item.  The main
-reason to suppress a global menu bar item is to regain space for
-mode-specific items.
+Здесь @code{edit} - это символ, созданный поддельным функциональным ключом,
+он используется глобальной картой для пункта строки меню @samp{Edit}.
+Основная причина подавления элемента глобальной строки меню - освободить
+место для элементов, зависящих от режима.
 
 @defvar menu-bar-final-items
-Normally the menu bar shows global items followed by items defined by the
-local maps.
+Обычно в строке меню отображаются глобальные элементы, за которыми следуют
+элементы, определенные локальными картами.
 
-This variable holds a list of fake function keys for items to display at
-the end of the menu bar rather than in normal sequence.  The default
-value is @code{(help-menu)}; thus, the @samp{Help} menu item normally appears
-at the end of the menu bar, following local menu items.
+Эта переменная содержит список поддельных функциональных ключей для
+элементов, отображаемых в конце строки меню, а не в обычной
+последовательности.  Значение по умолчанию - @code{(help-menu)}; таким
+образом, пункт меню @samp{Help} обычно появляется в конце строки меню после
+пунктов локального меню.
 @end defvar
 
 @defvar menu-bar-update-hook
-This normal hook is run by redisplay to update the menu bar contents,
-before redisplaying the menu bar.  You can use it to update menus
-whose contents should vary.  Since this hook is run frequently, we
-advise you to ensure that the functions it calls do not take much time
-in the usual case.
+Эта обычная ловушка запускается при повторном отображении для обновления
+содержимого строки меню перед повторным отображением строки меню.  Можете
+использовать его для обновления меню, содержание которого должно отличаться.
+Поскольку этот перехватчик запускается часто, советуем вам убедиться, что
+вызываемые им функции не занимают много времени в обычном случае.
 @end defvar
 
-Next to every menu bar item, Emacs displays a key binding that runs
-the same command (if such a key binding exists).  This serves as a
-convenient hint for users who do not know the key binding.  If a
-command has multiple bindings, Emacs normally displays the first one
-it finds.  You can specify one particular key binding by assigning an
-@code{:advertised-binding} symbol property to the command.  @xref{Keys
-in Documentation}.
+Рядом с каждым элементом строки меню Emacs отображает ключевую привязку,
+которая запускает ту же команду (если такая привязка ключа существует).  Это
+служит удобной подсказкой для пользователей, которые не знают привязки клавиш.  Если команда имеет несколько привязок, Emacs обычно отображает первую
+найденную.  Можете указать одну конкретную привязку ключа, назначив символу
+команды свойство @code{:advertised-binding}.  @xref{Keys in Documentation}.
 
 @node Tool Bar
 @subsection Tool bars
 @cindex tool bar
 
-  A @dfn{tool bar} is a row of clickable icons at the top of a frame,
-just below the menu bar.  @xref{Tool Bars,,,emacs, The GNU Emacs
-Manual}.  Emacs normally shows a tool bar on graphical displays.
+  @dfn{tool bar} - это ряд интерактивных значков в верхней части фрейма,
+чуть ниже строки меню.  @xref{Tool Bars,,,emacs, The GNU Emacs Manual}.
+Emacs обычно показывает панель инструментов на графических дисплеях.
 
-  On each frame, the frame parameter @code{tool-bar-lines} controls
-how many lines' worth of height to reserve for the tool bar.  A zero
-value suppresses the tool bar.  If the value is nonzero, and
-@code{auto-resize-tool-bars} is non-@code{nil}, the tool bar expands
-and contracts automatically as needed to hold the specified contents.
-If the value is @code{grow-only}, the tool bar expands automatically,
-but does not contract automatically.
+  В каждом кадре параметр кадра @code{tool-bar-lines} определяет, сколько
+строк в высоту следует зарезервировать для панели инструментов.  Нулевое
+значение подавляет панель инструментов.  Если значение не равно нулю и
+@code{auto-resize-tool-bars} равно не-@code{nil}, панель инструментов
+автоматически расширяется и сжимается, чтобы удерживать указанное
+содержимое.  Если значение равно @code{grow-only}, панель инструментов
+расширяется автоматически, но не сужается автоматически.
 
-  The tool bar contents are controlled by a menu keymap attached to a
-fake function key called @key{TOOL-BAR} (much like the way the menu
-bar is controlled).  So you define a tool bar item using
-@code{define-key}, like this:
+  Содержимое панели инструментов контролируется раскладкой меню,
+прикрепленной к фальшивой функциональной клавише @key{TOOL-BAR} (очень
+похоже на то, как управляется полоса меню).  Итак, определяете элемент
+панели инструментов с помощью @code{define-key}, например:
 
 @example
 (define-key global-map [tool-bar @var{key}] @var{item})
 @end example
 
 @noindent
-where @var{key} is a fake function key to distinguish this item from
-other items, and @var{item} is a menu item key binding (@pxref{Extended
-Menu Items}), which says how to display this item and how it behaves.
+где @var{key} - это фальшивый функциональный ключ, позволяющий отличать этот
+элемент от других элементов, а @var{item} - это привязка клавиши пункта меню
+(@pxref{Extended Menu Items}), которая говорит, как отображать этот элемент
+и как он себя ведет.
 
-  The usual menu keymap item properties, @code{:visible},
-@code{:enable}, @code{:button}, and @code{:filter}, are useful in
-tool bar bindings and have their normal meanings.  The @var{real-binding}
-in the item must be a command, not a keymap; in other words, it does not
-work to define a tool bar icon as a prefix key.
+  Обычные свойства элемента карты меню, @code{:visible}, @code{:enable},
+@code{:button}, и @code{:filter}, полезны в привязках панели инструментов и
+имеют свое обычное значение.  @var{real-binding} в элементе должна быть
+командой, а не картой; Другими словами, определение значка панели
+инструментов в качестве префиксного ключа не работает.
 
-  The @code{:help} property specifies a help-echo string to display
-while the mouse is on that item.  This is displayed in the same way as
-@code{help-echo} text properties (@pxref{Help display}).
+  Свойство @code{:help} определяет строку эхо-справки, отображаемую, когда
+указатель мыши находится на этом элементе.  Отображается так же, как
+текстовые свойства @code{help-echo}.  (@pxref{Help display}).
 
-  In addition, you should use the @code{:image} property;
-this is how you specify the image to display in the tool bar:
+  Кроме того, потребуется использовать свойство @code{:image}; так
+указывается изображение для отображения на панели инструментов:
 
 @table @code
 @item :image @var{image}
-@var{image} is either a single image specification (@pxref{Images}) or
-a vector of four image specifications.  If you use a vector of four,
-one of them is used, depending on circumstances:
+@var{image} - это либо спецификация одного изображения (@pxref{Images}),
+либо вектор из четырех спецификаций изображения.  Если используется вектор
+из четырех спецмфикаций, в зависимости от обстоятельств используется один из
+них:
 
 @table @asis
 @item item 0
-Used when the item is enabled and selected.
+Используется, когда элемент включен и выбран.
 @item item 1
-Used when the item is enabled and deselected.
+Используется, когда элемент включен и не выбран.
 @item item 2
-Used when the item is disabled and selected.
+Используется, когда элемент отключен и выбран.
 @item item 3
-Used when the item is disabled and deselected.
+Используется, когда элемент отключен и не выбран.
 @end table
 @end table
 
-The GTK+ and NS versions of Emacs ignores items 1 to 3, because disabled and/or
-deselected images are autocomputed from item 0.
+Версии Emacs GTK+ и NS игнорируют пункты с 1 по 3, потому что отключенные
+и/или невыбранные изображения автоматически вычисляются из элемента 0.
 
-If @var{image} is a single image specification, Emacs draws the tool bar
-button in disabled state by applying an edge-detection algorithm to the
-image.
+Если @var{image} - это спецификация одного изображения, Emacs рисует кнопку
+панели инструментов в отключенном состоянии, применяя алгоритм обнаружения
+границ к изображению.
 
-The @code{:rtl} property specifies an alternative image to use for
-right-to-left languages.  Only the GTK+ version of Emacs supports this
-at present.
+Свойство @code{:rtl} указывает альтернативное изображение для языков с
+письмом справа налево.  В настоящее время это поддерживает только версия
+Emacs для GTK+.
 
-Like the menu bar, the tool bar can display separators (@pxref{Menu
-Separators}).  Tool bar separators are vertical rather than
-horizontal, though, and only a single style is supported.  They are
-represented in the tool bar keymap by @code{(menu-item "--")} entries;
-properties like @code{:visible} are not supported for tool bar
-separators.  Separators are rendered natively in GTK+ and Nextstep
-tool bars; in the other cases, they are rendered using an image of a
-vertical line.
+Как и строка меню, панель инструментов может отображать разделители
+(@pxref{Menu Separators}).  Однако разделители панели инструментов являются
+вертикальными, а не горизонтальными, и поддерживается только один стиль.
+Они представлены в ключевой карте панели инструментов записями
+@code{(menu-item "--")}; такие свойства, как @code{:visible}, не
+поддерживаются для разделителей панели инструментов.  Разделители изначально
+отображаются на панелях инструментов GTK + и Nextstep; в остальных случаях
+они визуализируются с использованием изображения вертикальной линии.
 
-The default tool bar is defined so that items specific to editing do not
-appear for major modes whose command symbol has a @code{mode-class}
-property of @code{special} (@pxref{Major Mode Conventions}).  Major
-modes may add items to the global bar by binding @code{[tool-bar
-@var{foo}]} in their local map.  It makes sense for some major modes to
-replace the default tool bar items completely, since not many can be
-accommodated conveniently, and the default bindings make this easy by
-using an indirection through @code{tool-bar-map}.
+Панель инструментов по умолчанию определена так, что элементы, относящиеся к
+редактированию, не отображаются для основных режимов, символ команды которых
+имеет свойство @code {mode-class} @code{special}
+(@pxref{Major Mode Conventions}).  В основных режимах можно добавлять
+элементы на глобальную панель путем привязки @code{[tool-bar @var{foo}]} к
+их локальной карте.  В некоторых основных режимах имеет смысл полностью
+заменить элементы панели инструментов по умолчанию, поскольку не многие из
+них могут быть удобно размещены, а привязки по умолчанию упрощают это,
+используя косвенное обращение через @code{tool-bar-map}.
 
 @defvar tool-bar-map
-By default, the global map binds @code{[tool-bar]} as follows:
+По умолчанию глобальная карта связывает @code{[tool-bar]} следующим образом:
 
 @example
 (global-set-key [tool-bar]
@@ -2778,31 +2780,33 @@ By default, the global map binds @code{[tool-bar]} as follows:
 @end example
 
 @noindent
-The function @code{tool-bar-make-keymap}, in turn, derives the actual
-tool bar map dynamically from the value of the variable
-@code{tool-bar-map}.  Hence, you should normally adjust the default
-(global) tool bar by changing that map.  Some major modes, such as
-Info mode, completely replace the global tool bar by making
-@code{tool-bar-map} buffer-local and setting it to a different keymap.
+Функция @code{tool-bar-make-keymap}, в свою очередь, динамически извлекает
+фактическую карту панели инструментов из значения переменной
+@code{tool-bar-map}.  Следовательно, потребуется настраивать стандартную
+(глобальную) панель инструментов, изменяя эту карту.  Некоторые основные
+режимы, такие как режим информации, полностью заменяют глобальную панель
+инструментов, делая @code{tool-bar-map} буферным локальным и устанавливая
+для него другую карту.
 @end defvar
 
-There are two convenience functions for defining tool bar items, as
-follows.
+Есть две удобные функции для определения элементов панели инструментов, как
+показано ниже.
 
 @defun tool-bar-add-item icon def key &rest props
-This function adds an item to the tool bar by modifying
-@code{tool-bar-map}.  The image to use is defined by @var{icon}, which
-is the base name of an XPM, XBM or PBM image file to be located by
-@code{find-image}.  Given a value @samp{"exit"}, say, @file{exit.xpm},
-@file{exit.pbm} and @file{exit.xbm} would be searched for in that order
-on a color display.  On a monochrome display, the search order is
-@samp{.pbm}, @samp{.xbm} and @samp{.xpm}.  The binding to use is the
-command @var{def}, and @var{key} is the fake function key symbol in the
-prefix keymap.  The remaining arguments @var{props} are additional
-property list elements to add to the menu item specification.
+Эта функция добавляет элемент на панель инструментов, изменяя
+@code{tool-bar-map}.  Используемое изображение определяется параметром
+@var{icon}, который является базовым именем файла изображения XPM, XBM или
+PBM, который нужно найти с помощью @code{find-image}.  Если задано значение
+@samp{"exit"}, скажем, @file{exit.xpm}, @file{exit.pbm} и @file{exit.xbm}
+будет искать в этом порядке на цветном дисплее.  На монохромном дисплее
+порядок поиска составляет @samp{.pbm}, @samp{.xbm} и @samp{.xpm}.
+Используемая привязка - это команда @var{def}, и @var{key} - символ
+фальшивого функционального ключа в префиксной ключевой карте.  Остальные
+аргументы @var{props} - это дополнительные элементы списка свойств, которые
+нужно добавить в спецификацию пункта меню.
 
-To define items in some local map, bind @code{tool-bar-map} with
-@code{let} around calls of this function:
+Чтобы определить элементы на некоторой локальной карте, свяжите
+@code{tool-bar-map} с @code{let} вокруг вызовов этой функции:
 @example
 (defvar foo-tool-bar-map
   (let ((tool-bar-map (make-sparse-keymap)))
@@ -2813,72 +2817,73 @@ To define items in some local map, bind @code{tool-bar-map} with
 @end defun
 
 @defun tool-bar-add-item-from-menu command icon &optional map &rest props
-This function is a convenience for defining tool bar items which are
-consistent with existing menu bar bindings.  The binding of
-@var{command} is looked up in the menu bar in @var{map} (default
-@code{global-map}) and modified to add an image specification for
-@var{icon}, which is found in the same way as by
-@code{tool-bar-add-item}.  The resulting binding is then placed in
-@code{tool-bar-map}, so use this function only for global tool bar
-items.
+Эта функция удобна для определения элементов панели инструментов, которые
+согласуются с существующими привязками строки меню.  Привязка @var{command}
+ищется в строке меню в @var{map} (по умолчанию @code{global-map}) и
+модифицируется, чтобы добавить спецификацию изображения для @var{icon},
+которая находится так же, как и @code{tool-bar-add-item}.  Полученная
+привязка затем помещается в @code{tool-bar-map}, поэтому используйте эту
+функцию только для глобальных элементов панели инструментов.
 
-@var{map} must contain an appropriate keymap bound to
-@code{[menu-bar]}.  The remaining arguments @var{props} are additional
-property list elements to add to the menu item specification.
+@var{map} должен содержать соответствующую ключевую карту, привязанную к
+@code{[menu-bar]}.  Остальные аргументы @var{props} - это дополнительные
+элементы списка свойств, которые нужно добавить в спецификацию пункта меню.
 @end defun
 
 @defun tool-bar-local-item-from-menu command icon in-map &optional from-map &rest props
-This function is used for making non-global tool bar items.  Use it
-like @code{tool-bar-add-item-from-menu} except that @var{in-map}
-specifies the local map to make the definition in.  The argument
-@var{from-map} is like the @var{map} argument of
+Эта функция используется для создания неглобальных элементов панели
+инструментов.  Используйте её как @code{tool-bar-add-item-from-menu}, за
+исключением того, что @var{in-map} указывает локальную карту для
+определения.  Аргумент @var{from-map} похож на аргумент @var{map} для
 @code{tool-bar-add-item-from-menu}.
 @end defun
 
 @defvar auto-resize-tool-bars
-If this variable is non-@code{nil}, the tool bar automatically resizes to
-show all defined tool bar items---but not larger than a quarter of the
-frame's height.
+Если эта переменная - не-@code{nil}, панель инструментов автоматически
+изменяет размер, чтобы показать все определенные элементы панели
+инструментов, но не больше четверти высоты фрейма.
 
-If the value is @code{grow-only}, the tool bar expands automatically,
-but does not contract automatically.  To contract the tool bar, the
-user has to redraw the frame by entering @kbd{C-l}.
+Если значение равно @code{grow-only}, панель инструментов расширяется
+автоматически, но не сужается автоматически.  Чтобы свернуть панель
+инструментов, пользователь должен перерисовать рамку, введя @kbd{C-l}.
 
-If Emacs is built with GTK+ or Nextstep, the tool bar can only show one
-line, so this variable has no effect.
+Если Emacs собран с GTK+ или Nextstep, панель инструментов может отображать
+только одну строку, поэтому эта переменная не имеет никакого эффекта.
 @end defvar
 
 @defvar auto-raise-tool-bar-buttons
-If this variable is non-@code{nil}, tool bar items display
-in raised form when the mouse moves over them.
+Если эта переменная - не-@code{nil}, элементы панели инструментов
+отображаются в выпуклой форме при наведении на них указателя мыши.
 @end defvar
 
 @defvar tool-bar-button-margin
-This variable specifies an extra margin to add around tool bar items.
-The value is an integer, a number of pixels.  The default is 4.
+Эта переменная определяет дополнительное поле для добавления вокруг
+элементов панели инструментов.  Значение - целое число, количество пикселей.
+По умолчанию - 4.
 @end defvar
 
 @defvar tool-bar-button-relief
-This variable specifies the shadow width for tool bar items.
-The value is an integer, a number of pixels.  The default is 1.
+Эта переменная определяет ширину тени для элементов панели инструментов.
+Значение - целое число, количество пикселей.  По умолчанию 1.
 @end defvar
 
 @defvar tool-bar-border
-This variable specifies the height of the border drawn below the tool
-bar area.  An integer specifies height as a number of pixels.
-If the value is one of @code{internal-border-width} (the default) or
-@code{border-width}, the tool bar border height corresponds to the
-corresponding frame parameter.
+Эта переменная определяет высоту границы, нарисованной под областью панели
+инструментов.  Целое число определяет высоту как количество пикселей.  Если
+значение равно @code{internal-border-width} (по умолчанию) или
+@code{border-width}, высота границы панели инструментов соответствует
+соответствующему параметру кадра.
 @end defvar
 
-  You can define a special meaning for clicking on a tool bar item with
-the shift, control, meta, etc., modifiers.  You do this by setting up
-additional items that relate to the original item through the fake
-function keys.  Specifically, the additional items should use the
-modified versions of the same fake function key used to name the
-original item.
+  Можно определить особое значение для нажатия на элемент панели
+инструментов с помощью модификаторов shift, control, meta, и т. д.  Делается
+это, настраивая дополнительные элементы, которые связаны с исходным
+элементом, с помощью поддельных функциональных ключей.  В частности,
+дополнительные элементы должны использовать модифицированные версии того же
+фальшивого функционального ключа, который использовался для наименования
+исходного элемента.
 
-  Thus, if the original item was defined this way,
+  Таким образом, если исходный элемент был определен таким образом,
 
 @example
 (define-key global-map [tool-bar shell]
@@ -2887,37 +2892,38 @@ original item.
 @end example
 
 @noindent
-then here is how you can define clicking on the same tool bar image with
-the shift modifier:
+то вот как можно определить нажатие на то же изображение панели инструментов
+с модификатором сдвига:
 
 @example
 (define-key global-map [tool-bar S-shell] 'some-command)
 @end example
 
-@xref{Function Keys}, for more information about how to add modifiers to
-function keys.
+@xref{Function Keys}, для получения дополнительной информации о том, как
+добавлять модификаторы к функциональным ключам.
 
 @node Modifying Menus
-@subsection Modifying Menus
+@subsection Модификация Меню
 @cindex menu modification
 
-  When you insert a new item in an existing menu, you probably want to
-put it in a particular place among the menu's existing items.  If you
-use @code{define-key} to add the item, it normally goes at the front of
-the menu.  To put it elsewhere in the menu, use @code{define-key-after}:
+  Когда вставляется новый элемент в существующее меню, вероятно, захочется
+поместить его в определенное место среди существующих пунктов меню.  Если
+используете @code{define-key} для добавления элемента, он обычно находится в
+начале меню.  Чтобы поместить его в другое место в меню, используйте
+@code{define-key-after}:
 
 @defun define-key-after map key binding &optional after
-Define a binding in @var{map} for @var{key}, with value @var{binding},
-just like @code{define-key}, but position the binding in @var{map} after
-the binding for the event @var{after}.  The argument @var{key} should be
-of length one---a vector or string with just one element.  But
-@var{after} should be a single event type---a symbol or a character, not
-a sequence.  The new binding goes after the binding for @var{after}.  If
-@var{after} is @code{t} or is omitted, then the new binding goes last, at
-the end of the keymap.  However, new bindings are added before any
-inherited keymap.
+Определите привязку в @var{map} для @var{key} со значением @var{binding},
+как и @code{define-key}, но поместите привязку в @var{map} после привязки
+для события @var{after}.  Аргумент @var{key} должен иметь длину один -
+вектор или строку с одним элементом.  Но @var{after} должен быть
+единственным типом события - символом, а не ключевой последовательностью.
+Новая привязка идет после привязки для @var{after}.  Если @var{after} равен
+@code{t} или не указан, то новая привязка идет последней, в конце карты.
+Однако новые привязки добавляются перед любой унаследованной ключевой
+картой.
 
-Here is an example:
+Вот пример:
 
 @example
 (define-key-after my-menu [drink]
@@ -2925,11 +2931,11 @@ Here is an example:
 @end example
 
 @noindent
-makes a binding for the fake function key @key{DRINK} and puts it
-right after the binding for @key{EAT}.
+делает привязку для поддельной функциональной клавиши @key{DRINK} и помещает
+ее сразу после привязки для @key{EAT}.
 
-Here is how to insert an item called @samp{Work} in the @samp{Signals}
-menu of Shell mode, after the item @code{break}:
+Вот как вставить пункт @samp{Work} в меню @samp{Signals} режима Shell после
+пункта @code{break}:
 
 @example
 (define-key-after
@@ -2939,123 +2945,121 @@ menu of Shell mode, after the item @code{break}:
 @end defun
 
 @node Easy Menu
-@subsection Easy Menu
+@subsection Простое Меню
 
-  The following macro provides a convenient way to define pop-up menus
-and/or menu bar menus.
+  Следующий макрос обеспечивает удобный способ определения всплывающих
+  меню и/или меню строки меню.
 
 @defmac easy-menu-define symbol maps doc menu
-This macro defines a pop-up menu and/or menu bar submenu, whose
-contents are given by @var{menu}.
+Этот макрос определяет всплывающее меню и/или подменю строки меню,
+содержание которых задается @var{menu}.
 
-If @var{symbol} is non-@code{nil}, it should be a symbol; then this
-macro defines @var{symbol} as a function for popping up the menu
-(@pxref{Pop-Up Menus}), with @var{doc} as its documentation string.
-@var{symbol} should not be quoted.
+Если @var{symbol} равен не-@code{nil}, это должен быть символ; тогда этот
+макрос определяет @var{symbol} как функцию для вызова меню
+(@pxref{Pop-Up Menus}) с @var{doc} в качестве строки документации.
+@var{symbol} не следует цитировать.
 
-Regardless of the value of @var{symbol}, if @var{maps} is a keymap,
-the menu is added to that keymap, as a top-level menu for the menu bar
-(@pxref{Menu Bar}).  It can also be a list of keymaps, in which case
-the menu is added separately to each of those keymaps.
+Независимо от значения @var{symbol}, если @var{maps} - это ключевая карта,
+меню добавляется к этой карте как меню верхнего уровня для строки меню
+(@pxref{Menu Bar}).  Это также может быть список ключевых карт, и в этом
+случае меню добавляется отдельно к каждой из этих раскладок.
 
-The first element of @var{menu} must be a string, which serves as the
-menu label.  It may be followed by any number of the following
-keyword-argument pairs:
+Первым элементом @var{menu} должна быть строка, которая служит меткой меню.
+За ним может следовать любое количество следующих пар ключевое
+слово-аргумент:
 
 @table @code
 @item :filter @var{function}
-@var{function} must be a function which, if called with one
-argument---the list of the other menu items---returns the actual items
-to be displayed in the menu.
+@var{function} должна быть функцией, которая при вызове с одним аргументом
+--- списком других пунктов меню --- возвращает фактические пункты, которые
+будут отображаться в меню.
 
 @item :visible @var{include}
-@var{include} is an expression; if it evaluates to @code{nil}, the
-menu is made invisible.  @code{:included} is an alias for
-@code{:visible}.
+@var{include} - выражение; если он оценивается как @code{nil}, меню
+становится невидимым.  @code{:included} - это псевдоним @code{:visible}.
 
 @item :active @var{enable}
-@var{enable} is an expression; if it evaluates to @code{nil}, the menu
-is not selectable.  @code{:enable} is an alias for @code{:active}.
+@var{enable} - выражение; если он оценивается как @code{nil}, меню нельзя
+выбрать.  @code{:enable} - это псевдоним @code{:active}.
 @end table
 
-The remaining elements in @var{menu} are menu items.
+Остальные элементы в @var{menu} - это пункты меню.
 
-A menu item can be a vector of three elements, @code{[@var{name}
-@var{callback} @var{enable}]}.  @var{name} is the menu item name (a
-string).  @var{callback} is a command to run, or an expression to
-evaluate, when the item is chosen.  @var{enable} is an expression; if
-it evaluates to @code{nil}, the item is disabled for selection.
+Пункт меню может быть вектором из трех элементов, @code{[@var{name}
+@var{callback} @var{enable}]}.  @var{name} - название пункта меню (строка).
+@var{callback} - это команда для запуска или выражение для оценки при выборе
+элемента.  @var{enable} - выражение; если он оценивается как @code{nil},
+элемент недоступен для выбора.
 
-Alternatively, a menu item may have the form:
+В качестве альтернативы, пункт меню может иметь форму:
 
 @smallexample
    [ @var{name} @var{callback} [ @var{keyword} @var{arg} ]... ]
 @end smallexample
 
 @noindent
-where @var{name} and @var{callback} have the same meanings as above,
-and each optional @var{keyword} and @var{arg} pair should be one of
-the following:
+где @var{name} и @var{callback} имеют то же значение, что и выше, и каждая
+необязательная пара @var{keyword} и @var{arg} должна быть одним из
+следующих:
 
 @table @code
 @item :keys @var{keys}
-@var{keys} is a keyboard equivalent to the menu item (a string).  This
-is normally not needed, as keyboard equivalents are computed
-automatically.  @var{keys} is expanded with
-@code{substitute-command-keys} before it is displayed (@pxref{Keys in
-Documentation}).
+@var {keys} - это клавиатурный эквивалент пункта меню (строки).  Обычно в
+этом нет необходимости, поскольку эквиваленты ключей вычисляются
+автоматически.  @var{keys} расширяется до @code{substitute-command-keys}
+перед отображением (@pxref{Keys in Documentation}).
 
 @item :key-sequence @var{keys}
-@var{keys} is a hint for speeding up Emacs's first display of the
-menu.  It should be @code{nil} if you know that the menu item has no keyboard
-equivalent; otherwise it should be a string or vector specifying a
-keyboard equivalent for the menu item.
+@var{keys} - это подсказка для ускорения первого отображения меню в Emacs.
+Это должно быть @code{nil}, если знаете, что у пункта меню нет эквивалента
+ключа; в противном случае это должна быть строка или вектор, определяющий
+ключевой эквивалент пункта меню.
 
 @item :active @var{enable}
-@var{enable} is an expression; if it evaluates to @code{nil}, the item
-is make unselectable..  @code{:enable} is an alias for @code{:active}.
+@var{enable} - выражение; если он принимает значение @code{nil}, элемент
+становится недоступным для выбора.  @code{:enable} - это псевдоним для
+@code{:active}.
 
 @item :visible @var{include}
-@var{include} is an expression; if it evaluates to @code{nil}, the
-item is made invisible.  @code{:included} is an alias for
-@code{:visible}.
+@var{include} - выражение; если он оценивается как @code{nil}, элемент
+становится невидимым.  @code{:included} - это псевдоним @code{:visible}.
 
 @item :label @var{form}
-@var{form} is an expression that is evaluated to obtain a value which
-serves as the menu item's label (the default is @var{name}).
+@var{form} - это выражение, которое вычисляется для получения значения,
+которое служит меткой пункта меню (по умолчанию @var{name}).
 
 @item :suffix @var{form}
-@var{form} is an expression that is dynamically evaluated and whose
-value is concatenated with the menu entry's label.
+@var{form} - это выражение, которое вычисляется динамически и значение
+которого объединяется с меткой пункта меню.
 
 @item :style @var{style}
-@var{style} is a symbol describing the type of menu item; it should be
-@code{toggle} (a checkbox), or @code{radio} (a radio button), or
-anything else (meaning an ordinary menu item).
+@var{style} - символ, описывающий тип пункта меню; это должен быть
+@code{toggle} (флажок), @code{radio} (переключатель) или что-то еще
+(имеется в виду обычный пункт меню).
 
 @item :selected @var{selected}
-@var{selected} is an expression; the checkbox or radio button is
-selected whenever the expression's value is non-@code{nil}.
+@var{selected} - выражение; флажок или переключатель устанавливается всякий
+раз, когда значение выражения - не-@code{nil}.
 
 @item :help @var{help}
-@var{help} is a string describing the menu item.
+@var{help} - строка, описывающая пункт меню.
 @end table
 
-Alternatively, a menu item can be a string.  Then that string appears
-in the menu as unselectable text.  A string consisting of dashes is
-displayed as a separator (@pxref{Menu Separators}).
+Как вариант, пункт меню может быть строкой.  Затем эта строка появляется в
+меню в виде невыбираемого текста.  Строка, состоящая из тире, отображается
+как разделитель (@pxref{Menu Separators}).
 
-Alternatively, a menu item can be a list with the same format as
-@var{menu}.  This is a submenu.
+В качестве альтернативы, пункт меню может быть списком с тем же форматом,
+что и @var{menu}.  Это подменю.
 @end defmac
 
-Here is an example of using @code{easy-menu-define} to define a menu
-similar to the one defined in the example in @ref{Menu Bar}:
+Вот пример использования @code{easy-menu-define} для определения меню,
+аналогичного тому, которое определено в примере в @ref{Menu Bar}:
 
 @example
 (easy-menu-define words-menu global-map
-  "Menu for word navigation commands."
+  "Меню для команд навигации по словам."
   '("Words"
-     ["Forward word" forward-word]
-     ["Backward word" backward-word]))
+     ["Следующее слово" forward-word]
+     ["Предыдущее слово" backward-word]))
 @end example
