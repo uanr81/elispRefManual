@@ -4,315 +4,307 @@
 @c Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Loading
-@chapter Loading
+@chapter Загрузка
 @cindex loading
 @cindex library
 @cindex Lisp library
 
-  Loading a file of Lisp code means bringing its contents into the
-Lisp environment in the form of Lisp objects.  Emacs finds and opens
-the file, reads the text, evaluates each form, and then closes the
-file.  Such a file is also called a @dfn{Lisp library}.
+  Загрузка файла с кодом Lisp означает перенос его содержимого в среду Lisp
+в виде объектов Lisp.  Emacs находит и открывает файл, читает текст,
+оценивает каждую форму и затем закрывает файл.  Такой файл также называется
+@dfn{Библиотекой Lisp}.
 
-  The load functions evaluate all the expressions in a file just
-as the @code{eval-buffer} function evaluates all the
-expressions in a buffer.  The difference is that the load functions
-read and evaluate the text in the file as found on disk, not the text
-in an Emacs buffer.
+  Функции загрузки оценивают все выражения в файле так же, как функция
+@code{eval-buffer} оценивает все выражения в буфере.  Разница в том, что
+функции загрузки читают и оценивают текст файла, находящийся на диске, а не
+текст в буфере Emacs.
 
 @cindex top-level form
-  The loaded file must contain Lisp expressions, either as source code
-or as byte-compiled code.  Each form in the file is called a
-@dfn{top-level form}.  There is no special format for the forms in a
-loadable file; any form in a file may equally well be typed directly
-into a buffer and evaluated there.  (Indeed, most code is tested this
-way.)  Most often, the forms are function definitions and variable
-definitions.
+  Загруженный файл должен содержать выражения Lisp либо в виде исходного
+кода, либо в виде байт скомпилированного кода.  Каждая форма в файле
+называется @dfn{top-level form (форма верхнего уровня)}.  Для форм в
+загружаемом файле нет специального формата; любая форма в файле также может
+быть введена непосредственно в буфер и обработана там.  (На практике, так
+тестируется большая часть кода).  Чаще всего формы представляют собой
+определения функций и определения переменных.
 
-  Emacs can also load compiled dynamic modules: shared libraries that
-provide additional functionality for use in Emacs Lisp programs, just
-like a package written in Emacs Lisp would.  When a dynamic module is
-loaded, Emacs calls a specially-named initialization function which
-the module needs to implement, and which exposes the additional
-functions and variables to Emacs Lisp programs.
+  Emacs может также загружать скомпилированные динамические модули:
+разделяемые библиотеки, которые предоставляют дополнительные функции для
+использования в программах Emacs Lisp, так же как и пакет, написанный на
+Emacs Lisp.  Когда динамический модуль загружен, Emacs вызывает функцию
+инициализации со специальным именем, которую модуль должен реализовать, и
+которая предоставляет дополнительные функции и переменные для программ
+Emacs Lisp.
 
-For on-demand loading of external libraries which are known in advance
-to be required by certain Emacs primitives, @pxref{Dynamic Libraries}.
+Для загрузки по запросу внешних библиотек, которые, как известно заранее,
+требуются некоторыми примитивами Emacs, @pxref{Dynamic Libraries}.
 
 @menu
-* How Programs Do Loading:: The @code{load} function and others.
-* Load Suffixes::           Details about the suffixes that @code{load} tries.
-* Library Search::          Finding a library to load.
-* Loading Non-ASCII::       Non-@acronym{ASCII} characters in Emacs Lisp files.
-* Autoload::                Setting up a function to autoload.
-* Repeated Loading::        Precautions about loading a file twice.
-* Named Features::          Loading a library if it isn't already loaded.
-* Where Defined::           Finding which file defined a certain symbol.
-* Unloading::               How to unload a library that was loaded.
-* Hooks for Loading::       Providing code to be run when
-                              particular libraries are loaded.
-* Dynamic Modules::         Modules provide additional Lisp primitives.
+* How Programs Do Loading:: @code{load} и другие.
+* Load Suffixes::           Подробная информация о суффиксах, которые
+                            пытается использовать @code{load}.
+* Library Search::          Поиск библиотеки для загрузки.
+* Loading Non-ASCII::       Не-@acronym{ASCII} в файлах Emacs Lisp.
+* Autoload::                Настройка функции на автозагрузку.
+* Repeated Loading::        Доп меры предосторожности при загрузке файла.
+* Named Features::          Загрузка библиотеки, если она еще не загружена.
+* Where Defined::           Поиск файла, определяющего определенный символ.
+* Unloading::               Как выгрузить загруженную библиотеку.
+* Hooks for Loading::       Предоставление кода для запуска при загрузке
+                            определенных библиотек.
+* Dynamic Modules::         Модули предоставляют дополнительные примитивы
+                            Lisp.
 @end menu
 
 @node How Programs Do Loading
-@section How Programs Do Loading
+@section Как Загружаются Программы
 
-  Emacs Lisp has several interfaces for loading.  For example,
-@code{autoload} creates a placeholder object for a function defined in a
-file; trying to call the autoloading function loads the file to get the
-function's real definition (@pxref{Autoload}).  @code{require} loads a
-file if it isn't already loaded (@pxref{Named Features}).  Ultimately,
-all these facilities call the @code{load} function to do the work.
+  Emacs Lisp имеет несколько интерфейсов для загрузки.  Например,
+@code{autoload} создает объект-заполнитель для функции, определенной в
+файле; попытка вызвать функцию автозагрузки загружает файл, чтобы получить
+реальное определение функции (@pxref{Autoload}).  @code{require} загружает
+файл, если она еще не загружена (@pxref{Named Features}).  В конечном итоге
+все эти средства вызывают функцию @code{load} для выполнения своей работы.
 
 @defun load filename &optional missing-ok nomessage nosuffix must-suffix
-This function finds and opens a file of Lisp code, evaluates all the
-forms in it, and closes the file.
+Эта функция находит и открывает файл с кодом Lisp, оценивает все формы в
+нем и закрывает файл.
 
-To find the file, @code{load} first looks for a file named
-@file{@var{filename}.elc}, that is, for a file whose name is
-@var{filename} with the extension @samp{.elc} appended.  If such a
-file exists, it is loaded.  If there is no file by that name, then
-@code{load} looks for a file named @file{@var{filename}.el}.  If that
-file exists, it is loaded.  If Emacs was compiled with support for
-dynamic modules (@pxref{Dynamic Modules}), @code{load} next looks for
-a file named @file{@var{filename}.@var{ext}}, where @var{ext} is a
-system-dependent file-name extension of shared libraries.  Finally, if
-neither of those names is found, @code{load} looks for a file named
-@var{filename} with nothing appended, and loads it if it exists.  (The
-@code{load} function is not clever about looking at @var{filename}.
-In the perverse case of a file named @file{foo.el.el}, evaluation of
-@code{(load "foo.el")} will indeed find it.)
+Чтобы найти файл, @code{load} сначала ищет файл с именем
+@file{@var{filename}.elc}, то есть файл с именем @var{filename} с
+добавленным расширением @samp{.elc}.  Если такой файл существует, он
+загружается.  Если файла с таким именем нет, @code{load} ищет файл с именем
+@file{@var{filename}.el}.  Если этот файл существует, он загружается.  Если
+Emacs был скомпилирован с поддержкой динамических модулей
+(@pxref{Dynamic Modules}), @code{load} затем ищет файл с именем
+@file{@var{filename}.@var{ext}}, где @var{ext} - это системно-зависимое
+расширение имени файла разделяемых библиотек.  Наконец, если ни одно из этих
+имен не найдено, @code{load} ищет файл с именем @var{filename} без
+добавочных файлов и загружает его, если он существует.  (Функция @code{load}
+не умеет смотреть на @var{filename}.  В неправильном случае имени файла
+@file{foo.el.el} оценка @code{(load "foo.el")} действительно найдет его).
 
-If Auto Compression mode is enabled, as it is by default, then if
-@code{load} can not find a file, it searches for a compressed version
-of the file before trying other file names.  It decompresses and loads
-it if it exists.  It looks for compressed versions by appending each
-of the suffixes in @code{jka-compr-load-suffixes} to the file name.
-The value of this variable must be a list of strings.  Its standard
-value is @code{(".gz")}.
+Если режим Auto Compression включен, как по умолчанию, то, если @code{load}
+не может найти файл, она ищет сжатую версию файла, прежде чем пытаться
+использовать другие имена файлов.  Она распаковывает и загружает его, если
+он существует.  Она ищет сжатые версии, добавляя каждый из суффиксов в
+@code{jka-compr-load-suffixes} к имени файла.  Значение этой переменной
+должно быть списком строк.  Стандартное значение - @code{(".gz")}.
 
-If the optional argument @var{nosuffix} is non-@code{nil}, then
-@code{load} does not try the suffixes @samp{.elc} and @samp{.el}.  In
-this case, you must specify the precise file name you want, except
-that, if Auto Compression mode is enabled, @code{load} will still use
-@code{jka-compr-load-suffixes} to find compressed versions.  By
-specifying the precise file name and using @code{t} for
-@var{nosuffix}, you can prevent file names like @file{foo.el.el} from
-being tried.
+Если необязательный аргумент @var{nosuffix} - не-@code{nil}, то @code{load}
+не пытается использовать суффиксы @samp{.elc} и @samp{.el}.  В этом случае
+потребуется указать точное имя файла, которое нужно, за исключением того,
+что, если включен режим автоматического сжатия, @code{load} все равно будет
+использовать @code{jka-compr-load-suffixes} для поиска сжатых версий.
+Указав точное имя файла и используя @code{t} вместо @var{nosuffix}, можно
+предотвратить попытки использования таких имен файлов, как @file{foo.el.el}.
 
-If the optional argument @var{must-suffix} is non-@code{nil}, then
-@code{load} insists that the file name used must end in either
-@samp{.el} or @samp{.elc} (possibly extended with a compression
-suffix) or the shared-library extension, unless it contains an
-explicit directory name.
+Если необязательный аргумент @var{must-suffix} - не-@code{nil}, то
+@code{load} настаивает на том, чтобы используемое имя файла заканчивалось
+либо на @samp{.el} или @samp{.elc} (возможно, с суффиксом сжатия), либо на
+расширение разделяемой библиотеки, если оно не содержит явное имя каталога.
 
-If the option @code{load-prefer-newer} is non-@code{nil}, then when
-searching suffixes, @code{load} selects whichever version of a file
-(@samp{.elc}, @samp{.el}, etc.)@: has been modified most recently.
+Если опция @code{load-prefer-newer} - не-@code{nil}, то при поиске суффиксов
+@code{load} выбирает ту версию файла (@samp{.elc}, @samp{.el}, etc.)@:
+которая изменялась последней.
 
-If @var{filename} is a relative file name, such as @file{foo} or
-@file{baz/foo.bar}, @code{load} searches for the file using the variable
-@code{load-path}.  It appends @var{filename} to each of the directories
-listed in @code{load-path}, and loads the first file it finds whose name
-matches.  The current default directory is tried only if it is specified
-in @code{load-path}, where @code{nil} stands for the default directory.
-@code{load} tries all three possible suffixes in the first directory in
-@code{load-path}, then all three suffixes in the second directory, and
-so on.  @xref{Library Search}.
+Если @var{filename} - относительное имя файла, например @file{foo} или
+@file{baz/foo.bar}, @code{load}, ищет файл с помощью переменной
+@code{load-path}.  Она добавляет @var{filename} в каждый из каталогов,
+перечисленных в @code{load-path}, и загружает первый найденный файл, имя
+которого соответствует.  Текущий каталог по умолчанию используется, только
+если он указан в @code{load-path}, где @code{nil} обозначает каталог по
+умолчанию.  @code{load} пробует все три возможных суффикса в первом каталоге
+в @code{load-path}, затем все три суффикса во втором каталоге и так далее.
+@xref{Library Search}.
 
-Whatever the name under which the file is eventually found, and the
-directory where Emacs found it, Emacs sets the value of the variable
-@code{load-file-name} to that file's name.
+Каким бы ни было имя, под которым в конечном итоге был найден файл, и
+каталог, в котором Emacs его нашел, Emacs устанавливает значение переменной
+@code{load-file-name} равным имени этого файла.
 
-If you get a warning that @file{foo.elc} is older than @file{foo.el}, it
-means you should consider recompiling @file{foo.el}.  @xref{Byte
-Compilation}.
+Если получается предупреждение о том, что @file{foo.elc} старше
+@file{foo.el}, это означает, что вам следует подумать о перекомпиляции
+@file{foo.el}.  @xref{Byte Compilation}.
 
-When loading a source file (not compiled), @code{load} performs
-character set translation just as Emacs would do when visiting the file.
+При загрузке исходного файла (не скомпилированного) @code{load} выполняет
+преобразование набора символов так же, как Emacs при обращении к файлу.
 @xref{Coding Systems}.
 
-@c This is referred to from the Macros chapter.
-@c Not sure if it should be the other way round.
+@c Об этом говорится в главе «Макросы».
+@c Не уверен, может ли быть иначе.
 @cindex eager macro expansion
-When loading an uncompiled file, Emacs tries to expand any macros
-that the file contains (@pxref{Macros}).  We refer to this as
-@dfn{eager macro expansion}.  Doing this (rather than deferring
-the expansion until the relevant code runs) can significantly speed
-up the execution of uncompiled code.  Sometimes, this macro expansion
-cannot be done, owing to a cyclic dependency.  In the simplest
-example of this, the file you are loading refers to a macro defined
-in another file, and that file in turn requires the file you are
-loading.  This is generally harmless.  Emacs prints a warning
-(@samp{Eager macro-expansion skipped due to cycle@dots{}})
-giving details of the problem, but it still loads the file, just
-leaving the macro unexpanded for now.  You may wish to restructure
-your code so that this does not happen.  Loading a compiled file does
-not cause macroexpansion, because this should already have happened
-during compilation.  @xref{Compiling Macros}.
+При загрузке некомпилированного файла Emacs пытается развернуть все макросы,
+содержащиеся в файле (@pxref{Macros}).  Называется это
+@dfn{eager macro expansion (нетерпеливое расширение макроса)}.  Это может
+значительно ускорить выполнение некомпилированного кода (вместо того, чтобы
+откладывать раскрытие до запуска соответствующего кода).  Иногда это
+макрорасширение невозможно из-за циклической зависимости.  В простейшем
+примере загружаемый файл ссылается на макрос, определенный в другом файле, а
+этот файл, в свою очередь, требует загружаемого вами файла.  Это вообще
+безвредно.  Emacs выводит предупреждение
+(@samp{Eager macro-expansion skipped due to cycle@dots{}}) с подробным
+описанием проблемы, но по-прежнему загружает файл, оставляя макрос пока
+нераскрытым.  Можно захотеть реструктурировать свой код, чтобы этого не
+произошло.  Загрузка скомпилированного файла не вызывает макрорасширения,
+потому что это уже должно было произойти во время компиляции.
+@xref{Compiling Macros}.
 
-Messages like @samp{Loading foo...} and @samp{Loading foo...done} appear
-in the echo area during loading unless @var{nomessage} is
-non-@code{nil}.
+Сообщения вроде @samp{Loading foo...} и @samp{Loading foo...done} появляются
+в эхо-области во время загрузки, если @var{nomessage} не не-@code{nil}.
 
 @cindex load errors
-Any unhandled errors while loading a file terminate loading.  If the
-load was done for the sake of @code{autoload}, any function definitions
-made during the loading are undone.
+Любые необработанные ошибки при загрузке файла прекращают загрузку.  Если
+загрузка была произведена ради @code{autoload}, любые определения функций,
+сделанные во время загрузки, отменяются.
 
 @kindex file-error
-If @code{load} can't find the file to load, then normally it signals a
-@code{file-error} (with @samp{Cannot open load file
-@var{filename}}).  But if @var{missing-ok} is non-@code{nil}, then
-@code{load} just returns @code{nil}.
+Если @code{load} не может найти файл для загрузки, то обычно он
+сигнализирует @code{file-error} (с
+@samp{Cannot open load file @var{filename}}).  Но если @var{missing-ok}
+установлено в не-@code{nil}, то @code{load} просто возвращает @code{nil}.
 
-You can use the variable @code{load-read-function} to specify a function
-for @code{load} to use instead of @code{read} for reading expressions.
-See below.
+Можно использовать переменную @code{load-read-function}, чтобы указать
+функцию, которую @code{load} будет использовать вместо @code{read} для
+чтения выражений.  Смотреть ниже.
 
-@code{load} returns @code{t} if the file loads successfully.
+@code{load} возвращает @code{t}, если файл загружается успешно.
 @end defun
 
 @deffn Command load-file filename
-This command loads the file @var{filename}.  If @var{filename} is a
-relative file name, then the current default directory is assumed.
-This command does not use @code{load-path}, and does not append
-suffixes.  However, it does look for compressed versions (if Auto
-Compression Mode is enabled).  Use this command if you wish to specify
-precisely the file name to load.
+Эта команда загружает файл @var{filename}.  Если @var{filename} -
+относительное имя файла, то предполагается текущий каталог по умолчанию.
+Эта команда не использует @code{load-path} и не добавляет суффиксы.  Однако
+она ищет сжатые версии (если включен режим автоматического сжатия).
+Следует Используйте эту команду, если требуется точно указать имя файла для
+загрузки.
 @end deffn
 
 @deffn Command load-library library
-This command loads the library named @var{library}.  It is equivalent to
-@code{load}, except for the way it reads its argument interactively.
-@xref{Lisp Libraries,,,emacs, The GNU Emacs Manual}.
+Эта команда загружает библиотеку с именем @var{library}.  Она эквивалентна
+@code{load}, за исключением того, как читает свой аргумент в интерактивном
+режиме.  @xref{Lisp Libraries,,,emacs, The GNU Emacs Manual}.
 @end deffn
 
 @defvar load-in-progress
-This variable is non-@code{nil} if Emacs is in the process of loading a
-file, and it is @code{nil} otherwise.
+Эта переменная - не-@code{nil}, если Emacs находится в процессе загрузки
+файла, и @code{nil} в противном случае.
 @end defvar
 
 @defvar load-file-name
-When Emacs is in the process of loading a file, this variable's value
-is the name of that file, as Emacs found it during the search
-described earlier in this section.
+Когда Emacs загружает файл, значением этой переменной является имя этого
+файла, которое Emacs нашел во время поиска, описанного ранее в этом разделе.
 @end defvar
 
 @defvar load-read-function
 @anchor{Definition of load-read-function}
-@c do not allow page break at anchor; work around Texinfo deficiency.
-This variable specifies an alternate expression-reading function for
-@code{load} and @code{eval-region} to use instead of @code{read}.
-The function should accept one argument, just as @code{read} does.
+@c не допускать разрыв страницы при привязке; недостаток Texinfo.
+Эта переменная определяет альтернативную функцию чтения выражений, которую
+@code{load} и @code{eval-region} будет использовать вместо @code{read}.
+Функция должна принимать один аргумент, как и @code{read}.
 
-By default, this variable's value is @code{read}.  @xref{Input
-Functions}.
+По умолчанию значение этой переменной @code{read}.  @xref{Input Functions}.
 
-Instead of using this variable, it is cleaner to use another, newer
-feature: to pass the function as the @var{read-function} argument to
+Вместо использования этой переменной проще использовать другую, более новую
+функцию: передать функцию в качестве аргумента @var{read-function} в
 @code{eval-region}.  @xref{Definition of eval-region,, Eval}.
 @end defvar
 
-  For information about how @code{load} is used in building Emacs, see
-@ref{Building Emacs}.
+  Для получения информации о том, как @code{load} используется при сборке
+  Emacs, смотреть @ref{Building Emacs}.
 
 @node Load Suffixes
-@section Load Suffixes
-We now describe some technical details about the exact suffixes that
-@code{load} tries.
+@section Суффиксы Загрузки
+Теперь опишем некоторые технические подробности о точных суффиксах, которые
+пытается использовать @code{load}.
 
 @defvar load-suffixes
-This is a list of suffixes indicating (compiled or source) Emacs Lisp
-files.  It should not include the empty string.  @code{load} uses
-these suffixes in order when it appends Lisp suffixes to the specified
-file name.  The standard value is @code{(".elc" ".el")} which produces
-the behavior described in the previous section.
+Это список суффиксов, обозначающих (скомпилированные или исходные) файлы
+Emacs Lisp.  Он не должен включать пустые строки.  @code{load} использует
+эти суффиксы по порядку, когда добавляет суффиксы Lisp к указанному имени
+файла.  Стандартное значение - @code{(".elc" ".el")}, что обеспечивает
+поведение, описанное в предыдущем разделе.
 @end defvar
 
 @defvar load-file-rep-suffixes
-This is a list of suffixes that indicate representations of the same
-file.  This list should normally start with the empty string.
-When @code{load} searches for a file it appends the suffixes in this
-list, in order, to the file name, before searching for another file.
+Это список суффиксов, обозначающих представления одного и того же файла.
+Этот список обычно должен начинаться с пустой строки.  Когда @code{load}
+ищет файл, она добавляет суффиксы в этом списке по порядку к имени файла
+перед поиском другого файла.
 
-Enabling Auto Compression mode appends the suffixes in
-@code{jka-compr-load-suffixes} to this list and disabling Auto
-Compression mode removes them again.  The standard value of
-@code{load-file-rep-suffixes} if Auto Compression mode is disabled is
-@code{("")}.  Given that the standard value of
-@code{jka-compr-load-suffixes} is @code{(".gz")}, the standard value
-of @code{load-file-rep-suffixes} if Auto Compression mode is enabled
-is @code{("" ".gz")}.
+Включение режима автоматического сжатия добавляет суффиксы в
+@code{jka-compr-load-suffixes} к этому списку, а отключение режима
+автоматического сжатия удаляет их снова.  Стандартное значение
+@code{load-file-rep-suffixes}, если режим автоматического сжатия отключен,
+тогда @code{("")}.  Учитывая, что стандартное значение
+@code{jka-compr-load-suffixes} - @code{(".gz")}, стандартное значение
+@code{load-file-rep-suffixes}, если включен режим Auto Compression, -
+@code{("" ".gz")}.
 @end defvar
 
 @defun get-load-suffixes
-This function returns the list of all suffixes that @code{load} should
-try, in order, when its @var{must-suffix} argument is non-@code{nil}.
-This takes both @code{load-suffixes} and @code{load-file-rep-suffixes}
-into account.  If @code{load-suffixes}, @code{jka-compr-load-suffixes}
-and @code{load-file-rep-suffixes} all have their standard values, this
-function returns @code{(".elc" ".elc.gz" ".el" ".el.gz")} if Auto
-Compression mode is enabled and @code{(".elc" ".el")} if Auto
-Compression mode is disabled.
+Эта функция возвращает список всех суффиксов, которые @code{load} должен
+попробовать, по порядку, если его аргумент @var{must-suffix} -
+не-@code{nil}.  При этом учитываются оба @code{load-suffixes} и
+@code{load-file-rep-suffixes}.  Если @code{load-suffixes},
+@code{jka-compr-load-suffixes} и @code{load-file-rep-suffixes} имеют свои
+стандартные значения, эта функция возвращает
+@code{(".elc" ".elc.gz" ".el" ".el.gz")}, если включен режим автоматического
+сжатия, и @code{(".elc" ".el")}, если режим автоматического сжатия отключен.
 @end defun
 
-To summarize, @code{load} normally first tries the suffixes in the
-value of @code{(get-load-suffixes)} and then those in
-@code{load-file-rep-suffixes}.  If @var{nosuffix} is non-@code{nil},
-it skips the former group, and if @var{must-suffix} is non-@code{nil},
-it skips the latter group.
+Подводя итог, @code{load} обычно сначала пробует суффиксы в значении
+@code{(get-load-suffixes)}, а затем в @code{load-file-rep-suffixes}.  Если
+@var{nosuffix} равен не-@code{nil}, он пропускает первую группу, а если
+@var{must-suffix} равен не-@code{nil}, он пропускает последнюю группу.
 
 @defopt load-prefer-newer
-If this option is non-@code{nil}, then rather than stopping at the
-first suffix that exists, @code{load} tests them all, and uses
-whichever file is the newest.
+Если эта опция - не-@code{nil}, то вместо того, чтобы останавливаться на
+первом существующем суффиксе, @code{load} проверяет их все и использует
+самый новый файл.
 @end defopt
 
 @node Library Search
-@section Library Search
+@section Поиск Библиотек
 @cindex library search
 @cindex find library
 
-  When Emacs loads a Lisp library, it searches for the library
-in a list of directories specified by the variable @code{load-path}.
+  Когда Emacs загружает библиотеку Lisp, он ищет библиотеку в списке
+каталогов, заданном переменной @code{load-path}..
 
 @defvar load-path
-The value of this variable is a list of directories to search when
-loading files with @code{load}.  Each element is a string (which must be
-a directory) or @code{nil} (which stands for the current working
-directory).
+Значение этой переменной представляет собой список каталогов для поиска
+при загрузке файлов с @code{load}.  Каждый элемент представляет собой строку
+(которая должна быть каталогом) или @code{nil} (что означает текущий рабочий
+каталог).
 @end defvar
 
-  When Emacs starts up, it sets up the value of @code{load-path}
-in several steps.  First, it initializes @code{load-path} using
-default locations set when Emacs was compiled.  Normally, this
-is a directory something like
+  Когда Emacs запускается, он устанавливает значение @code{load-path} за
+несколько шагов.  Во-первых, он инициализирует @code{load-path}, используя
+расположение по умолчанию, установленное при компиляции Emacs.  Обычно это
+каталог на подобии
 
 @example
 "/usr/local/share/emacs/@var{version}/lisp"
 @end example
 
-(In this and the following examples, replace @file{/usr/local} with
-the installation prefix appropriate for your Emacs.)
-These directories contain the standard Lisp files that come with
-Emacs.  If Emacs cannot find them, it will not start correctly.
+(В этом и следующих примерах замените @file{/usr/local} на префикс
+установки, соответствующий вашему Emacs).  Эти каталоги содержат стандартные
+файлы Lisp, которые поставляются с Emacs.  Если Emacs не может их найти, он
+не запустится правильно.
 
-If you run Emacs from the directory where it was built---that is, an
-executable that has not been formally installed---Emacs instead
-initializes @code{load-path} using the @file{lisp}
-directory in the directory containing the sources from which it
-was built.
-@c Though there should be no *.el files in builddir/lisp, so it's pointless.
-If you built Emacs in a separate directory from the
-sources, it also adds the lisp directories from the build directory.
-(In all cases, elements are represented as absolute file names.)
+Если запускается Emacs из каталога, в котором он был собран, то есть
+исполняемого файла, который не был официально установлен, Emacs вместо этого
+инициализирует @code{load-path}, используя каталог @file{lisp} в каталоге,
+содержащем исходные коды, из которых он был построен.
+@c Хотя в builddir/lisp файлов *.el быть не должно, это бессмысленно.
+Если Emacs построен в каталоге, отличном от исходного, он также добавляет
+каталоги lisp из каталога сборки.  (Во всех случаях элементы представлены
+как абсолютные имена файлов.)
 
 @cindex site-lisp directories
-Unless you start Emacs with the @option{--no-site-lisp} option,
-it then adds two more @file{site-lisp} directories to the front of
-@code{load-path}.  These are intended for locally installed Lisp files,
-and are normally of the form:
+Если запускается Emacs с опцией @option{--no-site-lisp}, он добавит еще два
+каталога @file{site-lisp} в начало @code{load-path}.  Они предназначены для
+локально установленных файлов Lisp и обычно имеют вид:
 
 @example
 "/usr/local/share/emacs/@var{version}/site-lisp"
@@ -326,108 +318,104 @@ and
 @end example
 
 @noindent
-The first one is for locally installed files for a specific Emacs
-version; the second is for locally installed files meant for use
-with all installed Emacs versions.  (If Emacs is running uninstalled,
-it also adds @file{site-lisp} directories from the source and build
-directories, if they exist.  Normally these directories do not contain
-@file{site-lisp} directories.)
+Первый предназначен для локально установленных файлов конкретной версии
+Emacs; второй - для локально установленных файлов, предназначенных для
+использования со всеми установленными версиями Emacs.  (Если Emacs запущен
+без установки, он также добавляет каталоги @file{site-lisp} из исходных
+каталогов и каталогов сборки, если они существуют.  Обычно эти каталоги не
+содержат каталогов @file{site-lisp}).
 
 @cindex @env{EMACSLOADPATH} environment variable
-If the environment variable @env{EMACSLOADPATH} is set, it modifies
-the above initialization procedure.  Emacs initializes
-@code{load-path} based on the value of the environment variable.
+Если установлена переменная окружения @env{EMACSLOADPATH}, она изменяет
+описанную выше процедуру инициализации.  Emacs инициализирует
+@code{load-path} на основе значения переменной окружения.
 
-The syntax of @env{EMACSLOADPATH} is the same as used for @code{PATH};
-directories are separated by @samp{:} (or @samp{;}, on some
-operating systems).
+Синтаксис @env{EMACSLOADPATH} такой же, как и у @code{PATH}; каталоги
+разделяются @samp{:} (или @samp{;} в некоторых операционных системах).
 @ignore
-@c AFAICS, does not (yet) work right to specify non-absolute elements.
-and @samp{.} stands for the current default directory.
+@c AFAICS, (пока) не работает правильно для указания неабсолютных элементов.
+А @samp{.} обозначает текущий каталог по умолчанию.
 @end ignore
-Here is an example of how to set @env{EMACSLOADPATH} variable (from a
-@command{sh}-style shell):
+Вот пример того, как установить переменную @env{EMACSLOADPATH} (из оболочки
+в стиле @command{sh}):
 
 @example
 export EMACSLOADPATH=/home/foo/.emacs.d/lisp:
 @end example
 
-An empty element in the value of the environment variable, whether
-trailing (as in the above example), leading, or embedded, is replaced
-by the default value of @code{load-path} as determined by the standard
-initialization procedure.  If there are no such empty elements, then
-@env{EMACSLOADPATH} specifies the entire @code{load-path}.  You must
-include either an empty element, or the explicit path to the directory
-containing the standard Lisp files, else Emacs will not function.
-(Another way to modify @code{load-path} is to use the @option{-L}
-command-line option when starting Emacs; see below.)
+Пустой элемент в значении переменной среды, конечный (как в приведенном выше
+примере), ведущий или встроенный, заменяется значением по умолчанию
+@code{load-path}, как определено стандартной процедурой инициализации.  Если
+таких пустых элементов нет, то @env{EMACSLOADPATH} указывает весь
+@code{load-path}.  Потребуется включить либо пустой элемент, либо явный путь
+к каталогу, содержащему стандартные файлы Lisp, иначе Emacs не будет
+работать.  (Другой способ изменить @code{load-path} - использовать параметр
+командной строки @option{-L} при запуске Emacs; смотреть Ниже).
 
-  For each directory in @code{load-path}, Emacs then checks to see if
-it contains a file @file{subdirs.el}, and if so, loads it.  The
-@file{subdirs.el} file is created when Emacs is built/installed,
-and contains code that causes Emacs to add any subdirectories of those
-directories to @code{load-path}.  Both immediate subdirectories and
-subdirectories multiple levels down are added.  But it excludes
-subdirectories whose names do not start with a letter or digit, and
-subdirectories named @file{RCS} or @file{CVS}, and subdirectories
-containing a file named @file{.nosearch}.
+  Для каждого каталога в @code{load-path} Emacs затем проверяет, содержит
+ли он файл @file{subdirs.el}, и, если да, загружает его.  Файл
+@file{subdirs.el} создается при сборке/установке Emacs и содержит код,
+который заставляет Emacs добавлять любые подкаталоги этих каталогов в
+@code{load-path}.  Добавляются как непосредственные подкаталоги, так и
+подкаталоги на несколько уровней ниже.  Но он исключает подкаталоги, имена
+которых не начинаются с буквы или цифры, подкаталоги с именем @file{RCS} или
+@file{CVS} и подкаталоги, содержащие файл с именем @file{.nosearch}.
 
-  Next, Emacs adds any extra load directories that you specify using the
-@option{-L} command-line option (@pxref{Action Arguments,,,emacs, The
-GNU Emacs Manual}).  It also adds the directories where optional
-packages are installed, if any (@pxref{Packaging Basics}).
+  Затем Emacs добавляет любые дополнительные каталоги загрузки, которые
+указываются с помощью параметра командной строки @option{-L}
+(@pxref{Action Arguments,,,emacs, The GNU Emacs Manual}).  Также добавляются
+каталоги, в которых установлены дополнительные пакеты, если таковые имеются
+(@pxref{Packaging Basics}).
 
-  It is common to add code to one's init file (@pxref{Init File}) to
-add one or more directories to @code{load-path}.  For example:
+  Обычно в файл инициализации (@pxref{Init File}) добавляют код, чтобы
+добавить один или несколько каталогов в @code{load-path}. Например:
 
 @example
 (push "~/.emacs.d/lisp" load-path)
 @end example
 
-  Dumping Emacs uses a special value of @code{load-path}.  If you use
-a @file{site-load.el} or @file{site-init.el} file to customize the
-dumped Emacs (@pxref{Building Emacs}), any changes to @code{load-path}
-that these files make will be lost after dumping.
+  При выгрузке Emacs использует специальное значение @code{load-path}.  Если
+используется файл @file{site-load.el} или @file{site-init.el} для настройки
+дампа Emacs (@pxref{Building Emacs}), любые изменения в @code{load-path},
+сделанные этими файлами, будут потеряны после сброса.
 
 @deffn Command locate-library library &optional nosuffix path interactive-call
-This command finds the precise file name for library @var{library}.  It
-searches for the library in the same way @code{load} does, and the
-argument @var{nosuffix} has the same meaning as in @code{load}: don't
-add suffixes @samp{.elc} or @samp{.el} to the specified name
-@var{library}.
+Эта команда находит точное имя файла для библиотеки @var{library}.  Ищет
+библиотеку так же, как @code{load}, а аргумент @var{nosuffix} имеет то же
+значение, что и в @code{load}: не добавляйте суффиксы @samp{.elc} или
+@samp{.el} к указанному имени @var{library}.
 
-If the @var{path} is non-@code{nil}, that list of directories is used
-instead of @code{load-path}.
+Если @var{path} - не-@code{nil}, этот список каталогов используется вместо
+@code{load-path}..
 
-When @code{locate-library} is called from a program, it returns the file
-name as a string.  When the user runs @code{locate-library}
-interactively, the argument @var{interactive-call} is @code{t}, and this
-tells @code{locate-library} to display the file name in the echo area.
+Когда @code{locate-library} вызывается из программы, возвращает имя файла в
+виде строки.  Когда пользователь запускает @code{locate-library} в
+интерактивном режиме, аргумент @var{interactive-call} равен @code{t}, и это
+указывает @code{locate-library} отображать имя файла в эхо-области.
 @end deffn
 
 @cindex shadowed Lisp files
 @deffn Command list-load-path-shadows &optional stringp
-This command shows a list of @dfn{shadowed} Emacs Lisp files.  A
-shadowed file is one that will not normally be loaded, despite being
-in a directory on @code{load-path}, due to the existence of another
-similarly-named file in a directory earlier on @code{load-path}.
+Эта команда показывает список файлов @dfn{shadowed} Emacs Lisp.  Теневой
+файл - это файл, который обычно не загружается, несмотря на то, что он
+находится в каталоге @code{load-path}, из-за наличия ранее другого файла с
+аналогичным именем в каталоге @code{load-path}.
 
-For instance, suppose @code{load-path} is set to
+Например, предположим, что для @code{load-path} установлено значение
 
 @example
   ("/opt/emacs/site-lisp" "/usr/share/emacs/23.3/lisp")
 @end example
 
 @noindent
-and that both these directories contain a file named @file{foo.el}.
-Then @code{(require 'foo)} never loads the file in the second
-directory.  Such a situation might indicate a problem in the way Emacs
-was installed.
+и что оба этих каталога содержат файл с именем @file{foo.el}.  Тогда
+@code{(require 'foo)} никогда не загружает файл во второй каталог.  Такая
+ситуация может указывать на проблему в способе установки Emacs.
 
-When called from Lisp, this function prints a message listing the
-shadowed files, instead of displaying them in a buffer.  If the
-optional argument @code{stringp} is non-@code{nil}, it instead returns
-the shadowed files as a string.
+При вызове из Lisp эта функция печатает сообщение со списком затененных
+файлов, а не отображает их в буфере.  Если необязательный аргумент
+@code{stringp} - не-@code{nil}, она вместо этого возвращает затененные файлы
+в виде строки.
 @end deffn
 
 @node Loading Non-ASCII
