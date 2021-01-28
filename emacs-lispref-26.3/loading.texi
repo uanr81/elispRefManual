@@ -419,110 +419,109 @@ export EMACSLOADPATH=/home/foo/.emacs.d/lisp:
 @end deffn
 
 @node Loading Non-ASCII
-@section Loading Non-@acronym{ASCII} Characters
+@section Загрузка Не-@acronym{ASCII} Символов
 @cindex loading, and non-ASCII characters
 @cindex non-ASCII characters in loaded files
 
-  When Emacs Lisp programs contain string constants with non-@acronym{ASCII}
-characters, these can be represented within Emacs either as unibyte
-strings or as multibyte strings (@pxref{Text Representations}).  Which
-representation is used depends on how the file is read into Emacs.  If
-it is read with decoding into multibyte representation, the text of the
-Lisp program will be multibyte text, and its string constants will be
-multibyte strings.  If a file containing Latin-1 characters (for
-example) is read without decoding, the text of the program will be
-unibyte text, and its string constants will be unibyte strings.
+  Когда программы Emacs Lisp содержат строковые константы с символами
+не-@acronym{ASCII}, они могут быть представлены в Emacs либо как
+однобайтовые строки, либо как многобайтовые строки
+(@pxref{Text Representations}).  Какое представление используется, зависит
+от того, как файл читается в Emacs.  Если читается с декодированием в
+многобайтовое представление, текст программы Lisp будет многобайтовым, а ее
+строковые константы - многобайтовыми строками.  Если файл, содержащий
+символы Latin-1 (например), читается без декодирования, текст программы
+будет однобайтовым, а его строковые константы будут однобайтными строками.
 @xref{Coding Systems}.
 
-  In most Emacs Lisp programs, the fact that non-@acronym{ASCII}
-strings are multibyte strings should not be noticeable, since
-inserting them in unibyte buffers converts them to unibyte
-automatically.  However, if this does make a difference, you can force
-a particular Lisp file to be interpreted as unibyte by writing
-@samp{coding: raw-text} in a local variables section.  With
-that designator, the file will unconditionally be interpreted as
-unibyte.  This can matter when making keybindings to
-non-@acronym{ASCII} characters written as @code{?v@var{literal}}.
+  В большинстве программ Emacs Lisp тот факт, что строки не-@acronym{ASCII}
+являются многобайтовыми, не должен быть заметен, поскольку их вставка в
+однобайтовые буферы автоматически конвертирует их в однобайтовые.  Однако,
+если это действительно имеет значение, можно заставить определенный файл
+Lisp интерпретироваться как unibyte, написав @samp{coding: raw-text} в
+разделе локальных переменных.  С этим обозначением файл безоговорочно будет
+интерпретироваться как однобайтный.  Это может иметь значение при привязке
+ключей к символам не-@acronym{ASCII}, записанным как @code{?v@var{literal}}.
 
 @node Autoload
-@section Autoload
+@section Автозагрузка
 @cindex autoload
 
-  The @dfn{autoload} facility lets you register the existence of a
-function or macro, but put off loading the file that defines it.  The
-first call to the function automatically loads the proper library, in
-order to install the real definition and other associated code, then
-runs the real definition as if it had been loaded all along.
-Autoloading can also be triggered by looking up the documentation of
-the function or macro (@pxref{Documentation Basics}), and completion
-of variable and function names (@pxref{Autoload by Prefix} below).
+  Средство @dfn{autoload} позволяет вам регистрировать существование функции
+или макроса, но откладывать загрузку файла, которая их определяет.  Первый
+вызов функции автоматически загружает соответствующую библиотеку, чтобы
+установить реальное определение и другой связанный код, а затем запускает
+реальное определение, как если бы оно было загружено все время.
+Автозагрузку также можно запустить, просмотрев документацию функции или
+макроса (@pxref{Documentation Basics}) и завершив имена переменных и функций
+(@pxref{Autoload by Prefix} ниже).
 
 @menu
-* Autoload by Prefix:: Autoload by Prefix.
-* When to Autoload::   When to Use Autoload.
+* Autoload by Prefix:: Автозагрузка по префиксу.
+* When to Autoload::   Когда использовать автозагрузку.
 @end menu
 
-  There are two ways to set up an autoloaded function: by calling
-@code{autoload}, and by writing a ``magic'' comment in the
-source before the real definition.  @code{autoload} is the low-level
-primitive for autoloading; any Lisp program can call @code{autoload} at
-any time.  Magic comments are the most convenient way to make a function
-autoload, for packages installed along with Emacs.  These comments do
-nothing on their own, but they serve as a guide for the command
-@code{update-file-autoloads}, which constructs calls to @code{autoload}
-and arranges to execute them when Emacs is built.
+  Есть два способа настроить автоматически загружаемую функцию: вызвать
+@code{autoload} и записать комментарий ``magic'' в исходный код перед
+настоящим определением.  @code{autoload} - низкоуровневый примитив для
+автозагрузки; любая программа Lisp может вызвать @code{autoload} в любое
+время.  Специальный комментарий - самый удобный способ сделать функцию
+автозагрузки для пакетов, установленных вместе с Emacs.  Эти комментарии
+ничего не делают сами по себе, но они служат руководством для команды
+@code{update-file-autoloads}, которая создает вызовы @code{autoload} и
+организует их выполнение при сборке Emacs.
 
 @defun autoload function filename &optional docstring interactive type
-This function defines the function (or macro) named @var{function} so as
-to load automatically from @var{filename}.  The string @var{filename}
-specifies the file to load to get the real definition of @var{function}.
+Эта функция определяет функцию (или макрос) с именем @var{function} для
+автоматической загрузки из @var{filename}.  Строка @var{filename} указывает
+файл для загрузки, чтобы получить реальное определение @var{function}.
 
-If @var{filename} does not contain either a directory name, or the
-suffix @code{.el} or @code{.elc}, this function insists on adding one
-of these suffixes, and it will not load from a file whose name is just
-@var{filename} with no added suffix.  (The variable
-@code{load-suffixes} specifies the exact required suffixes.)
+Если @var{filename} не содержит ни имени каталога, ни суффикса @code{.el}
+или @code{.elc}, эта функция настаивает на добавлении одного из этих
+суффиксов, и она не будет загружаться из файла с именем @var{filename} без
+добавленного суффикса.  (Переменная @code{load-suffixes} указывает точные
+требуемые суффиксы.)
 
-The argument @var{docstring} is the documentation string for the
-function.  Specifying the documentation string in the call to
-@code{autoload} makes it possible to look at the documentation without
-loading the function's real definition.  Normally, this should be
-identical to the documentation string in the function definition
-itself.  If it isn't, the function definition's documentation string
-takes effect when it is loaded.
+Аргумент @var{docstring} - это строка документации для функции.  Указание
+строки документации при вызове @code{autoload} позволяет просматривать
+документацию без загрузки реального определения функции.  Обычно это должно
+быть идентично строке документации в самом определении функции.  Если это не
+так, строка документации определения функции вступает в силу после ее
+загрузки.
 
-If @var{interactive} is non-@code{nil}, that says @var{function} can be
-called interactively.  This lets completion in @kbd{M-x} work without
-loading @var{function}'s real definition.  The complete interactive
-specification is not given here; it's not needed unless the user
-actually calls @var{function}, and when that happens, it's time to load
-the real definition.
+Если @var{interactive} равен не-@code{nil}, значит, @var{function} можно
+вызывать интерактивно.  Это позволяет завершению в @kbd{M-x} работать без
+загрузки реального определения @var{function}'s.  Полная интерактивная
+спецификация здесь не приводится; в этом нет необходимости, если
+пользователь не вызывает @var{function}, и когда это произойдет, пора
+загрузить настоящее определение.
 
-You can autoload macros and keymaps as well as ordinary functions.
-Specify @var{type} as @code{macro} if @var{function} is really a macro.
-Specify @var{type} as @code{keymap} if @var{function} is really a
-keymap.  Various parts of Emacs need to know this information without
-loading the real definition.
+Можно автоматически загружать макросы и ключевые карты, а также обычные
+функции.  Укажите @var{type} как @code{macro}, если @var{function}
+действительно макрос.  Укажите @var{type} как @code{keymap}, если
+@var{function} действительно является картой.  Эту информацию необходимо
+знать различным частям Emacs без загрузки реального определения.
 
-An autoloaded keymap loads automatically during key lookup when a prefix
-key's binding is the symbol @var{function}.  Autoloading does not occur
-for other kinds of access to the keymap.  In particular, it does not
-happen when a Lisp program gets the keymap from the value of a variable
-and calls @code{define-key}; not even if the variable name is the same
-symbol @var{function}.
+Автоматически загруженная ключевая карта загружается автоматически во время
+поиска ключа, когда привязкой префиксного ключа является символ
+@var{function}.  Автозагрузки не происходит для других видов доступа к
+ключевой карте.  В частности, этого не происходит, когда программа на Lisp
+получает карту ключей из значения переменной и не вызывает
+@code{define-key}, даже если имя переменной совпадает с символом
+@var{function}.
 
 @cindex function cell in autoload
-If @var{function} already has a non-void function definition that is not
-an autoload object, this function does nothing and returns @code{nil}.
-Otherwise, it constructs an autoload object (@pxref{Autoload Type}),
-and stores it as the function definition for @var{function}.  The
-autoload object has this form:
+Если @var{function} уже имеет непустое определение функции, которое не
+является объектом автозагрузки, эта функция ничего не делает и возвращает
+@code{nil}.  В противном случае создается объект автозагрузки
+(@pxref{Autoload Type}) и сохраняется определение функции для
+@var{function}.  Объект автозагрузки имеет такую форму:
 
 @example
 (autoload @var{filename} @var{docstring} @var{interactive} @var{type})
 @end example
 
-For example,
+Для примера,
 
 @example
 @group
@@ -532,17 +531,16 @@ For example,
 @end example
 
 @noindent
-In this case, @code{"prolog"} is the name of the file to load, 169681
-refers to the documentation string in the
-@file{emacs/etc/DOC} file (@pxref{Documentation Basics}),
-@code{t} means the function is interactive, and @code{nil} that it is
-not a macro or a keymap.
+В этом случае @code{"prolog"} - это имя файла для загрузки, 169681 относится
+к строке документации в файле @file{emacs/etc/DOC}
+(@pxref{Documentation Basics}), @code{t} означает, что функция является
+интерактивной, а @code{nil} - что это не макрос или ключевая карта.
 @end defun
 
 @defun autoloadp object
-This function returns non-@code{nil} if @var{object} is an autoload
-object.  For example, to check if @code{run-prolog} is defined as an
-autoloaded function, evaluate
+Эта функция возвращает не-@code{nil}, если @var{object} является объектом
+автозагрузки.  Например, чтобы проверить, определен ли @code{run-prolog} как
+автоматически загружаемая функция, оцените
 
 @smallexample
 (autoloadp (symbol-function 'run-prolog))
@@ -550,49 +548,49 @@ autoloaded function, evaluate
 @end defun
 
 @cindex autoload errors
-  The autoloaded file usually contains other definitions and may require
-or provide one or more features.  If the file is not completely loaded
-(due to an error in the evaluation of its contents), any function
-definitions or @code{provide} calls that occurred during the load are
-undone.  This is to ensure that the next attempt to call any function
-autoloading from this file will try again to load the file.  If not for
-this, then some of the functions in the file might be defined by the
-aborted load, but fail to work properly for the lack of certain
-subroutines not loaded successfully because they come later in the file.
+  Автозагружаемый файл обычно содержит другие определения и может требовать
+или предоставлять одну или несколько функций.  Если файл загружен не
+полностью (из-за ошибки при оценке его содержимого), любые определения
+функций или вызовы @code{provide}, которые произошли во время загрузки,
+отменяются.  Это необходимо для того, чтобы при следующей попытке вызвать
+какую-либо функцию автозагрузки из этого файла мы снова попытаемся загрузить
+файл.  Если бы не это, то некоторые функции в файле могли бы быть
+определены прерванной загрузкой, но не могли работать должным образом из-за
+отсутствия определенных подпрограмм, которые не были загружены успешно,
+потому что они появляются позже в файле.
 
-  If the autoloaded file fails to define the desired Lisp function or
-macro, then an error is signaled with data @code{"Autoloading failed to
-define function @var{function-name}"}.
+  Если автоматически загружаемый файл не может определить желаемую функцию
+или макрос Lisp, то об ошибке сообщается с данными.
+@code{"Autoloading failed to define function @var{function-name}"}.
 
 @findex update-file-autoloads
 @findex update-directory-autoloads
 @cindex magic autoload comment
 @cindex autoload cookie
 @anchor{autoload cookie}
-  A magic autoload comment (often called an @dfn{autoload cookie})
-consists of @samp{;;;###autoload}, on a line by itself,
-just before the real definition of the function in its
-autoloadable source file.  The command @kbd{M-x update-file-autoloads}
-writes a corresponding @code{autoload} call into @file{loaddefs.el}.
-(The string that serves as the autoload cookie and the name of the
-file generated by @code{update-file-autoloads} can be changed from the
-above defaults, see below.)
-Building Emacs loads @file{loaddefs.el} and thus calls @code{autoload}.
-@kbd{M-x update-directory-autoloads} is even more powerful; it updates
-autoloads for all files in the current directory.
+  Специальный комментарий автозагрузки (часто называемый
+@dfn{autoload cookie}) состоит из @samp{;;;###autoload} в отдельной строке
+непосредственно перед настоящим определением функции в ее автоматически
+загружаемом исходном файле.  Команда @kbd{M-x update-file-autoloads}
+записывает соответствующий вызов @code{autoload} в @file{loaddefs.el}.
+(Строка, которая служит файлом cookie автозагрузки, и имя файла,
+сгенерированного @code{update-file-autoloads}, могут быть изменены по
+сравнению с указанными выше значениями по умолчанию, смотреть ниже).  Сборка
+Emacs загружает @file{loaddefs.el} и, следовательно, вызывает
+@code{autoload}.  @kbd{M-x update-directory-autoloads} еще мощнее; это
+обновляет автозагрузку для всех файлов в текущем каталоге.
 
-  The same magic comment can copy any kind of form into
-@file{loaddefs.el}.  The form following the magic comment is copied
-verbatim, @emph{except} if it is one of the forms which the autoload
-facility handles specially (e.g., by conversion into an
-@code{autoload} call).  The forms which are not copied verbatim are
-the following:
+  Тот же специальный комментарий может копировать любую форму в
+@file{loaddefs.el}.  Форма, следующая за специальным комментарием,
+копируется дословно, @emph{except}, если это одна из форм, которые средство
+автозагрузки обрабатывает специально (например, путем преобразования в
+вызов @code{autoload}).  Формы, которые не копируются дословно::
 
 @table @asis
 @item Definitions for function or function-like objects:
-@code{defun} and @code{defmacro}; also @code{cl-defun} and
+@code{defun} и @code{defmacro}; также @code{cl-defun} и
 @code{cl-defmacro} (@pxref{Argument Lists,,,cl,Common Lisp Extensions}),
-and @code{define-overloadable-function} (see the commentary in
+и @code{define-overloadable-function} (см. комментарий в
 @file{mode-local.el}).
 
 @item Definitions for major or minor modes:
@@ -608,15 +606,15 @@ and @code{define-global-minor-mode}.
 (@pxref{Top,Autotyping,,autotype,Autotyping}).
 @end table
 
-  You can also use a magic comment to execute a form at build time
-@emph{without} executing it when the file itself is loaded.  To do this,
-write the form @emph{on the same line} as the magic comment.  Since it
-is in a comment, it does nothing when you load the source file; but
-@kbd{M-x update-file-autoloads} copies it to @file{loaddefs.el}, where
-it is executed while building Emacs.
+  Также можно использовать специальный комментарий для выполнения формы во
+время сборки @emph{без}, выполняя ее при загрузке самого файла.  Для
+этого напишите форму @emph{на той же строке} как специальный коментарий.
+Поскольку он находится в комментарии, он ничего не делает при загрузке
+исходного файла; но @kbd{M-x update-file-autoloads} копирует его в
+@file{loaddefs.el}, где он выполняется при сборке Emacs.
 
-  The following example shows how @code{doctor} is prepared for
-autoloading with a magic comment:
+  В следующем примере показано, как @code{doctor} готовится к автозагрузке
+со специальным комментарием.:
 
 @example
 ;;;###autoload
@@ -628,7 +626,7 @@ autoloading with a magic comment:
 @end example
 
 @noindent
-Here's what that produces in @file{loaddefs.el}:
+Вот что это дает в @file{loaddefs.el}:
 
 @example
 (autoload (quote doctor) "doctor" "\
@@ -639,20 +637,20 @@ Switch to *doctor* buffer and start giving psychotherapy.
 
 @noindent
 @cindex @code{fn} in function's documentation string
-The backslash and newline immediately following the double-quote are a
-convention used only in the preloaded uncompiled Lisp files such as
-@file{loaddefs.el}; they tell @code{make-docfile} to put the
-documentation string in the @file{etc/DOC} file.  @xref{Building Emacs}.
-See also the commentary in @file{lib-src/make-docfile.c}.  @samp{(fn)}
-in the usage part of the documentation string is replaced with the
-function's name when the various help functions (@pxref{Help
-Functions}) display it.
+Обратная косая черта и новая строка сразу после двойных кавычек - это
+соглашение, используемое только в предварительно загруженных
+некомпилированных файлах Lisp, таких как @file{loaddefs.el}; они указывают
+@code{make-docfile} поместить строку документации в файл @file{etc/DOC}.
+@xref{Building Emacs}.  Смотреть также комментарий в
+@file{lib-src/make-docfile.c}.  @samp{(fn)} в части использования строки
+документации заменяется именем функции, когда различные функции справки
+(@pxref{Help Functions}) отображают его.
 
-  If you write a function definition with an unusual macro that is not
-one of the known and recognized function definition methods, use of an
-ordinary magic autoload comment would copy the whole definition into
-@code{loaddefs.el}.  That is not desirable.  You can put the desired
-@code{autoload} call into @code{loaddefs.el} instead by writing this:
+  Если пишется определение функции с необычным макросом, который не является
+одним из известных и признанных методов определения функции, использование
+обычного специального комментария автозагрузки скопирует все определение в
+@code{loaddefs.el}.  Это нежелательно.  Вместо этого потребуется поместить
+желаемый вызов @code{autoload} в @code{loaddefs.el}, написав так:
 
 @example
 ;;;###autoload (autoload 'foo "myfile")
@@ -660,137 +658,143 @@ ordinary magic autoload comment would copy the whole definition into
   ...)
 @end example
 
-  You can use a non-default string as the autoload cookie and have the
-corresponding autoload calls written into a file whose name is
-different from the default @file{loaddefs.el}.  Emacs provides two
-variables to control this:
+  Можно использовать строку, отличную от значения по умолчанию, в качестве
+файла cookie автозагрузки и записать соответствующие вызовы автозагрузки в
+файл, имя которого отличается от значения по умолчанию @file{loaddefs.el}.
+Emacs предоставляет две переменные для управления этим:
 
 @defvar generate-autoload-cookie
-The value of this variable should be a string whose syntax is a Lisp
-comment.  @kbd{M-x update-file-autoloads} copies the Lisp form that
-follows the cookie into the autoload file it generates.  The default
-value of this variable is @code{";;;###autoload"}.
+Значение этой переменной должно быть строкой, синтаксис которой является
+комментарием Lisp.  @kbd{M-x update-file-autoloads} копирует форму Lisp,
+которая следует за файлом cookie, в файл автозагрузки, который он
+генерирует.  Значение по умолчанию для этой переменной -
+@code{";;;###autoload"}.
 @end defvar
 
 @defvar generated-autoload-file
-The value of this variable names an Emacs Lisp file where the autoload
-calls should go.  The default value is @file{loaddefs.el}, but you can
-override that, e.g., in the local variables section of a
-@file{.el} file (@pxref{File Local Variables}).  The autoload file is
-assumed to contain a trailer starting with a formfeed character.
+Значение этой переменной именует файл Emacs Lisp, куда должны идти вызовы
+автозагрузки.  Значение по умолчанию - @file{loaddefs.el}, но можно
+переопределить это, например, в разделе локальных переменных файла
+@file{.el} (@pxref{File Local Variables}).  Предполагается, что файл
+автозагрузки содержит трейлер, начинающийся с символа перевода страницы.
 @end defvar
 
-  The following function may be used to explicitly load the library
-specified by an autoload object:
+  Следующая функция может использоваться для явной загрузки библиотеки,
+указанной объектом автозагрузки.:
 
 @defun autoload-do-load autoload &optional name macro-only
-This function performs the loading specified by @var{autoload}, which
-should be an autoload object.  The optional argument @var{name}, if
-non-@code{nil}, should be a symbol whose function value is
-@var{autoload}; in that case, the return value of this function is the
-symbol's new function value.  If the value of the optional argument
-@var{macro-only} is @code{macro}, this function avoids loading a
-function, only a macro.
+Эта функция выполняет загрузку, указанную @var{autoload}, которая должна
+быть объектом автозагрузки.  Необязательный аргумент @var{name}, если
+не-@code{nil}, должен быть символом, значение функции которого -
+@var{autoload}; в этом случае возвращаемое значение этой функции - это новое
+значение ячейки функции символа.  Если значение необязательного аргумента
+@var{macro-only} - @code{macro}, эта функция избегает загрузки функции,
+только макроса.
 @end defun
 
 @node Autoload by Prefix
-@subsection Autoload by Prefix
+@subsection Автозагрузка по Префиксу
 @cindex autoload by prefix
 
 @vindex definition-prefixes
 @findex register-definition-prefixes
 @vindex autoload-compute-prefixes
-During completion for the commands @code{describe-variable} and
-@code{describe-function}, Emacs will try to load files which may
-contain definitions matching the prefix being completed.  The variable
-@code{definition-prefixes} holds a hashtable which maps a prefix to
-the corresponding list of files to load for it.  Entries to this
-mapping are added by calls to @code{register-definition-prefixes}
-which are generated by @code{update-file-autoloads}
-(@pxref{Autoload}).  Files which don't contain any definitions worth
-loading (test files, for examples), should set
-@code{autoload-compute-prefixes} to @code{nil} as a file-local
-variable.
+Во время выполнения команд @code{describe-variable} и
+@code{describe-function} Emacs попытается загрузить файлы, которые могут
+содержать определения, соответствующие завершаемому префиксу.  Переменная
+@code{definition-prefixes} содержит хеш-таблицу, которая отображает префикс
+в соответствующий список файлов для загрузки.  Записи в это отображение
+добавляются вызовами @code{register-definition-prefixes}, которые
+генерируются @code{update-file-autoloads} (@pxref{Autoload}).  Файлы,
+которые не содержат каких-либо определений, которые стоит загружать
+(например, тестовые файлы), должны установить для
+@code{autoload-compute-prefixes} значение @code{nil} как локальную
+переменную файла.
 
 @node When to Autoload
-@subsection When to Use Autoload
+@subsection Когда Использовать Автозагрузку
 @cindex autoload, when to use
 
-Do not add an autoload comment unless it is really necessary.
-Autoloading code means it is always globally visible.  Once an item is
-autoloaded, there is no compatible way to transition back to it not
-being autoloaded (after people become accustomed to being able to use it
-without an explicit load).
+Не добавляйте комментарий автозагрузки, если это действительно необходимо.
+Код автозагрузки означает, что он всегда виден во всем мире.  После
+автозагрузки элемента не существует совместимого способа вернуться к нему
+без автозагрузки (после того, как люди привыкнут использовать его без явной
+загрузки).
 
 @itemize
 @item
-The most common items to autoload are the interactive entry points to a
-library.  For example, if @file{python.el} is a library defining a
-major-mode for editing Python code, autoload the definition of the
-@code{python-mode} function, so that people can simply use @kbd{M-x
-python-mode} to load the library.
+Наиболее распространенные элементы для автозагрузки - это интерактивные
+точки входа в библиотеку.  Например, если @file{python.el} - это библиотека,
+определяющая основной режим для редактирования кода Python, автоматически
+загрузите определение функции @code{python-mode}, чтобы люди могли просто
+использовать @kbd{M-x python-mode} для загрузки библиотеки.
 
 @item
-Variables usually don't need to be autoloaded.  An exception is if the
-variable on its own is generally useful without the whole defining
-library being loaded.  (An example of this might be something like
+Переменные обычно не нужно загружать автоматически.  Исключение составляют
+случаи, когда переменная сама по себе обычно полезна без загрузки всей
+определяющей библиотеки.  (Примером может быть что-то вроде
 @code{find-exec-terminator}.)
 
 @item
-Don't autoload a user option just so that a user can set it.
+Не загружайте пользовательский параметр автоматически только для того,
+чтобы пользователь мог его установить.
 
 @item
-Never add an autoload @emph{comment} to silence a compiler warning in
-another file.  In the file that produces the warning, use
-@code{(defvar foo)} to silence an undefined variable warning, and
-@code{declare-function} (@pxref{Declaring Functions}) to silence an
-undefined function warning; or require the relevant library; or use an
-explicit autoload @emph{statement}.
+Никогда не добавляйте @emph{комментарий} автозагрузки, чтобы отключить
+предупреждение компилятора в другом файле.  В файле, который генерирует
+предупреждение, используйте @code{(defvar foo)}, чтобы отключить
+предупреждение о неопределенной переменной, и @code{declare-function}
+(@pxref{Declaring Functions}), чтобы отключить предупреждение о
+неопределенной функции; или потребовать соответствующую библиотеку; или
+используйте явное @emph{заявление} автозагрузки.
 @end itemize
 
 @node Repeated Loading
-@section Repeated Loading
+@section Повторная Загрузка
 @cindex repeated loading
 
-  You can load a given file more than once in an Emacs session.  For
-example, after you have rewritten and reinstalled a function definition
-by editing it in a buffer, you may wish to return to the original
-version; you can do this by reloading the file it came from.
+  Можно загрузить данный файл более одного раза за сеанс Emacs.  Например,
+после того, как переписано и переустановлено определение функции,
+отредактированое в буфере, можно захотеть вернуться к исходной версии; можно
+сделать это, перезагрузив файл, из которого он был получен.
 
-  When you load or reload files, bear in mind that the @code{load} and
-@code{load-library} functions automatically load a byte-compiled file
-rather than a non-compiled file of similar name.  If you rewrite a file
-that you intend to save and reinstall, you need to byte-compile the new
-version; otherwise Emacs will load the older, byte-compiled file instead
-of your newer, non-compiled file!  If that happens, the message
-displayed when loading the file includes, @samp{(compiled; note, source is
-newer)}, to remind you to recompile it.
+  При загрузке или перезагрузке файлов имейте в виду, что функции
+@code{load} и @code{load-library} автоматически загружают скомпилированный
+в байтах файл, а не некомпилированный файл с аналогичным именем.  Если
+переписать файл, который собираетесь сохранить и переустановить, необходимо
+выполнить байтовую компиляцию новой версии; в противном случае Emacs
+загрузит старый, байт скомпилированный файл вместо вашего нового, не
+скомпилированного файла!  Если это произойдет, сообщение, отображаемое при
+загрузке файла, включает
+@samp{(составлен; обратите внимание, источник новее)}, чтобы напомнить о
+необходимости его перекомпиляции.
 
-  When writing the forms in a Lisp library file, keep in mind that the
-file might be loaded more than once.  For example, think about whether
-each variable should be reinitialized when you reload the library;
-@code{defvar} does not change the value if the variable is already
-initialized.  (@xref{Defining Variables}.)
+  При написании форм в файле библиотеки Lisp помните, что файл может
+загружаться более одного раза.  Например, подумайте, следует ли
+переинициализировать каждую переменную при перезагрузке библиотеки;
+@code{defvar} не изменяет значение, если переменная уже инициализирована.
+(@xref{Defining Variables}.)
 
-  The simplest way to add an element to an alist is like this:
+  Самый простой способ добавить элемент в список выглядит так:
 
 @example
 (push '(leif-mode " Leif") minor-mode-alist)
 @end example
 
 @noindent
-But this would add multiple elements if the library is reloaded.  To
-avoid the problem, use @code{add-to-list} (@pxref{List Variables}):
+Но это добавит несколько элементов, если библиотека будет перезагружена.
+Чтобы избежать проблемы, используйте @code{add-to-list}
+(@pxref{List Variables}):
 
 @example
 (add-to-list 'minor-mode-alist '(leif-mode " Leif"))
 @end example
 
-  Occasionally you will want to test explicitly whether a library has
-already been loaded.  If the library uses @code{provide} to provide a
-named feature, you can use @code{featurep} earlier in the file to test
-whether the @code{provide} call has been executed before (@pxref{Named
-Features}).  Alternatively, you could use something like this:
+  Иногда может понадобиться явно проверить, загружена ли уже библиотека.
+Если библиотека использует @code{provide} для предоставления именованной
+функции, можно использовать @code{featurep} ранее в файле, чтобы проверить,
+выполнялся ли вызов @code{provide} раньше (@pxref{Named Features}).  В
+качестве альтернативы можно использовать что-то вроде этого:
 
 @example
 (defvar foo-was-loaded nil)
@@ -803,33 +807,33 @@ Features}).  Alternatively, you could use something like this:
 @noindent
 
 @node Named Features
-@section Features
+@section Особенности
 @cindex features
 @cindex requiring features
 @cindex providing features
 
-  @code{provide} and @code{require} are an alternative to
-@code{autoload} for loading files automatically.  They work in terms of
-named @dfn{features}.  Autoloading is triggered by calling a specific
-function, but a feature is loaded the first time another program asks
-for it by name.
+  @code{provide} и @code{require} - это альтернативы @code{autoload} для
+автоматической загрузки файлов.  Они работают в рамках названного
+@dfn{features}.  Автозагрузка запускается при вызове определенной функции,
+но функция загружается в первый раз, когда другая программа запрашивает ее
+по имени.
 
-  A feature name is a symbol that stands for a collection of functions,
-variables, etc.  The file that defines them should @dfn{provide} the
-feature.  Another program that uses them may ensure they are defined by
-@dfn{requiring} the feature.  This loads the file of definitions if it
-hasn't been loaded already.
+  Имя функции - это символ, обозначающий набор функций, переменных и т. д.
+Файл, определяющий их, должен содержать объект.  Другая программа, которая
+их использует, может гарантировать, что они определены функцией
+@dfn{requiring}.  Это загружает файл определений, если он еще не был
+загружен.
 
 @cindex load error with require
-  To require the presence of a feature, call @code{require} with the
-feature name as argument.  @code{require} looks in the global variable
-@code{features} to see whether the desired feature has been provided
-already.  If not, it loads the feature from the appropriate file.  This
-file should call @code{provide} at the top level to add the feature to
-@code{features}; if it fails to do so, @code{require} signals an error.
+  Чтобы потребовать наличия функции, вызовите @code{require} с именем
+функции в качестве аргумента.  @code{require} просматривает глобальную переменную @code{features}, чтобы узнать, была ли уже предоставлена желаемая
+функция.  Если нет, загружает функцию из соответствующего файла.  Этот файл
+должен вызывать @code{provide} на верхнем уровне, чтобы добавить функцию в
+@code{features}; если этого не происходит, @code{require} сигнализирует об
+ошибке.
 
-  For example, in @file{idlwave.el}, the definition for
-@code{idlwave-complete-filename} includes the following code:
+  Например, в @file{idlwave.el} определение @code{idlwave-complete-filename}
+включает следующий код:
 
 @example
 (defun idlwave-complete-filename ()
@@ -842,76 +846,72 @@ file should call @code{provide} at the top level to add the feature to
 @end example
 
 @noindent
-The expression @code{(require 'comint)} loads the file @file{comint.el}
-if it has not yet been loaded, ensuring that
-@code{comint-dynamic-complete-filename} is defined.  Features are
-normally named after the files that provide them, so that
-@code{require} need not be given the file name.  (Note that it is
-important that the @code{require} statement be outside the body of the
-@code{let}.  Loading a library while its variables are let-bound can
-have unintended consequences, namely the variables becoming unbound
-after the let exits.)
+Выражение @code{(require 'comint)} загружает файл @file{comint.el}, если он
+еще не загружен, обеспечивая определение
+@code{comint-dynamic-complete-filename}.  Компоненты обычно называются в
+честь файлов, которые их предоставляют, поэтому имя файла @code{require} не
+требуется.  (Обратите внимание, что важно, чтобы оператор @code{require}
+находился вне тела @code{let}.  Загрузка библиотеки, когда ее переменные
+привязаны к let, может иметь непредвиденные последствия, а именно,
+переменные становятся несвязанными после выхода let.)
 
-The @file{comint.el} file contains the following top-level expression:
+@file{comint.el} файл содержит следующее выражение верхнего уровня:
 
 @example
 (provide 'comint)
 @end example
 
 @noindent
-This adds @code{comint} to the global @code{features} list, so that
-@code{(require 'comint)} will henceforth know that nothing needs to be
-done.
+Это добавляет @code{comint} в глобальный список @code{features}, так что
+@code{(require 'comint)} отныне будет знать, что ничего делать не нужно.
 
 @cindex byte-compiling @code{require}
-  When @code{require} is used at top level in a file, it takes effect
-when you byte-compile that file (@pxref{Byte Compilation}) as well as
-when you load it.  This is in case the required package contains macros
-that the byte compiler must know about.  It also avoids byte compiler
-warnings for functions and variables defined in the file loaded with
-@code{require}.
+  Когда @code{require} используется на верхнем уровне файла, это вступает в
+силу при байтовой компиляции файла (@pxref{Byte Compilation}), а также при
+его загрузке.  Это на случай, если требуемый пакет содержит макросы, о
+которых должен знать байтовый компилятор.  Это также позволяет избежать
+байтовых предупреждений компилятора для функций и переменных, определенных в
+файле, загруженном с помощью @code{require}.
 
-  Although top-level calls to @code{require} are evaluated during
-byte compilation, @code{provide} calls are not.  Therefore, you can
-ensure that a file of definitions is loaded before it is byte-compiled
-by including a @code{provide} followed by a @code{require} for the same
-feature, as in the following example.
+  Хотя вызовы верхнего уровня к @code{require} оцениваются во время байт
+компиляции, вызовы @code{provide} - нет.  Следовательно, можно убедиться,
+что файл определений загружен до его побайтной компиляции, включив
+@code{provide}, за которым следует @code{require} для той же функции, как в
+следующем примере.
 
 @example
 @group
-(provide 'my-feature)  ; @r{Ignored by byte compiler,}
-                       ;   @r{evaluated by @code{load}.}
-(require 'my-feature)  ; @r{Evaluated by byte compiler.}
+(provide 'my-feature)  ; @r{Игнорируется байтовым компилятором,}
+                       ;   @r{оценивается @code{load}.}
+(require 'my-feature)  ; @r{Оценивается байтовым компилятором.}
 @end group
 @end example
 
 @noindent
-The compiler ignores the @code{provide}, then processes the
-@code{require} by loading the file in question.  Loading the file does
-execute the @code{provide} call, so the subsequent @code{require} call
-does nothing when the file is loaded.
+Компилятор игнорирует @code{provide}, а затем обрабатывает @code{require},
+загружая соответствующий файл.  При загрузке файла выполняется вызов
+@code{provide}, поэтому последующий вызов @code{require} ничего не делает
+при загрузке файла.
 
 @defun provide feature &optional subfeatures
-This function announces that @var{feature} is now loaded, or being
-loaded, into the current Emacs session.  This means that the facilities
-associated with @var{feature} are or will be available for other Lisp
-programs.
+Эта функция объявляет, что @var{feature} теперь загружен или загружается в
+текущий сеанс Emacs.  Это означает, что средства, связанные с @var{feature},
+доступны или будут доступны для других программ Lisp.
 
-The direct effect of calling @code{provide} is to add @var{feature} to
-the front of @code{features} if it is not already in that list and
-call any @code{eval-after-load} code waiting for it (@pxref{Hooks for
-Loading}).  The argument @var{feature} must be a symbol.
-@code{provide} returns @var{feature}.
+Прямым следствием вызова @code{provide} является добавление @var{feature} в
+начало @code{features}, если его еще нет в этом списке, и вызов любого
+ожидающего его кода @code{eval-after-load} (@pxref{Hooks for Loading}).
+Аргумент @var{feature} должен быть символом.  @code{provide} возвращает
+@var{feature}.
 
-If provided, @var{subfeatures} should be a list of symbols indicating
-a set of specific subfeatures provided by this version of
-@var{feature}.  You can test the presence of a subfeature using
-@code{featurep}.  The idea of subfeatures is that you use them when a
-package (which is one @var{feature}) is complex enough to make it
-useful to give names to various parts or functionalities of the
-package, which might or might not be loaded, or might or might not be
-present in a given version.  @xref{Network Feature Testing}, for
-an example.
+Если предоставлено, @var{subfeatures} должен быть списком символов,
+указывающих набор определенных подфункций, предоставляемых этой версией
+@var{feature}.  Можно проверить наличие подкомпонента с помощью
+@code{featurep}.  Идея подфункций заключается в том, что используют их,
+когда пакет (который представляет собой один @var{feature}) достаточно
+сложен, чтобы было полезно давать имена различным частям или функциям
+пакета, которые могут или не могут быть загружены, или могут или не могут
+присутствовать в данной версии.  @xref{Network Feature Testing}, например:
 
 @example
 features
@@ -923,289 +923,284 @@ features
      @result{} (foo bar bish)
 @end example
 
-When a file is loaded to satisfy an autoload, and it stops due to an
-error in the evaluation of its contents, any function definitions or
-@code{provide} calls that occurred during the load are undone.
+Когда файл загружается для выполнения автозагрузки и останавливается из-за
+ошибки в оценке его содержимого, любые определения функций или вызовы
+@code{provide}, которые произошли во время загрузки, отменяются.
 @xref{Autoload}.
 @end defun
 
 @defun require feature &optional filename noerror
-This function checks whether @var{feature} is present in the current
-Emacs session (using @code{(featurep @var{feature})}; see below).  The
-argument @var{feature} must be a symbol.
+Эта функция проверяет, присутствует ли @var{feature} в текущем сеансе Emacs
+(используя @code{(featurep @var{feature})}; смотреть ниже).  Аргумент
+@var{feature} должен быть символом.
 
-If the feature is not present, then @code{require} loads @var{filename}
-with @code{load}.  If @var{filename} is not supplied, then the name of
-the symbol @var{feature} is used as the base file name to load.
-However, in this case, @code{require} insists on finding @var{feature}
-with an added @samp{.el} or @samp{.elc} suffix (possibly extended with
-a compression suffix); a file whose name is just @var{feature} won't
-be used.  (The variable @code{load-suffixes} specifies the exact
-required Lisp suffixes.)
+Если функция отсутствует, то @code{require} загружает @var{filename} с
+@code{load}.  Если @var{filename} не указан, то имя символа @var{feature}
+используется как базовое имя файла для загрузки.  Однако в этом случае
+@code{require} настаивает на поиске @var{feature} с добавленным суффиксом
+@samp{.el} или @samp{.elc} (возможно, расширенным с суффиксом сжатия); файл
+с именем @var{feature} использоваться не будет.  (Переменная
+@code{load-suffixes} указывает точные требуемые суффиксы Lisp.)
 
-If @var{noerror} is non-@code{nil}, that suppresses errors from actual
-loading of the file.  In that case, @code{require} returns @code{nil}
-if loading the file fails.  Normally, @code{require} returns
-@var{feature}.
+Если @var{noerror} равен не-@code{nil}, это подавляет ошибки при фактическойзагрузке файла.  В этом случае @code{require} возвращает @code{nil}, если
+загрузка файла не удалась.  Обычно @code{require} возвращает @var{feature}.
 
-If loading the file succeeds but does not provide @var{feature},
-@code{require} signals an error about the missing feature.
+Если загрузка файла прошла успешно, но не предоставляется @var{feature},
+@code{require} сигнализирует об ошибке об отсутствующей функции.
 @end defun
 
 @defun featurep feature &optional subfeature
-This function returns @code{t} if @var{feature} has been provided in
-the current Emacs session (i.e., if @var{feature} is a member of
-@code{features}.)  If @var{subfeature} is non-@code{nil}, then the
-function returns @code{t} only if that subfeature is provided as well
-(i.e., if @var{subfeature} is a member of the @code{subfeature}
-property of the @var{feature} symbol.)
+Эта функция возвращает @code{t}, если @var{feature} был предоставлен в
+текущем сеансе Emacs (т. е. Если @var{feature} является членом
+@code{features}.).  Если @var{subfeature} равен не-@code{nil}, тогда функция
+возвращает @code{t} только в том случае, если эта подфункция также указана
+(т. е. если @var{subfeature} имеет значение не-@code{nil}).  Член свойства
+@code{subfeature} символа @var{feature}.)
 @end defun
 
 @defvar features
-The value of this variable is a list of symbols that are the features
-loaded in the current Emacs session.  Each symbol was put in this list
-with a call to @code{provide}.  The order of the elements in the
-@code{features} list is not significant.
+Значение этой переменной представляет собой список символов, которые
+являются функциями, загруженными в текущем сеансе Emacs.  Каждый символ был
+помещен в этот список с вызовом @code{provide}.  Порядок элементов в списке
+@code{features} не имеет значения.
 @end defvar
 
 @node Where Defined
-@section Which File Defined a Certain Symbol
+@section В каком Файле Определен Определенный Символ
 @cindex symbol, where defined
 @cindex where was a symbol defined
 
 @defun symbol-file symbol &optional type
-This function returns the name of the file that defined @var{symbol}.
-If @var{type} is @code{nil}, then any kind of definition is acceptable.
-If @var{type} is @code{defun}, @code{defvar}, or @code{defface}, that
-specifies function definition, variable definition, or face definition
-only.
+Эта функция возвращает имя файла, в котором определен @var{symbol}.  Если
+@var{type} равно @code{nil}, то приемлемо любое определение.  Если
+@var{type} это @code{defun}, @code{defvar}, или @code{defface}, это
+указывает только определение функции, определение переменной или определение
+лица.
 
-The value is normally an absolute file name.  It can also be @code{nil},
-if the definition is not associated with any file.  If @var{symbol}
-specifies an autoloaded function, the value can be a relative file name
-without extension.
+Значение обычно является абсолютным именем файла.  Это также может быть
+@code{nil}, если определение не связано ни с каким файлом.  Если
+@var{symbol} определяет автоматически загружаемую функцию, значением может
+быть относительное имя файла без расширения.
 @end defun
 
-  The basis for @code{symbol-file} is the data in the variable
-@code{load-history}.
+  В основе @code{symbol-file} лежат данные в переменной @code{load-history}.
 
 @defvar load-history
-The value of this variable is an alist that associates the names of
-loaded library files with the names of the functions and variables
-they defined, as well as the features they provided or required.
+Значение этой переменной представляет собой список, который связывает имена
+загруженных файлов библиотеки с именами функций и переменных, которые они
+определили, а также с функциями, которые они предоставляют или требуют.
 
-Each element in this alist describes one loaded library (including
-libraries that are preloaded at startup).  It is a list whose @sc{car}
-is the absolute file name of the library (a string).  The rest of the
-list elements have these forms:
+Каждый элемент в этом списке описывает одну загруженную библиотеку (включая
+библиотеки, которые предварительно загружаются при запуске).  Это список,
+@sc{car} которого - абсолютное имя файла библиотеки (строка).  Остальные
+элементы списка имеют следующие формы:
 
 @table @code
 @item @var{var}
-The symbol @var{var} was defined as a variable.
+Символ @var{var} был определен как переменная.
 @item (defun . @var{fun})
-The function @var{fun} was defined.
+Определена функция @var{fun}.
 @item (t . @var{fun})
-The function @var{fun} was previously an autoload before this library
-redefined it as a function.  The following element is always
-@code{(defun . @var{fun})}, which represents defining @var{fun} as a
-function.
+Функция @var{fun} ранее была автозагружаемой до того, как эта библиотека
+переопределила ее как функцию.  Следующим элементом всегда является
+@code{(defun . @var{fun})}, который представляет определение @var{fun} как
+функции.
 @item (autoload . @var{fun})
-The function @var{fun} was defined as an autoload.
+Функция @var{fun} была определена как автозагружаемая.
 @item (defface . @var{face})
-The face @var{face} was defined.
+Было определено лицо @var{face}.
 @item (require . @var{feature})
-The feature @var{feature} was required.
+Требуется функция @var{feature}.
 @item (provide . @var{feature})
-The feature @var{feature} was provided.
+Была предоставлена функция @var{feature}.
 @item (cl-defmethod @var{method} @var{specializers})
-The named @var{method} was defined by using @code{cl-defmethod}, with
-@var{specializers} as its specializers.
+Именованный @var{method} был определен с помощью @code{cl-defmethod} со
+специализацией @var{specializers}.
 @item (define-type . @var{type})
-The type @var{type} was defined.
+Был определен тип @var{type}.
 @end table
 
-The value of @code{load-history} may have one element whose @sc{car} is
-@code{nil}.  This element describes definitions made with
-@code{eval-buffer} on a buffer that is not visiting a file.
+Значение @code{load-history} может иметь один элемент, у которого @sc{car}
+есть @code{nil}.  Этот элемент описывает определения, сделанные с помощью
+@code{eval-buffer} для буфера, который не обращается к файлу.
 @end defvar
 
-  The command @code{eval-region} updates @code{load-history}, but does so
-by adding the symbols defined to the element for the file being visited,
-rather than replacing that element.  @xref{Eval}.
+  Команда @code{eval-region} обновляет @code{load-history}, но делает это
+путем добавления символов, определенных для элемента для посещаемого файла,
+вместо замены этого элемента.  @xref{Eval}.
 
 @node Unloading
-@section Unloading
+@section Разгрузка
 @cindex unloading packages
 
 @c Emacs 19 feature
-  You can discard the functions and variables loaded by a library to
-reclaim memory for other Lisp objects.  To do this, use the function
-@code{unload-feature}:
+  Можно отказаться от функций и переменных, загружаемых библиотекой, чтобы
+освободить память для других объектов Lisp.  Для этого воспользуйтесь
+функцией @code{unload-feature}:
 
 @deffn Command unload-feature feature &optional force
-This command unloads the library that provided feature @var{feature}.
-It undefines all functions, macros, and variables defined in that
-library with @code{defun}, @code{defalias}, @code{defsubst},
-@code{defmacro}, @code{defconst}, @code{defvar}, and @code{defcustom}.
-It then restores any autoloads formerly associated with those symbols.
-(Loading saves these in the @code{autoload} property of the symbol.)
+Эта команда выгружает библиотеку с функцией @var{feature}.  Это отменяет
+определение всех функций, макросов и переменных, определенных в этой
+библиотеке с помощью @code{defun}, @code{defalias}, @code{defsubst},
+@code{defmacro}, @code{defconst}, @code{defvar}, и @code{defcustom}.  Затем
+восстанавливает все автозагрузки, ранее связанные с этими символами.
+(Загрузка сохраняет их в свойстве @code{autoload} символа.)
 
-Before restoring the previous definitions, @code{unload-feature} runs
-@code{remove-hook} to remove functions in the library from certain
-hooks.  These hooks include variables whose names end in @samp{-hook}
-(or the deprecated suffix @samp{-hooks}), plus those listed in
-@code{unload-feature-special-hooks}, as well as
-@code{auto-mode-alist}.  This is to prevent Emacs from ceasing to
-function because important hooks refer to functions that are no longer
-defined.
+Перед восстановлением предыдущих определений @code{unload-feature} запускает
+@code{remove-hook} для удаления функций в библиотеке из определенных хуков.
+Эти хуки включают переменные, имена которых заканчиваются на @samp{-hook}
+(или устаревший суффикс @samp{-hooks}), а также переменные, перечисленные в
+@code{unload-feature-special-hooks}, а также на @code{auto-mode-alist}.  Это
+сделано для предотвращения прекращения работы Emacs, потому что важные
+перехватчики относятся к функциям, которые больше не определены.
 
-Standard unloading activities also undoes ELP profiling of functions
-in that library, unprovides any features provided by the library, and
-cancels timers held in variables defined by the library.
+Стандартные действия по выгрузке также отменяют профилирование ELP функций в
+этой библиотеке, отменяют любые функции, предоставляемые библиотекой, и
+отменяют таймеры, хранящиеся в переменных, определенных библиотекой.
 
 @vindex @var{feature}-unload-function
-If these measures are not sufficient to prevent malfunction, a library
-can define an explicit unloader named @code{@var{feature}-unload-function}.
-If that symbol is defined as a function, @code{unload-feature} calls
-it with no arguments before doing anything else.  It can do whatever
-is appropriate to unload the library.  If it returns @code{nil},
-@code{unload-feature} proceeds to take the normal unload actions.
-Otherwise it considers the job to be done.
+Если этих мер недостаточно для предотвращения сбоя, библиотека может
+определить явный разгрузчик с именем @code{@var{feature}-unload-function}.
+Если этот символ определен как функция, @code{unload-feature} вызывает его
+без аргументов, прежде чем делать что-либо еще.  Это может делать все
+необходимое, чтобы выгрузить библиотеку.  Если он возвращает @code{nil},
+@code{unload-feature} выполняет обычные действия по выгрузке.  В противном
+случае он считает работу выполненной.
 
-Ordinarily, @code{unload-feature} refuses to unload a library on which
-other loaded libraries depend.  (A library @var{a} depends on library
-@var{b} if @var{a} contains a @code{require} for @var{b}.)  If the
-optional argument @var{force} is non-@code{nil}, dependencies are
-ignored and you can unload any library.
+Обычно @code{unload-feature} отказывается выгружать библиотеку, от которой
+зависят другие загруженные библиотеки.  (Библиотека @var{a} зависит от
+библиотеки @var{b}, если @var{a} содержит @code{require} для @var{b}.)
+Если необязательный аргумент @var{force} - не-@code{nil}, зависимости
+игнорируются, и можно выгрузить любую библиотеку.
 @end deffn
 
-  The @code{unload-feature} function is written in Lisp; its actions are
-based on the variable @code{load-history}.
+  Функция @code{unload-feature} написана на Lisp; его действия основаны на
+переменной @code{load-history}.
 
 @defvar unload-feature-special-hooks
-This variable holds a list of hooks to be scanned before unloading a
-library, to remove functions defined in the library.
+Эта переменная содержит список перехватчиков, которые нужно просканировать
+перед выгрузкой библиотеки, чтобы удалить функции, определенные в
+библиотеке.
 @end defvar
 
 @node Hooks for Loading
-@section Hooks for Loading
+@section Ловушки для Загрузки
 @cindex loading hooks
 @cindex hooks for loading
 
-You can ask for code to be executed each time Emacs loads a library,
-by using the variable @code{after-load-functions}:
+Можно запросить выполнение кода каждый раз, когда Emacs загружает
+библиотеку, используя переменную @code{after-load-functions}:
 
 @defvar after-load-functions
-This abnormal hook is run after loading a file.  Each function in the
-hook is called with a single argument, the absolute filename of the
-file that was just loaded.
+Эта ненормальная ловушка запускается после загрузки файла.  Каждая функция в
+ловушке вызывается с одним аргументом - абсолютным именем файла, который
+только что был загружен.
 @end defvar
 
-If you want code to be executed when a @emph{particular} library is
-loaded, use the macro @code{with-eval-after-load}:
+Если требуется, чтобы код выполнялся при загрузке библиотеки в
+@emph{частности}, используйте макрос @code{with-eval-after-load}:
 
 @defmac with-eval-after-load library body@dots{}
-This macro arranges to evaluate @var{body} at the end of loading
-the file @var{library}, each time @var{library} is loaded.  If
-@var{library} is already loaded, it evaluates @var{body} right away.
+Этот макрос выполняет оценку @var{body} в конце загрузки файла
+@var{library}, каждый раз, когда загружается @var{library}.  Если
+@var{library} уже загружен, он сразу оценивает @var{body}.
 
-You don't need to give a directory or extension in the file name
-@var{library}.  Normally, you just give a bare file name, like this:
+Не требуется указывать каталог или расширение в имени файла @var{library}.
+Обычно просто указывается имя файла:
 
 @example
 (with-eval-after-load "edebug" (def-edebug-spec c-point t))
 @end example
 
-To restrict which files can trigger the evaluation, include a
-directory or an extension or both in @var{library}.  Only a file whose
-absolute true name (i.e., the name with all symbolic links chased out)
-matches all the given name components will match.  In the following
-example, @file{my_inst.elc} or @file{my_inst.elc.gz} in some directory
-@code{..../foo/bar} will trigger the evaluation, but not
-@file{my_inst.el}:
+Чтобы ограничить, какие файлы могут запускать оценку, включите каталог или
+расширение или оба в @var{library}.  Будет соответствовать только файл,
+абсолютное истинное имя которого (т.е. имя со всеми исключенными
+символическими ссылками) соответствует всем заданным компонентам имени.  В
+следующем примере @file{my_inst.elc} или @file{my_inst.elc.gz} в некотором
+каталоге @code{..../foo/bar} вызовет оценку, но не @file{my_inst.el}.:
 
 @example
 (with-eval-after-load "foo/bar/my_inst.elc" @dots{})
 @end example
 
-@var{library} can also be a feature (i.e., a symbol), in which case
-@var{body} is evaluated at the end of any file where
-@code{(provide @var{library})} is called.
+@var{library} также может быть функцией (то есть символом), и в этом случае
+@var{body} вычисляется в конце любого файла, в котором вызывается
+@code{(provide @var{library})}.
 
-An error in @var{body} does not undo the load, but does prevent
-execution of the rest of @var{body}.
+Ошибка в @var{body} не отменяет загрузку, но предотвращает выполнение
+остальной части @var{body}.
 @end defmac
 
-Normally, well-designed Lisp programs should not use
-@code{with-eval-after-load}.  If you need to examine and set the
-variables defined in another library (those meant for outside use),
-you can do it immediately---there is no need to wait until the library
-is loaded.  If you need to call functions defined by that library, you
-should load the library, preferably with @code{require} (@pxref{Named
-Features}).
+Обычно хорошо разработанные программы на Lisp не должны использовать
+@code{with-eval-after-load}.  Если нужно проверить и установить переменные,
+определенные в другой библиотеке (предназначенные для внешнего
+использования), можно сделать это немедленно - нет необходимости ждать,
+пока библиотека загрузится.  Если нужно вызвать функции, определенные этой
+библиотекой, потребуется загрузить библиотеку, желательно с @code{require}
+(@pxref{Named Features}).
 
 @node Dynamic Modules
-@section Emacs Dynamic Modules
+@section Динамические Модули Emacs
 @cindex dynamic modules
 
-  A @dfn{dynamic Emacs module} is a shared library that provides
-additional functionality for use in Emacs Lisp programs, just like a
-package written in Emacs Lisp would.
+  @dfn{Динамические Модули Emacs} - это разделяемая библиотека, которая
+предоставляет дополнительные функции для использования в программах Emacs
+Lisp, как и пакет, написанный на Emacs Lisp.
 
-  Functions that load Emacs Lisp packages can also load dynamic
-modules.  They recognize dynamic modules by looking at their file-name
-extension, a.k.a.@: ``suffix''.  This suffix is platform-dependent.
+  Функции, загружающие пакеты Emacs Lisp, также могут загружать динамические
+модули.  Они распознают динамические модули, глядя на их расширение имени
+файла, a.k.a.@: ``suffix''.  Этот суффикс зависит от платформы.
 
 @defvar module-file-suffix
-This variable holds the system-dependent value of the file-name
-extension of the module files.  Its value is @file{.so} on POSIX hosts
-and @file{.dll} on MS-Windows.
+Эта переменная содержит зависящее от системы значение расширения имени файла
+для файлов модуля.  Его значение - @file{.so} на хостах POSIX и @file{.dll}
+на MS-Windows.
 @end defvar
 
 @findex emacs_module_init
 @vindex plugin_is_GPL_compatible
-Every dynamic module should export a C-callable function named
-@code{emacs_module_init}, which Emacs will call as part of the call to
-@code{load} or @code{require} which loads the module.  It should also
-export a symbol named @code{plugin_is_GPL_compatible} to indicate that
-its code is released under the GPL or compatible license; Emacs will
-signal an error if your program tries to load modules that don't
-export such a symbol.
+Каждый динамический модуль должен экспортировать вызываемую Cи функцию с
+именем @code{emacs_module_init}, которую Emacs будет вызывать как часть
+вызова @code{load} или @code{require}, загружающего модуль.  Также должен
+экспортировать символ с именем @code{plugin_is_GPL_compatible}, чтобы
+указать, что его код выпущен под GPL или совместимой лицензией; Emacs
+сообщит об ошибке, если ваша программа попытается загрузить модули, которые
+не экспортируют такой символ.
 
-If a module needs to call Emacs functions, it should do so through the
-@acronym{API} (Application Programming Interface) defined and
-documented in the header file @file{emacs-module.h} that is part of
-the Emacs distribution.  @xref{Writing Dynamic Modules}, for details
-of using that API when writing your own modules.
+Если модулю необходимо вызывать функции Emacs, он должен делать это через
+@acronym{API} (интерфейс прикладного программирования), определенный и
+задокументированный в заголовочном файле @file{emacs-module.h}, который
+является частью дистрибутива Emacs.  @xref{Writing Dynamic Modules}, чтобы
+узнать подробнее об использовании этого API при написании собственных
+модулей.
 
 @cindex user-ptr object
 @cindex user pointer object
-Modules can create @code{user-ptr} Lisp objects that embed pointers to
-C struct's defined by the module.  This is useful for keeping around
-complex data structures created by a module, to be passed back to the
-module's functions.  User-ptr objects can also have associated
-@dfn{finalizers} -- functions to be run when the object is GC'ed; this
-is useful for freeing any resources allocated for the underlying data
-structure, such as memory, open file descriptors, etc.  @xref{Module
-Values}.
+Модули могут создавать объекты @code{user-ptr} Lisp, которые встраивают
+указатели на структуры Cи, определенные модулем.  Это полезно для хранения
+сложных структур данных, созданных модулем, для передачи обратно функциям
+модуля.  Объекты User-ptr также могут иметь связанные @dfn{finalizers} -
+функции, которые будут запускаться, когда объект GC'ed; это полезно для
+освобождения любых ресурсов, выделенных для базовой структуры данных, таких
+как память, дескрипторы открытых файлов и т. д.  @xref{Module Values}.
 
 @defun user-ptrp object
-This function returns @code{t} if its argument is a @code{user-ptr}
-object.
+Эта функция возвращает @code{t}, если ее аргумент является объектом
+@code{user-ptr}.
 @end defun
 
 @defun module-load file
-Emacs calls this low-level primitive to load a module from the
-specified @var{file} and perform the necessary initialization of the
-module.  This is the primitive which makes sure the module exports the
-@code{plugin_is_GPL_compatible} symbol, calls the module's
-@code{emacs_module_init} function, and signals an error if that
-function returns an error indication, or if the use typed @kbd{C-g}
-during the initialization.  If the initialization succeeds,
-@code{module-load} returns @code{t}.  Note that @var{file} must
-already have the proper file-name extension, as this function doesn't
-try looking for files with known extensions, unlike @code{load}.
+Emacs вызывает этот низкоуровневый примитив для загрузки модуля из
+указанного @var{file} и выполнения необходимой инициализации модуля.  Это
+примитив, который гарантирует, что модуль экспортирует символ
+@code{plugin_is_GPL_compatible}, вызывает функцию модуля
+@code{emacs_module_init} и сигнализирует об ошибке, если эта функция
+возвращает индикацию ошибки или если во время инициализации используется
+набранный @kbd{C-g}.  Если инициализация прошла успешно, @code{module-load}
+возвращает @code{t}.  Обратите внимание, что @var{file} уже должен иметь
+правильное расширение имени файла, поскольку эта функция не пытается искать
+файлы с известными расширениями, в отличие от @code{load}.
 @end defun
 
-Loadable modules in Emacs are enabled by using the
-@kbd{--with-modules} option at configure time.
+Загружаемые модули в Emacs включаются с помощью параметра
+@kbd{--with-modules} во время настройки.
