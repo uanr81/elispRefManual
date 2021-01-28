@@ -4,61 +4,61 @@
 @c Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Debugging
-@chapter Debugging Lisp Programs
+@chapter Отладка Программ на Lisp
 @cindex debugging lisp programs
 
-  There are several ways to find and investigate problems in an Emacs
-Lisp program.
+  Есть несколько способов найти и исследовать проблемы в программе Emacs
+Lisp.
 
 @itemize @bullet
 @item
-If a problem occurs when you run the program, you can use the built-in
-Emacs Lisp debugger to suspend the Lisp evaluator, and examine and/or
-alter its internal state.
+Если проблема возникает при запуске программы, можно использовать встроенный
+отладчик Emacs Lisp, чтобы приостановить анализатор Lisp и проверить и/или
+изменить его внутреннее состояние.
 
 @item
-You can use Edebug, a source-level debugger for Emacs Lisp.
+Можно использовать Edebug, отладчик исходного уровня Emacs Lisp.
 
 @item
 @cindex tracing Lisp programs
-You can trace the execution of functions involved in the problem using
-the tracing facilities provided by the @file{trace.el} package.  This
-package provides the functions @code{trace-function-foreground} and
-@code{trace-function-background} for tracing function calls, and
-@code{trace-values} for adding values of select variables to the
-trace.  For the details, see the documentation of these facilities in
+Можно отслеживать выполнение функций, связанных с проблемой, используя
+средства трассировки, предоставляемые пакетом @file{trace.el}.  Этот пакет
+предоставляет функции @code{trace-function-foreground} и
+@code{trace-function-background} для отслеживания вызовов функций и
+@code{trace-values} для добавления значений выбранных переменных к
+трассировке.  Подробнее смотреть документацию к этим объектам в
 @file{trace.el}.
 
 @item
-If a syntactic problem is preventing Lisp from even reading the
-program, you can locate it using Lisp editing commands.
+Если синтаксическая проблема мешает Lisp даже прочитать программу, можно
+найти ее с помощью команд редактирования Lisp.
 
 @item
-You can look at the error and warning messages produced by the byte
-compiler when it compiles the program.  @xref{Compiler Errors}.
+Можно просмотреть сообщения об ошибках и предупреждения, создаваемые байт
+компилятором при компиляции программы.  @xref{Compiler Errors}.
 
 @item
-You can use the Testcover package to perform coverage testing on the
-program.
+Можно использовать пакет Testcover для тестирования покрытия программы.
 
 @item
-You can use the ERT package to write regression tests for the program.
+Можно использовать пакет ERT для написания регрессионных тестов к программе.
 @xref{Top,the ERT manual,, ert, ERT: Emacs Lisp Regression Testing}.
 
 @item
-You can profile the program to get hints about how to make it more efficient.
+Можно профилировать программу, чтобы получить подсказки о том, как сделать
+ее более эффективной.
 @end itemize
 
-  Other useful tools for debugging input and output problems are the
-dribble file (@pxref{Terminal Input}) and the @code{open-termscript}
-function (@pxref{Terminal Output}).
+  Другими полезными инструментами для отладки проблем ввода и вывода
+являются файл dribble (@pxref{Terminal Input}) и функция
+@code{open-termscript} (@pxref{Terminal Output}).
 
 @menu
-* Debugger::            A debugger for the Emacs Lisp evaluator.
-* Edebug::              A source-level Emacs Lisp debugger.
-* Syntax Errors::       How to find syntax errors.
-* Test Coverage::       Ensuring you have tested all branches in your code.
-* Profiling::           Measuring the resources that your code uses.
+* Debugger::            Отладчик для оценщика Emacs Lisp.
+* Edebug::              Отладчик Emacs Lisp на уровне исходного кода.
+* Syntax Errors::       Как найти синтаксические ошибки.
+* Test Coverage::       Убедится, что протестированы все ветки кода.
+* Profiling::           Измерение ресурсов, которые использует ваш код.
 @end menu
 
 @node Debugger
@@ -67,24 +67,24 @@ function (@pxref{Terminal Output}).
 @cindex Lisp debugger
 @cindex break
 
-  The ordinary @dfn{Lisp debugger} provides the ability to suspend
-evaluation of a form.  While evaluation is suspended (a state that is
-commonly known as a @dfn{break}), you may examine the run time stack,
-examine the values of local or global variables, or change those values.
-Since a break is a recursive edit, all the usual editing facilities of
-Emacs are available; you can even run programs that will enter the
-debugger recursively.  @xref{Recursive Editing}.
+  Обычный @dfn{Lisp отладчик} дает возможность приостановить оценку формы.
+Пока оценка приостановлена (состояние, обычно известное как @dfn{останов}),
+можно проверить стек времени выполнения, проверить значения локальных или
+глобальных переменных или изменить эти значения.  Поскольку разрыв - это
+рекурсивное редактирование, доступны все обычные средства редактирования
+Emacs; можно запускать программы, которые будут входить в отладчик
+рекурсивно.  @xref{Recursive Editing}.
 
 @menu
-* Error Debugging::       Entering the debugger when an error happens.
-* Infinite Loops::        Stopping and debugging a program that doesn't exit.
-* Function Debugging::    Entering it when a certain function is called.
-* Variable Debugging::    Entering it when a variable is modified.
-* Explicit Debug::        Entering it at a certain point in the program.
-* Using Debugger::        What the debugger does; what you see while in it.
-* Debugger Commands::     Commands used while in the debugger.
-* Invoking the Debugger:: How to call the function @code{debug}.
-* Internals of Debugger:: Subroutines of the debugger, and global variables.
+* Error Debugging::       Вход в отладчик при возникновении ошибки.
+* Infinite Loops::        Остановка и отладка программы, которая не завершается.
+* Function Debugging::    Вход в отладчик при вызове определенной функции.
+* Variable Debugging::    Вход в отладчик при изменении переменной.
+* Explicit Debug::        Вход в отладчик в определенный момент в программе.
+* Using Debugger::        Что делает отладчик; что видно в нём.
+* Debugger Commands::     Команды, используемые в отладчике.
+* Invoking the Debugger:: Как вызвать функцию @code{debug}.
+* Internals of Debugger:: Подпрограммы отладчика и глобальные переменные.
 @end menu
 
 @node Error Debugging
@@ -92,176 +92,173 @@ debugger recursively.  @xref{Recursive Editing}.
 @cindex error debugging
 @cindex debugging errors
 
-  The most important time to enter the debugger is when a Lisp error
-happens.  This allows you to investigate the immediate causes of the
-error.
+  Самый важный момент для входа в отладчик - это когда происходит ошибка
+Lisp.  Это позволяет исследовать непосредственные причины ошибки.
 
-  However, entry to the debugger is not a normal consequence of an
-error.  Many commands signal Lisp errors when invoked inappropriately,
-and during ordinary editing it would be very inconvenient to enter the
-debugger each time this happens.  So if you want errors to enter the
-debugger, set the variable @code{debug-on-error} to non-@code{nil}.
-(The command @code{toggle-debug-on-error} provides an easy way to do
-this.)
+  Однако вход в отладчик не является нормальным следствием ошибки.  Многие
+команды сигнализируют об ошибках Lisp при неправильном вызове, и во время
+обычного редактирования было бы очень неудобно заходить в отладчик каждый
+раз, когда это происходит.  Поэтому, если потребуется, чтобы ошибки
+поступали в отладчик, установите для переменной @code{debug-on-error}
+значение не-@code{nil}.  (Команда @code{toggle-debug-on-error} предоставляет
+простой способ сделать это.)
 
 @defopt debug-on-error
-This variable determines whether the debugger is called when an error
-is signaled and not handled.  If @code{debug-on-error} is @code{t},
-all kinds of errors call the debugger, except those listed in
-@code{debug-ignored-errors} (see below).  If it is @code{nil}, none
-call the debugger.
+Эта переменная определяет, вызывается ли отладчик, когда сообщается об
+ошибке, но не обрабатывается.  Если @code{debug-on-error} равен @code{t},
+отладчик вызывает все виды ошибок, кроме тех, которые перечислены в
+@code{debug-ignored-errors} (смотреть ниже).  Если установлено в @code{nil},
+ничто не вызывает отладчик.
 
-The value can also be a list of error conditions (@pxref{Signaling
-Errors}).  Then the debugger is called only for error conditions in
-this list (except those also listed in @code{debug-ignored-errors}).
-For example, if you set @code{debug-on-error} to the list
-@code{(void-variable)}, the debugger is only called for errors about a
-variable that has no value.
+Значение также может быть списком условий ошибки (@pxref{Signaling Errors}).
+Затем отладчик вызывается только для условий ошибки присутствующей в этом
+списке (кроме тех, которые также перечислены в @code{debug-ignored-errors}).
+Например, если установить @code{debug-on-error} в список
+@code{(void-variable)}, отладчик будет вызываться только для ошибок,
+связанных с переменной, которая не имеет значения.
 
-Note that @code{eval-expression-debug-on-error} overrides this
-variable in some cases; see below.
+Обратите внимание, что @code{eval-expression-debug-on-error} в некоторых
+случаях переопределяет эту переменную; смотреть ниже.
 
-When this variable is non-@code{nil}, Emacs does not create an error
-handler around process filter functions and sentinels.  Therefore,
-errors in these functions also invoke the debugger.  @xref{Processes}.
+Когда эта переменная - не-@code{nil}, Emacs не создает обработчик ошибок для
+функций фильтрации процессов и сигнальных индикаторов.  Следовательно,
+ошибки в этих функциях также вызывают отладчик.  @xref{Processes}.
 @end defopt
 
 @defopt debug-ignored-errors
-This variable specifies errors which should not enter the debugger,
-regardless of the value of @code{debug-on-error}.  Its value is a list
-of error condition symbols and/or regular expressions.  If the error
-has any of those condition symbols, or if the error message matches
-any of the regular expressions, then that error does not enter the
-debugger.
+Эта переменная определяет ошибки, которые не должны поступать в отладчик, не
+зависимо от значения @code{debug-on-error}.  Её значение - это список
+символов условий ошибки и/или регулярных выражений.  Если в ошибке
+присутствует какой-либо из этих условных символов или если сообщение об
+ошибке соответствует любому из регулярных выражений, то эта ошибка не
+поступает в отладчик.
 
-The normal value of this variable includes @code{user-error}, as well
-as several errors that happen often during editing but rarely result
-from bugs in Lisp programs.  However, ``rarely'' is not ``never''; if
-your program fails with an error that matches this list, you may try
-changing this list to debug the error.  The easiest way is usually to
-set @code{debug-ignored-errors} to @code{nil}.
+Нормальное значение этой переменной включает @code{user-error}, а также
+несколько ошибок, которые часто случаются во время редактирования, но редко
+являются результатом ошибок в программах на Lisp.  Однако ``rarely (редко)''
+не ``never (никогда)''; если программа выдает ошибку, соответствующую этому
+списку, можно попробовать изменить этот список, чтобы отладить ошибку.
+Самый простой способ - установить @code{debug-ignored-errors} в @code{nil}.
 @end defopt
 
 @defopt eval-expression-debug-on-error
-If this variable has a non-@code{nil} value (the default), running the
-command @code{eval-expression} causes @code{debug-on-error} to be
-temporarily bound to @code{t}.  @xref{Lisp Eval,, Evaluating
-Emacs-Lisp Expressions, emacs, The GNU Emacs Manual}.
+Если эта переменная имеет значение не-@code{nil} (по умолчанию), запуск
+команды @code{eval-expression} приводит к временной привязке
+@code{debug-on-error} к @code{t}.  @xref{Lisp Eval,, Evaluating Emacs-Lisp Expressions, emacs, The GNU Emacs Manual}.
 
-If @code{eval-expression-debug-on-error} is @code{nil}, then the value
-of @code{debug-on-error} is not changed during @code{eval-expression}.
+Если @code{eval-expression-debug-on-error} равен @code{nil}, то значение
+@code{debug-on-error} не изменяется во время @code{eval-expression}.
 @end defopt
 
 @defopt debug-on-signal
-Normally, errors caught by @code{condition-case} never invoke the
-debugger.  The @code{condition-case} gets a chance to handle the error
-before the debugger gets a chance.
+Обычно ошибки, обнаруженные @code{condition-case}, никогда не вызывают
+отладчик.  @code{condition-case} получает шанс обработать ошибку до того,
+как отладчик получит шанс.
 
-If you change @code{debug-on-signal} to a non-@code{nil} value, the
-debugger gets the first chance at every error, regardless of the
-presence of @code{condition-case}.  (To invoke the debugger, the error
-must still fulfill the criteria specified by @code{debug-on-error} and
+Если изменить @code{debug-on-signal} на значение не-@code{nil}, отладчик
+получит первую возможность при каждой ошибке, независимо от наличия
+@code{condition-case}.  (Чтобы вызвать отладчик, ошибка должна
+соответствовать критериям, указанным в @code{debug-on-error} и
 @code{debug-ignored-errors}.)
 
 @cindex emacsclient, getting a backtrace
 @cindex backtrace from emacsclient's @option{--eval}
-For example, setting this variable is useful to get a backtrace from
-code evaluated by emacsclient's @option{--eval} option.  If Lisp code
-evaluated by emacsclient signals an error while this variable is
-non-@code{nil}, the backtrace will popup in the running Emacs.
+Например, установка этой переменной полезна для получения трассировки кода,
+оцениваемого опцией emacsclient @option{--eval}.  Если код Lisp, оцениваемый
+emacsclient, сигнализирует об ошибке, когда эта переменная имеет значение
+не-@code{nil}, трассировка откроется в работающем Emacs.
 
-@strong{Warning:} Setting this variable to non-@code{nil} may have
-annoying effects.  Various parts of Emacs catch errors in the normal
-course of affairs, and you may not even realize that errors happen
-there.  If you need to debug code wrapped in @code{condition-case},
-consider using @code{condition-case-unless-debug} (@pxref{Handling
-Errors}).
+@strong{Внимание:} Установка этой переменной в не-@code{nil} может иметь
+раздражающие эффекты.  Различные части Emacs улавливают ошибки в обычном
+порядке, и можно даже не осознавать, что ошибки там происходят.  Если нужно
+отладить код, заключенный в @code{condition-case}, рассмотрите возможность
+использования @code{condition-case-unless-debug} (@pxref{Handling Errors}).
 @end defopt
 
 @defopt debug-on-event
-If you set @code{debug-on-event} to a special event (@pxref{Special
-Events}), Emacs will try to enter the debugger as soon as it receives
-this event, bypassing @code{special-event-map}.  At present, the only
-supported values correspond to the signals @code{SIGUSR1} and
-@code{SIGUSR2} (this is the default).  This can be helpful when
-@code{inhibit-quit} is set and Emacs is not otherwise responding.
+Если установить @code{debug-on-event} для специального события
+(@pxref{Special Events}), Emacs попытается войти в отладчик, как только
+получит это событие, минуя @code{special-event-map}.  В настоящее время
+только поддерживаемые значения соответствуют сигналам @code{SIGUSR1} и
+@code{SIGUSR2} (это значение по умолчанию).  Это может быть полезно, когда
+установлен @code{inhibit-quit}, а Emacs не отвечает иначе.
 @end defopt
 
 @cindex message, finding what causes a particular message
 @defvar debug-on-message
-If you set @code{debug-on-message} to a regular expression,
-Emacs will enter the debugger if it displays a matching message in the
-echo area.  For example, this can be useful when trying to find the
-cause of a particular message.
+Если установить для @code{debug-on-message} регулярное выражение, Emacs
+войдет в отладчик, если отобразит соответствующее сообщение в эхо-области.
+Например, это может быть полезно при попытке найти причину того или иного
+сообщения.
 @end defvar
 
-  To debug an error that happens during loading of the init
-file, use the option @samp{--debug-init}.  This binds
-@code{debug-on-error} to @code{t} while loading the init file, and
-bypasses the @code{condition-case} which normally catches errors in the
-init file.
+  Чтобы отладить ошибку, возникающую при загрузке файла инициализации,
+используйте параметр @samp{--debug-init}.  Это связывает
+@code{debug-on-error} с @code{t} при загрузке файла инициализации и
+обходит @code{condition-case}, который обычно обнаруживает ошибки в файле
+инициализации.
 
 @node Infinite Loops
-@subsection Debugging Infinite Loops
+@subsection Отладка Бесконечных Циклов
 @cindex infinite loops
 @cindex loops, infinite
 @cindex quitting from infinite loop
 @cindex stopping an infinite loop
 
-  When a program loops infinitely and fails to return, your first
-problem is to stop the loop.  On most operating systems, you can do
-this with @kbd{C-g}, which causes a @dfn{quit}.  @xref{Quitting}.
+  Когда программа зацикливается бесконечно и не может вернуться, первая
+проблема - остановить цикл.  В большинстве операционных систем это можно
+сделать с помощью @kbd{C-g}, который вызывает @dfn{quit}.  @xref{Quitting}.
 
-  Ordinary quitting gives no information about why the program was
-looping.  To get more information, you can set the variable
-@code{debug-on-quit} to non-@code{nil}.  Once you have the debugger
-running in the middle of the infinite loop, you can proceed from the
-debugger using the stepping commands.  If you step through the entire
-loop, you may get enough information to solve the problem.
+  Обычный выход не дает информации о том, почему программа зацикливалась.
+Для получения дополнительной информации можно установить для переменной
+@code{debug-on-quit} значение не-@code{nil}.  После того, как отладчик
+запущен в середине бесконечного цикла, можно продолжить работу с отладчиком,
+используя пошаговые команды.  Если пройти весь цикл, можно получить
+достаточно информации для решения проблемы.
 
-  Quitting with @kbd{C-g} is not considered an error, and
-@code{debug-on-error} has no effect on the handling of @kbd{C-g}.
-Likewise, @code{debug-on-quit} has no effect on errors.
+  Выход с помощью @kbd{C-g} не считается ошибкой, а @code{debug-on-error}
+не влияет на обработку @kbd{C-g}.  Точно так же @code{debug-on-quit} не
+влияет на ошибки.
 
 @defopt debug-on-quit
-This variable determines whether the debugger is called when
-@code{quit} is signaled and not handled.  If @code{debug-on-quit} is
-non-@code{nil}, then the debugger is called whenever you quit (that
-is, type @kbd{C-g}).  If @code{debug-on-quit} is @code{nil} (the
-default), then the debugger is not called when you quit.
+Эта переменная определяет, вызывается ли отладчик, когда @code{quit}
+сигнализируется и не обрабатывается.  Если @code{debug-on-quit} равен
+не-@code{nil}, то отладчик вызывается при выходе (то есть при вводе
+@kbd{C-g}).  Если @code{debug-on-quit} - @code{nil} (по умолчанию),
+отладчик не вызывается при выходе.
 @end defopt
 
 @node Function Debugging
-@subsection Entering the Debugger on a Function Call
+@subsection Вход в Отладчик при Вызове Функции
 @cindex function call debugging
 @cindex debugging specific functions
 
-  To investigate a problem that happens in the middle of a program, one
-useful technique is to enter the debugger whenever a certain function is
-called.  You can do this to the function in which the problem occurs,
-and then step through the function, or you can do this to a function
-called shortly before the problem, step quickly over the call to that
-function, and then step through its caller.
+  Чтобы исследовать проблему, которая возникает в середине программы, можно
+использовать один из полезных приемов - входить в отладчик при каждом вызове
+определенной функции.  Можно сделать это с функцией, в которой возникает
+проблема, а затем выполнить пошаговое выполнение функции, или можно сделать
+это с функцией, вызываемой незадолго до возникновения проблемы, быстро
+перешагнуть через вызов этой функции, а затем пройти через ее вызывающего.
 
 @deffn Command debug-on-entry function-name
-This function requests @var{function-name} to invoke the debugger each
-time it is called.
+Эта функция запрашивает @var{function-name} для вызова отладчика при каждом
+её вызове.
 
-Any function or macro defined as Lisp code may be set to break on
-entry, regardless of whether it is interpreted code or compiled code.
-If the function is a command, it will enter the debugger when called
-from Lisp and when called interactively (after the reading of the
-arguments).  You can also set debug-on-entry for primitive functions
-(i.e., those written in C) this way, but it only takes effect when the
-primitive is called from Lisp code.  Debug-on-entry is not allowed for
-special forms.
+Любая функция или макрос, определенные как код Lisp, могут быть установлены
+на прерывание при входе, независимо от того, является ли это
+интерпретируемым кодом или скомпилированным кодом.  Если функция является
+командой, она войдет в отладчик при вызове из Lisp и при интерактивном
+вызове (после чтения аргументов).  Также можно установить отладку при входе
+для примитивных функций (то есть написанных на C) таким образом, но это
+вступит в силу только тогда, когда примитив вызывается из кода Lisp.
+Отладка при входе не допускается для специальных форм.
 
-When @code{debug-on-entry} is called interactively, it prompts for
-@var{function-name} in the minibuffer.  If the function is already set
-up to invoke the debugger on entry, @code{debug-on-entry} does nothing.
-@code{debug-on-entry} always returns @var{function-name}.
+Когда @code{debug-on-entry} вызывается в интерактивном режиме, он
+запрашивает @var{function-name} в минибуфере.  Если функция уже настроена
+для вызова отладчика при входе, @code{debug-on-entry} ничего не делает.
+@code{debug-on-entry} всегда возвращает @var{function-name}.
 
-Here's an example to illustrate use of this function:
+Вот пример, иллюстрирующий использование этой функции:
 
 @example
 @group
@@ -293,78 +290,75 @@ Debugger entered--entering a function:
 @end deffn
 
 @deffn Command cancel-debug-on-entry &optional function-name
-This function undoes the effect of @code{debug-on-entry} on
-@var{function-name}.  When called interactively, it prompts for
-@var{function-name} in the minibuffer.  If @var{function-name} is
-omitted or @code{nil}, it cancels break-on-entry for all functions.
-Calling @code{cancel-debug-on-entry} does nothing to a function which is
-not currently set up to break on entry.
+Эта функция отменяет эффект @code{debug-on-entry} на @var{function-name}.
+При интерактивном вызове запрашивает в минибуфере @var{function-name}.  Если
+@var{function-name} опущено или @code{nil}, он отменяет прерывание при входе
+для всех функций.  Вызов @code{cancel-debug-on-entry} ничего не делает для
+функции, которая в настоящее время не настроена на прерывание при входе.
 @end deffn
 
 @node Variable Debugging
-@subsection Entering the debugger when a variable is modified
+@subsection Вход в Отладчик при Изменении Переменной
 @cindex variable write debugging
 @cindex debugging changes to variables
 
-Sometimes a problem with a function is due to a wrong setting of a
-variable.  Setting up the debugger to trigger whenever the variable is
-changed is a quick way to find the origin of the setting.
+Иногда проблема с функцией возникает из-за неправильной установки
+переменной.  Настройка отладчика для срабатывания при изменении переменной -
+это быстрый способ найти источник настройки.
 
 @deffn Command debug-on-variable-change variable
-This function arranges for the debugger to be called whenever
-@var{variable} is modified.
+Эта функция организует вызов отладчика при изменении @var{variable}.
 
-It is implemented using the watchpoint mechanism, so it inherits the
-same characteristics and limitations: all aliases of @var{variable}
-will be watched together, only dynamic variables can be watched, and
-changes to the objects referenced by variables are not detected.  For
-details, see @ref{Watching Variables}.
+Она реализована с использованием механизма точки наблюдения, поэтому она
+наследует те же характеристики и ограничения: все псевдонимы @var{variable}
+будут отслеживаться вместе, могут наблюдаться только динамические
+переменные, и изменения в объектах, на которые ссылаются переменные, не
+обнаруживаются.  Подробности, смотреть @ref{Watching Variables}.
 @end deffn
 
 @deffn Command cancel-debug-on-variable-change &optional variable
-This function undoes the effect of @code{debug-on-variable-change} on
-@var{variable}.  When called interactively, it prompts for
-@var{variable} in the minibuffer.  If @var{variable} is omitted or
-@code{nil}, it cancels break-on-change for all variables.  Calling
-@code{cancel-debug-on-variable-change} does nothing to a variable
-which is not currently set up to break on change.
+Эта функция отменяет эффект @code{debug-on-variable-change} на
+@var{variable}.  При интерактивном вызове запрашивает в минибуфере
+@var{variable}.  Если параметр @var{variable} или @code{nil} опущен,
+прерывание при замене отменяется для всех переменных.  Вызов
+@code{cancel-debug-on-variable-change} ничего не делает с переменной,
+которая в настоящее время не настроена на прерывание при изменении.
 @end deffn
 
 
 @node Explicit Debug
-@subsection Explicit Entry to the Debugger
+@subsection Явный Вход в Отладчик
 @cindex debugger, explicit entry
 @cindex force entry to debugger
 
 @cindex @code{eval-defun}, and explicit entry to debugger
-  You can cause the debugger to be called at a certain point in your
-program by writing the expression @code{(debug)} at that point.  To do
-this, visit the source file, insert the text @samp{(debug)} at the
-proper place, and type @kbd{C-M-x} (@code{eval-defun}, a Lisp mode key
-binding).  @strong{Warning:} if you do this for temporary debugging
-purposes, be sure to undo this insertion before you save the file!
+  Можно вызвать отладчик в определенной точке вашей программы, написав в
+этой точке выражение @code{(debug)}.  Для этого зайдите в исходный файл,
+вставьте текст @samp{(debug)} в нужное место и введите @kbd{C-M-x}
+(@code{eval-defun}, привязка ключа режима Lisp).  @strong{Внимание:}, если
+сделать это для временной отладки, обязательно отмените эту вставку перед
+сохранением файла!
 
-  The place where you insert @samp{(debug)} must be a place where an
-additional form can be evaluated and its value ignored.  (If the value
-of @code{(debug)} isn't ignored, it will alter the execution of the
-program!)  The most common suitable places are inside a @code{progn} or
-an implicit @code{progn} (@pxref{Sequencing}).
+  Место, куда вставляется @samp{(debug)}, должно быть местом, где можно
+оценивать дополнительную форму и игнорировать ее значение.  (Если значение
+@code{(debug)} не игнорируется, это изменит выполнение программы!).
+Наиболее часто подходящие места находятся внутри @code{progn} или неявного
+@code{progn}.  (@pxref{Sequencing}).
 
-  If you don't know exactly where in the source code you want to put
-the debug statement, but you want to display a backtrace when a
-certain message is displayed, you can set @code{debug-on-message} to a
-regular expression matching the desired message.
+  Если знаеть точно, где в исходном коде требуется поместить оператор
+отладки, но нужно отображать обратную трассировку при отображении
+определенного сообщения, можно установить @code{debug-on-message} на
+регулярное выражение, соответствующее желаемому сообщению.
 
 @node Using Debugger
-@subsection Using the Debugger
+@subsection Использование Отладчика
 
-  When the debugger is entered, it displays the previously selected
-buffer in one window and a buffer named @file{*Backtrace*} in another
-window.  The backtrace buffer contains one line for each level of Lisp
-function execution currently going on.  At the beginning of this buffer
-is a message describing the reason that the debugger was invoked (such
-as the error message and associated data, if it was invoked due to an
-error).
+  При входе в отладчик он отображает ранее выбранный буфер в одном окне и
+буфер с именем @file{*Backtrace*} в другом окне.  Буфер обратной трассировки
+содержит по одной строке для каждого уровня выполнения функции Lisp, которая
+отрабатывает в данный момент.  В начале этого буфера находится сообщение,
+описывающее причину вызова отладчика (например, сообщение об ошибке и
+связанные данные, если он был вызван из-за ошибки).
 
 @vindex debugger-bury-or-kill
   The backtrace buffer is read-only and uses a special major mode,
