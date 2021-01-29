@@ -11,101 +11,105 @@
 @c , Bugs and Todo List, Top, Top
 
 @node Edebug
-@section Edebug
+@section Отладчик Edebug
 @cindex Edebug debugging facility
 
-  Edebug is a source-level debugger for Emacs Lisp programs, with which
-you can:
+  Edebug - это отладчик исходного кода для программ Emacs Lisp, с помощью
+которого можно:
 
 @itemize @bullet
 @item
-Step through evaluation, stopping before and after each expression.
+Пошагово выполнять оценку, останавливаясь до и после каждого выражения.
 
 @item
-Set conditional or unconditional breakpoints.
+Установить условные или безусловные точки останова.
 
 @item
-Stop when a specified condition is true (the global break event).
+Остановить, когда указанное условие истинно (глобальное событие прерывания).
 
 @item
-Trace slow or fast, stopping briefly at each stop point, or
-at each breakpoint.
+Отслеживать медленно или быстро, ненадолго останавливаясь в каждой точке
+остановки или в каждой точке останова.
 
 @item
-Display expression results and evaluate expressions as if outside of
-Edebug.
+Отображать результаты выражений и оценивать выражения, как если бы они были
+вне Edebug.
 
 @item
-Automatically re-evaluate a list of expressions and
-display their results each time Edebug updates the display.
+Автоматически переоценивать список выражений и отображать их результаты
+каждый раз, когда Edebug обновляет отображение.
 
 @item
-Output trace information on function calls and returns.
+Вывод информации трассировки для вызовов и возвратов функций.
 
 @item
-Stop when an error occurs.
+Остановка при возникновении ошибки.
 
 @item
-Display a backtrace, omitting Edebug's own frames.
+Отобразить обратную трассировку, опуская собственные кадры Edebug.
 
 @item
-Specify argument evaluation for macros and defining forms.
+Указать оценку аргументов для макросов и определяющих форм.
 
 @item
-Obtain rudimentary coverage testing and frequency counts.
+Получить элементарное тестирование покрытия и подсчет частоты.
 @end itemize
 
-The first three sections below should tell you enough about Edebug to
-start using it.
+Первые три раздела ниже должны рассказать достаточно об Edebug, чтобы начать
+его использовать.
 
 @menu
-* Using Edebug::                Introduction to use of Edebug.
-* Instrumenting::               You must instrument your code
-                                  in order to debug it with Edebug.
-* Modes: Edebug Execution Modes. Execution modes, stopping more or less often.
-* Jumping::                     Commands to jump to a specified place.
-* Misc: Edebug Misc.            Miscellaneous commands.
-* Breaks::                      Setting breakpoints to make the program stop.
-* Trapping Errors::             Trapping errors with Edebug.
-* Views: Edebug Views.          Views inside and outside of Edebug.
-* Eval: Edebug Eval.            Evaluating expressions within Edebug.
-* Eval List::                   Expressions whose values are displayed
-                                  each time you enter Edebug.
-* Printing in Edebug::          Customization of printing.
-* Trace Buffer::                How to produce trace output in a buffer.
-* Coverage Testing::            How to test evaluation coverage.
-* The Outside Context::         Data that Edebug saves and restores.
-* Edebug and Macros::           Specifying how to handle macro calls.
-* Options: Edebug Options.      Option variables for customizing Edebug.
+* Using Edebug::                Введение в использование Edebug.
+* Instrumenting::               Потребуется инструментировать код, чтобы
+отлаживать его с помощью Edebug.
+* Modes:  Edebug Execution Modes. Режимы выполнения, остановка более-менее
+часто.
+* Jumping::                     Команды для перехода в указанное место.
+* Misc: Edebug Misc.            Разные команды.
+* Breaks::                      Установка точек останова для остановки программы.
+* Trapping Errors::             Перехват ошибок с помощью Edebug.
+* Views: Edebug Views.          Виды внутри и снаружи Edebug.
+* Eval: Edebug Eval.            Оценка выражений в Edebug.
+* Eval List::                   Выражения, значения которых отображаются
+                                 каждый раз при входе в Edebug.
+* Printing in Edebug::          Настройка вывода.
+* Trace Buffer::                Как произвести вывод трассировки в буфер.
+* Coverage Testing::            Как протестировать оценочное покрытие.
+* The Outside Context::         Данные, которые Edebug сохраняет и
+                                 восстанавливает.
+* Edebug and Macros::           Определение того, как обрабатывать вызовы
+                                 макросов.
+* Options: Edebug Options.      Переменные параметров для настройки Edebug.
 @end menu
 
 @node Using Edebug
-@subsection Using Edebug
+@subsection Использование Edebug
 
-  To debug a Lisp program with Edebug, you must first @dfn{instrument}
-the Lisp code that you want to debug.  A simple way to do this is to
-first move point into the definition of a function or macro and then do
-@kbd{C-u C-M-x} (@code{eval-defun} with a prefix argument).  See
-@ref{Instrumenting}, for alternative ways to instrument code.
+  Чтобы отлаживать программу на Lisp с помощью Edebug, потребуется сначала
+@dfn{инструментировать} код Lisp, который нужно отлаживать.  Простой способ
+сделать это - сначала переместить точку в определение функции или макроса,
+а затем выполнить @kbd{C-u C-M-x} (@code{eval-defun} с префиксным
+аргументом).  Смотреть @ref{Instrumenting}, для альтернативных способов
+инструментирования кода.
 
-  Once a function is instrumented, any call to the function activates
-Edebug.  Depending on which Edebug execution mode you have selected,
-activating Edebug may stop execution and let you step through the
-function, or it may update the display and continue execution while
-checking for debugging commands.  The default execution mode is step,
-which stops execution.  @xref{Edebug Execution Modes}.
+  После инструментирования функции любой вызов функции активирует Edebug.
+В зависимости от того, какой режим выполнения Edebug выбран, активация
+Edebug может остановить выполнение и позволить перейти к выполнению функции
+или может обновить отображение и продолжить выполнение при проверке команд
+отладки.  Режим выполнения по умолчанию - шаг, который останавливает
+выполнение.  @xref{Edebug Execution Modes}.
 
-  Within Edebug, you normally view an Emacs buffer showing the source of
-the Lisp code you are debugging.  This is referred to as the @dfn{source
-code buffer}, and it is temporarily read-only.
+  В Edebug обычно просматривается буфер Emacs, показывающий исходный код
+Lisp, который отлаживается.  Он называется @dfn{буфер исходного када} и
+он временно доступен только для чтения.
 
-  An arrow in the left fringe indicates the line where the function is
-executing.  Point initially shows where within the line the function is
-executing, but this ceases to be true if you move point yourself.
+  Стрелка в левой части указывает строку, в которой выполняется функция.
+Изначально точка показывает, где внутри строки выполняется функция, но это
+перестает быть истинным, если перемещена точка самостоятельно.
 
-  If you instrument the definition of @code{fac} (shown below) and then
-execute @code{(fac 3)}, here is what you would normally see.  Point is
-at the open-parenthesis before @code{if}.
+  Если инструментируется определение @code{fac} (показано ниже), а затем
+выполняется @code{(fac 3)}, вот что обычно увидите.  Точка стоит в скобках
+перед @code{if}.
 
 @example
 (defun fac (n)
@@ -115,11 +119,11 @@ at the open-parenthesis before @code{if}.
 @end example
 
 @cindex stop points
-The places within a function where Edebug can stop execution are called
-@dfn{stop points}.  These occur both before and after each subexpression
-that is a list, and also after each variable reference.
-Here we use periods to show the stop points in the function
-@code{fac}:
+Места внутри функции, где Edebug может остановить выполнение, называются
+@dfn{точками останова}.  Они могут быть как до, так и после каждого
+подвыражения, представляющего собой список, а также после каждой ссылки на
+переменную.  Здесь используются точки для отображения точек останова в
+функции @code{fac}:
 
 @example
 (defun fac (n)
@@ -128,11 +132,10 @@ Here we use periods to show the stop points in the function
     1).)
 @end example
 
-The special commands of Edebug are available in the source code buffer
-in addition to the commands of Emacs Lisp mode.  For example, you can
-type the Edebug command @key{SPC} to execute until the next stop point.
-If you type @key{SPC} once after entry to @code{fac}, here is the
-display you will see:
+Специальные команды Edebug доступны в буфере исходного кода в дополнение к
+командам режима Emacs Lisp.  Например, можно ввести команду Edebug @key{SPC}
+для выполнения до следующей точки остановки.  Если наберается @key{SPC} один
+раз после входа в @code{fac}, экран примет такой вид:
 
 @example
 (defun fac (n)
@@ -141,430 +144,438 @@ display you will see:
     1))
 @end example
 
-When Edebug stops execution after an expression, it displays the
-expression's value in the echo area.
+Когда Edebug останавливает выполнение после выражения, он отображает
+значение выражения в эхо-области.
 
-Other frequently used commands are @kbd{b} to set a breakpoint at a stop
-point, @kbd{g} to execute until a breakpoint is reached, and @kbd{q} to
-exit Edebug and return to the top-level command loop.  Type @kbd{?} to
-display a list of all Edebug commands.
+Другие часто используемые команды: @kbd{b} для установки точки останова в
+точке останова, @kbd{g} для выполнения до достижения точки останова и
+@kbd{q} для выхода из Edebug и возврата в командный цикл верхнего уровня.
+Введите @kbd{?}, чтобы отобразить список всех команд Edebug.
 
 @node Instrumenting
-@subsection Instrumenting for Edebug
+@subsection Инструментирование для Edebug
 @cindex instrumenting for Edebug
 
-  In order to use Edebug to debug Lisp code, you must first
-@dfn{instrument} the code.  Instrumenting code inserts additional code
-into it, to invoke Edebug at the proper places.
+  Чтобы использовать Edebug для отладки кода Lisp, потребуется сначала
+инструментировать код.  Инструментирование кода вставляет в него
+дополнительный код для вызова Edebug в нужных местах.
 
 @kindex C-M-x
 @findex eval-defun @r{(Edebug)}
-  When you invoke command @kbd{C-M-x} (@code{eval-defun}) with a
-prefix argument on a function definition, it instruments the
-definition before evaluating it.  (This does not modify the source
-code itself.)  If the variable @code{edebug-all-defs} is
-non-@code{nil}, that inverts the meaning of the prefix argument: in
-this case, @kbd{C-M-x} instruments the definition @emph{unless} it has
-a prefix argument.  The default value of @code{edebug-all-defs} is
-@code{nil}.  The command @kbd{M-x edebug-all-defs} toggles the value
-of the variable @code{edebug-all-defs}.
+  Когда вызывается команда @kbd{C-M-x} (@code{eval-defun}) с префиксным
+аргументом в тексте определении функции, это инструментирует определение
+перед оценкой его формч.  (Это не изменяет сам исходный код.).  Если
+переменная @code{edebug-all-defs} - не-@code{nil}, это меняет значение
+префиксного аргумента: в этом случае @kbd{C-M-x} определяет префиксный
+аргумент @emph{unless}.  Значение @code{edebug-all-defs} по умолчанию -
+@code{nil}.  Команда @kbd{M-x edebug-all-defs} переключает значение
+переменной @code{edebug-all-defs}.
 
 @findex eval-region @r{(Edebug)}
 @findex eval-buffer @r{(Edebug)}
 @findex eval-current-buffer @r{(Edebug)}
-  If @code{edebug-all-defs} is non-@code{nil}, then the commands
-@code{eval-region}, @code{eval-current-buffer}, and @code{eval-buffer}
-also instrument any definitions they evaluate.  Similarly,
-@code{edebug-all-forms} controls whether @code{eval-region} should
-instrument @emph{any} form, even non-defining forms.  This doesn't apply
-to loading or evaluations in the minibuffer.  The command @kbd{M-x
-edebug-all-forms} toggles this option.
+  Если @code{edebug-all-defs} равен не-@code{nil}, то команды
+@code{eval-region}, @code{eval-current-buffer}, и @code{eval-buffer} также
+обрабатывают любые определения, которые они оценивают.  Точно так же
+@code{edebug-all-forms} контролирует, должен ли @code{eval-region}
+использовать @emph{любую} форму , даже не определяющую.  Это не относится к
+загрузке или оценке в минибуфере.  Команда @kbd{M-x edebug-all-forms}
+переключает эту опцию.
 
 @findex edebug-eval-top-level-form
 @findex edebug-defun
-  Another command, @kbd{M-x edebug-eval-top-level-form}, is available to
-instrument any top-level form regardless of the values of
-@code{edebug-all-defs} and @code{edebug-all-forms}.
-@code{edebug-defun} is an alias for @code{edebug-eval-top-level-form}.
+  Другая команда, @kbd{M-x edebug-eval-top-level-form}, доступна для
+инструментирования любой формы верхнего уровня независимо от значений
+@code{edebug-all-defs} и @code{edebug-all-forms}.  @code{edebug-defun} - это
+псевдоним @code{edebug-eval-top-level-form}.
 
-  While Edebug is active, the command @kbd{I}
-(@code{edebug-instrument-callee}) instruments the definition of the
-function or macro called by the list form after point, if it is not already
-instrumented.  This is possible only if Edebug knows where to find the
-source for that function; for this reason, after loading Edebug,
-@code{eval-region} records the position of every definition it
-evaluates, even if not instrumenting it.  See also the @kbd{i} command
-(@pxref{Jumping}), which steps into the call after instrumenting the
-function.
+  Пока Edebug активен, команда @kbd{I} (@code{edebug-instrument-callee})
+инструментирует определение функции или макроса, вызываемых формой списка
+после точки, если это еще не инструментировано.  Это возможно только в том
+случае, если Edebug знает, где найти источник этой функции; по этой причине,
+после загрузки Edebug, @code{eval-region} записывает позицию каждого
+определения, которое он оценивает, даже если он не инструментировал его.
+Смотреть также команду @kbd{i} (@pxref{Jumping}), которая переходит в вызов
+после инструментирования функции.
 
-  Edebug knows how to instrument all the standard special forms,
-@code{interactive} forms with an expression argument, anonymous lambda
-expressions, and other defining forms.  However, Edebug cannot determine
-on its own what a user-defined macro will do with the arguments of a
-macro call, so you must provide that information using Edebug
-specifications; for details, @pxref{Edebug and Macros}.
+  Edebug знает, как инструментировать все стандартные специальные формы,
+формы @code{interactive} с аргументом выражением, анонимные лямбда-выражения
+и другие определяющие формы.  Однако Edebug не может самостоятельно
+определить, что пользовательский макрос будет делать с аргументами вызова
+макроса, поэтому потребуется предоставить эту информацию, используя
+спецификации Edebug; подробнее @pxref{Edebug and Macros}.
 
-  When Edebug is about to instrument code for the first time in a
-session, it runs the hook @code{edebug-setup-hook}, then sets it to
-@code{nil}.  You can use this to load Edebug specifications
-associated with a package you are using, but only when you use Edebug.
+  Когда Edebug собирается инструментировать код в первый раз в сеансе, он
+запускает ловушку @code{edebug-setup-hook}, а затем устанавливает для неё
+значение @code{nil}.  Можно использовать это для загрузки спецификаций
+Edebug, связанных с используемым пакетом, но только когда используется
+Edebug.
 
 @cindex edebug, failure to instrument
-  If Edebug detects a syntax error while instrumenting, it leaves point
-at the erroneous code and signals an @code{invalid-read-syntax} error.
-@c FIXME?  I can't see that it "leaves point at the erroneous code".
+  Если Edebug обнаруживает синтаксическую ошибку во время
+инструментирования, он оставляет точку в ошибочном коде и сигнализирует об
+ошибке @code{invalid-read-syntax}.
+@c От меня?  Я не вижу, что он это делает.
 Example:
 
 @example
 @error{} Invalid read syntax: "Expected lambda expression"
 @end example
 
-  One potential reason for such a failure to instrument is that some
-macro definitions are not yet known to Emacs.  To work around this,
-load the file which defines the function you are about to instrument.
+  Одной из возможных причин такой неудачи с инструментарием является то, что
+некоторые макроопределения еще не известны Emacs.  Чтобы обойти это,
+загружается файл, который определяет функцию, которую инструментируется.
 
 @findex eval-expression @r{(Edebug)}
-  To remove instrumentation from a definition, simply re-evaluate its
-definition in a way that does not instrument.  There are two ways of
-evaluating forms that never instrument them: from a file with
-@code{load}, and from the minibuffer with @code{eval-expression}
-(@kbd{M-:}).
+  Чтобы удалить инструментарий из определения, просто переоценивается его
+определение способом, который не инструментирует.  Есть два способа оценки
+форм, которые никогда не инструментируют их: из файла используя @code{load}
+и из минибуфера с помощью @code{eval-expression} (@kbd{M-:}).
 
-  @xref{Edebug Eval}, for other evaluation functions available
-inside of Edebug.
+  @xref{Edebug Eval}, для других оценочных функций, доступных в Edebug.
 
 @node Edebug Execution Modes
-@subsection Edebug Execution Modes
+@subsection Режимы Выполнения Edebug
 
 @cindex Edebug execution modes
-Edebug supports several execution modes for running the program you are
-debugging.  We call these alternatives @dfn{Edebug execution modes}; do
-not confuse them with major or minor modes.  The current Edebug execution mode
-determines how far Edebug continues execution before stopping---whether
-it stops at each stop point, or continues to the next breakpoint, for
-example---and how much Edebug displays the progress of the evaluation
-before it stops.
+Edebug поддерживает несколько режимов выполнения отлаживаемой программы.
+Называются эти альтернативы @dfn{Режимы выполнения Edebug}; не путатm их с
+основными или второстепенными режимами.  Текущий режим выполнения Edebug
+определяет, как далеко Edebug продолжает выполнение до остановки - например,
+останавливается ли он в каждой точке останова или продолжает выполнение до
+следующей точки останова - и сколько Edebug отображает прогресс оценки до
+остановки.
 
-Normally, you specify the Edebug execution mode by typing a command to
-continue the program in a certain mode.  Here is a table of these
-commands; all except for @kbd{S} resume execution of the program, at
-least for a certain distance.
+Обычно указывается режим выполнения Edebug, набирается команду для
+продолжения программы в определенном режиме.  Вот таблица этих команд; все
+кроме @kbd{S} возобновляют выполнение программы хотя бы на определенное
+расстояние.
 
 @table @kbd
 @item S
-Stop: don't execute any more of the program, but wait for more
-Edebug commands (@code{edebug-stop}).
-@c FIXME Does not work. https://debbugs.gnu.org/9764
+Стоп: больше не выполнять программу, а дождаться других команд Edebug
+(@code{edebug-stop}).
+@c от себя Не работает. https://debbugs.gnu.org/9764
 
 @item @key{SPC}
-Step: stop at the next stop point encountered (@code{edebug-step-mode}).
+Шаг: остановиться в следующей обнаруженной точке остановки
+(@code{edebug-step-mode}).
 
 @item n
-Next: stop at the next stop point encountered after an expression
-(@code{edebug-next-mode}).  Also see @code{edebug-forward-sexp} in
-@ref{Jumping}.
+Далее: остановиться в следующей точке остановки, обнаруженной после
+выражения (@code{edebug-next-mode}).  Также смотреть
+@code{edebug-forward-sexp} в @ref{Jumping}.
 
 @item t
-Trace: pause (normally one second) at each Edebug stop point
+Трассировка: пауза (обычно одна секунда) в каждой точке остановки Edebug
 (@code{edebug-trace-mode}).
 
 @item T
-Rapid trace: update the display at each stop point, but don't actually
-pause (@code{edebug-Trace-fast-mode}).
+Быстрое отслеживание: обновляется отображение в каждой точке останова, но
+не приостанавливает работу (@code{edebug-Trace-fast-mode}).
 
 @item g
-Go: run until the next breakpoint (@code{edebug-go-mode}).  @xref{Breakpoints}.
+Вперёд: идти до следующей точки останова (@code{edebug-go-mode}).
+@xref{Breakpoints}.
 
 @item c
-Continue: pause one second at each breakpoint, and then continue
-(@code{edebug-continue-mode}).
+Продолжить: делать паузу на одну секунду в каждой точке останова, а затем
+продолжить (@code{edebug-continue-mode}).
 
 @item C
-Rapid continue: move point to each breakpoint, but don't pause
-(@code{edebug-Continue-fast-mode}).
+Быстрое продолжение: переместите точку к каждой точке останова, но не
+останавливаться (@code{edebug-Continue-fast-mode}).
 
 @item G
-Go non-stop: ignore breakpoints (@code{edebug-Go-nonstop-mode}).  You
-can still stop the program by typing @kbd{S}, or any editing command.
+Не останавливаться: игнорировать точки останова
+(@code{edebug-Go-nonstop-mode}).  По-прежнему можно остановить программу,
+набрав @kbd{S} или любую команду редактирования.
 @end table
 
-In general, the execution modes earlier in the above list run the
-program more slowly or stop sooner than the modes later in the list.
+В общем, режимы выполнения, указанные ранее в приведенном выше списке,
+запускают программу медленнее или останавливаются раньше, чем режимы,
+указанные ниже в списке.
 
-When you enter a new Edebug level, Edebug will normally stop at the
-first instrumented function it encounters.  If you prefer to stop only
-at a break point, or not at all (for example, when gathering coverage
-data), change the value of @code{edebug-initial-mode} from its default
-@code{step} to @code{go}, or @code{Go-nonstop}, or one of its other
-values (@pxref{Edebug Options}).  You can do this readily with
+Когда происходит вход на новый уровень Edebug, Edebug обычно останавливается
+на первой обнаруженной инструментированной функции.  Если предпочитается
+останавливаться только в точке останова или вообще не останавливаться
+(например, при сборе данных о покрытии), изменяется значение
+@code{edebug-initial-mode} с его значения по умолчанию @code{step} на
+@code{go}, или @code{Go-nonstop}, или одно из других его значений
+(@pxref{Edebug Options}).  Можно легко сделать это с помощью
 @kbd{C-x C-a C-m} (@code{edebug-set-initial-mode}):
 
 @deffn Command edebug-set-initial-mode
 @kindex C-x C-a C-m
-This command, bound to @kbd{C-x C-a C-m}, sets
-@code{edebug-initial-mode}.  It prompts you for a key to indicate the
-mode.  You should enter one of the eight keys listed above, which sets
-the corresponding mode.
+Эта команда, привязанная к @kbd{C-x C-a C-m}, устанавливает
+@code{edebug-initial-mode}.  Будет предложено ввести ключ для указания
+режима.  Необходимо ввести одну из восьми ключей, перечисленных выше,
+что установит соответствующий режим.
 @end deffn
 
-Note that you may reenter the same Edebug level several times if, for
-example, an instrumented function is called several times from one
-command.
+Обратите внимание, что можно повторно войти на один и тот же уровень Edebug
+несколько раз, если, например, инструментированая функция вызывается
+несколько раз из одной команды.
 
-While executing or tracing, you can interrupt the execution by typing
-any Edebug command.  Edebug stops the program at the next stop point and
-then executes the command you typed.  For example, typing @kbd{t} during
-execution switches to trace mode at the next stop point.  You can use
-@kbd{S} to stop execution without doing anything else.
+Во время выполнения или трассировки можно прервать выполнение, набрав любую
+команду Edebug.  Edebug останавливает программу в следующей точке останова,
+а затем выполняет набранную вами команду.  Например, ввод @kbd{t} во время
+выполнения переключает в режим трассировки в следующей точке остановки.
+Можно использовать @kbd{S}, чтобы остановить выполнение, ничего не делая.
 
-If your function happens to read input, a character you type intending
-to interrupt execution may be read by the function instead.  You can
-avoid such unintended results by paying attention to when your program
-wants input.
+Если ваша функция выполняет чтение ввода, вместо этого функция может
+прочитать символ, который вводится, намереваясь прервать выполнение.  Можно
+избежать таких непредвиденных результатов, обращая внимание на то, когда
+программа требует ввода.
 
 @cindex keyboard macros (Edebug)
-Keyboard macros containing the commands in this section do not
-completely work: exiting from Edebug, to resume the program, loses track
-of the keyboard macro.  This is not easy to fix.  Also, defining or
-executing a keyboard macro outside of Edebug does not affect commands
-inside Edebug.  This is usually an advantage.  See also the
-@code{edebug-continue-kbd-macro} option in @ref{Edebug Options}.
+Макросы клавиатуры, содержащие команды из этого раздела, не работают
+полностью: при выходе из Edebug для возобновления программы макрос
+клавиатуры теряется.  Исправить это непросто.  Кроме того, определение или
+выполнение макроса клавиатуры вне Edebug не влияет на команды внутри Edebug.
+Обычно это преимущество.  Смотреть параметр @code{edebug-continue-kbd-macro}
+в @ref{Edebug Options}.
 
 @defopt edebug-sit-for-seconds
-This option specifies how many seconds to wait between execution steps
-in trace mode or continue mode.  The default is 1 second.
+Этот параметр указывает, сколько секунд ждать между этапами выполнения в
+режиме трассировки или режиме продолжения.  По умолчанию 1 секунда.
 @end defopt
 
 @node Jumping
-@subsection Jumping
+@subsection Прыжки
 
-  The commands described in this section execute until they reach a
-specified location.  All except @kbd{i} make a temporary breakpoint to
-establish the place to stop, then switch to go mode.  Any other
-breakpoint reached before the intended stop point will also stop
-execution.  @xref{Breakpoints}, for the details on breakpoints.
+  Команды, описанные в этом разделе, выполняются, пока не достигнут
+указанного места.  Все, кроме @kbd{i}, создают временную точку останова,
+чтобы установить место для остановки, затем переключаются в режим перехода.
+Любая другая точка останова, достигнутая до предполагаемой точки останова,
+также остановит выполнение.  @xref{Breakpoints}, чтобы узнать о точках
+останова.
 
-  These commands may fail to work as expected in case of nonlocal exit,
-as that can bypass the temporary breakpoint where you expected the
-program to stop.
+  Эти команды могут не работать должным образом в случае нелокального
+выхода, так как это может обойти временную точку останова, на которой
+ожидалась остановка программы.
 
 @table @kbd
 @item h
-Proceed to the stop point near where point is (@code{edebug-goto-here}).
+Перейти к точке омтанова с точкой (@code{edebug-goto-here}).
 
 @item f
-Run the program for one expression
-(@code{edebug-forward-sexp}).
+Запустить программу для одного выражения (@code{edebug-forward-sexp}).
 
 @item o
-Run the program until the end of the containing sexp (@code{edebug-step-out}).
+Запустить программу до конца содержащего sexp (@code{edebug-step-out}).
 
 @item i
-Step into the function or macro called by the form after point
+Войти в функцию или макрос, вызываемый формой после точки
 (@code{edebug-step-in}).
 @end table
 
-The @kbd{h} command proceeds to the stop point at or after the current
-location of point, using a temporary breakpoint.
+Команда @kbd{h} переходит к точке останова в текущем положении точки или
+после нее, используя временную точку останова.
 
-The @kbd{f} command runs the program forward over one expression.  More
-precisely, it sets a temporary breakpoint at the position that
-@code{forward-sexp} would reach, then executes in go mode so that
-the program will stop at breakpoints.
+Команда @kbd{f} запускает программу вперед по одному выражению.  Точнее, она
+устанавливает временную точку останова в позиции, которую достигнет
+@code{forward-sexp}, а затем выполняется в режиме go, так что программа
+останавливается на точках останова.
 
-With a prefix argument @var{n}, the temporary breakpoint is placed
-@var{n} sexps beyond point.  If the containing list ends before @var{n}
-more elements, then the place to stop is after the containing
-expression.
+С префиксным аргументом @var{n} временная точка останова помещается @var{n}
+секунд на точку.  Если содержащий список заканчивается до всех @var{n}
+элементов, то место для останова находится после содержащего выражения.
 
-You must check that the position @code{forward-sexp} finds is a place
-that the program will really get to.  In @code{cond}, for example,
-this may not be true.
+Потребуется убедиться, что найденная @code{forward-sexp} позиция - это то
+место, куда программа действительно попадет.  В @code{cond}, например, это
+может быть не так.
 
-For flexibility, the @kbd{f} command does @code{forward-sexp} starting
-at point, rather than at the stop point.  If you want to execute one
-expression @emph{from the current stop point}, first type @kbd{w}
-(@code{edebug-where}) to move point there, and then type @kbd{f}.
+Для гибкости команда @kbd{f} выполняет @code{forward-sexp}, начиная с точки,
+а не с точки останова.  Если требуется выполнить одно выражение
+@emph{от текущей точки остановки}, сначала вводится @kbd{w}
+(@code{edebug-where}), чтобы переместить туда точку, а затем вводится
+@kbd{f}.
 
-The @kbd{o} command continues out of an expression.  It places a
-temporary breakpoint at the end of the sexp containing point.  If the
-containing sexp is a function definition itself, @kbd{o} continues until
-just before the last sexp in the definition.  If that is where you are
-now, it returns from the function and then stops.  In other words, this
-command does not exit the currently executing function unless you are
-positioned after the last sexp.
+Команда @kbd{o} продолжается вне выражения.  Она помещает временную точку
+останова в конец точки, содержащей выражение sexp.  Если содержащее sexp
+само является определением функции, @kbd{o} продолжается до самого
+последнего sexp в определении.  Если это и есть то место, она возвращается
+из функции, а затем останавливается.  Другими словами, эта команда не
+завершает текущую выполняемую функцию, если положение находится после
+последнего выражения sexp.
 
-Normally, the @kbd{h}, @kbd{f}, and @kbd{o} commands display ``Break''
-and pause for @code{edebug-sit-for-seconds} before showing the result
-of the form just evaluated.  You can avoid this pause by setting
-@code{edebug-sit-on-break} to @code{nil}.  @xref{Edebug Options}.
+Обычно команды @kbd{h}, @kbd{f}, и @kbd{o} отображают ``Break'' и делают
+паузу для @code{edebug-sit-for-seconds} перед отображением результата только
+что оцененной формы.  Можно избежать этой паузы, установив для
+@code{edebug-sit-on-break} значение @code{nil}.  @xref{Edebug Options}.
 
-The @kbd{i} command steps into the function or macro called by the list
-form after point, and stops at its first stop point.  Note that the form
-need not be the one about to be evaluated.  But if the form is a
-function call about to be evaluated, remember to use this command before
-any of the arguments are evaluated, since otherwise it will be too late.
+Команда @kbd{i} переходит к функции или макросу, вызываемой формой списка
+после точки, и останавливается в своей первой точке останова.  Обратить
+внимание, что форма не обязательно должна быть той, которая будет
+оцениваться.  Но если форма представляет собой вызов функции, которая должна
+быть оценена, не забыть использовать эту команду до оценки любого из
+аргументов, поскольку в противном случае будет слишком поздно.
 
-The @kbd{i} command instruments the function or macro it's supposed to
-step into, if it isn't instrumented already.  This is convenient, but keep
-in mind that the function or macro remains instrumented unless you explicitly
-arrange to deinstrument it.
+Команда @kbd{i} инструментирует функцию или макрос, в которые она должна
+входить, если это еще не инструментировано.  Это удобно, но нужно иметь в
+виду, что функция или макрос остаются инструментированными, если явно их не
+деинструментировать.
 
 @node Edebug Misc
-@subsection Miscellaneous Edebug Commands
+@subsection Разные Команды Edebug
 
-  Some miscellaneous Edebug commands are described here.
+  Здесь описаны некоторые разные команды Edebug.
 
 @table @kbd
 @item ?
-Display the help message for Edebug (@code{edebug-help}).
+Показать справочное сообщение для Edebug (@code{edebug-help}).
 
 @item C-]
-Abort one level back to the previous command level
+Отменить один уровень назад к предыдущему командному уровню
 (@code{abort-recursive-edit}).
 
 @item q
-Return to the top level editor command loop (@code{top-level}).  This
-exits all recursive editing levels, including all levels of Edebug
-activity.  However, instrumented code protected with
-@code{unwind-protect} or @code{condition-case} forms may resume
-debugging.
+Вернуться в редактор верхнего уровня command loop (@code{top-level}).  Это
+закрывает все уровни рекурсивного редактирования, включая все уровни
+активности Edebug.  Однако инструментированый код, защищенный формами
+@code{unwind-protect} или @code{condition-case}, может возобновить отладку.
 
 @item Q
-Like @kbd{q}, but don't stop even for protected code
+Как @kbd{q}, но не останавливаться даже на защищенном коде
 (@code{edebug-top-level-nonstop}).
 
 @item r
-Redisplay the most recently known expression result in the echo area
+Повторно отобразить результат последнего известного выражения в эхо-области
 (@code{edebug-previous-result}).
 
 @item d
-Display a backtrace, excluding Edebug's own functions for clarity
+Отобразить трассировку, исключая собственные функции Edebug для наглядности
 (@code{edebug-backtrace}).
 
-You cannot use debugger commands in the backtrace buffer in Edebug as
-you would in the standard debugger.
+Не выйдет использовать команды отладчика в буфере обратной трассировки в
+Edebug, как в стандартном отладчике.
 
-The backtrace buffer is killed automatically when you continue
-execution.
+Буфер трассировки автоматически уничтожается, когда продолжается выполнение.
 @end table
 
-You can invoke commands from Edebug that activate Edebug again
-recursively.  Whenever Edebug is active, you can quit to the top level
-with @kbd{q} or abort one recursive edit level with @kbd{C-]}.  You can
-display a backtrace of all the pending evaluations with @kbd{d}.
+Можно вызывать команды из Edebug, которые снова рекурсивно активируют
+Edebug.  Когда Edebug активен, можно выйти на верхний уровень с помощью
+@kbd{q} или прервать один рекурсивный уровень редактирования с помощью
+@kbd{C-]}.  Можно отобразить трассировку всех ожидающих оценок с помощью
+@kbd{d}.
 
 @node Breaks
-@subsection Breaks
+@subsection Остановы
 
-Edebug's step mode stops execution when the next stop point is reached.
-There are three other ways to stop Edebug execution once it has started:
-breakpoints, the global break condition, and source breakpoints.
+Пошаговый режим Edebug останавливает выполнение, когда достигается следующая
+точка останова.  Есть три разных способа остановить выполнение Edebug после
+его запуска: точка останова, глобальное условие останова и исходная точка
+останова.
 
 @menu
-* Breakpoints::                 Breakpoints at stop points.
-* Global Break Condition::      Breaking on an event.
-* Source Breakpoints::          Embedding breakpoints in source code.
+* Breakpoints::                 Точки останова в точках останова.
+* Global Break Condition::      Останов по событию.
+* Source Breakpoints::          Встраивание точек останова в исходный код.
 @end menu
 
 @node Breakpoints
-@subsubsection Edebug Breakpoints
+@subsubsection Edebug Точки Останова
 
 @cindex breakpoints (Edebug)
-While using Edebug, you can specify @dfn{breakpoints} in the program you
-are testing: these are places where execution should stop.  You can set a
-breakpoint at any stop point, as defined in @ref{Using Edebug}.  For
-setting and unsetting breakpoints, the stop point that is affected is
-the first one at or after point in the source code buffer.  Here are the
-Edebug commands for breakpoints:
+При использовании Edebug можно указать @dfn{точки останова} в тестируемой
+программе: это места, где выполнение должно остановиться.  Можно установить
+точку останова в любой точке остановки, как определено в @ref{Using Edebug}.
+При установке и снятии точек останова затрагивается точка останова, которая
+находится первее в буфере исходного кода или после нее.  Вот команды Edebug
+для точек останова:
 
 @table @kbd
 @item b
-Set a breakpoint at the stop point at or after point
-(@code{edebug-set-breakpoint}).  If you use a prefix argument, the
-breakpoint is temporary---it turns off the first time it stops the
-program.
+Установить точку останова в точке остановки в точке
+(@code{edebug-set-breakpoint}) или после нее.  Если используется префиксный
+аргумент, точка останова будет временной - она отключается при первом
+останове программы.
 
 @item u
-Unset the breakpoint (if any) at the stop point at or after
-point (@code{edebug-unset-breakpoint}).
+Сбросить точку останова (если есть) в точке останова в точке
+(@code{edebug-unset-breakpoint}) или после нее.
 
 @item x @var{condition} @key{RET}
-Set a conditional breakpoint which stops the program only if
-evaluating @var{condition} produces a non-@code{nil} value
-(@code{edebug-set-conditional-breakpoint}).  With a prefix argument,
-the breakpoint is temporary.
+Установить условную точку останова, которая останавливает программу, только
+если оценка @var{condition} дает значение не-@code{nil}
+(@code{edebug-set-conditional-breakpoint}).  С префиксным аргументом точка
+останова является временной.
 
 @item B
-Move point to the next breakpoint in the current definition
+Переместить точку к следующей точке останова в текущем определении
 (@code{edebug-next-breakpoint}).
 @end table
 
-While in Edebug, you can set a breakpoint with @kbd{b} and unset one
-with @kbd{u}.  First move point to the Edebug stop point of your choice,
-then type @kbd{b} or @kbd{u} to set or unset a breakpoint there.
-Unsetting a breakpoint where none has been set has no effect.
+Находясь в Edebug, можно установить точку останова с помощью @kbd{b} и
+отключить ее с помощью @kbd{u}.  Сначала переместить точку в точку останова
+Edebug по вашему выбору, затем ввести @kbd{b} или @kbd{u}, чтобы установить
+или сбросить точку останова там.  Снятие точки останова, если она не была
+установлена, не имеет никакого эффекта.
 
-Re-evaluating or reinstrumenting a definition removes all of its
-previous breakpoints.
+При повторной оценке или повторном использовании определения удаляются все
+предыдущие точки останова.
 
-A @dfn{conditional breakpoint} tests a condition each time the program
-gets there.  Any errors that occur as a result of evaluating the
-condition are ignored, as if the result were @code{nil}.  To set a
-conditional breakpoint, use @kbd{x}, and specify the condition
-expression in the minibuffer.  Setting a conditional breakpoint at a
-stop point that has a previously established conditional breakpoint puts
-the previous condition expression in the minibuffer so you can edit it.
+@dfn{Условные точки останова} проверяет условие каждый раз, когда программа
+попадает туда.  Любые ошибки, возникающие в результате оценки условия,
+игнорируются, как если бы результат был @code{nil}.  Чтобы установить
+условную точку останова, используется @kbd{x} и указывается выражение
+условия в минибуфере.  Установка условной точки останова в точке останова,
+которая имеет ранее установленную условную точку останова, помещает
+предыдущее выражение условия в минибуфер, чтобы можно было его
+редактировать.
 
-You can make a conditional or unconditional breakpoint
-@dfn{temporary} by using a prefix argument with the command to set the
-breakpoint.  When a temporary breakpoint stops the program, it is
-automatically unset.
+Можно создать условную или безусловную точку останова @dfn{temporary},
+используя префиксный аргумент с командой для установки точки останова.
+Когда временная точка останова останавливает программу, она автоматически
+сбрасывается.
 
-Edebug always stops or pauses at a breakpoint, except when the Edebug
-mode is Go-nonstop.  In that mode, it ignores breakpoints entirely.
+Edebug всегда останавливается или приостанавливается в точке останова, за
+исключением случаев, когда режим Edebug - Go-nonstop.  В этом режиме он
+полностью игнорирует точки останова.
 
-To find out where your breakpoints are, use the @kbd{B} command, which
-moves point to the next breakpoint following point, within the same
-function, or to the first breakpoint if there are no following
-breakpoints.  This command does not continue execution---it just moves
-point in the buffer.
+Чтобы узнать, где находятся точки останова, используется команда @kbd{B},
+которая перемещает точку к следующей точке останова, следующей за точкой,
+внутри той же функции или к первой точке останова, если следующих точек
+останова нет.  Эта команда не продолжает выполнение - она просто перемещает
+точку в буфере.
 
 @node Global Break Condition
-@subsubsection Global Break Condition
+@subsubsection Глобальное Условие Останова
 
 @cindex stopping on events
 @cindex global break condition
-  A @dfn{global break condition} stops execution when a specified
-condition is satisfied, no matter where that may occur.  Edebug
-evaluates the global break condition at every stop point; if it
-evaluates to a non-@code{nil} value, then execution stops or pauses
-depending on the execution mode, as if a breakpoint had been hit.  If
-evaluating the condition gets an error, execution does not stop.
+  @dfn{Глобальное условие останова} останавливает выполнение, когда
+выполняется указанное условие, независимо от того, где это может произойти.
+Edebug оценивает глобальное условие прерывания в каждой точке останова; если
+оно оценивается в значение не-@code{nil}, то выполнение останавливается или
+приостанавливается в зависимости от режима выполнения, как если бы была
+достигнута точка останова.  Если при оценке условия возникает ошибка,
+выполнение не останавливается.
 
 @findex edebug-set-global-break-condition
-  The condition expression is stored in
-@code{edebug-global-break-condition}.  You can specify a new expression
-using the @kbd{X} command from the source code buffer while Edebug is
-active, or using @kbd{C-x X X} from any buffer at any time, as long as
-Edebug is loaded (@code{edebug-set-global-break-condition}).
+  Выражение условия хранится в @code{edebug-global-break-condition}.  Можно
+указать новое выражение, используя команду @kbd{X} из буфера исходного кода,
+пока Edebug активен, или используя @kbd{C-x X X} из любого буфера в любое
+время, пока Edebug загружен (@code{edebug-set-global-break-condition}).
 
-  The global break condition is the simplest way to find where in your
-code some event occurs, but it makes code run much more slowly.  So you
-should reset the condition to @code{nil} when not using it.
+  Глобальное условие останова - это самый простой способ найти, где в вашем
+коде происходит какое-либо событие, но оно заставляет код работать намного
+медленнее.  Поэтому следует сбросить условие на @code{nil}, когда оно не
+используется.
 
 @node Source Breakpoints
-@subsubsection Source Breakpoints
+@subsubsection Точки Останова в Исходном Коде
 
 @findex edebug
 @cindex source breakpoints
-  All breakpoints in a definition are forgotten each time you
-reinstrument it.  If you wish to make a breakpoint that won't be
-forgotten, you can write a @dfn{source breakpoint}, which is simply a
-call to the function @code{edebug} in your source code.  You can, of
-course, make such a call conditional.  For example, in the @code{fac}
-function, you can insert the first line as shown below, to stop when the
-argument reaches zero:
+  Все точки останова в определении забываются каждый раз, когда оно заново
+определяется.  Если потребуется создать точку останова, которая не будет
+забыта, можно вставить @dfn{точку останова исходного кода}, которая
+представляет собой просто вызов функции @code{edebug} в вашем исходном коде.
+Конечно, можете сделать такой вызов условным.  Например, в функции
+@code{fac} можно вставить первую строку, как показано ниже, чтобы
+остановить, когда аргумент достигнет нуля:
 
 @example
 (defun fac (n)
@@ -574,193 +585,192 @@ argument reaches zero:
     1))
 @end example
 
-  When the @code{fac} definition is instrumented and the function is
-called, the call to @code{edebug} acts as a breakpoint.  Depending on
-the execution mode, Edebug stops or pauses there.
+  Когда определение @code{fac} инструментировано и функция вызывается, вызов
+@code{edebug} действует как точка останова.  В зависимости от режима
+выполнения Edebug останавливается или приостанавливается на нем.
 
-  If no instrumented code is being executed when @code{edebug} is called,
-that function calls @code{debug}.
-@c This may not be a good idea anymore.
+  Если инструментальный код не выполняется при вызове @code{edebug}, эта
+функция вызывает @code{debug}.
+@c Возможно, это уже не лучшая идея.
 
 @node Trapping Errors
-@subsection Trapping Errors
+@subsection Захват Ошибок
 
-  Emacs normally displays an error message when an error is signaled and
-not handled with @code{condition-case}.  While Edebug is active and
-executing instrumented code, it normally responds to all unhandled
-errors.  You can customize this with the options @code{edebug-on-error}
-and @code{edebug-on-quit}; see @ref{Edebug Options}.
+  Emacs обычно отображает сообщение об ошибке, когда сообщается об ошибке и
+не обрабатывается с помощью @code{condition-case}.  Пока Edebug активен и
+выполняет инструментированный код, он обычно реагирует на все необработанные
+ошибки.  Можно настроить это с помощью параметров @code{edebug-on-error} и
+@code{edebug-on-quit}; смотреть @ref{Edebug Options}.
 
-  When Edebug responds to an error, it shows the last stop point
-encountered before the error.  This may be the location of a call to a
-function which was not instrumented, and within which the error actually
-occurred.  For an unbound variable error, the last known stop point
-might be quite distant from the offending variable reference.  In that
-case, you might want to display a full backtrace (@pxref{Edebug Misc}).
+  Когда Edebug реагирует на ошибку, он показывает последнюю точку останова,
+встреченную перед ошибкой.  Это может быть место вызова функции, которая не
+была инструментирована и в которой действительно произошла ошибка.  Для
+ошибки несвязанной переменной, последняя известная точка останова может быть
+довольно далеко удалена от ссылки на переменную, вызывающую нарушение.  В
+этом случае можно отобразить полную трассировку (@pxref{Edebug Misc}).
 
-@c Edebug should be changed for the following: -- dan
-  If you change @code{debug-on-error} or @code{debug-on-quit} while
-Edebug is active, these changes will be forgotten when Edebug becomes
-inactive.  Furthermore, during Edebug's recursive edit, these variables
-are bound to the values they had outside of Edebug.
+@c Edebug следует изменить на следующие: -- dan
+  Если изменить @code{debug-on-error} или @code{debug-on-quit}, когда Edebug
+активен, эти изменения будут забыты, когда Edebug станет неактивным.  Более
+того, во время рекурсивного редактирования Edebug эти переменные
+привязываются к значениям, которые у них были вне Edebug.
 
 @node Edebug Views
-@subsection Edebug Views
+@subsection Виды Edebug
 
-  These Edebug commands let you view aspects of the buffer and window
-status as they were before entry to Edebug.  The outside window
-configuration is the collection of windows and contents that were in
-effect outside of Edebug.
+  Эти команды Edebug позволяют просматривать аспекты состояния буфера и
+окна, какими они были до входа в Edebug.  Конфигурация внешнего окна - это
+набор окон и содержимого, которые действовали вне Edebug.
 
 @table @kbd
 @item v
-Switch to viewing the outside window configuration
-(@code{edebug-view-outside}).  Type @kbd{C-x X w} to return to Edebug.
+Перейти к просмотру конфигурации внешнего окна (@code{edebug-view-outside}).
+Ввести @kbd{C-x X w}, чтобы вернуться в Edebug.
 
 @item p
-Temporarily display the outside current buffer with point at its
-outside position (@code{edebug-bounce-point}), pausing for one second
-before returning to Edebug.  With a prefix argument @var{n}, pause for
-@var{n} seconds instead.
+Временно отобразить внешний текущий буфер с точкой в его внешней позиции
+(@code{edebug-bounce-point}), сделав паузу на одну секунду перед возвратом в
+Edebug.  С префиксным аргументом @var{n} вместо этого сделайте паузу на
+@var{n} секунд.
 
 @item w
-Move point back to the current stop point in the source code buffer
+Переместить точку обратно в текущую точку остановки в буфере исходного кода
 (@code{edebug-where}).
 
-If you use this command in a different window displaying the same
-buffer, that window will be used instead to display the current
-definition in the future.
+Если использовать эту команду в другом окне, отображающем тот же буфер, это
+окно будет использоваться вместо этого для отображения текущего определения
+в будущем.
 
 @item W
-@c Its function is not simply to forget the saved configuration -- dan
-Toggle whether Edebug saves and restores the outside window
-configuration (@code{edebug-toggle-save-windows}).
+@c Его функция - не просто забыть сохраненную конфигурацию. -- dan
+Указать, сохраняет ли Edebug и восстанавливает конфигурацию внешнего окна
+(@code{edebug-toggle-save-windows}).
 
-With a prefix argument, @code{W} only toggles saving and restoring of
-the selected window.  To specify a window that is not displaying the
-source code buffer, you must use @kbd{C-x X W} from the global keymap.
+С префиксным аргументом @code{W} переключает только сохранение и
+восстановление выбранного окна.  Чтобы указать окно, в котором не
+отображается буфер исходного кода, необходимо использовать @kbd{C-x X W} из
+глобальной ключевой карты.
 @end table
 
-  You can view the outside window configuration with @kbd{v} or just
-bounce to the point in the current buffer with @kbd{p}, even if
-it is not normally displayed.
+  Можно просмотреть конфигурацию внешнего окна с помощью @kbd{v} или просто
+перейти к точке в текущем буфере с помощью @kbd{p}, даже если он обычно не
+отображается.
 
-  After moving point, you may wish to jump back to the stop point.
-You can do that with @kbd{w} from a source code buffer.  You can jump
-back to the stop point in the source code buffer from any buffer using
-@kbd{C-x X w}.
+  После перемещения точки может потребоваться вернуться к точке останова.
+Можно сделать это с помощью @kbd{w} из буфера исходного кода.  Можно
+вернуться к точке останова в буфере исходного кода из любого буфера,
+используя @kbd{C-x X w}.
 
-  Each time you use @kbd{W} to turn saving @emph{off}, Edebug forgets the
-saved outside window configuration---so that even if you turn saving
-back @emph{on}, the current window configuration remains unchanged when
-you next exit Edebug (by continuing the program).  However, the
-automatic redisplay of @file{*edebug*} and @file{*edebug-trace*} may
-conflict with the buffers you wish to see unless you have enough windows
-open.
+  Каждый раз, когда используется @kbd{W} для включения сохранения
+@emph{off}, Edebug забывает сохраненную конфигурацию внешнего окна --- так
+что даже если снова включить сохранение @emph{on}, текущая конфигурация окна
+останется неизменной при следующем выходе из Edebug (продолжая программу).
+Однако автоматическое повторное отображение @file{*edebug*} и
+@file{*edebug-trace*} может конфликтовать с буферами, которые потребуется
+видеть, если не открыто достаточно окон.
 
 @node Edebug Eval
-@subsection Evaluation
+@subsection Оценка
 
-  While within Edebug, you can evaluate expressions as if Edebug
-were not running.  Edebug tries to be invisible to the expression's
-evaluation and printing.  Evaluation of expressions that cause side
-effects will work as expected, except for changes to data that Edebug
-explicitly saves and restores.  @xref{The Outside Context}, for details
-on this process.
+  Находясь в Edebug, можно оценивать выражения, как если бы Edebug не был
+запущен.  Edebug пытается быть невидимым для вычисления и печати выражения.
+Оценка выражений, вызывающих побочные эффекты, будет работать должным
+образом, за исключением изменений данных, которые Edebug явно сохраняет и
+восстанавливает.  @xref{The Outside Context}, чтобы узнать подробнее об этом
+процессе.
 
 @table @kbd
 @item e @var{exp} @key{RET}
-Evaluate expression @var{exp} in the context outside of Edebug
-(@code{edebug-eval-expression}).  That is, Edebug tries to minimize its
-interference with the evaluation.
+Вычислить выражение @var{exp} в контексте вне Edebug
+(@code{edebug-eval-expression}).  То есть Edebug пытается минимизировать
+своё вмешательство в оценку.
 
 @item M-: @var{exp} @key{RET}
-Evaluate expression @var{exp} in the context of Edebug itself
+Вычислить выражение @var{exp} в контексте самого Edebug
 (@code{eval-expression}).
 
 @item C-x C-e
-Evaluate the expression before point, in the context outside of Edebug
+Оценитm выражение перед точкой в контексте за пределами Edebug
 (@code{edebug-eval-last-sexp}).
 @end table
 
 @cindex lexical binding (Edebug)
-  Edebug supports evaluation of expressions containing references to
-lexically bound symbols created by the following constructs in
-@file{cl.el}: @code{lexical-let}, @code{macrolet}, and
-@code{symbol-macrolet}.
-@c FIXME?  What about lexical-binding = t?
+  Edebug поддерживает оценку выражений, содержащих ссылки на лексически
+связанные символы, созданные следующими конструкциями в @file{cl.el}:
+@code{lexical-let}, @code{macrolet}, и @code{symbol-macrolet}.
+@c от себя?  А как насчет лексической привязки = t?
 
 @node Eval List
-@subsection Evaluation List Buffer
+@subsection Буфер Оценочного Списка
 
-  You can use the @dfn{evaluation list buffer}, called @file{*edebug*}, to
-evaluate expressions interactively.  You can also set up the
-@dfn{evaluation list} of expressions to be evaluated automatically each
-time Edebug updates the display.
+  Можно использовать @dfn{Буфер Оценочного Списка}, называемый
+@file{*edebug*}, для интерактивной оценки выражений.  Можно настроить
+@dfn{лист оценки} выражений на автоматическое вычисление каждый раз, когда
+Edebug обновляет отображение.
 
 @table @kbd
 @item E
-Switch to the evaluation list buffer @file{*edebug*}
+Перейти в буфер списка оценок @file{*edebug*}
 (@code{edebug-visit-eval-list}).
 @end table
 
-  In the @file{*edebug*} buffer you can use the commands of Lisp
-Interaction mode (@pxref{Lisp Interaction,,, emacs, The GNU Emacs
-Manual}) as well as these special commands:
+  В буфере @file{*edebug*} можно использовать команды режима взаимодействия
+с Lisp (@pxref{Lisp Interaction,,, emacs, The GNU Emacs Manual}), а также
+эти специальные команды:
 
 @table @kbd
 @item C-j
-Evaluate the expression before point, in the outside context, and insert
-the value in the buffer (@code{edebug-eval-print-last-sexp}).
+Вычислить выражение перед точкой во внешнем контексте и вставить значение в
+буфер (@code{edebug-eval-print-last-sexp}).
 
 @item C-x C-e
-Evaluate the expression before point, in the context outside of Edebug
+Оценить выражение перед точкой в контексте за пределами Edebug
 (@code{edebug-eval-last-sexp}).
 
 @item C-c C-u
-Build a new evaluation list from the contents of the buffer
+Создать новый оценочный список из содержимого буфера
 (@code{edebug-update-eval-list}).
 
 @item C-c C-d
-Delete the evaluation list group that point is in
+Удалить группу списка оценки, которая находится в
 (@code{edebug-delete-eval-item}).
 
 @item C-c C-w
-Switch back to the source code buffer at the current stop point
+Вернуться в буфер исходного кода в текущей точке останова
 (@code{edebug-where}).
 @end table
 
-  You can evaluate expressions in the evaluation list window with
-@kbd{C-j} or @kbd{C-x C-e}, just as you would in @file{*scratch*};
-but they are evaluated in the context outside of Edebug.
+  Можно оценивать выражения в окне списка оценок с помощью @kbd{C-j} или
+@kbd{C-x C-e}, как и в @file{*scratch*}; но они оцениваются вне Edebug.
 
-  The expressions you enter interactively (and their results) are lost
-when you continue execution; but you can set up an @dfn{evaluation list}
-consisting of expressions to be evaluated each time execution stops.
+  Выражения, которые вводятся в интерактивном режиме (и их результаты),
+теряются, когда продолжается выполнение; но можно настроить
+@dfn{список оценки}, состоящий из выражений, которые будут вычисляться
+каждый раз при остановке выполнения.
 
 @cindex evaluation list group
-  To do this, write one or more @dfn{evaluation list groups} in the
-evaluation list buffer.  An evaluation list group consists of one or
-more Lisp expressions.  Groups are separated by comment lines.
+  Для этого запишите одну или несколько @dfn{групп листа оценки} в буфер
+оценочного списка.  Группа оценочного списка состоит из одного или
+нескольких выражений Lisp.  Группы разделяются строками комментариев.
 
-  The command @kbd{C-c C-u} (@code{edebug-update-eval-list}) rebuilds the
-evaluation list, scanning the buffer and using the first expression of
-each group.  (The idea is that the second expression of the group is the
-value previously computed and displayed.)
+  Команда @kbd{C-c C-u} (@code{edebug-update-eval-list}) перестраивает
+оценочный список, просматривая буфер и используя первое выражение каждой
+группы.  (Идея состоит в том, что второе выражение группы - это значение,
+ранее вычисленное и отображаемое.)
 
-  Each entry to Edebug redisplays the evaluation list by inserting each
-expression in the buffer, followed by its current value.  It also
-inserts comment lines so that each expression becomes its own group.
-Thus, if you type @kbd{C-c C-u} again without changing the buffer text,
-the evaluation list is effectively unchanged.
+  Каждая запись в Edebug повторно отображает список оценки, вставляя каждое
+выражение в буфер, за которым следует его текущее значение.  Это также
+вставляет строки комментариев, так что каждое выражение становится отдельной
+группой.  Таким образом, если снова набрать @kbd{C-c C-u}, не изменяя текст
+буфера, оценочный список фактически не изменится.
 
-  If an error occurs during an evaluation from the evaluation list,
-the error message is displayed in a string as if it were the result.
-Therefore, expressions using variables that are not currently valid do
-not interrupt your debugging.
+  Если ошибка возникает во время оценки из оценочного списка, сообщение об
+ошибке отображается в строке, как если бы это было результатом.
+Следовательно, выражения, использующие переменные, которые в настоящее время
+недействительны, не прерывают отладку.
 
-  Here is an example of what the evaluation list window looks like after
-several expressions have been added to it:
+  Вот пример того, как выглядит окно оценочного списка после добавления к
+нему нескольких выражений:
 
 @smallexample
 (current-buffer)
@@ -783,48 +793,48 @@ eval-last-sexp
 ;---------------------------------------------------------------
 @end smallexample
 
-To delete a group, move point into it and type @kbd{C-c C-d}, or simply
-delete the text for the group and update the evaluation list with
-@kbd{C-c C-u}.  To add a new expression to the evaluation list, insert
-the expression at a suitable place, insert a new comment line, then type
-@kbd{C-c C-u}.  You need not insert dashes in the comment line---its
-contents don't matter.
+Чтобы удалить группу, перемещается в неё точка и вводится @kbd{C-c C-d} или
+просто удаляется текст для группы и обновляется оценочный список с помощью
+@kbd{C-c C-u}.  Чтобы добавить новое выражение в список оценки, вставляется
+выражение в подходящее место, вставляется новая строка комментария, затем
+введится @kbd{C-c C-u}.  Не нужно вставлять тире в строку комментария - его
+содержание не имеет значения.
 
-After selecting @file{*edebug*}, you can return to the source code
-buffer with @kbd{C-c C-w}.  The @file{*edebug*} buffer is killed when
-you continue execution, and recreated next time it is needed.
+После выбора @file{*edebug*} можно вернуться в буфер исходного кода с
+помощью @kbd{C-c C-w}.  Буфер @file{*edebug*} уничтожается, когда
+продолжается выполнение, и воссоздается в следующий раз, когда понадобится.
 
 @node Printing in Edebug
-@subsection Printing in Edebug
+@subsection Печать в Edebug
 
 @cindex printing (Edebug)
 @cindex printing circular structures
 @pindex cust-print
-  If an expression in your program produces a value containing circular
-list structure, you may get an error when Edebug attempts to print it.
+  Если выражение в программе создает значение, содержащее круговую структуру
+списка, можно получить ошибку, когда Edebug попытается распечатать его.
 
-  One way to cope with circular structure is to set @code{print-length}
-or @code{print-level} to truncate the printing.  Edebug does this for
-you; it binds @code{print-length} and @code{print-level} to the values
-of the variables @code{edebug-print-length} and
-@code{edebug-print-level} (so long as they have non-@code{nil}
-values).  @xref{Output Variables}.
+  Один из способов справиться с круговой структурой - установить
+@code{print-length} или @code{print-level}, чтобы урезать печать.  Edebug
+сделает это за вас; он связывает @code{print-length} и @code{print-level}
+со значениями переменных @code{edebug-print-length} и
+@code{edebug-print-level} (при условии, что они имеют значения
+не-@code{nil}).  @xref{Output Variables}.
 
 @defopt edebug-print-length
-If non-@code{nil}, Edebug binds @code{print-length} to this value while
-printing results.  The default value is @code{50}.
+Если не-@code{nil}, Edebug связывает @code{print-length} с этим значением
+при печати результатов.  Значение по умолчанию - @code{50}.
 @end defopt
 
 @defopt edebug-print-level
-If non-@code{nil}, Edebug binds @code{print-level} to this value while
-printing results.  The default value is @code{50}.
+Если не-@code{nil}, Edebug связывает @code{print-level} с этим значением
+при печати результатов.  Значение по умолчанию - @code{50}.
 @end defopt
 
-  You can also print circular structures and structures that share
-elements more informatively by binding @code{print-circle}
-to a non-@code{nil} value.
+  Также можете печатать круговые структуры и структуры, которые более
+информативно разделяют элементы, привязав @code{print-circle} к значению
+не-@code{nil}.
 
-  Here is an example of code that creates a circular structure:
+  Вот пример кода, который создает круговую структуру:
 
 @example
 (setq a '(x y))
@@ -832,47 +842,45 @@ to a non-@code{nil} value.
 @end example
 
 @noindent
-Custom printing prints this as @samp{Result: #1=(#1# y)}.  The
-@samp{#1=} notation labels the structure that follows it with the label
-@samp{1}, and the @samp{#1#} notation references the previously labeled
-structure.  This notation is used for any shared elements of lists or
-vectors.
+Пользовательская печать выводит это как @samp{Result: #1=(#1# y)}.
+Обозначение @samp{#1=} маркирует структуру, которая следует за ней, меткой
+@samp{1}, а запись @samp{#1#} ссылается на ранее помеченную структуру.  Это
+обозначение используется для любых общих элементов списков или векторов.
 
 @defopt edebug-print-circle
-If non-@code{nil}, Edebug binds @code{print-circle} to this value while
-printing results.  The default value is @code{t}.
+Если не-@code{nil}, Edebug связывает @code{print-circle} с этим значением
+при печати результатов.  Значение по умолчанию - @code{t}.
 @end defopt
 
-  Other programs can also use custom printing; see @file{cust-print.el}
-for details.
+  Другие программы также могут использовать настраиваемую печать; подробнее
+смотреть @file{cust-print.el}.
 
 @node Trace Buffer
-@subsection Trace Buffer
+@subsection Буфер Трассировки
 @cindex trace buffer
 
-  Edebug can record an execution trace, storing it in a buffer named
-@file{*edebug-trace*}.  This is a log of function calls and returns,
-showing the function names and their arguments and values.  To enable
-trace recording, set @code{edebug-trace} to a non-@code{nil} value.
+  Edebug может записывать трассировку выполнения, сохраняя ее в буфере с
+именем @file{*edebug-trace*}.  Это журнал вызовов и возвратов функций,
+показывающий имена функций, их аргументы и значения.  Чтобы включить запись
+трассировки, установите для @code{edebug-trace} значение не-@code{nil}.
 
-  Making a trace buffer is not the same thing as using trace execution
-mode (@pxref{Edebug Execution Modes}).
+  Создание буфера трассировки - это не то же самое, что использование режима
+ выполнения трассировки (@pxref{Edebug Execution Modes}).
 
-  When trace recording is enabled, each function entry and exit adds
-lines to the trace buffer.  A function entry record consists of
-@samp{::::@{}, followed by the function name and argument values.  A
-function exit record consists of @samp{::::@}}, followed by the function
-name and result of the function.
+  Когда запись трассировки включена, каждый вход и выход функции добавляет
+строки в буфер трассировки.  Запись функции состоит из @samp{::::@{}, за
+которой следуют имя функции и значения аргументов.  Запись о выходе функции
+состоит из @samp{::::@}}, за которой следуют имя функции и результат
+функции.
 
-  The number of @samp{:}s in an entry shows its recursion depth.  You
-can use the braces in the trace buffer to find the matching beginning or
-end of function calls.
+  Число @samp{:} в записи показывает глубину ее рекурсии.  Можно
+использовать фигурные скобки в буфере трассировки, чтобы найти совпадающее
+начало или конец вызовов функций.
 
 @findex edebug-print-trace-before
 @findex edebug-print-trace-after
-  You can customize trace recording for function entry and exit by
-redefining the functions @code{edebug-print-trace-before} and
-@code{edebug-print-trace-after}.
+  Можно настроить запись трассировки для входа и выхода из функций,
+переопределив функции @code{edebug-print-trace-before} и @code{edebug-print-trace-after}.
 
 @defmac edebug-tracing string body@dots{}
 This macro requests additional trace information around the execution
