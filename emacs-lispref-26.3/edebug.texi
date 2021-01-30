@@ -883,76 +883,76 @@ eval-last-sexp
 переопределив функции @code{edebug-print-trace-before} и @code{edebug-print-trace-after}.
 
 @defmac edebug-tracing string body@dots{}
-This macro requests additional trace information around the execution
-of the @var{body} forms.  The argument @var{string} specifies text
-to put in the trace buffer, after the @samp{@{} or @samp{@}}.  All
-the arguments are evaluated, and @code{edebug-tracing} returns the
-value of the last form in @var{body}.
+Этот макрос запрашивает дополнительную информацию о трассировке выполнения
+форм @var{body}.  Аргумент @var{string} указывает текст, помещаемый в буфер
+трассировки, после @samp{@{} или @samp{@}}.  Все аргументы оцениваются, и
+@code{edebug-tracing} возвращает значение последней формы в @var{body}.
 @end defmac
 
 @defun edebug-trace format-string &rest format-args
-This function inserts text in the trace buffer.  It computes the text
-with @code{(apply 'format @var{format-string} @var{format-args})}.
-It also appends a newline to separate entries.
+Эта функция вставляет текст в буфер трассировки.  Вычисляет текст по
+средствам @code{(apply 'format @var{format-string} @var{format-args})}.
+Также добавляет новую строку к отдельным записям.
 @end defun
 
-  @code{edebug-tracing} and @code{edebug-trace} insert lines in the
-trace buffer whenever they are called, even if Edebug is not active.
-Adding text to the trace buffer also scrolls its window to show the last
-lines inserted.
+  @code{edebug-tracing} и @code{edebug-trace} вставляет строки в буфер
+трассировки всякий раз, когда они вызываются, даже если Edebug не активен.
+Добавление текста в буфер трассировки также прокручивает его окно, чтобы
+показать последние вставленные строки.
 
 @node Coverage Testing
-@subsection Coverage Testing
+@subsection Тестовое Покрытие
 
 @cindex coverage testing (Edebug)
 @cindex frequency counts
 @cindex performance analysis (Edebug)
-  Edebug provides rudimentary coverage testing and display of execution
-frequency.
+  Edebug обеспечивает элементарное тестовое покрытие и отображение частоты
+выполнения.
 
-  Coverage testing works by comparing the result of each expression with
-the previous result; each form in the program is considered covered
-if it has returned two different values since you began testing coverage
-in the current Emacs session.  Thus, to do coverage testing on your
-program, execute it under various conditions and note whether it behaves
-correctly; Edebug will tell you when you have tried enough different
-conditions that each form has returned two different values.
+  Тестовое покрытие работает путем сравнения результата каждого выражения с
+предыдущим результатом; каждая форма в программе считается покрытой, если
+она вернула два разных значения с момента начала тестового покрытия в
+текущем сеансе Emacs.  Таким образом, чтобы выполнить тестовое покрытие
+программы, выполнить ее при различных условиях и отметить, правильно ли она
+ведет себя; Edebug сообщит, когда попробовано достаточно разных условий, что
+каждая форма вернула два разных значения.
 
-  Coverage testing makes execution slower, so it is only done if
-@code{edebug-test-coverage} is non-@code{nil}.  Frequency counting is
-performed for all executions of an instrumented function, even if the
-execution mode is Go-nonstop, and regardless of whether coverage testing
-is enabled.
+  Тестовое покрытие замедляет выполнение, поэтому оно выполняется, только
+если @code{edebug-test-coverage} установлено в не-@code{nil}.  Подсчет
+частоты выполняется для всех выполнений инструментированной функции, даже
+если режим выполнения - непрерывный, и независимо от того, включено ли
+тестовое покрытие.
 
 @kindex C-x X =
 @findex edebug-temp-display-freq-count
-  Use @kbd{C-x X =} (@code{edebug-display-freq-count}) to display both
-the coverage information and the frequency counts for a definition.
-Just @kbd{=} (@code{edebug-temp-display-freq-count}) displays the same
-information temporarily, only until you type another key.
+  Используется @kbd{C-x X =} (@code{edebug-display-freq-count}), чтобы
+отображать как информацию о покрытии, так и частоту для определения.  Просто
+@kbd{=} (@code{edebug-temp-display-freq-count}) временно отображает ту же
+информацию, только пока не наберана другая клавиша.
 
 @deffn Command edebug-display-freq-count
-This command displays the frequency count data for each line of the
-current definition.
+Эта команда отображает данные подсчета частоты для каждой строки текущего
+определения.
 
-It inserts frequency counts as comment lines after each line of code.
-You can undo all insertions with one @code{undo} command.  The counts
-appear under the @samp{(} before an expression or the @samp{)} after
-an expression, or on the last character of a variable.  To simplify
-the display, a count is not shown if it is equal to the count of an
-earlier expression on the same line.
+Вставляет счетчики частоты в виде строк комментариев после каждой строки
+кода.  Можно отменить все вставки с помощью одной команды @code{undo}.
+Счетчики отображаются под @samp{(} перед выражением, под @samp{)} после
+выражения или на последнем символе переменной.  Для упрощения отображения
+счетчик не отображается, если он равен счетчику предыдущего выражения в той
+же строке.
 
-The character @samp{=} following the count for an expression says that
-the expression has returned the same value each time it was evaluated.
-In other words, it is not yet covered for coverage testing purposes.
+Символ @samp{=}, следующий за счетчиком для выражения, означает, что
+выражение возвращало одно и то же значение каждый раз, когда оно
+вычислялось. Другими словами, это еще не охвачено для целей тестового
+покрытия.
 
-To clear the frequency count and coverage data for a definition,
-simply reinstrument it with @code{eval-defun}.
+Чтобы очистить счетчик частоты и данные покрытия для определения, просто
+повторно настроить его с помощью @code{eval-defun}.
 @end deffn
 
-For example, after evaluating @code{(fac 5)} with a source
-breakpoint, and setting @code{edebug-test-coverage} to @code{t}, when
-the breakpoint is reached, the frequency data looks like this:
+Например, после оценки @code{(fac 5)} с исходной точкой останова и установки
+@code{edebug-test-coverage} в @code{t}, когда точка останова достигнута,
+данные частоты выглядят следующим образом:
 
 @example
 (defun fac (n)
@@ -966,530 +966,529 @@ the breakpoint is reached, the frequency data looks like this:
 ;#   0
 @end example
 
-The comment lines show that @code{fac} was called 6 times.  The
-first @code{if} statement returned 5 times with the same result each
-time; the same is true of the condition on the second @code{if}.
-The recursive call of @code{fac} did not return at all.
+Строки комментариев показывают, что @code{fac} был вызван 6 раз.  Первый
+оператор @code{if} возвращал 5 раз с одним и тем же результатом каждый раз;
+то же самое верно для условия на втором @code{if}.  Рекурсивный вызов
+@code{fac} вообще не вернулся.
 
 
 @node The Outside Context
-@subsection The Outside Context
+@subsection Внешний Контекст
 
-Edebug tries to be transparent to the program you are debugging, but it
-does not succeed completely.  Edebug also tries to be transparent when
-you evaluate expressions with @kbd{e} or with the evaluation list
-buffer, by temporarily restoring the outside context.  This section
-explains precisely what context Edebug restores, and how Edebug fails to
-be completely transparent.
+Edebug пытается быть прозрачным для отлаживаемой программы, но это не
+удается полностью.  Edebug также пытается быть прозрачным, когда оцениваются
+выражения с помощью @kbd{e} или с буфером списка оценки, временно
+восстанавливая внешний контекст.  В этом разделе подробно объясняется, какой
+контекст восстанавливает Edebug и почему Edebug не может быть полностью
+прозрачным.
 
 @menu
-* Checking Whether to Stop::    When Edebug decides what to do.
-* Edebug Display Update::       When Edebug updates the display.
-* Edebug Recursive Edit::       When Edebug stops execution.
+* Checking Whether to Stop::    Когда Edebug решает, что делать.
+* Edebug Display Update::       Когда Edebug обновляет отображение.
+* Edebug Recursive Edit::       Когда Edebug прекращает выполнение.
 @end menu
 
 @node Checking Whether to Stop
-@subsubsection Checking Whether to Stop
+@subsubsection Проверка Того, Стоит ли Остановиться
 
-Whenever Edebug is entered, it needs to save and restore certain data
-before even deciding whether to make trace information or stop the
-program.
+Каждый раз, когда вводится Edebug, ему необходимо сохранить и восстановить
+определенные данные, прежде чем даже решить, делать ли информацию
+трассировки или останавливать программу.
 
 @itemize @bullet
 @item
 @vindex edebug-max-depth
-@code{max-lisp-eval-depth} (@pxref{Eval}) and @code{max-specpdl-size}
-(@pxref{Local Variables}) are both increased to reduce Edebug's impact
-on the stack.  You could, however, still run out of stack space when
-using Edebug.  You can also enlarge the value of
-@code{edebug-max-depth} if Edebug reaches the limit of recursion depth
-instrumenting code that contains very large quoted lists.
+@code{max-lisp-eval-depth} (@pxref{Eval}) и @code{max-specpdl-size}
+(@pxref{Local Variables}) увеличены, чтобы уменьшить влияние Edebug на стек.
+Однако при использовании Edebug может не хватить места в стеке.  Также
+можно увеличить значение @code{edebug-max-depth}, если Edebug достигает
+предела глубины рекурсии инструментированого кода , который содержит очень
+большие цитированные списки.
 
 @item
-The state of keyboard macro execution is saved and restored.  While
-Edebug is active, @code{executing-kbd-macro} is bound to @code{nil}
-unless @code{edebug-continue-kbd-macro} is non-@code{nil}.
+Состояние выполнения макроса клавиатуры сохраняется и восстанавливается.
+Пока Edebug активен, @code{executing-kbd-macro} привязан к @code{nil}, если
+@code{edebug-continue-kbd-macro} не не-@code{nil}.
 @end itemize
 
 
 @node Edebug Display Update
-@subsubsection Edebug Display Update
+@subsubsection Обновление Отображения Edebug
 
-@c This paragraph is not filled, because LaLiberte's conversion script
-@c needs an xref to be on just one line.
-When Edebug needs to display something (e.g., in trace mode), it saves
-the current window configuration from outside Edebug
-(@pxref{Window Configurations}).  When you exit Edebug, it restores
-the previous window configuration.
+@c Этот абзац не заполнен, потому что скрипту преобразования LaLiberte
+@c требуется, чтобы внешняя ссылка была только в одной строке.
+Когда Edebug нужно что-то отобразить (например, в режиме трассировки), он
+сохраняет текущую конфигурацию окна извне Edebug
+(@pxref{Window Configurations}).  При выходе из Edebug восстанавливается
+предыдущая конфигурация окна.
 
-Emacs redisplays only when it pauses.  Usually, when you continue
-execution, the program re-enters Edebug at a breakpoint or after
-stepping, without pausing or reading input in between.  In such cases,
-Emacs never gets a chance to redisplay the outside configuration.
-Consequently, what you see is the same window configuration as the last
-time Edebug was active, with no interruption.
+Emacs отображается повторно только при паузе.  Обычно, когда продолжается
+выполнение, программа повторно входит в Edebug в точке останова или после
+пошагового выполнения, без приостановки или чтения ввода между ними.  В
+таких случаях у Emacs никогда не будет возможности повторно отобразить
+внешнюю конфигурацию.  Следовательно, видно ту же конфигурацию окна, что и в
+последний раз, когда Edebug был активен, без прерывания.
 
-Entry to Edebug for displaying something also saves and restores the
-following data (though some of them are deliberately not restored if an
-error or quit signal occurs).
+Вход в Edebug для отображения чего-либо также сохраняет и восстанавливает
+следующие данные (хотя некоторые из них намеренно не восстанавливаются при
+возникновении ошибки или сигнала выхода).
 
 @itemize @bullet
 @item
 @cindex current buffer point and mark (Edebug)
-Which buffer is current, and the positions of point and the mark in the
-current buffer, are saved and restored.
+Какой буфер является текущим, а также позиции точки и метки в текущем буфере
+сохраняются и восстанавливаются.
 
 @item
 @cindex window configuration (Edebug)
-The outside window configuration is saved and restored if
-@code{edebug-save-windows} is non-@code{nil} (@pxref{Edebug Options}).
+Конфигурация внешнего окна сохраняется и восстанавливается, если
+@code{edebug-save-windows} равен не-@code{nil} (@pxref{Edebug Options}).
 
-The window configuration is not restored on error or quit, but the
-outside selected window @emph{is} reselected even on error or quit in
-case a @code{save-excursion} is active.  If the value of
-@code{edebug-save-windows} is a list, only the listed windows are saved
-and restored.
+Конфигурация окна не восстанавливается при ошибке или выходе, но внешнее
+выбранное окно @emph{является} повторно выбиранным даже при ошибке или
+закрытии, если @code{save-excursion} активен.  Если значение
+@code{edebug-save-windows} является списком, сохраняются и восстанавливаются
+только перечисленные окна.
 
-The window start and horizontal scrolling of the source code buffer are
-not restored, however, so that the display remains coherent within Edebug.
-
-@item
-The value of point in each displayed buffer is saved and restored if
-@code{edebug-save-displayed-buffer-points} is non-@code{nil}.
+Однако начало окна и горизонтальная прокрутка буфера исходного кода не
+восстанавливаются, поэтому отображение в Edebug остается согласованным.
 
 @item
-The variables @code{overlay-arrow-position} and
-@code{overlay-arrow-string} are saved and restored, so you can safely
-invoke Edebug from the recursive edit elsewhere in the same buffer.
+Значение точки в каждом отображаемом буфере сохраняется и восстанавливается,
+если @code{edebug-save-displayed-buffer-points} равно не-@code{nil}.
 
 @item
-@code{cursor-in-echo-area} is locally bound to @code{nil} so that
-the cursor shows up in the window.
+Переменные @code{overlay-arrow-position} и @code{overlay-arrow-string}
+сохраняются и восстанавливаются, поэтому можно безопасно вызывать Edebug из
+рекурсивного редактирования в другом месте того же буфера.
+
+@item
+@code{cursor-in-echo-area} локально привязан к @code{nil}, поэтому курсор
+отображается в окне.
 @end itemize
 
 @node Edebug Recursive Edit
-@subsubsection Edebug Recursive Edit
+@subsubsection Рекурсивное Редактирование Edebug
 
-When Edebug is entered and actually reads commands from the user, it
-saves (and later restores) these additional data:
+Когда Edebug вводится и фактически считывает команды от пользователя, он
+сохраняет (а позже восстанавливает) эти дополнительные данные.:
 
 @itemize @bullet
 @item
-The current match data.  @xref{Match Data}.
+Текущие данные соответствия.  @xref{Match Data}.
 
 @item
-The variables @code{last-command}, @code{this-command},
+Переменные @code{last-command}, @code{this-command},
 @code{last-command-event}, @code{last-input-event},
-@code{last-event-frame}, @code{last-nonmenu-event}, and
-@code{track-mouse}.  Commands in Edebug do not affect these variables
-outside of Edebug.
+@code{last-event-frame}, @code{last-nonmenu-event}, и
+@code{track-mouse}.  Команды в Edebug не влияют на эти
+переменные вне Edebug.
 
-Executing commands within Edebug can change the key sequence that
-would be returned by @code{this-command-keys}, and there is no way to
-reset the key sequence from Lisp.
+Выполнение команд в Edebug может изменить последовательность ключей,
+возвращаемую @code{this-command-keys}, и нет способа сбросить
+последовательность ключей из Lisp.
 
-Edebug cannot save and restore the value of
-@code{unread-command-events}.  Entering Edebug while this variable has a
-nontrivial value can interfere with execution of the program you are
-debugging.
-
-@item
-Complex commands executed while in Edebug are added to the variable
-@code{command-history}.  In rare cases this can alter execution.
+Edebug не может сохранять и восстанавливать значение
+@code{unread-command-events}.  Ввод Edebug, когда эта переменная имеет
+нетривиальное значение, может помешать выполнению отлаживаемой программы.
 
 @item
-Within Edebug, the recursion depth appears one deeper than the recursion
-depth outside Edebug.  This is not true of the automatically updated
-evaluation list window.
+Сложные команды, выполняемые в Edebug, добавляются в переменную
+@code{command-history}.  В редких случаях это может повлиять на исполнение.
 
 @item
-@code{standard-output} and @code{standard-input} are bound to @code{nil}
-by the @code{recursive-edit}, but Edebug temporarily restores them during
-evaluations.
+Внутри Edebug глубина рекурсии кажется на единицу глубже, чем глубина
+рекурсии вне Edebug.  Это не относится к автоматически обновляемому окну
+оценочного списка.
 
 @item
-The state of keyboard macro definition is saved and restored.  While
-Edebug is active, @code{defining-kbd-macro} is bound to
+@code{standard-output} и @code{standard-input} привязаны к @code{nil} через
+@code{recursive-edit}, но Edebug временно восстанавливает их во время
+оценки.
+
+@item
+Состояние определения макроса клавиатуры сохраняется и восстанавливается.
+Пока Edebug активен, @code{defining-kbd-macro} привязан к
 @code{edebug-continue-kbd-macro}.
 @end itemize
 
 @node Edebug and Macros
-@subsection Edebug and Macros
+@subsection Edebug и Макросы
 
-To make Edebug properly instrument expressions that call macros, some
-extra care is needed.  This subsection explains the details.
+Чтобы заставить Edebug правильно использовать выражения, вызывающие макросы,
+требуется дополнительная осторожность.  В этом подразделе объясняются
+детали.
 
 @menu
-* Instrumenting Macro Calls::   The basic problem.
-* Specification List::          How to specify complex patterns of evaluation.
-* Backtracking::                What Edebug does when matching fails.
-* Specification Examples::      To help understand specifications.
+* Instrumenting Macro Calls::   Основная проблема.
+* Specification List::          Как указать сложные модели оценки.
+* Backtracking::                Что делает Edebug при сбое сопоставления.
+* Specification Examples::      Чтобы помочь понять спецификации.
 @end menu
 
 @node Instrumenting Macro Calls
-@subsubsection Instrumenting Macro Calls
+@subsubsection Инструментирование Макросов
 
-  When Edebug instruments an expression that calls a Lisp macro, it needs
-additional information about the macro to do the job properly.  This is
-because there is no a-priori way to tell which subexpressions of the
-macro call are forms to be evaluated.  (Evaluation may occur explicitly
-in the macro body, or when the resulting expansion is evaluated, or any
-time later.)
+  Когда Edebug инструментирует выражение, которое вызывает макрос Lisp, ему
+нужна дополнительная информация о макросе, чтобы правильно выполнить работу.
+Это потому, что не существует априорного способа определить, какие
+подвыражения макроса являются формами для оценки.  (Оценка может происходить
+явно в теле макроса, либо при оценке результирующего раскрытия, либо в любое
+время позже.)
 
-  Therefore, you must define an Edebug specification for each macro
-that Edebug will encounter, to explain the format of calls to that
-macro.  To do this, add a @code{debug} declaration to the macro
-definition.  Here is a simple example that shows the specification for
-the @code{for} example macro (@pxref{Argument Evaluation}).
+  Следовательно, потребуется определить спецификацию Edebug для каждого
+макроса, с которым столкнется Edebug, чтобы объяснить формат вызовов этого
+макроса.  Для этого добавляется объявление @code{debug} в определение
+макроса.  Вот простой пример, который показывает спецификацию макроса
+(@pxref{Argument Evaluation}) для примера (@pxref{Argument Evaluation}).
 
 @smallexample
 (defmacro for (var from init to final do &rest body)
-  "Execute a simple \"for\" loop.
-For example, (for i from 1 to 10 do (print i))."
+  "Выполнить простой \"for\" цикл.
+Для примера, (for i from 1 to 10 do (print i))."
   (declare (debug (symbolp "from" form "to" form "do" &rest form)))
   ...)
 @end smallexample
 
-  The Edebug specification says which parts of a call to the macro are
-forms to be evaluated.  For simple macros, the specification
-often looks very similar to the formal argument list of the macro
-definition, but specifications are much more general than macro
-arguments.  @xref{Defining Macros}, for more explanation of
-the @code{declare} form.
+  В спецификации Edebug указано, какие части вызова макроса являются формами
+для оценки.  Для простых макросов спецификация часто очень похожа на
+формальный список аргументов определения макроса, но спецификации гораздо
+более общие, чем аргументы макроса.  @xref{Defining Macros}, для более
+подробного объяснения формы @code{declare}.
 
 @c See, e.g., https://debbugs.gnu.org/10577
-@c FIXME  Maybe there should be an Edebug option to get it to
-@c automatically load the entire source file containing the function
-@c being instrumented.  That would avoid this.
-  Take care to ensure that the specifications are known to Edebug when
-you instrument code.  If you are instrumenting a function which uses a
-macro defined in another file, you may first need to either evaluate
-the @code{require} forms in the file containing your function, or
-explicitly load the file containing the macro.  If the definition of a
-macro is wrapped by @code{eval-when-compile}, you may need to evaluate
-it.
+@c FIXME  Может быть, должна быть опция Edebug, чтобы он автоматически
+@c загружал весь исходный файл, содержащий инструментируемую функцию.
+@c Это позволило бы этого избежать.
+  Потребуется позаботьтесь о том, чтобы спецификации были известны Edebug,
+когда инструментируете код.  Если инструментируете функцию, которая
+использует макрос, определенный в другом файле, может сначала потребоваться
+либо оценить формы @code{require} в файле, содержащем функцию, либо явно
+загрузить файл, содержащий макрос.  Если определение макроса заключено в
+@code{eval-when-compile}, может потребоваться его оценить.
 
-  You can also define an edebug specification for a macro separately
-from the macro definition with @code{def-edebug-spec}.  Adding
-@code{debug} declarations is preferred, and more convenient, for macro
-definitions in Lisp, but @code{def-edebug-spec} makes it possible to
-define Edebug specifications for special forms implemented in C.
+  Также можно определить спецификацию edebug для макроса отдельно от
+определения макроса с помощью @code{def-edebug-spec}.  Добавление объявлений
+@code{debug} является предпочтительным и более удобным для определений
+макросов в Lisp, но @code{def-edebug-spec} позволяет определять спецификации
+Edebug для специальных форм, реализованных в Cи.
 
 @defmac def-edebug-spec macro specification
-Specify which expressions of a call to macro @var{macro} are forms to be
-evaluated.  @var{specification} should be the edebug specification.
-Neither argument is evaluated.
+Указать, какие выражения вызова макроса @var{macro} являются формами для
+оценки.  @var{specification} должен быть спецификацией edebug.  Ни один из
+аргументов не оценивается.
 
-The @var{macro} argument can actually be any symbol, not just a macro
-name.
+Аргумент @var{macro} может быть любым символом, а не только именем макроса.
 @end defmac
 
-Here is a table of the possibilities for @var{specification} and how each
-directs processing of arguments.
+Вот таблица возможностей @var{specification} и того, как каждый управляет
+обработкой аргументов.
 
 @table @asis
 @item @code{t}
-All arguments are instrumented for evaluation.
+Все аргументы приспособлены для оценки.
 
 @item @code{0}
-None of the arguments is instrumented.
+Ни один из аргументов не обоснован.
 
 @item a symbol
-The symbol must have an Edebug specification, which is used instead.
-This indirection is repeated until another kind of specification is
-found.  This allows you to inherit the specification from another macro.
+Символ должен иметь спецификацию Edebug, которая используется вместо этого.
+Это косвенное обращение повторяется до тех пор, пока не будет найден другой
+вид спецификации.  Это позволяет унаследовать спецификацию от другого
+макроса.
 
 @item a list
-The elements of the list describe the types of the arguments of a
-calling form.  The possible elements of a specification list are
-described in the following sections.
+Элементы списка описывают типы аргументов вызывающей формы.  Возможные
+элементы списка спецификаций описаны в следующих разделах.
 @end table
 
-If a macro has no Edebug specification, neither through a @code{debug}
-declaration nor through a @code{def-edebug-spec} call, the variable
-@code{edebug-eval-macro-args} comes into play.
+Если макрос не имеет спецификации Edebug, ни через объявление @code{debug},
+ни через вызов @code{def-edebug-spec}, переменная
+@code{edebug-eval-macro-args} вступает в игру.
 
 @defopt edebug-eval-macro-args
-This controls the way Edebug treats macro arguments with no explicit
-Edebug specification.  If it is @code{nil} (the default), none of the
-arguments is instrumented for evaluation.  Otherwise, all arguments
-are instrumented.
+Это контролирует способ обработки Edebug аргументов макроса без явной
+спецификации Edebug.  Если это @code{nil} (по умолчанию), ни один из
+аргументов не инструментирован для оценки.  В противном случае все аргументы
+инструментированы.
 @end defopt
 
 @node Specification List
-@subsubsection Specification List
+@subsubsection Список Спецификаций
 
 @cindex Edebug specification list
-A @dfn{specification list} is required for an Edebug specification if
-some arguments of a macro call are evaluated while others are not.  Some
-elements in a specification list match one or more arguments, but others
-modify the processing of all following elements.  The latter, called
-@dfn{specification keywords}, are symbols beginning with @samp{&} (such
-as @code{&optional}).
+@dfn{specification list} требуется для спецификации Edebug, если одни
+аргументы вызова макроса оцениваются, а другие нет.  Некоторые элементы в
+списке спецификации соответствуют одному или нескольким аргументам, но
+другие изменяют обработку всех следующих элементов.  Последние, называемые
+@dfn{specification keywords}, представляют собой символы, начинающиеся с
+@samp{&} (например, @code{&optional}).
 
-A specification list may contain sublists, which match arguments that are
-themselves lists, or it may contain vectors used for grouping.  Sublists
-and groups thus subdivide the specification list into a hierarchy of
-levels.  Specification keywords apply only to the remainder of the
-sublist or group they are contained in.
+Список спецификации может содержать подсписки, которые соответствуют
+аргументам, которые сами по себе являются списками, или он может содержать
+векторы, используемые для группировки.  Таким образом, подсписки и группы
+подразделяют список спецификаций на иерархию уровней.  Ключевые слова
+спецификации применяются только к оставшейся части подсписка или группы, в
+которой они содержатся.
 
-When a specification list involves alternatives or repetition, matching
-it against an actual macro call may require backtracking.  For more
-details, @pxref{Backtracking}.
+Когда список спецификаций включает альтернативы или повторение,
+сопоставление его с фактическим вызовом макроса может потребовать
+отслеживания с возвратом.  Больше подробностей, @pxref{Backtracking}.
 
-Edebug specifications provide the power of regular expression matching,
-plus some context-free grammar constructs: the matching of sublists with
-balanced parentheses, recursive processing of forms, and recursion via
-indirect specifications.
+Спецификации Edebug обеспечивают возможность сопоставления регулярных
+выражений, а также некоторые контекстно-свободные грамматические
+конструкции: сопоставление подсписок со сбалансированными круглыми скобками,
+рекурсивную обработку форм и рекурсию через косвенные спецификации.
 
-Here's a table of the possible elements of a specification list, with
-their meanings (see @ref{Specification Examples}, for the referenced
-examples):
+Вот таблица возможных элементов списка спецификаций с их значениями
+(@ref{Specification Examples}, для упомянутых примеров):
 
 @table @code
 @item sexp
-A single unevaluated Lisp object, which is not instrumented.
-@c an "expression" is not necessarily intended for evaluation.
+Единственный неоцененный объект Lisp, который не инструментирован.
+@c выражение не обязательно предназначено для оценки.
 
 @item form
-A single evaluated expression, which is instrumented.  If your macro
-wraps the expression with @code{lambda} before it is evaluated, use
-@code{def-form} instead.  See @code{def-form} below.
+Единственное оцененное выражение, которое инструментировано.  Если макрос
+заключает выражение в @code{lambda} до его оценки, используется вместо него
+@code{def-form}.  Смотреть @code{def-form} below.
 
 @item place
-A generalized variable.  @xref{Generalized Variables}.
+Обобщенная переменная.  @xref{Generalized Variables}.
 
 @item body
-Short for @code{&rest form}.  See @code{&rest} below.  If your macro
-wraps its body of code with @code{lambda} before it is evaluated, use
-@code{def-body} instead.  See @code{def-body} below.
+Сокращение от @code{&rest form}.  Смотреть @code{&rest} ниже.  Если макрос
+заключает свое тело кода в @code{lambda} до его оценки, используется вместо
+него @code{def-body}.  Смотреть @code{def-body} ниже.
 
 @item function-form
-A function form: either a quoted function symbol, a quoted lambda
-expression, or a form (that should evaluate to a function symbol or
-lambda expression).  This is useful when an argument that's a lambda
-expression might be quoted with @code{quote} rather than
-@code{function}, since it instruments the body of the lambda expression
-either way.
+Функциональная форма: либо цитируемый функциональный символ, цитируемое
+лямбда-выражение, либо форма (которая должна оцениваться как функциональный
+символ или лямбда-выражение).  Это полезно, когда аргумент, являющийся
+лямбда-выражением, может быть заключен в кавычки с помощью @code{quote}, а
+не @code{function}, поскольку он в любом случае инструментирует тело
+лямбда-выражения.
 
 @item lambda-expr
-A lambda expression with no quoting.
+Лямбда-выражение без кавычек.
 
 @item &optional
 @c @kindex &optional @r{(Edebug)}
-All following elements in the specification list are optional; as soon
-as one does not match, Edebug stops matching at this level.
+Все следующие элементы в списке спецификаций являются необязательными; как
+только один не совпадает, Edebug прекращает сопоставление на этом уровне.
 
-To make just a few elements optional, followed by non-optional elements,
-use @code{[&optional @var{specs}@dots{}]}.  To specify that several
-elements must all match or none, use @code{&optional
-[@var{specs}@dots{}]}.  See the @code{defun} example.
+Чтобы сделать несколько элементов необязательными, за которыми следуют
+необязательные элементы, используется @code{[&optional @var{specs}@dots{}]}.
+Чтобы указать, что все несколько элементов должны совпадать или не
+совпадать, используется @code{&optional [@var{specs}@dots{}]}.  Смотреть
+пример @code{defun}.
 
 @item &rest
 @c @kindex &rest @r{(Edebug)}
-All following elements in the specification list are repeated zero or
-more times.  In the last repetition, however, it is not a problem if the
-expression runs out before matching all of the elements of the
-specification list.
+Все следующие элементы в списке спецификаций повторяются ноль или более раз.
+Однако в последнем повторении не проблема, если выражение закончится до
+того, как сопоставятся все элементы списка спецификаций.
 
-To repeat only a few elements, use @code{[&rest @var{specs}@dots{}]}.
-To specify several elements that must all match on every repetition, use
+Чтобы повторить только несколько элементов, используйте
+@code{[&rest @var{specs}@dots{}]}.  Чтобы указать несколько элементов,
+которые должны совпадать при каждом повторении, используйте
 @code{&rest [@var{specs}@dots{}]}.
 
 @item &or
 @c @kindex &or @r{(Edebug)}
-Each of the following elements in the specification list is an
-alternative.  One of the alternatives must match, or the @code{&or}
-specification fails.
+Каждый из следующих элементов в списке спецификаций является альтернативой.
+Одна из альтернатив должна совпадать, иначе спецификация @code{&or} не
+выполняется.
 
-Each list element following @code{&or} is a single alternative.  To
-group two or more list elements as a single alternative, enclose them in
-@code{[@dots{}]}.
+Каждый элемент списка, следующий за @code{&or}, является единственной
+альтернативой.  Чтобы сгруппировать два или более элемента списка как одну
+альтернативу, они заключаются в @code{[@dots{}]}.
 
 @item &not
 @c @kindex &not @r{(Edebug)}
-Each of the following elements is matched as alternatives as if by using
-@code{&or}, but if any of them match, the specification fails.  If none
-of them match, nothing is matched, but the @code{&not} specification
-succeeds.
+Каждый из следующих элементов сопоставляется как альтернативы, как если бы с
+использованием @code{&or}, но если какой-либо из них соответствует,
+спецификация не выполняется.  Если ни один из них не соответствует, ничего
+не найдено, но спецификация @code{&not} выполняется успешно.
 
 @c FIXME &key?
 
 @item &define
 @c @kindex &define @r{(Edebug)}
-Indicates that the specification is for a defining form.  Edebug's
-definition of a defining form is a form containing one or more code
-forms which are saved and executed later, after the execution of the
-defining form.
+Указывает, что спецификация предназначена для определения формы.
+Определение формы определения в Edebug - это форма, содержащая одну или
+несколько форм кода, которые сохраняются и выполняются позже, после
+выполнения формы определения.
 
-The defining form itself is not instrumented (that is, Edebug does not
-stop before and after the defining form), but forms inside it
-typically will be instrumented.  The @code{&define} keyword should be
-the first element in a list specification.
+Сама определяющая форма не инструментирована (то есть Edebug не
+останавливается до и после определяющей формы), но формы внутри нее обычно
+будут инструментированы.  Ключевое слово @code{&define} должно быть первым
+элементом в спецификации списка.
 
 @item nil
-This is successful when there are no more arguments to match at the
-current argument list level; otherwise it fails.  See sublist
-specifications and the backquote example.
+Это успешно, если на текущем уровне списка аргументов больше нет аргументов;
+в противном случае это не удается.  Смотреть спецификации подсписок и пример
+обратной кавычки.
 
 @item gate
 @cindex preventing backtracking
-No argument is matched but backtracking through the gate is disabled
-while matching the remainder of the specifications at this level.  This
-is primarily used to generate more specific syntax error messages.  See
-@ref{Backtracking}, for more details.  Also see the @code{let} example.
+Никакой аргумент не сопоставлен, но обратное отслеживание через шлюз
+отключено при сопоставлении остальных спецификаций на этом уровне.  Это в
+основном используется для генерации более конкретных сообщений об ошибках
+синтаксиса.  Смотреть @ref{Backtracking}, для подробностей.  Смотреть также
+@code{let} пример.
 
 @item @var{other-symbol}
 @cindex indirect specifications
-Any other symbol in a specification list may be a predicate or an
-indirect specification.
+Любой другой символ в списке спецификаций может быть предикатом или
+косвенной спецификацией.
 
-If the symbol has an Edebug specification, this @dfn{indirect
-specification} should be either a list specification that is used in
-place of the symbol, or a function that is called to process the
-arguments.  The specification may be defined with @code{def-edebug-spec}
-just as for macros.  See the @code{defun} example.
+Если символ имеет спецификацию Edebug, эта @dfn{косвенная спецификация}
+должна быть либо спецификацией списка, который используется вместо символа,
+либо функцией, вызываемой для обработки аргументов.  Спецификация может быть
+определена с помощью @code{def-edebug-spec}, как и для макросов.  Смотреть
+пример @code{defun}.
 
-Otherwise, the symbol should be a predicate.  The predicate is called
-with the argument, and if the predicate returns @code{nil}, the
-specification fails and the argument is not instrumented.
+В противном случае символ должен быть предикатом.  Предикат вызывается с
+аргументом, и если предикат возвращает @code{nil}, спецификация не
+выполняется и аргумент не инструментирован.
 
-Some suitable predicates include @code{symbolp}, @code{integerp},
-@code{stringp}, @code{vectorp}, and @code{atom}.
+Некоторые подходящие предикаты включают @code{symbolp}, @code{integerp},
+@code{stringp}, @code{vectorp}, и @code{atom}.
 
 @item [@var{elements}@dots{}]
 @cindex [@dots{}] (Edebug)
-A vector of elements groups the elements into a single @dfn{group
-specification}.  Its meaning has nothing to do with vectors.
+Вектор элементов группирует элементы в одну @dfn{групповую спецификацию}. Его значение не имеет ничего общего с векторами.
 
 @item "@var{string}"
-The argument should be a symbol named @var{string}.  This specification
-is equivalent to the quoted symbol, @code{'@var{symbol}}, where the name
-of @var{symbol} is the @var{string}, but the string form is preferred.
+Аргументом должен быть символ с именем @var{string}.  Эта спецификация
+эквивалентна заключенному в кавычки символу @code{'@var{symbol}}, где имя
+@var{symbol} - это @var{string}, но строковая форма предпочтительнее.
 
 @item (vector @var{elements}@dots{})
-The argument should be a vector whose elements must match the
-@var{elements} in the specification.  See the backquote example.
+Аргументом должен быть вектор, элементы которого должны соответствовать
+@var{elements} в спецификации.  Смотреть пример обратной кавычки.
 
 @item (@var{elements}@dots{})
-Any other list is a @dfn{sublist specification} and the argument must be
-a list whose elements match the specification @var{elements}.
+Любой другой список - это @dfn{подсписок спецификации}, а аргумент должен
+быть списком, элементы которого соответствуют спецификации @var{elements}.
 
 @cindex dotted lists (Edebug)
-A sublist specification may be a dotted list and the corresponding list
-argument may then be a dotted list.  Alternatively, the last @sc{cdr} of a
-dotted list specification may be another sublist specification (via a
-grouping or an indirect specification, e.g., @code{(spec .  [(more
-specs@dots{})])}) whose elements match the non-dotted list arguments.
-This is useful in recursive specifications such as in the backquote
-example.  Also see the description of a @code{nil} specification
-above for terminating such recursion.
+Спецификация подсписка может быть точечным списком, а соответствующий
+аргумент списка также может быть точечным списком.  В качестве альтернативы,
+последний @sc{cdr} спецификации точечного списка может быть другой
+спецификацией подсписка (через группировку или косвенную спецификацию,
+например, @code{(spec .  [(more specs@dots{})])}), элементы которого
+соответствуют аргументам безточечного списка.  Это полезно в рекурсивных
+спецификациях, таких как в примере обратных кавычек.  Также смотреть
+описание спецификации @code{nil} выше для прекращения такой рекурсии.
 
-Note that a sublist specification written as @code{(specs .  nil)}
-is equivalent to @code{(specs)}, and @code{(specs .
-(sublist-elements@dots{}))} is equivalent to @code{(specs
-sublist-elements@dots{})}.
+Обратить внимание, что спецификация подсписка, записанная как
+@code{(specs .  nil)}, эквивалентна @code{(specs)}, а
+@code{(specs . (sublist-elements@dots{}))} эквивалентна
+@code{(specs sublist-elements@dots{})}.
 @end table
 
-@c Need to document extensions with &symbol and :symbol
+@c Необходимо задокументировать расширения с помощью &symbol :symbol
 
-Here is a list of additional specifications that may appear only after
-@code{&define}.  See the @code{defun} example.
+Вот список дополнительных спецификаций, которые могут появиться только после
+@code{&define}.  Смотреть пример @code{defun}.
 
 @table @code
 @item name
-The argument, a symbol, is the name of the defining form.
+Аргумент, символ - это имя определяющей формы.
 
-A defining form is not required to have a name field; and it may have
-multiple name fields.
+Форма определения не требуется, чтобы иметь поле имени; и может иметь
+несколько полей имени.
 
 @item :name
-This construct does not actually match an argument.  The element
-following @code{:name} should be a symbol; it is used as an additional
-name component for the definition.  You can use this to add a unique,
-static component to the name of the definition.  It may be used more
-than once.
+Эта конструкция фактически не соответствует аргументу.  Элемент, следующий
+за @code{:name}, должен быть символом; он используется как дополнительный
+компонент имени для определения.  Можно использовать это, чтобы добавить
+уникальный статический компонент к имени определения.  Его можно
+использовать более одного раза.
 
 @item arg
-The argument, a symbol, is the name of an argument of the defining form.
-However, lambda-list keywords (symbols starting with @samp{&})
-are not allowed.
+Аргумент, символ - это имя аргумента определяющей формы.  Однако ключевые
+слова лямбда-списка (символы, начинающиеся с @samp{&}) не допускаются.
 
 @item lambda-list
 @cindex lambda-list (Edebug)
-This matches a lambda list---the argument list of a lambda expression.
+Это соответствует лямбда-списку - списку аргументов лямбда-выражения.
 
 @item def-body
-The argument is the body of code in a definition.  This is like
-@code{body}, described above, but a definition body must be instrumented
-with a different Edebug call that looks up information associated with
-the definition.  Use @code{def-body} for the highest level list of forms
-within the definition.
+Аргумент - это основная часть кода в определении.  Это похоже на
+@code{body}, описанное выше, но тело определения должно быть оснащено другим
+вызовом Edebug, который ищет информацию, связанную с определением.
+Используется @code{def-body} для списка форм самого высокого уровня в
+определении.
 
 @item def-form
-The argument is a single, highest-level form in a definition.  This is
-like @code{def-body}, except it is used to match a single form rather than
-a list of forms.  As a special case, @code{def-form} also means that
-tracing information is not output when the form is executed.  See the
-@code{interactive} example.
+Аргумент - это единственная форма высшего уровня в определении.  Это похоже
+на @code{def-body}, за исключением того, что используется для сопоставления
+одной формы, а не списка форм.  В качестве особого случая @code{def-form}
+также означает, что информация трассировки не выводится при выполнении
+формы.  Смотреть пример @code{interactive}.
 @end table
 
 @node Backtracking
-@subsubsection Backtracking in Specifications
+@subsubsection Возврат в Спецификациях
 
 @cindex backtracking
 @cindex syntax error (Edebug)
-If a specification fails to match at some point, this does not
-necessarily mean a syntax error will be signaled; instead,
-@dfn{backtracking} will take place until all alternatives have been
-exhausted.  Eventually every element of the argument list must be
-matched by some element in the specification, and every required element
-in the specification must match some argument.
+Если спецификация не соответствует в какой-то момент, это не обязательно
+означает, что будет сигнализироваться синтаксическая ошибка; вместо этого
+будет выполняться @dfn{backtracking}, пока не будут исчерпаны все
+альтернативы.  В конце концов, каждому элементу списка аргументов должен
+соответствовать некоторый элемент в спецификации, и каждый требуемый элемент
+в спецификации должен соответствовать некоторому аргументу.
 
-When a syntax error is detected, it might not be reported until much
-later, after higher-level alternatives have been exhausted, and with the
-point positioned further from the real error.  But if backtracking is
-disabled when an error occurs, it can be reported immediately.  Note
-that backtracking is also reenabled automatically in several situations;
-when a new alternative is established by @code{&optional},
-@code{&rest}, or @code{&or}, or at the start of processing a sublist,
-group, or indirect specification.  The effect of enabling or disabling
-backtracking is limited to the remainder of the level currently being
-processed and lower levels.
+Когда обнаруживается синтаксическая ошибка, о ней может сообщаться не
+намного позже, когда альтернативы более высокого уровня будут исчерпаны, и
+точка будет расположена дальше от реальной ошибки.  Но если при
+возникновении ошибки обратное отслеживание отключено, о ней можно сообщить
+немедленно.  Обратить внимание, что в некоторых ситуациях возврат с
+возвратом также включается автоматически; когда новая альтернатива
+устанавливается @code{&optional}, @code{&rest}, или @code{&or}, или в
+начале обработки подсписка, группы или косвенной спецификации.  Эффект
+включения или отключения отслеживания с возвратом ограничивается оставшейся
+частью уровня, обрабатываемого в данный момент, и более низкими уровнями.
 
-Backtracking is disabled while matching any of the
-form specifications (that is, @code{form}, @code{body}, @code{def-form}, and
-@code{def-body}).  These specifications will match any form so any error
-must be in the form itself rather than at a higher level.
+Отслеживание с возвратом отключено при сопоставлении любой из спецификаций
+формы (то есть, @code{form}, @code{body}, @code{def-form}, и
+@code{def-body}).  Эти спецификации будут соответствовать любой форме,
+поэтому любая ошибка должна быть в самой форме, а не на более высоком
+уровне.
 
-Backtracking is also disabled after successfully matching a quoted
-symbol or string specification, since this usually indicates a
-recognized construct.  But if you have a set of alternative constructs that
-all begin with the same symbol, you can usually work around this
-constraint by factoring the symbol out of the alternatives, e.g.,
+Отслеживание с возвратом также отключается после успешного сопоставления
+указанного символа или строки в кавычках, поскольку это обычно указывает на
+распознанную конструкцию.  Но если у есть набор альтернативных конструкций,
+которые начинаются с одного и того же символа, обычно можно обойти это
+ограничение, вычленив символ из альтернатив, например
 @code{["foo" &or [first case] [second case] ...]}.
 
-Most needs are satisfied by these two ways that backtracking is
-automatically disabled, but occasionally it is useful to explicitly
-disable backtracking by using the @code{gate} specification.  This is
-useful when you know that no higher alternatives could apply.  See the
-example of the @code{let} specification.
+Большинство потребностей удовлетворяются этими двумя способами
+автоматического отключения отслеживания с возвратом, но иногда полезно явно
+отключить отслеживание с возвратом с помощью спецификации @code{gate}.  Это
+полезно, когда есть уверенность, что альтернативы более высокого уровня не
+применимы.  Смотреть пример спецификации @code{let}.
 
 @node Specification Examples
-@subsubsection Specification Examples
+@subsubsection Примеры Спецификаций
 
-It may be easier to understand Edebug specifications by studying
-the examples provided here.
+Возможно, будет легче понять спецификации Edebug, изучив приведенные здесь
+примеры.
 
-A @code{let} special form has a sequence of bindings and a body.  Each
-of the bindings is either a symbol or a sublist with a symbol and
-optional expression.  In the specification below, notice the @code{gate}
-inside of the sublist to prevent backtracking once a sublist is found.
+Специальная форма @code{let} имеет последовательность привязок и тело.
+Каждая из привязок представляет собой символ или подсписок с символом и
+необязательным выражением.  В приведенной ниже спецификации обратить
+внимание на @code{gate} внутри подсписка, чтобы предотвратить поиск с
+возвратом после нахождения подсписка.
 
 @ignore
-@c FIXME?  The actual definition in edebug.el looks like this (and always
-@c has AFAICS).  In fact, nothing in edebug.el uses gate.  So maybe
-@c this is just an example for illustration?
+@c FIXME?  Фактическое определение в edebug.el выглядит так (и всегда имеет 
+@c AFAICS).  Фактически, ничто в edebug.el не использует гейт. Так, может
+@c  быть, это просто пример для иллюстрации?
 (def-edebug-spec let
   ((&rest
     &or (symbolp &optional form) symbolp)
@@ -1502,17 +1501,17 @@ inside of the sublist to prevent backtracking once a sublist is found.
    body))
 @end example
 
-Edebug uses the following specifications for @code{defun} and the
-associated argument list and @code{interactive} specifications.  It is
-necessary to handle interactive forms specially since an expression
-argument is actually evaluated outside of the function body.  (The
-specification for @code{defmacro} is very similar to that for
-@code{defun}, but allows for the @code{declare} statement.)
+Edebug использует следующие спецификации для @code{defun} и связанного
+списка аргументов и спецификаций @code{interactive}.  Интерактивные формы
+необходимо обрабатывать специально, поскольку аргумент выражения фактически
+вычисляется вне тела функции.  (Спецификация @code{defmacro} очень похожа
+на спецификацию @code{defun}, но позволяет использовать оператор
+@code{declare}.)
 
 @smallexample
 (def-edebug-spec defun
   (&define name lambda-list
-           [&optional stringp]   ; @r{Match the doc string, if present.}
+           [&optional stringp]; @r{Сопоставить строку документа, если есть.}
            [&optional ("interactive" interactive)]
            def-body))
 
@@ -1523,18 +1522,18 @@ specification for @code{defmacro} is very similar to that for
     )))
 
 (def-edebug-spec interactive
-  (&optional &or stringp def-form))    ; @r{Notice: @code{def-form}}
+  (&optional &or stringp def-form))    ; @r{Уведомление: @code{def-form}}
 @end smallexample
 
-The specification for backquote below illustrates how to match
-dotted lists and use @code{nil} to terminate recursion.  It also
-illustrates how components of a vector may be matched.  (The actual
-specification defined by Edebug is a little different, and does not
-support dotted lists because doing so causes very deep recursion that
-could fail.)
+В спецификации обратной кавычки ниже показано, как сопоставить точечные
+списки и использовать @code{nil} для завершения рекурсии.  Также
+показывается, как можно сопоставить компоненты вектора.  (Фактическая
+спецификация, определенная Edebug, немного отличается и не поддерживает
+точечные списки, потому что это вызывает очень глубокую рекурсию, которая
+может привести к сбою.)
 
 @smallexample
-(def-edebug-spec \` (backquote-form))   ; @r{Alias just for clarity.}
+(def-edebug-spec \` (backquote-form))   ; @r{Псевдоним для ясности.}
 
 (def-edebug-spec backquote-form
   (&or ([&or "," ",@@"] &or ("quote" backquote-form) form)
@@ -1545,177 +1544,174 @@ could fail.)
 
 
 @node Edebug Options
-@subsection Edebug Options
+@subsection Параметры Edebug
 
-  These options affect the behavior of Edebug:
+  Эти параметры влияют на поведение Edebug:
 @c Previously defopt'd:
 @c edebug-sit-for-seconds, edebug-print-length, edebug-print-level
 @c edebug-print-circle, edebug-eval-macro-args
 
 @defopt edebug-setup-hook
-Functions to call before Edebug is used.  Each time it is set to a new
-value, Edebug will call those functions once and then
-reset @code{edebug-setup-hook} to @code{nil}.  You could use this to
-load up Edebug specifications associated with a package you are using,
-but only when you also use Edebug.
+Функции, вызываемые перед использованием Edebug.  Каждый раз, когда
+устанавливается новое значение, Edebug вызывает эти функции один раз, а
+затем сбрасывает @code{edebug-setup-hook} в @code{nil}.  Можно использовать
+это для загрузки спецификаций Edebug, связанных с используемым пакетом, но
+только если также используется Edebug.
 @xref{Instrumenting}.
 @end defopt
 
 @defopt edebug-all-defs
-If this is non-@code{nil}, normal evaluation of defining forms such as
-@code{defun} and @code{defmacro} instruments them for Edebug.  This
-applies to @code{eval-defun}, @code{eval-region}, @code{eval-buffer},
-and @code{eval-current-buffer}.
+Если это не-@code{nil}, обычная оценка определяющих форм, таких как
+@code{defun} и @code{defmacro}, определяет их для Edebug.  Это
+относится к @code{eval-defun}, @code{eval-region}, @code{eval-buffer},
+и @code{eval-current-buffer}.
 
-Use the command @kbd{M-x edebug-all-defs} to toggle the value of this
-option.  @xref{Instrumenting}.
+Используется команда @kbd{M-x edebug-all-defs}, чтобы переключить значение
+этой опции.  @xref{Instrumenting}.
 @end defopt
 
 @defopt edebug-all-forms
-If this is non-@code{nil}, the commands @code{eval-defun},
-@code{eval-region}, @code{eval-buffer}, and @code{eval-current-buffer}
-instrument all forms, even those that don't define anything.
-This doesn't apply to loading or evaluations in the minibuffer.
+Если это не-@code{nil}, команды @code{eval-defun}, @code{eval-region},
+@code{eval-buffer}, и @code{eval-current-buffer} обрабатывают все формы,
+даже те, которые ничего не определяют.  Это не относится к загрузке или
+оценки в минибуфере.
 
-Use the command @kbd{M-x edebug-all-forms} to toggle the value of this
-option.  @xref{Instrumenting}.
+Использовать команду @kbd{M-x edebug-all-forms}, чтобы переключить значение
+этой опции.  @xref{Instrumenting}.
 @end defopt
 
 @defopt edebug-eval-macro-args
-When this is non-@code{nil}, all macro arguments will be instrumented
-in the generated code.  For any macro, an @code{edebug-form-spec}
-overrides this option.  So to specify exceptions for macros that have
-some arguments evaluated and some not, use @code{def-edebug-spec} to
-specify an @code{edebug-form-spec}.
+Когда не-@code{nil}, все аргументы макроса будут инструментированы в
+сгенерированном коде.  Для любого макроса @code{edebug-form-spec} отменяет
+эту опцию.  Таким образом, чтобы указать исключения для макросов, некоторые
+аргументы которых оцениваются, а некоторые нет, используется
+@code{def-edebug-spec}, чтобы указать @code{edebug-form-spec}.
 @end defopt
 
 @defopt edebug-save-windows
-If this is non-@code{nil}, Edebug saves and restores the window
-configuration.  That takes some time, so if your program does not care
-what happens to the window configurations, it is better to set this
-variable to @code{nil}.
+Если это не-@code{nil}, Edebug сохраняет и восстанавливает конфигурацию
+окна.  Это займет некоторое время, поэтому, если программе все равно, что
+происходит с конфигурациями окон, лучше установить для этой переменной
+значение @code{nil}.
 
-If the value is a list, only the listed windows are saved and
-restored.
+Если значением является список, сохраняются и восстанавливаются только
+перечисленные окна.
 
-You can use the @kbd{W} command in Edebug to change this variable
-interactively.  @xref{Edebug Display Update}.
+Можно использовать команду @kbd{W} в Edebug для интерактивного изменения
+этой переменной.  @xref{Edebug Display Update}.
 @end defopt
 
 @defopt edebug-save-displayed-buffer-points
-If this is non-@code{nil}, Edebug saves and restores point in all
-displayed buffers.
+Если это не-@code{nil}, Edebug сохраняет и восстанавливает точку во всех
+отображаемых буферах.
 
-Saving and restoring point in other buffers is necessary if you are
-debugging code that changes the point of a buffer that is displayed in
-a non-selected window.  If Edebug or the user then selects the window,
-point in that buffer will move to the window's value of point.
+Сохранение и восстановление точки в других буферах необходимо, если
+отлаживается код, который изменяет точку буфера, отображаемую в невыбранном
+окне.  Если Edebug или пользователь затем выбирает окно, точка в этом буфере
+переместится на значение точки для окна.
 
-Saving and restoring point in all buffers is expensive, since it
-requires selecting each window twice, so enable this only if you need
-it.  @xref{Edebug Display Update}.
+Сохранение и восстановление точки во всех буферах обходится дорого, так как
+для этого нужно дважды выбирать каждое окно, поэтому включается это, только
+если это нужно.  @xref{Edebug Display Update}.
 @end defopt
 
 @defopt edebug-initial-mode
-If this variable is non-@code{nil}, it specifies the initial execution
-mode for Edebug when it is first activated.  Possible values are
+Если эта переменная - не-@code{nil}, она указывает начальный режим
+выполнения для Edebug при его первой активации.  Возможные значения:
 @code{step}, @code{next}, @code{go}, @code{Go-nonstop}, @code{trace},
-@code{Trace-fast}, @code{continue}, and @code{Continue-fast}.
+@code{Trace-fast}, @code{continue}, и @code{Continue-fast}.
 
-The default value is @code{step}.  This variable can be set
-interactively with @kbd{C-x C-a C-m} (@code{edebug-set-initial-mode}).
+Значение по умолчанию - @code{step}.  Эта переменная может быть установлена
+интерактивно с помощью @kbd{C-x C-a C-m} (@code{edebug-set-initial-mode}).
 @xref{Edebug Execution Modes}.
 @end defopt
 
 @defopt edebug-trace
-If this is non-@code{nil}, trace each function entry and exit.
-Tracing output is displayed in a buffer named @file{*edebug-trace*}, one
-function entry or exit per line, indented by the recursion level.
+Если это не-@code{nil}, отслеживать вход и выход каждой функции.  Выходные
+данные трассировки отображаются в буфере с именем @file{*edebug-trace*}, по
+одному входу или выходу функции на строку, с отступом по уровню рекурсии.
 
-Also see @code{edebug-tracing}, in @ref{Trace Buffer}.
+Смотреть также @code{edebug-tracing}, в @ref{Trace Buffer}.
 @end defopt
 
 @defopt edebug-test-coverage
-If non-@code{nil}, Edebug tests coverage of all expressions debugged.
+Если не-@code{nil}, Edebug проверяет покрытие всех отлаженных выражений.
 @xref{Coverage Testing}.
 @end defopt
 
 @defopt edebug-continue-kbd-macro
-If non-@code{nil}, continue defining or executing any keyboard macro
-that is executing outside of Edebug.   Use this with caution since it is not
-debugged.
+Если не-@code{nil}, продолжать определение или выполнение любого макроса
+клавиатуры, который выполняется вне Edebug.  Использовать это с
+осторожностью, так как это не отлажено.
 @xref{Edebug Execution Modes}.
 @end defopt
 
 @defopt edebug-print-length
-If non-@code{nil}, the default value of @code{print-length} for
-printing results in Edebug.  @xref{Output Variables}.
+Если не-@code{nil}, значение по умолчанию @code{print-length} для печати
+приводит к Edebug.  @xref{Output Variables}.
 @end defopt
 
 @defopt edebug-print-level
-If non-@code{nil}, the default value of @code{print-level} for
-printing results in Edebug.  @xref{Output Variables}.
+Если не-@code{nil}, значение по умолчанию @code{print-level} для печати
+приводит к Edebug.  @xref{Output Variables}.
 @end defopt
 
 @defopt edebug-print-circle
-If non-@code{nil}, the default value of @code{print-circle} for
-printing results in Edebug.  @xref{Output Variables}.
+Если не-@code{nil}, значение по умолчанию @code{print-circle} для печати
+приводит к Edebug.  @xref{Output Variables}.
 @end defopt
 
 @defopt edebug-unwrap-results
-If non-@code{nil}, Edebug tries to remove any of its own
-instrumentation when showing the results of expressions.  This is
-relevant when debugging macros where the results of expressions are
-themselves instrumented expressions.  As a very artificial example,
-suppose that the example function @code{fac} has been instrumented,
-and consider a macro of the form:
+Если не-@code{nil}, Edebug пытается удалить любой из своих инструментов при
+отображении результатов выражений.  Это актуально при отладке макросов, в
+которых результаты выражений сами являются инструментированными выражениями.
+В качестве очень искусственного примера предпологается, что примерная
+функция @code{fac} была оснащена инструментированием, и рассматривается
+макрос вида:
 
-@c FIXME find a less silly example.
+@c FIXME найти менее глупый пример.
 @smallexample
 (defmacro test () "Edebug example."
   (if (symbol-function 'fac)
       @dots{}))
 @end smallexample
 
-If you instrument the @code{test} macro and step through it, then by
-default the result of the @code{symbol-function} call has numerous
-@code{edebug-after} and @code{edebug-before} forms, which can make it
-difficult to see the actual result.  If
-@code{edebug-unwrap-results} is non-@code{nil}, Edebug tries to remove
-these forms from the result.
+Если инструментируется макрос @code{test} и проходится через него, то по
+умолчанию результат вызова @code{symbol-function} имеет множество форм
+@code{edebug-after} и @code{edebug-before}, что может затруднить просмотр
+фактического результата.  Если @code{edebug-unwrap-results} равно
+не-@code{nil}, Edebug пытается удалить эти формы из результата.
 @end defopt
 
 @defopt edebug-on-error
-Edebug binds @code{debug-on-error} to this value, if
-@code{debug-on-error} was previously @code{nil}.  @xref{Trapping
-Errors}.
+Edebug привязывает @code{debug-on-error} к этому значению, если
+@code{debug-on-error} ранее был @code{nil}.  @xref{Trapping Errors}.
 @end defopt
 
 @defopt edebug-on-quit
-Edebug binds @code{debug-on-quit} to this value, if
-@code{debug-on-quit} was previously @code{nil}.  @xref{Trapping
-Errors}.
+Edebug привязывает @code{debug-on-quit} к этому значению, если
+@code{debug-on-quit} ранее был @code{nil}.  @xref{Trapping Errors}.
 @end defopt
 
-  If you change the values of @code{edebug-on-error} or
-@code{edebug-on-quit} while Edebug is active, their values won't be used
-until the @emph{next} time Edebug is invoked via a new command.
-@c Not necessarily a deeper command level.
-@c A new command is not precisely true, but that is close enough -- dan
+  Если изменить значения @code{edebug-on-error} или @code{edebug-on-quit},
+пока Edebug активен, их значения не будут использоваться до тех пор, пока не
+будет вызван новой командой @emph{следующий} Edebug.
+@c Не обязательно более глубокий командный уровень. Новая команда не
+@c совсем верна, но это достаточно близко - дан
 
 @defopt edebug-global-break-condition
-If non-@code{nil}, an expression to test for at every stop point.  If
-the result is non-@code{nil}, then break.  Errors are ignored.
+Если не-@code{nil}, выражение для проверки в каждой точке останова.  Если
+результат не-@code{nil}, то останов.  Ошибки игнорируются.
 @xref{Global Break Condition}.
 @end defopt
 
 @defopt edebug-sit-for-seconds
-Number of seconds to pause when a breakpoint is reached and the execution
-mode is trace or continue.  @xref{Edebug Execution Modes}.
+Количество секунд для паузы при достижении точки останова и режиме
+выполнения - трассировка или продолжение.  @xref{Edebug Execution Modes}.
 @end defopt
 
 @defopt edebug-sit-on-break
-Whether or not to pause for @code{edebug-sit-for-seconds} on reaching
-a breakpoint.  Set to @code{nil} to prevent the pause, non-@code{nil}
-to allow it.
+Следует ли делать паузу для @code{edebug-sit-for-seconds} при достижении
+точки останова.  Установить @code{nil} для предотвращения останова и
+не-@code{nil}, чтобы разрешить.
 @end defopt
