@@ -2002,56 +2002,55 @@ The file is @point{}
 что-то, что требует завершения), функция отвечает
 @samp{Please answer y or n.} и повторяет запрос.
 
-This function does not actually use the minibuffer, since it does not
-allow editing of the answer.  It actually uses the echo area (@pxref{The
-Echo Area}), which uses the same screen space as the minibuffer.  The
-cursor moves to the echo area while the question is being asked.
+Эта функция фактически не использует минибуфер, так как не позволяет
+редактировать ответ.  Фактически использует эхо-область
+(@pxref{The Echo Area}), которая использует то же пространство экрана, что
+и минибуфер.  Курсор перемещается в эхо-область, пока задается вопрос.
 
-The answers and their meanings, even @samp{y} and @samp{n}, are not
-hardwired, and are specified by the keymap @code{query-replace-map}
-(@pxref{Search and Replace}).  In particular, if the user enters the
-special responses @code{recenter}, @code{scroll-up},
-@code{scroll-down}, @code{scroll-other-window}, or
-@code{scroll-other-window-down} (respectively bound to @kbd{C-l},
-@kbd{C-v}, @kbd{M-v}, @kbd{C-M-v} and @kbd{C-M-S-v} in
-@code{query-replace-map}), this function performs the specified window
-recentering or scrolling operation, and poses the question again.
+Ответы и их значения, даже @samp{y} и @samp{n}, не зашиты, а задаются
+картой @code{query-replace-map} (@pxref{Search and Replace}).  В частности,
+если пользователь вводит специальные ответы @code{recenter},
+@code{scroll-up}, @code{scroll-down}, @code{scroll-other-window}, или
+@code{scroll-other-window-down} (соответственно привязанные к @kbd{C-l},
+@kbd{C-v}, @kbd{M-v}, @kbd{C-M-v} и @kbd{C-M-S-v} в @code{query-replace-map}
+), эта функция выполняет указанную операцию центрирования или прокрутки окна
+и снова задает вопрос.
 
 @noindent
-We show successive lines of echo area messages, but only one actually
-appears on the screen at a time.
+Показываются последовательные строки сообщений эхо-области, но только одна
+из них фактически появляется на экране за раз.
 @end defun
 
 @defun y-or-n-p-with-timeout prompt seconds default
-Like @code{y-or-n-p}, except that if the user fails to answer within
-@var{seconds} seconds, this function stops waiting and returns
-@var{default}.  It works by setting up a timer; see @ref{Timers}.
-The argument @var{seconds} should be a number.
+Подобно @code{y-or-n-p}, за исключением того, что если пользователь не
+отвечает в течение @var{seconds} секунд, эта функция прекращает ожидание и
+возвращает @var{default}.  Работает путем установки таймера; смотреть
+@ref{Timers}.  Аргумент @var{seconds} должен быть числом.
 @end defun
 
 @defun yes-or-no-p prompt
-This function asks the user a question, expecting input in the
-minibuffer.  It returns @code{t} if the user enters @samp{yes},
-@code{nil} if the user types @samp{no}.  The user must type @key{RET} to
-finalize the response.  Upper and lower case are equivalent.
+Эта функция задает пользователю вопрос, ожидая ввода в минибуфер.
+Возвращает @code{t}, если пользователь вводит @samp{yes}, @code{nil}, если
+пользователь вводит @samp{no}.  Пользователь должен ввести @key{RET}, чтобы
+завершить ответ.  Верхний и нижний регистр эквивалентны.
 
-@code{yes-or-no-p} starts by displaying @var{prompt} in the echo area,
-followed by @w{@samp{(yes or no) }}.  The user must type one of the
-expected responses; otherwise, the function responds @samp{Please answer
-yes or no.}, waits about two seconds and repeats the request.
+@code{yes-or-no-p} начинается с отображения @var{prompt} в эхо-области, за
+которым следует @w{@samp{(yes or no) }}.  Пользователь должен ввести один из
+ожидаемых ответов; в противном случае функция отвечает
+@samp{Please answer yes or no.}, ждет около двух секунд и повторяет запрос.
 
-@code{yes-or-no-p} requires more work from the user than
-@code{y-or-n-p} and is appropriate for more crucial decisions.
+@code{yes-or-no-p} требует от пользователя больше работы, чем
+@code{y-or-n-p}, и подходит для более важных решений.
 
-Here is an example:
+Вот пример:
 
 @smallexample
 @group
 (yes-or-no-p "Do you really want to remove everything? ")
 
-;; @r{After evaluation of the preceding expression,}
-;;   @r{the following prompt appears,}
-;;   @r{with an empty minibuffer:}
+;; @r{После вычисления предыдущего выражения}
+;;   @r{появляется следующая подсказка,}
+;;   @r{с пустым минибуфером:}
 @end group
 
 @group
@@ -2062,9 +2061,9 @@ Do you really want to remove everything? (yes or no)
 @end smallexample
 
 @noindent
-If the user first types @kbd{y @key{RET}}, which is invalid because this
-function demands the entire word @samp{yes}, it responds by displaying
-these prompts, with a brief pause between them:
+Если пользователь сначала набирает @kbd{y @key{RET}}, что недопустимо,
+потому что эта функция требует всего слова @samp{yes}, он отвечает,
+отображая эти подсказки с короткой паузой между ними:
 
 @smallexample
 @group
@@ -2077,139 +2076,140 @@ Do you really want to remove everything? (yes or no)
 @end defun
 
 @node Multiple Queries
-@section Asking Multiple-Choice Questions
+@section Задать Вопросы с Множественным Выбором
 
-  This section describes facilities for asking the user more complex
-questions or several similar questions.
+  В этом разделе описаны возможности, позволяющие задать пользователю более
+сложные вопросы или несколько похожих вопросов.
 
 @cindex multiple yes-or-no questions
-  When you have a series of similar questions to ask, such as ``Do you
-want to save this buffer?'' for each buffer in turn, you should use
-@code{map-y-or-n-p} to ask the collection of questions, rather than
-asking each question individually.  This gives the user certain
-convenient facilities such as the ability to answer the whole series at
-once.
+  Когда у вас есть ряд аналогичных вопросов, таких как ``Вы хотите сохранить
+этот буфер?'' для каждого буфера по очереди, потребуется использовать
+@code{map-y-or-n-p}, чтобы задать набор вопросов, а не задавать каждый
+вопрос индивидуально.  Это дает пользователю определенные удобные
+возможности, такие как возможность ответить сразу на всю серию.
 
 @defun map-y-or-n-p prompter actor list &optional help action-alist no-cursor-in-echo-area
-This function asks the user a series of questions, reading a
-single-character answer in the echo area for each one.
+Эта функция задает пользователю серию вопросов, читая односимвольный ответ в
+эхо-области для каждого из них.
 
-The value of @var{list} specifies the objects to ask questions about.
-It should be either a list of objects or a generator function.  If it is
-a function, it should expect no arguments, and should return either the
-next object to ask about, or @code{nil}, meaning to stop asking questions.
+Значение @var{list} определяет объекты, о которых нужно задать вопросы.  Это
+должен быть либо список объектов, либо функция-генератор.  Если это функция,
+она не должна ожидать аргументов и должна возвращать либо следующий объект,
+о котором нужно спросить, либо @code{nil}, что означает прекращение задавать
+вопросы.
 
-The argument @var{prompter} specifies how to ask each question.  If
-@var{prompter} is a string, the question text is computed like this:
+Аргумент @var{prompter} указывает, как задать каждый вопрос.  Если
+@var{prompter} - строка, текст вопроса вычисляется следующим образом:
 
 @example
 (format @var{prompter} @var{object})
 @end example
 
 @noindent
-where @var{object} is the next object to ask about (as obtained from
+где @var{object} - следующий объект, о котором нужно спросить (получено из
 @var{list}).
 
-If not a string, @var{prompter} should be a function of one argument
-(the next object to ask about) and should return the question text.  If
-the value is a string, that is the question to ask the user.  The
-function can also return @code{t}, meaning do act on this object (and
-don't ask the user), or @code{nil}, meaning ignore this object (and don't
-ask the user).
+Если это не строка, @var{prompter} должен быть функцией одного аргумента
+(следующего объекта, о котором нужно спросить) и должен возвращать текст
+вопроса.  Если значение является строкой, это вопрос, который следует задать
+пользователю.  Функция также может возвращать @code{t}, что означает
+действовать на этот объект (и не спрашивать пользователя), или @code{nil},
+что означает игнорировать этот объект (и не спрашивать пользователя).
 
-The argument @var{actor} says how to act on the answers that the user
-gives.  It should be a function of one argument, and it is called with
-each object that the user says yes for.  Its argument is always an
-object obtained from @var{list}.
+Аргумент @var{actor} говорит, как действовать в соответствии с ответами,
+которые дает пользователь.  Это должна быть функция одного аргумента, и она
+вызывается для каждого объекта, для которого пользователь соглашается.  Её
+аргумент всегда является объектом, полученным из @var{list}.
 
-If the argument @var{help} is given, it should be a list of this form:
+Если указан аргумент @var{help}, это должен быть списком такой формы:
 
 @example
 (@var{singular} @var{plural} @var{action})
 @end example
 
 @noindent
-where @var{singular} is a string containing a singular noun that
-describes the objects conceptually being acted on, @var{plural} is the
-corresponding plural noun, and @var{action} is a transitive verb
-describing what @var{actor} does.
+где @var{singular} - строка, содержащая существительное в единственном
+числе, которое описывает объекты, над которыми концептуально действуют,
+@var{plural} - соответствующее существительное во множественном числе, а
+@var{action} - переходный глагол, описывающий, что делает @var{actor}.
 
-If you don't specify @var{help}, the default is @code{("object"
-"objects" "act on")}.
+Если указать @var{help}, по умолчанию будет
+@code{("object" "objects" "act on")}.
 
-Each time a question is asked, the user may enter @kbd{y}, @kbd{Y}, or
-@key{SPC} to act on that object; @kbd{n}, @kbd{N}, or @key{DEL} to skip
-that object; @kbd{!} to act on all following objects; @key{ESC} or
-@kbd{q} to exit (skip all following objects); @kbd{.} (period) to act on
-the current object and then exit; or @kbd{C-h} to get help.  These are
-the same answers that @code{query-replace} accepts.  The keymap
-@code{query-replace-map} defines their meaning for @code{map-y-or-n-p}
-as well as for @code{query-replace}; see @ref{Search and Replace}.
+Каждый раз, когда задается вопрос, пользователь может ввести @kbd{y},
+@kbd{Y}, или @key{SPC}, чтобы действовать с этим объектом; @kbd{n}, @kbd{N}
+или @key{DEL}, чтобы пропустить этот объект; @kbd{!} для воздействия на все
+следующие объекты; @key{ESC} или @kbd{q} для выхода (пропустить все
+следующие объекты); @kbd{.} (точка) для воздействия на текущий объект и
+выхода; или @kbd{C-h}, чтобы получить помощь.  Это те же ответы, которые
+принимает @code{query-replace}.  Карта @code{query-replace-map} определяет
+их значение как для @code{map-y-or-n-p}, так и для @code{query-replace};
+смотреть @ref{Search and Replace}.
 
-You can use @var{action-alist} to specify additional possible answers
-and what they mean.  It is an alist of elements of the form
-@code{(@var{char} @var{function} @var{help})}, each of which defines one
-additional answer.  In this element, @var{char} is a character (the
-answer); @var{function} is a function of one argument (an object from
-@var{list}); @var{help} is a string.
+Можно использовать @var{action-alist}, чтобы указать дополнительные
+возможные ответы и их значение.  Это список элементов вида @code{(@var{char}
+@var{function} @var{help})}, каждый из которых определяет один
+дополнительный ответ.  В этом элементе @var{char} - символ (ответ);
+@var{function} - это функция одного аргумента (объект из @var{list});
+@var{help} - это строка.
 
-When the user responds with @var{char}, @code{map-y-or-n-p} calls
-@var{function}.  If it returns non-@code{nil}, the object is considered
-acted upon, and @code{map-y-or-n-p} advances to the next object in
-@var{list}.  If it returns @code{nil}, the prompt is repeated for the
-same object.
+Когда пользователь отвечает @var{char}, @code{map-y-or-n-p}, вызывает
+@var{function}.  Если функция возвращает не-@code{nil}, объект считается
+обработанным, и @code{map-y-or-n-p} переходит к следующему объекту в
+@var{list}.  Если же возвращает @code{nil}, запрос повторяется для того же
+объекта.
 
-Normally, @code{map-y-or-n-p} binds @code{cursor-in-echo-area} while
-prompting.  But if @var{no-cursor-in-echo-area} is non-@code{nil}, it
-does not do that.
+Обычно @code{map-y-or-n-p} связывает @code{cursor-in-echo-area} при запросе.
+Но если @var{no-cursor-in-echo-area} равен не-@code{nil}, этого не
+происходит.
 
-If @code{map-y-or-n-p} is called in a command that was invoked using the
-mouse---more precisely, if @code{last-nonmenu-event} (@pxref{Command
-Loop Info}) is either @code{nil} or a list---then it uses a dialog box
-or pop-up menu to ask the question.  In this case, it does not use
-keyboard input or the echo area.  You can force use either of the mouse or
-of keyboard input by binding @code{last-nonmenu-event} to a suitable
-value around the call.
+Если @code{map-y-or-n-p} вызывается в команде, которая была вызвана с
+помощью мыши - точнее, если @code{last-nonmenu-event}
+(@pxref{Command Loop Info}) является либо @code{nil}, либо списком - тогда
+используется диалоговое окно или всплывающее меню, чтобы задать вопрос.  В
+этом случае не используется ввод с клавиатуры или эхо-область.  Можно
+принудительно использовать либо мышь, либо ввод с клавиатуры, привязав
+@code{last-nonmenu-event} к подходящему значению вокруг вызова.
 
-The return value of @code{map-y-or-n-p} is the number of objects acted on.
+Возвращаемое значение @code{map-y-or-n-p} - это количество объектов, над
+которыми было выполнено действие.
 @end defun
-@c FIXME  An example of this would be more useful than all the
-@c preceding examples of simple things.
+@c FIXME  Пример этого был бы более полезен, чем все предыдущие
+@c примеры простых вещей.
 
-If you need to ask the user a question that might have more than just
-2 answers, use @code{read-answer}.
+Если нужно задать пользователю вопрос, на который может быть более двух
+ответов, используется @code{read-answer}.
 
 @defun read-answer question answers
 @vindex read-answer-short
-This function prompts the user with text in @var{question}, which
-should end in the @samp{SPC} character.  The function includes in the
-prompt the possible responses in @var{answers} by appending them to
-the end of @var{question}.  The possible responses are provided in
-@var{answers} as an alist whose elements are of the following form:
+Эта функция предлагает пользователю ввести текст в формате @var{question},
+который должен заканчиваться символом @samp{SPC}.  Функция включает в
+подсказку возможные ответы в @var{answers}, добавляя их в конец
+@var{question}.  Возможные ответы представлены в @var{answers} в виде
+списка, элементы которого имеют следующую форму:
 
 @lisp
 (@var{long-answer} @var{short-answer} @var{help-message})
 @end lisp
 
 @noindent
-where @var{long-answer} is the complete text of the user response, a
-string; @var{short-answer} is a short form of the same response, a
-single character; and @var{help-message} is the text that describes
-the meaning of the answer.  If the variable @code{read-answer-short}
-is non-@code{nil}, the prompt will show the short variants of the
-possible answers and the user is expected to type the single
-characters shown in the prompt; otherwise the prompt will show the
-long variants of the answers, and the user is expected to type the
-full text of one of the answers and end by pressing @key{RET}.  If
-@code{use-dialog-box} is non-@code{nil}, and this function was invoked
-by mouse events, the question and the answers will be displayed in a
-GUI dialog box.
+где @var{long-answer} - полный текст ответа пользователя, строка;
+@var{short-answer} - это краткая форма одного и того же ответа, одного
+символа; а @var{help-message} - это текст, который описывает смысл ответа.
+Если переменная @code{read-answer-short} - не-@code{nil}, в подсказке будут
+показаны короткие варианты возможных ответов, и ожидается, что пользователь
+наберет отдельные символы, показанные в подсказке; в противном случае в
+приглашении будут показаны длинные варианты ответов, и ожидается, что
+пользователь наберет полный текст одного из ответов и завершит его нажатием
+@key{RET}.  Если @code{use-dialog-box} имеет значение не-@code{nil} и эта
+функция была вызвана событиями мыши, вопрос и ответы будут отображаться в
+диалоговом окне GUI.
 
-The function returns the text of the @var{long-answer} selected by the
-user, regardless of whether long or short answers were shown in the
-prompt and typed by the user.
+Функция возвращает текст @var{long-answer}, выбранный пользователем,
+независимо от того, были ли длинные или короткие ответы показаны в
+подсказке и введены пользователем.
 
-Here is an example of using this function:
+Вот пример использования этой функции:
 
 @lisp
 (let ((read-answer-short t))
@@ -2223,301 +2223,297 @@ Here is an example of using this function:
 @end defun
 
 @node Reading a Password
-@section Reading a Password
+@section Чтение Пароля
 @cindex passwords, reading
 
-  To read a password to pass to another program, you can use the
-function @code{read-passwd}.
+  Чтобы прочитать пароль для перехода к другой программе, можно использовать
+функцию @code{read-passwd}.
 
 @vindex read-hide-char
 @defun read-passwd prompt &optional confirm default
-This function reads a password, prompting with @var{prompt}.  It does
-not echo the password as the user types it; instead, it echoes
-@samp{.}  for each character in the password.  If you want to apply
-another character to hide the password, let-bind the variable
-@code{read-hide-char} with that character.
+Эта функция считывает пароль, запрашивая @var{prompt}.  Пароль не
+отображается по мере его ввода пользователем; вместо этого отображается
+@samp{.} для каждого символа в пароле.  Если требуется применить другой
+символ, чтобы скрыть пароль, связывается переменная @code{read-hide-char} с
+этим символом.
 
-The optional argument @var{confirm}, if non-@code{nil}, says to read the
-password twice and insist it must be the same both times.  If it isn't
-the same, the user has to type it over and over until the last two
-times match.
+Необязательный аргумент @var{confirm}, если не-@code{nil}, указывает, что
+пароль нужно читать дважды, и настаивает на том, чтобы он был одинаковым
+оба раза.  Если это не то же самое, пользователь должен вводить его снова и
+снова, пока не совпадут два последних раза.
 
-The optional argument @var{default} specifies the default password to
-return if the user enters empty input.  If @var{default} is @code{nil},
-then @code{read-passwd} returns the null string in that case.
+Необязательный аргумент @var{default} указывает пароль по умолчанию, который
+будет возвращен, если пользователь вводит пустой ввод.  Если @var{default}
+равен @code{nil}, то в этом случае @code{read-passwd} возвращает пустую
+строку.
 @end defun
 
 @node Minibuffer Commands
-@section Minibuffer Commands
+@section Команды Минибуфера
 
-  This section describes some commands meant for use in the
-minibuffer.
+  В этом разделе описаны некоторые команды, предназначенные для использования в минибуфере.
 
 @deffn Command exit-minibuffer
-This command exits the active minibuffer.  It is normally bound to
-keys in minibuffer local keymaps.
+Эта команда следует из активного минибуфера.  Обычно он привязан к ключам в
+локальных картах ключей минибуфера.
 @end deffn
 
 @deffn Command self-insert-and-exit
-This command exits the active minibuffer after inserting the last
-character typed on the keyboard (found in @code{last-command-event};
+Эта команда выходит из активного минибуфера после вставки последнего
+символа, набранного на клавиатуре (находится в @code{last-command-event};
 @pxref{Command Loop Info}).
 @end deffn
 
 @deffn Command previous-history-element n
-This command replaces the minibuffer contents with the value of the
-@var{n}th previous (older) history element.
+Эта команда заменяет содержимое минибуфера значением предыдущего (более
+старого) элемента истории @var{n}.
 @end deffn
 
 @deffn Command next-history-element n
-This command replaces the minibuffer contents with the value of the
-@var{n}th more recent history element.
+Эта команда заменяет содержимое минибуфера значением более свежего элемента
+истории @var{n}.
 @end deffn
 
 @deffn Command previous-matching-history-element pattern n
-This command replaces the minibuffer contents with the value of the
-@var{n}th previous (older) history element that matches @var{pattern} (a
-regular expression).
+Эта команда заменяет содержимое минибуфера значением предыдущего (более
+старого) элемента истории @var{n}, который соответствует @var{pattern}
+(регулярное выражение).
 @end deffn
 
 @deffn Command next-matching-history-element pattern n
-This command replaces the minibuffer contents with the value of the
-@var{n}th next (newer) history element that matches @var{pattern} (a
-regular expression).
+Эта команда заменяет содержимое минибуфера значением следующего (более
+нового) элемента истории @var{n}, который соответствует @var{pattern}
+(регулярное выражение).
 @end deffn
 
 @deffn Command previous-complete-history-element n
-This command replaces the minibuffer contents with the value of the
-@var{n}th previous (older) history element that completes the current
-contents of the minibuffer before the point.
+Эта команда заменяет содержимое минибуфера значением предыдущего (более
+старого) элемента истории @var{n}, который завершает текущее содержимое
+минибуфера перед точкой.
 @end deffn
 
 @deffn Command next-complete-history-element n
-This command replaces the minibuffer contents with the value of the
-@var{n}th next (newer) history element that completes the current
-contents of the minibuffer before the point.
+Эта команда заменяет содержимое минибуфера значением следующего (более
+нового) элемента истории @var{n}, который завершает текущее содержимое
+минибуфера перед точкой.
 @end deffn
 
 
 @node Minibuffer Windows
-@section Minibuffer Windows
+@section Окна Минибуфера
 @cindex minibuffer windows
 
-These functions access and select minibuffer windows, test whether they
-are active and control how they get resized.
+Эти функции получают доступ к окнам минибуфера и выбирают их, проверяют,
+активны ли они, и управляют изменением их размера.
 
 @defun minibuffer-window &optional frame
 @anchor{Definition of minibuffer-window}
-This function returns the minibuffer window used for frame @var{frame}.
-If @var{frame} is @code{nil}, that stands for the selected frame.
+Эта функция возвращает окно минибуфера, используемое для кадра @var{frame}.
+Если @var{frame} равен @code{nil}, это означает выбранный кадр.
 
-Note that the minibuffer window used by a frame need not be part of that
-frame---a frame that has no minibuffer of its own necessarily uses some
-other frame's minibuffer window.  The minibuffer window of a
-minibuffer-less frame can be changed by setting that frame's
-@code{minibuffer} frame parameter (@pxref{Buffer Parameters}).
+Обратить внимание, что окно минибуфера, используемое кадром, не обязательно
+должно быть частью этого кадра - кадр, не имеющий собственного минибуфера,
+обязательно использует окно минибуфера какого-либо другого кадра.  Окно
+минибуфера кадра без минибуфера можно изменить, установив параметр кадра
+@code{minibuffer} этого кадра (@pxref{Buffer Parameters}).
 @end defun
 
 @defun set-minibuffer-window window
-This function specifies @var{window} as the minibuffer window to use.
-This affects where the minibuffer is displayed if you put text in it
-without invoking the usual minibuffer commands.  It has no effect on the
-usual minibuffer input functions because they all start by choosing the
-minibuffer window according to the selected frame.
+Эта функция указывает @var{window} в качестве окна минибуфера для
+использования.  Это влияет на то, где отображается минибуфер, если
+помещается в него текст, не вызывая обычные команды минибуфера.  Это не
+влияет на обычные функции ввода минибуфера, потому что все они начинаются с
+выбора окна минибуфера в соответствии с выбранным кадром.
 @end defun
 
 @c Emacs 19 feature
 @defun window-minibuffer-p &optional window
-This function returns non-@code{nil} if @var{window} is a minibuffer
-window.  @var{window} defaults to the selected window.
+Эта функция возвращает не-@code{nil}, если @var{window} является окном
+минибуфера.  @var{window} по умолчанию используется в выбранном окне.
 @end defun
 
-The following function returns the window showing the currently active
-minibuffer.
+Следующая функция возвращает окно, показывающее текущий активный минибуфер.
 
 @defun active-minibuffer-window
-This function returns the window of the currently active minibuffer, or
-@code{nil} if there is no active minibuffer.
+Эта функция возвращает окно текущего активного минибуфера или @code{nil},
+если нет активного минибуфера.
 @end defun
 
-It is not sufficient to determine whether a given window shows the
-currently active minibuffer by comparing it with the result of
-@code{(minibuffer-window)}, because there can be more than one
-minibuffer window if there is more than one frame.
+Недостаточно определить, показывает ли данное окно текущий активный
+минибуфер, сравнивая его с результатом @code{(minibuffer-window)}, потому
+что может быть более одного окна минибуфера, если имеется более одного
+кадра.
 
 @defun minibuffer-window-active-p window
-This function returns non-@code{nil} if @var{window} shows the currently
-active minibuffer.
+Эта функция возвращает не-@code{nil}, если @var{window} показывает текущий
+активный минибуфер.
 @end defun
 
-The following two options control whether minibuffer windows are resized
-automatically and how large they can get in the process.
+Следующие два параметра определяют, будут ли окна минибуфера автоматически
+изменяться и насколько они могут быть большими в процессе.
 
 @defopt resize-mini-windows
-This option specifies whether minibuffer windows are resized
-automatically.  The default value is @code{grow-only}, which means that
-a minibuffer window by default expands automatically to accommodate the
-text it displays and shrinks back to one line as soon as the minibuffer
-gets empty.  If the value is @code{t}, Emacs will always try to fit the
-height of a minibuffer window to the text it displays (with a minimum of
-one line).  If the value is @code{nil}, a minibuffer window never
-changes size automatically.  In that case the window resizing commands
-(@pxref{Resizing Windows}) can be used to adjust its height.
+Этот параметр определяет, будут ли окна минибуфера изменяться автоматически.
+Значение по умолчанию - @code{grow-only}, что означает, что окно минибуфера
+по умолчанию автоматически расширяется для размещения отображаемого текста и
+сжимается до одной строки, как только минибуфер становится пустым.  Если
+значение равно @code{t}, Emacs всегда будет пытаться подогнать высоту окна
+минибуфера к отображаемому им тексту (минимум одной строкой).  Если значение
+равно @code{nil}, окно минибуфера никогда не меняет размер автоматически.  В
+этом случае можно использовать команды изменения размера окна
+(@pxref{Resizing Windows}) для регулировки его высоты.
 @end defopt
 
 @defopt max-mini-window-height
-This option provides a maximum height for resizing minibuffer windows
-automatically.  A floating-point number specifies a fraction of the
-frame's height; an integer specifies the maximum number of lines.  The
-default value is 0.25.
+Эта опция обеспечивает максимальную высоту для автоматического изменения
+размеров окон минибуфера.  Число с плавающей запятой указывает часть высоты
+кадра; целое число определяет максимальное количество строк.  Значение по
+умолчанию - 0,25.
 @end defopt
 
-Note that the values of the above two variables take effect at display
-time, so let-binding them around code which produces echo-area messages
-will not work.  If you want to prevent resizing of minibuffer windows
-when displaying long messages, bind the @code{message-truncate-lines}
-variable instead (@pxref{Echo Area Customization}).
+Обратить внимание, что значения двух вышеуказанных переменных вступают в
+силу во время отображения, поэтому привязка их к коду, который создает
+сообщения эхо-области, не будет работать.  Если потребуется предотвратить
+изменение размера окон минибуфера при отображении длинных сообщений, вместо
+этого привязывается переменная @code{message-truncate-lines}
+(@pxref{Echo Area Customization}).
 
 
 @node Minibuffer Contents
-@section Minibuffer Contents
+@section Содержимое Минибуфера
 @cindex access minibuffer contents
 @cindex minibuffer contents, accessing
 
-  These functions access the minibuffer prompt and contents.
+  Эти функции обращаются к подсказке и содержимому минибуфера.
 
 @defun minibuffer-prompt
-This function returns the prompt string of the currently active
-minibuffer.  If no minibuffer is active, it returns @code{nil}.
+Эта функция возвращает строку приглашения текущего активного минибуфера.
+Если ни один минибуфер не активен, возвращается @code{nil}.
 @end defun
 
 @defun minibuffer-prompt-end
-This function returns the current
-position of the end of the minibuffer prompt, if a minibuffer is
-current.  Otherwise, it returns the minimum valid buffer position.
+Эта функция возвращает текущую позицию конца подсказки минибуфера, если
+минибуфер является текущим.  В противном случае возвращается минимальная
+допустимая позицию в буфере.
 @end defun
 
 @defun minibuffer-prompt-width
-This function returns the current display-width of the minibuffer
-prompt, if a minibuffer is current.  Otherwise, it returns zero.
+Эта функция возвращает текущую ширину отображения подсказки минибуфера, если
+минибуфер является текущим.  В противном случае возвращается ноль.
 @end defun
 
 @defun minibuffer-contents
-This function returns the editable
-contents of the minibuffer (that is, everything except the prompt) as
-a string, if a minibuffer is current.  Otherwise, it returns the
-entire contents of the current buffer.
+Эта функция возвращает редактируемое содержимое минибуфера (то есть все,
+кроме приглашения) в виде строки, если минибуфер является текущим.  В
+противном случае возвращается все содержимое текущего буфера.
 @end defun
 
 @defun minibuffer-contents-no-properties
-This is like @code{minibuffer-contents}, except that it does not copy text
-properties, just the characters themselves.  @xref{Text Properties}.
+Это похоже на @code{minibuffer-contents}, за исключением того, что не
+копируются свойства текста, а только сами символы.  @xref{Text Properties}.
 @end defun
 
 @deffn Command delete-minibuffer-contents
-This command erases the editable contents of the minibuffer (that is,
-everything except the prompt), if a minibuffer is current.  Otherwise,
-it erases the entire current buffer.
+Эта команда стирает редактируемое содержимое минибуфера (то есть все, кроме
+приглашения), если минибуфер текущий.  В противном случае стирается весь
+текущий буфер.
 @end deffn
 
 @node Recursive Mini
-@section Recursive Minibuffers
+@section Рекурсивные Минибуферы
 @cindex recursive minibuffers
 
-  These functions and variables deal with recursive minibuffers
+  Эти функции и переменные имеют дело с рекурсивными минибуферами.
 (@pxref{Recursive Editing}):
 
 @defun minibuffer-depth
-This function returns the current depth of activations of the
-minibuffer, a nonnegative integer.  If no minibuffers are active, it
-returns zero.
+Эта функция возвращает текущую глубину активаций минибуфера, неотрицательное
+целое число.  Если ни один минибуфер не активен, возвращается ноль.
 @end defun
 
 @defopt enable-recursive-minibuffers
-If this variable is non-@code{nil}, you can invoke commands (such as
-@code{find-file}) that use minibuffers even while the minibuffer is
-active.  Such invocation produces a recursive editing level for a new
-minibuffer.  The outer-level minibuffer is invisible while you are
-editing the inner one.
+Если эта переменная - не-@code{nil}, можно вызывать команды (например,
+@code{find-file}), которые используют минибуфер, даже когда минибуфер
+активен.  Такой вызов создает рекурсивный уровень редактирования для нового
+минибуфера.  Минибуфер внешнего уровня невидим, пока редактируется
+внутренний.
 
-If this variable is @code{nil}, you cannot invoke minibuffer commands
-when the minibuffer is active, not even if you switch to another window
-to do it.
+Если эта переменная - @code{nil}, можно вызывать команды минибуфера, когда
+минибуфер активен, даже если переключится для этого в другое окно.
 @end defopt
 
 @c Emacs 19 feature
-If a command name has a property @code{enable-recursive-minibuffers}
-that is non-@code{nil}, then the command can use the minibuffer to read
-arguments even if it is invoked from the minibuffer.  A command can
-also achieve this by binding @code{enable-recursive-minibuffers}
-to @code{t} in the interactive declaration (@pxref{Using Interactive}).
-The minibuffer command @code{next-matching-history-element} (normally
-@kbd{M-s} in the minibuffer) does the latter.
+Если имя команды имеет свойство @code{enable-recursive-minibuffers}, равное
+не-@code{nil}, тогда команда может использовать минибуфер для чтения
+аргументов, даже если вызывается из минибуфера.  Этого также можно добиться
+с помощью привязки @code{enable-recursive-minibuffers} к @code{t} в
+интерактивном объявлении (@pxref{Using Interactive}).  Последнее выполняет
+команда минибуфера @code{next-matching-history-element} (обычно @kbd{M-s} в
+минибуфере).
 
 @node Minibuffer Misc
-@section Minibuffer Miscellany
+@section Минибуфер Разное
 
 @defun minibufferp &optional buffer-or-name
-This function returns non-@code{nil} if @var{buffer-or-name} is a
-minibuffer.  If @var{buffer-or-name} is omitted, it tests the current
-buffer.
+Эта функция возвращает не-@code{nil}, если @var{buffer-or-name} - минибуфер.
+Если @var{buffer-or-name} опущен, проверяется текущий буфер.
 @end defun
 
 @defvar minibuffer-setup-hook
-This is a normal hook that is run whenever the minibuffer is entered.
-@xref{Hooks}.
+Это нормальная ловушка, которая запускается всякий раз, когда вводится
+минибуфер.  @xref{Hooks}.
 @end defvar
 
 @defmac minibuffer-with-setup-hook function &rest body
-This macro executes @var{body} after arranging for the specified
-@var{function} to be called via @code{minibuffer-setup-hook}.  By
-default, @var{function} is called before the other functions in the
-@code{minibuffer-setup-hook} list, but if @var{function} is of the
-form @w{@code{(:append @var{func})}}, @var{func} will be called
-@emph{after} the other hook functions.
+Этот макрос выполняет @var{body} после организации вызова указанного
+@var{function} через @code{minibuffer-setup-hook}.  По умолчанию
+@var{function} вызывается перед другими функциями в списке
+@code{minibuffer-setup-hook}, но если @var{function} имеет форму
+@w{@code{(:append @var{func})}}, @var{func}, @emph{после} будут вызываться 
+другие функции ловушки.
 
-The @var{body} forms should not use the minibuffer more than once.  If
-the minibuffer is re-entered recursively, @var{function} will only be
-called once, for the outermost use of the minibuffer.
+Формы @var{body} не должны использовать минибуфер более одного раза.  Если
+рекурсивно повторно войти в минибуфер, @var{function} будет вызываться
+только один раз для внешнего использования минибуфера.
 @end defmac
 
 @defvar minibuffer-exit-hook
-This is a normal hook that is run whenever the minibuffer is exited.
-@xref{Hooks}.
+Это нормальная ловушка, которая запускается всякий раз, когда минибуфер
+выходит из строя.  @xref{Hooks}.
 @end defvar
 
 @defvar minibuffer-help-form
 @anchor{Definition of minibuffer-help-form}
-The current value of this variable is used to rebind @code{help-form}
-locally inside the minibuffer (@pxref{Help Functions}).
+Текущее значение этой переменной используется для переназначения
+@code{help-form} локально внутри минибуфера (@pxref{Help Functions}).
 @end defvar
 
 @defvar minibuffer-scroll-window
 @anchor{Definition of minibuffer-scroll-window}
-If the value of this variable is non-@code{nil}, it should be a window
-object.  When the function @code{scroll-other-window} is called in the
-minibuffer, it scrolls this window.
+Если значение этой переменной - не-@code{nil}, это должен быть объект окна.
+Когда в минибуфере вызывается функция @code{scroll-other-window}, она
+прокручивает это окно.
 @end defvar
 
 @defun minibuffer-selected-window
-This function returns the window that was selected just before the
-minibuffer window was selected.  If the selected window is not a
-minibuffer window, it returns @code{nil}.
+Эта функция возвращает окно, которое было выбрано непосредственно перед тем,
+как было выбрано окно минибуфера.  Если выбранное окно не является окном
+минибуфера, оно возвращает @code{nil}.
 @end defun
 
 @vindex minibuffer-message-timeout
 @defun minibuffer-message string &rest args
-This function displays @var{string} temporarily at the end of the
-minibuffer text, for a few seconds, or until the next input event
-arrives, whichever comes first.  The variable
-@code{minibuffer-message-timeout} specifies the number of seconds to
-wait in the absence of input.  It defaults to 2.  If @var{args} is
-non-@code{nil}, the actual message is obtained by passing @var{string}
-and @var{args} through @code{format-message}.  @xref{Formatting Strings}.
+Эта функция временно отображает @var{string} в конце текста минибуфера на
+несколько секунд или до наступления следующего события ввода, в зависимости
+от того, что наступит раньше.  Переменная @code{minibuffer-message-timeout}
+указывает количество секунд ожидания при отсутствии ввода.  По умолчанию -
+2.  Если @var{args} - не-@code{nil}, фактическое сообщение получается путем
+передачи @var{string} и @var{args} через @code{format-message}.
+@xref{Formatting Strings}.
 @end defun
 
 @deffn Command minibuffer-inactive-mode
-This is the major mode used in inactive minibuffers.  It uses
-keymap @code{minibuffer-inactive-mode-map}.  This can be useful
-if the minibuffer is in a separate frame.  @xref{Minibuffers and Frames}.
+Это основной режим, используемый в неактивных минибуферах.  Он использует
+карту @code{minibuffer-inactive-mode-map}.  Это может быть полезно, если
+минибуфер находится в отдельном кадре.   @xref{Minibuffers and Frames}.
 @end deffn
