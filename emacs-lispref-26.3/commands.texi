@@ -4,219 +4,217 @@
 @c Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Command Loop
-@chapter Command Loop
+@chapter Командный Цикл
 @cindex editor command loop
 @cindex command loop
 
-  When you run Emacs, it enters the @dfn{editor command loop} almost
-immediately.  This loop reads key sequences, executes their definitions,
-and displays the results.  In this chapter, we describe how these things
-are done, and the subroutines that allow Lisp programs to do them.
+  Когда запускается Emacs, он почти сразу же попадает в
+@dfn{редактор командного цикла}.  Этот цикл считывает ключевые
+последовательности, выполняет их определения и отображает результаты.  В
+этой главе описывается, как это делается, и подпрограммы, которые позволяют
+программам на Lisp это делать.
 
 @menu
-* Command Overview::    How the command loop reads commands.
-* Defining Commands::   Specifying how a function should read arguments.
-* Interactive Call::    Calling a command, so that it will read arguments.
-* Distinguish Interactive::     Making a command distinguish interactive calls.
-* Command Loop Info::   Variables set by the command loop for you to examine.
-* Adjusting Point::     Adjustment of point after a command.
-* Input Events::        What input looks like when you read it.
-* Reading Input::       How to read input events from the keyboard or mouse.
-* Special Events::      Events processed immediately and individually.
-* Waiting::             Waiting for user input or elapsed time.
-* Quitting::            How @kbd{C-g} works.  How to catch or defer quitting.
-* Prefix Command Arguments::    How the commands to set prefix args work.
-* Recursive Editing::   Entering a recursive edit,
-                          and why you usually shouldn't.
-* Disabling Commands::  How the command loop handles disabled commands.
-* Command History::     How the command history is set up, and how accessed.
-* Keyboard Macros::     How keyboard macros are implemented.
+* Command Overview::    Как цикл команд читает команды.
+* Defining Commands::   Определение, как функция должна читать аргументы.
+* Interactive Call::    Вызов команды для чтения аргументов.
+* Distinguish Interactive:: Различие выполнения интерактивного вызова команды.
+* Command Loop Info::   Переменные, задаваемые командным циклом, которые можно проверить.
+* Adjusting Point::     Управление точкой после команды.
+* Input Events::        Как выглядит ввод, когда его читают.
+* Reading Input::       Как читать события ввода с клавиатуры или мыши.
+* Special Events::      События обрабатываются немедленно и индивидуально.
+* Waiting::             Ожидание ввода пользователя или истекание времени.
+* Quitting::            Как работает @kbd{C-g}.  Как поймать или отложить выход.
+* Prefix Command Arguments::    Как работают команды для установки префиксного аргумента.
+* Recursive Editing::   Ввод рекурсивного редактирования и почему обычно
+                               этого не следует делать.
+* Disabling Commands::  Как цикл команд обрабатывает отключенные команды.
+* Command History::     Как настраивается история команд и как к ней можно
+                               получить доступ.
+* Keyboard Macros::     Как реализованы макросы клавиатуры.
 @end menu
 
 @node Command Overview
-@section Command Loop Overview
+@section Командный Цикл Обзор
 
-  The first thing the command loop must do is read a key sequence,
-which is a sequence of input events that translates into a command.
-It does this by calling the function @code{read-key-sequence}.  Lisp
-programs can also call this function (@pxref{Key Sequence Input}).
-They can also read input at a lower level with @code{read-key} or
-@code{read-event} (@pxref{Reading One Event}), or discard pending
-input with @code{discard-input} (@pxref{Event Input Misc}).
+  Первое, что должен сделать командный цикл, - это прочитать
+последовательность ключей, которая представляет собой последовательность
+событий ввода, которая преобразуется в команду.  Это делается путем вызова
+функции @code{read-key-sequence}.  Программы на Lisp также могут вызывать
+эту функцию (@pxref{Key Sequence Input}).  Они также могут читать ввод на
+более низком уровне с помощью @code{read-key} или @code{read-event}
+(@pxref{Reading One Event}) или отклонять ожидающий ввод с помощью
+@code{discard-input} (@pxref{Event Input Misc}).
 
-  The key sequence is translated into a command through the currently
-active keymaps.  @xref{Key Lookup}, for information on how this is done.
-The result should be a keyboard macro or an interactively callable
-function.  If the key is @kbd{M-x}, then it reads the name of another
-command, which it then calls.  This is done by the command
-@code{execute-extended-command} (@pxref{Interactive Call}).
+  Последовательность ключей преобразуется в команду через текущие активные
+ключевые карты.  @xref{Key Lookup}, чтобы узнать, как это делается.
+Результатом должен быть макрос клавиатуры или интерактивно вызываемая
+функция.  Если ключ - @kbd{M-x}, он считывает имя другой команды, которую
+затем вызывает.  Делается это командой @code{execute-extended-command}
+(@pxref{Interactive Call}).
 
-  Prior to executing the command, Emacs runs @code{undo-boundary} to
-create an undo boundary.  @xref{Maintaining Undo}.
+  Перед выполнением команды Emacs запускает @code{undo-boundary} для
+создания границы отмены.  @xref{Maintaining Undo}.
 
-  To execute a command, Emacs first reads its arguments by calling
-@code{command-execute} (@pxref{Interactive Call}).  For commands
-written in Lisp, the @code{interactive} specification says how to read
-the arguments.  This may use the prefix argument (@pxref{Prefix
-Command Arguments}) or may read with prompting in the minibuffer
-(@pxref{Minibuffers}).  For example, the command @code{find-file} has
-an @code{interactive} specification which says to read a file name
-using the minibuffer.  The function body of @code{find-file} does not
-use the minibuffer, so if you call @code{find-file} as a function from
-Lisp code, you must supply the file name string as an ordinary Lisp
-function argument.
+  Чтобы выполнить команду, Emacs сначала читает ее аргументы, вызывая
+@code{command-execute} (@pxref{Interactive Call}).  Для команд, написанных
+на Lisp, спецификация @code{interactive} говорит, как читать аргументы.  Это
+может использовать префиксный аргумент (@pxref{Prefix Command Arguments})
+или может читаться с подсказкой в минибуфере (@pxref{Minibuffers}).
+Например, команда @code{find-file} имеет спецификацию @code{interactive}, в
+которой говорится, что имя файла следует читать с помощью минибуфера.  Тело
+функции @code{find-file} не использует минибуфер, поэтому, если вызывается
+@code{find-file} как функция из кода Lisp, потребуется предоставить строку
+имени файла как обычный аргумент функции Lisp.
 
-  If the command is a keyboard macro (i.e., a string or vector),
-Emacs executes it using @code{execute-kbd-macro} (@pxref{Keyboard
-Macros}).
+  Если команда является макросом клавиатуры (т. е. строкой или вектором),
+Emacs выполняет ее, используя @code{execute-kbd-macro} (@pxref{Keyboard Macros}).
 
 @defvar pre-command-hook
-This normal hook is run by the editor command loop before it executes
-each command.  At that time, @code{this-command} contains the command
-that is about to run, and @code{last-command} describes the previous
-command.  @xref{Command Loop Info}.
+Этот нормальный перехватчик запускается редактором командного цикла перед
+выполнением каждой команды.  В это время @code{this-command} содержит
+команду, которая будет запущена, а @code{last-command} описывает предыдущую
+команду.  @xref{Command Loop Info}.
 @end defvar
 
 @defvar post-command-hook
-This normal hook is run by the editor command loop after it executes
-each command (including commands terminated prematurely by quitting or
-by errors).  At that time, @code{this-command} refers to the command
-that just ran, and @code{last-command} refers to the command before
-that.
+Эта обычная ловушка запускается редактором командного цикла после выполнения
+каждой команды (включая команды, преждевременно завершенные из-за выхода или
+из-за ошибок).  В то время @code{this-command} относится к только что
+запущенной команде, а @code{last-command} относится к команде до этого.
 
-This hook is also run when Emacs first enters the command loop (at
-which point @code{this-command} and @code{last-command} are both
+Эта ловушка также запускается, когда Emacs впервые входит в командный цикл
+(в этот момент оба объекта @code{this-command} and @code{last-command} равны
 @code{nil}).
 @end defvar
 
-  Quitting is suppressed while running @code{pre-command-hook} and
-@code{post-command-hook}.  If an error happens while executing one of
-these hooks, it does not terminate execution of the hook; instead
-the error is silenced and the function in which the error occurred
-is removed from the hook.
+  Выход подавляется во время работы @code{pre-command-hook} и
+@code{post-command-hook}.  Если при выполнении одной из этих ловушек
+возникает ошибка, выполнение ловушки не прекращается; вместо этого ошибка
+заглушается, а функция, в которой возникла ошибка, удаляется из ловушки.
 
-  A request coming into the Emacs server (@pxref{Emacs Server,,,
-emacs, The GNU Emacs Manual}) runs these two hooks just as a keyboard
-command does.
+  Запрос, поступающий на сервер Emacs
+(@pxref{Emacs Server,,, emacs, The GNU Emacs Manual}), запускает эти два
+перехватчика так же, как и клавиатурная команда.
 
 @node Defining Commands
-@section Defining Commands
+@section Определение Команд
 @cindex defining commands
 @cindex commands, defining
 @cindex functions, making them interactive
 @cindex interactive function
 
-  The special form @code{interactive} turns a Lisp function into a
-command.  The @code{interactive} form must be located at top-level in
-the function body, usually as the first form in the body; this applies
-to both lambda expressions (@pxref{Lambda Expressions}) and
-@code{defun} forms (@pxref{Defining Functions}).  This form does
-nothing during the actual execution of the function; its presence
-serves as a flag, telling the Emacs command loop that the function can
-be called interactively.  The argument of the @code{interactive} form
-specifies how the arguments for an interactive call should be read.
+  Специальная форма @code{interactive} превращает функцию Lisp в команду.
+Форма @code{interactive} должна располагаться на верхнем уровне в теле
+функции, обычно как первая форма в теле; это относится как к
+лямбда-выражением (@pxref{Lambda Expressions}), так и к @code{defun} формам
+(@pxref{Defining Functions}).  Эта форма ничего не делает во время
+фактического выполнения функции; его присутствие служит флагом, сообщающим
+командному циклу Emacs, что функция может быть вызвана интерактивно.
+Аргумент формы @code{interactive} указывает, как следует читать аргументы
+интерактивного вызова.
 
 @cindex @code{interactive-form} property
-  Alternatively, an @code{interactive} form may be specified in a
-function symbol's @code{interactive-form} property.  A non-@code{nil}
-value for this property takes precedence over any @code{interactive}
-form in the function body itself.  This feature is seldom used.
+  В качестве альтернативы, форма @code{interactive} может быть указана в
+свойстве @code{interactive-form} символа функции.  Значение не-@code{nil}
+для этого свойства имеет приоритет над любой формой @code{interactive} в
+теле функции.  Эта функция используется редко.
 
 @anchor{The interactive-only property}
 @cindex @code{interactive-only} property
-  Sometimes, a function is only intended to be called interactively,
-never directly from Lisp.  In that case, give the function a
-non-@code{nil} @code{interactive-only} property, either directly
-or via @code{declare} (@pxref{Declare Form}).  This causes the
-byte compiler to warn if the command is called from Lisp.  The output
-of @code{describe-function} will include similar information.
-The value of the property can be: a string, which the byte-compiler
-will use directly in its warning (it should end with a period, and not
-start with a capital, e.g., @code{"use (system-name) instead."}); @code{t}; any
-other symbol, which should be an alternative function to use in Lisp
-code.
+  Иногда функция предназначена только для интерактивного вызова, а не для
+прямого вызова из Lisp.  В этом случае присваивается функции свойство
+не-@code{nil} @code{interactive-only} либо напрямую, либо через
+@code{declare} (@pxref{Declare Form}).  Это заставляет байт компилятор
+предупреждать, если команда вызывается из Lisp.  Вывод
+@code{describe-function} будет включать аналогичную информацию.  Значением
+свойства может быть: строка, которую байт компилятор будет использовать
+непосредственно в своем предупреждении (она должна заканчиваться точкой, и
+не начинаться с заглавной буквы, например,
+@code{"use (system-name) instead."}); @code{t}; любой другой символ, который
+должен быть альтернативой функция для использования в коде Lisp.
 
-Generic functions (@pxref{Generic Functions}) cannot be turned into
-commands by adding the @code{interactive} form to them.
+Универсальные функции (@pxref{Generic Functions}) нельзя превратить в
+команды, добавив к ним форму @code{interactive}.
 
 @menu
-* Using Interactive::     General rules for @code{interactive}.
-* Interactive Codes::     The standard letter-codes for reading arguments
-                             in various ways.
-* Interactive Examples::  Examples of how to read interactive arguments.
-* Generic Commands::      Select among command alternatives.
+* Using Interactive::     Общие правила для @code{interactive}.
+* Interactive Codes::     Стандартные буквенные коды для чтения аргументов
+                            различными способами.
+* Interactive Examples::  Примеры того, как читать интерактивные аргументы.
+* Generic Commands::      Выберите среди альтернативных команд.
 @end menu
 
 @node Using Interactive
-@subsection Using @code{interactive}
+@subsection Использование @code{interactive}
 @cindex arguments, interactive entry
 @cindex interactive spec, using
 
-  This section describes how to write the @code{interactive} form that
-makes a Lisp function an interactively-callable command, and how to
-examine a command's @code{interactive} form.
+  В этом разделе описывается, как написать форму @code{interactive}, которая
+делает функцию Lisp интерактивно вызываемой командой, и как исследовать
+форму @code{interactive} команды.
 
 @defspec interactive arg-descriptor
-This special form declares that a function is a command, and that it
-may therefore be called interactively (via @kbd{M-x} or by entering a
-key sequence bound to it).  The argument @var{arg-descriptor} declares
-how to compute the arguments to the command when the command is called
-interactively.
+Эта специальная форма объявляет, что функция является командой, и поэтому
+она может вызываться интерактивно (через @kbd{M-x} или путем ввода связанной
+с ней последовательности ключей).  Аргумент @var{arg-descriptor} объявляет,
+как вычислять аргументы команды, когда команда вызывается в интерактивном
+режиме.
 
-A command may be called from Lisp programs like any other function, but
-then the caller supplies the arguments and @var{arg-descriptor} has no
-effect.
+Команду можно вызывать из программ на Lisp, как и любую другую функцию, но
+тогда вызывающий предоставляет аргументы, и @var{arg-descriptor} не имеет
+никакого эффекта.
 
 @cindex @code{interactive-form}, symbol property
-The @code{interactive} form must be located at top-level in the
-function body, or in the function symbol's @code{interactive-form}
-property (@pxref{Symbol Properties}).  It has its effect because the
-command loop looks for it before calling the function
-(@pxref{Interactive Call}).  Once the function is called, all its body
-forms are executed; at this time, if the @code{interactive} form
-occurs within the body, the form simply returns @code{nil} without
-even evaluating its argument.
+Форма @code{interactive} должна располагаться на верхнем уровне в теле
+функции или в свойстве (@pxref{Symbol Properties}) символа функции
+(@pxref{Symbol Properties}).  Это имеет свой эффект, потому что командный
+цикл ищет его перед вызовом функции (@pxref{Interactive Call}).  После
+вызова функции выполняются все ее формы тела; в это время, если форма
+@code{interactive} встречается в теле, форма просто возвращает @code{nil},
+даже не оценивая свой аргумент.
 
-By convention, you should put the @code{interactive} form in the
-function body, as the first top-level form.  If there is an
-@code{interactive} form in both the @code{interactive-form} symbol
-property and the function body, the former takes precedence.  The
-@code{interactive-form} symbol property can be used to add an
-interactive form to an existing function, or change how its arguments
-are processed interactively, without redefining the function.
+По соглашению требуется поместить форму @code{interactive} в тело функции
+как первую форму верхнего уровня.  Если есть форма @code{interactive} и в
+свойстве символа @code{interactive-form}, и в теле функции, первое имеет
+приоритет.  Свойство символа @code{interactive-form} можно использовать для
+добавления интерактивной формы к существующей функции или изменения способа
+интерактивной обработки ее аргументов без переопределения функции.
 @end defspec
 
-There are three possibilities for the argument @var{arg-descriptor}:
+Есть три возможности для аргумента @var{arg-descriptor}:
 
 @itemize @bullet
 @item
-It may be omitted or @code{nil}; then the command is called with no
-arguments.  This leads quickly to an error if the command requires one
-or more arguments.
+Может быть опущено или @code{nil}; тогда команда вызывается без аргументов.
+Это быстро приводит к ошибке, если команде требуется один или несколько
+аргументов.
 
 @item
-It may be a string; its contents are a sequence of elements separated
-by newlines, one for each argument@footnote{Some elements actually
-supply two arguments.}.  Each element consists of a code character
-(@pxref{Interactive Codes}) optionally followed by a prompt (which
-some code characters use and some ignore).  Here is an example:
+Это может быть строка; его содержимое представляет собой последовательность
+элементов, разделенных символами новой строки, по одному для каждого
+аргумента @footnote{Некоторые элементы фактически предоставляют два
+аргумента.}.  Каждый элемент состоит из кодового символа
+(@pxref{Interactive Codes}), за которым может следовать подсказка (которую
+некоторые символы кода используют, а некоторые игнорируют). Вот пример:
 
 @smallexample
 (interactive "P\nbFrobnicate buffer: ")
 @end smallexample
 
 @noindent
-The code letter @samp{P} sets the command's first argument to the raw
-command prefix (@pxref{Prefix Command Arguments}).  @samp{bFrobnicate
-buffer: } prompts the user with @samp{Frobnicate buffer: } to enter
-the name of an existing buffer, which becomes the second and final
-argument.
+Кодовая буква @samp{P} устанавливает в качестве первого аргумента команды
+необработанный префикс команды (@pxref{Prefix Command Arguments}).
+@samp{bFrobnicate buffer: } предлагает пользователю с помощью
+@samp{Frobnicate buffer: } ввести имя существующего буфера, которое
+становится вторым и последним аргументом.
 
-The prompt string can use @samp{%} to include previous argument values
-(starting with the first argument) in the prompt.  This is done using
-@code{format-message} (@pxref{Formatting Strings}).  For example, here is how
-you could read the name of an existing buffer followed by a new name to
-give to that buffer:
+Строка приглашения может использовать @samp{%} для включения в подсказку
+значений предыдущих аргументов (начиная с первого аргумента).  Это делается
+с помощью @code{format-message} (@pxref{Formatting Strings}).  Например, вот
+как прочитать имя существующего буфера, за которым следует новое имя,
+которое нужно дать этому буферу.:
 
 @smallexample
 @group
@@ -226,46 +224,44 @@ give to that buffer:
 
 @cindex @samp{*} in @code{interactive}
 @cindex read-only buffers in interactive
-If @samp{*} appears at the beginning of the string, then an error is
-signaled if the buffer is read-only.
+Если @samp{*} появляется в начале строки, то выдается сигнал об ошибке, если
+буфер доступен только для чтения.
 
 @cindex @samp{@@} in @code{interactive}
-If @samp{@@} appears at the beginning of the string, and if the key
-sequence used to invoke the command includes any mouse events, then
-the window associated with the first of those events is selected
-before the command is run.
+Если @samp{@@} появляется в начале строки и если последовательность ключей,
+используемая для вызова команды, включает какие-либо события мыши, то перед
+запуском команды выбирается окно, связанное с первым из этих событий.
 
 @cindex @samp{^} in @code{interactive}
 @cindex shift-selection, and @code{interactive} spec
-If @samp{^} appears at the beginning of the string, and if the command
-was invoked through @dfn{shift-translation}, set the mark and activate
-the region temporarily, or extend an already active region, before the
-command is run.  If the command was invoked without shift-translation,
-and the region is temporarily active, deactivate the region before the
-command is run.  Shift-translation is controlled on the user level by
-@code{shift-select-mode}; see @ref{Shift Selection,,, emacs, The GNU
-Emacs Manual}.
+Если @samp{^} появляется в начале строки, и если команда была вызвана через
+@dfn{shift-translation}, устанавливается метка и временно активируется
+область или расширяется уже активная область до запуска команды.  Если
+команда была вызвана без @dfn{shift-translation}, а область временно
+активна, деактивируется область перед выполнением команды.  @dfn{shift-translation} управляется на уровне пользователя с помощью
+@code{shift-select-mode}; смотреть
+@ref{Shift Selection,,, emacs, The GNU Emacs Manual}.
 
-You can use @samp{*}, @samp{@@}, and @code{^} together; the order does
-not matter.  Actual reading of arguments is controlled by the rest of
-the prompt string (starting with the first character that is not
-@samp{*}, @samp{@@}, or @samp{^}).
+Можно использовать @samp{*}, @samp{@@}, и @code{^} вместе; порядок не имеет
+значения.  Фактическое чтение аргументов контролируется остальной частью
+строки приглашения (начиная с первого символа, который не является @samp{*},
+@samp{@@}, или @samp{^}).
 
 @item
-It may be a Lisp expression that is not a string; then it should be a
-form that is evaluated to get a list of arguments to pass to the
-command.  Usually this form will call various functions to read input
-from the user, most often through the minibuffer (@pxref{Minibuffers})
-or directly from the keyboard (@pxref{Reading Input}).
+Это может быть выражение Lisp, которое не является строкой; тогда это должна
+быть форма, которая оценивается, чтобы получить список аргументов для
+передачи команде.  Обычно эта форма вызывает различные функции для чтения
+ввода от пользователя, чаще всего через минибуфер (@pxref{Minibuffers}) или
+непосредственно с клавиатуры (@pxref{Reading Input}).
 
-Providing point or the mark as an argument value is also common, but
-if you do this @emph{and} read input (whether using the minibuffer or
-not), be sure to get the integer values of point or the mark after
-reading.  The current buffer may be receiving subprocess output; if
-subprocess output arrives while the command is waiting for input, it
-could relocate point and the mark.
+Предоставление точки или метки в качестве значения аргумента также является
+обычным явлением, но если делается этот ввод для чтения @emph{и} (независимо
+от того, используете ли он минибуфер или нет), следует убедиться, что
+получены целые значения точки или метки после чтения.  Текущий буфер может
+получать выходные данные подпроцесса; если выходные данные подпроцесса
+поступают, пока команда ожидает ввода, это может переместить точку и метку.
 
-Here's an example of what @emph{not} to do:
+Вот пример того, что @emph{не} нужно делать:
 
 @smallexample
 (interactive
@@ -274,8 +270,8 @@ Here's an example of what @emph{not} to do:
 @end smallexample
 
 @noindent
-Here's how to avoid the problem, by examining point and the mark after
-reading the keyboard input:
+Вот как избежать этой проблемы, изучив точку и метку после чтения ввода
+с клавиатуры:
 
 @smallexample
 (interactive
@@ -283,296 +279,298 @@ reading the keyboard input:
    (list (region-beginning) (region-end) string)))
 @end smallexample
 
-@strong{Warning:} the argument values should not include any data
-types that can't be printed and then read.  Some facilities save
-@code{command-history} in a file to be read in the subsequent
-sessions; if a command's arguments contain a data type that prints
-using @samp{#<@dots{}>} syntax, those facilities won't work.
+@strong{Предупреждение:} значения аргументов не должны включать какие-либо
+типы данных, которые нельзя распечатать, а затем прочитать.  Некоторые
+средства сохраняют @code{command-history} в файл для чтения в последующих
+сессиях; если аргументы команды содержат тип данных, который печатается с
+использованием синтаксиса @samp{#<@dots{}>}, эти средства не будут работать.
 
-There are, however, a few exceptions: it is ok to use a limited set of
-expressions such as @code{(point)}, @code{(mark)},
-@code{(region-beginning)}, and @code{(region-end)}, because Emacs
-recognizes them specially and puts the expression (rather than its
-value) into the command history.  To see whether the expression you
-wrote is one of these exceptions, run the command, then examine
-@code{(car command-history)}.
+Однако есть несколько исключений: можно использовать ограниченный набор
+выражений, таких как @code{(point)}, @code{(mark)},
+@code{(region-beginning)}, и @code{(region-end)}, поскольку Emacs распознает
+их специально и помещает выражение (а не его значение) в историю команд.
+Чтобы узнать, является ли написанное вами выражение одним из этих
+исключений, запустите команду, затем проверьте @code{(car command-history)}.
 @end itemize
 
 @cindex examining the @code{interactive} form
 @defun interactive-form function
-This function returns the @code{interactive} form of @var{function}.
-If @var{function} is an interactively callable function
-(@pxref{Interactive Call}), the value is the command's
-@code{interactive} form @code{(interactive @var{spec})}, which
-specifies how to compute its arguments.  Otherwise, the value is
-@code{nil}.  If @var{function} is a symbol, its function definition is
-used.
+Эта функция возвращает @code{interactive} форму @var{function}.  Если
+@var{function} является интерактивно вызываемой функцией
+(@pxref{Interactive Call}), значением является команда @code{interactive} в
+форме @code{(interactive @var{spec})}, которая указывает, как вычислять ее
+аргументы.  В противном случае значение @code{nil}.  Если @var{function} -
+это символ, используется определение его функции.
 @end defun
 
 @node Interactive Codes
-@subsection Code Characters for @code{interactive}
+@subsection Кодовые Символы для @code{interactive}
 @cindex interactive code description
 @cindex description for interactive codes
 @cindex codes, interactive, description of
 @cindex characters for interactive codes
 
-  The code character descriptions below contain a number of key words,
-defined here as follows:
+  Приведенные ниже описания кодовых символов содержат ряд ключевых слов,
+определяемых здесь следующим образом:
 
 @table @b
 @item Completion
 @cindex interactive completion
-Provide completion.  @key{TAB}, @key{SPC}, and @key{RET} perform name
-completion because the argument is read using @code{completing-read}
-(@pxref{Completion}).  @kbd{?} displays a list of possible completions.
+Обеспечить завершение.  @key{TAB}, @key{SPC}, и @key{RET} выполняет
+завершение имени, потому что аргумент читается с использованием
+@code{completing-read} (@pxref{Completion}).  @kbd{?} отображает список
+возможных доработок.
 
 @item Existing
-Require the name of an existing object.  An invalid name is not
-accepted; the commands to exit the minibuffer do not exit if the current
-input is not valid.
+Требовать имя существующего объекта.  Недействительное имя не принимается;
+команды выхода из минибуфера не сработают, если текущий ввод недействителен.
 
 @item Default
 @cindex default argument string
-A default value of some sort is used if the user enters no text in the
-minibuffer.  The default depends on the code character.
+Если пользователь не вводит текст в минибуфер, используется какое-то
+значение по умолчанию.  Значение по умолчанию зависит от символа кода.
 
 @item No I/O
-This code letter computes an argument without reading any input.
-Therefore, it does not use a prompt string, and any prompt string you
-supply is ignored.
+Эта кодовая буква вычисляет аргумент без чтения ввода.  Следовательно, не
+используется строка подсказки, и любая строка подсказки, которая вводится,
+игнорируется.
 
-Even though the code letter doesn't use a prompt string, you must follow
-it with a newline if it is not the last code character in the string.
+Несмотря на то, что кодовая буква не использует строку приглашения,
+потребуется начать за ней с новой строки, если это не последний кодовый
+символ в строке.
 
 @item Prompt
-A prompt immediately follows the code character.  The prompt ends either
-with the end of the string or with a newline.
+Подсказка следует сразу за кодом символа.  Приглашение заканчивается концом
+строки или новой строкой.
 
 @item Special
-This code character is meaningful only at the beginning of the
-interactive string, and it does not look for a prompt or a newline.
-It is a single, isolated character.
+Этот кодовый символ имеет смысл только в начале интерактивной строки и не
+ищет подсказку или новую строку.  Это единый, изолированный символ.
 @end table
 
 @cindex reading interactive arguments
-  Here are the code character descriptions for use with @code{interactive}:
+  Вот описания символов кода для использования с @code{interactive}:
 
 @table @samp
 @item *
-Signal an error if the current buffer is read-only.  Special.
+Сообщается об ошибке, если текущий буфер доступен только для чтения.
+Специальный.
 
 @item @@
-Select the window mentioned in the first mouse event in the key
-sequence that invoked this command.  Special.
+Выберается окно, упомянутое в первом событии мыши в последовательности
+коючей, которое вызвало эту команду.  Специальный.
 
 @item ^
-If the command was invoked through shift-translation, set the mark and
-activate the region temporarily, or extend an already active region,
-before the command is run.  If the command was invoked without
-shift-translation, and the region is temporarily active, deactivate
-the region before the command is run.  Special.
+Если команда была вызвана через shift-translation, установить метку и
+временно активировать область или расширьте уже активную область перед
+выполнением команды.  Если команда была вызвана без shift-translation, а
+область временно активна, деактивируется область перед выполнением команды.
+Специальный.
 
 @item a
-A function name (i.e., a symbol satisfying @code{fboundp}).  Existing,
-Completion, Prompt.
+Имя функции (т. е. Символ, удовлетворяющий @code{fboundp}).  Существующий,
+Завершение, Подсказка.
 
 @item b
-The name of an existing buffer.  By default, uses the name of the
-current buffer (@pxref{Buffers}).  Existing, Completion, Default,
-Prompt.
+Имя существующего буфера.  По умолчанию используется имя текущего буфера
+(@pxref{Buffers}).  Существующий, Завершение, По умолчанию, Запрос.
 
 @item B
-A buffer name.  The buffer need not exist.  By default, uses the name of
-a recently used buffer other than the current buffer.  Completion,
-Default, Prompt.
+Имя буфера.  Буфер может не существовать.  По умолчанию использует имя
+недавно использованного буфера, отличное от текущего.  Завершение,
+По умолчанию, Подсказка.
 
 @item c
-A character.  The cursor does not move into the echo area.  Prompt.
+Символ.  Курсор не перемещается в эхо-область.  Незамедлительный.
 
 @item C
-A command name (i.e., a symbol satisfying @code{commandp}).  Existing,
-Completion, Prompt.
+Имя команды (т. е. Символ, удовлетворяющий @code{commandp}).  Существующий,
+Завершение, Подсказка.
 
 @item d
 @cindex position argument
-The position of point, as an integer (@pxref{Point}).  No I/O.
+Положение точки в виде целого числа (@pxref{Point}).  Нет ввода/вывода.
 
 @item D
-A directory.  The default is the current default directory of the
-current buffer, @code{default-directory} (@pxref{File Name Expansion}).
-Existing, Completion, Default, Prompt.
+Каталог.  По умолчанию это текущий каталог по умолчанию для текущего буфера,
+@code{default-directory} (@pxref{File Name Expansion}).  Существующий,
+Завершение, По умолчанию, Запрос.
 
 @item e
-The first or next non-keyboard event in the key sequence that invoked
-the command.  More precisely, @samp{e} gets events that are lists, so
-you can look at the data in the lists.  @xref{Input Events}.  No I/O.
+Первое или следующее событие, не связанное с клавиатурой, в
+последовательности ключей, вызвавшее команду.  Точнее, @samp{e} получает
+события в виде списков, поэтому можно просматривать данные в списках.
+@xref{Input Events}.  Нет ввода/вывода.
 
-You use @samp{e} for mouse events and for special system events
-(@pxref{Misc Events}).  The event list that the command receives
-depends on the event.  @xref{Input Events}, which describes the forms
-of the list for each event in the corresponding subsections.
+Используется @samp{e} для событий мыши и для специальных системных событий
+(@pxref{Misc Events}).  Список событий, который получает команда, зависит от
+события.  @xref{Input Events}, который описывает формы списка для каждого
+события в соответствующих подразделах.
 
-You can use @samp{e} more than once in a single command's interactive
-specification.  If the key sequence that invoked the command has
-@var{n} events that are lists, the @var{n}th @samp{e} provides the
-@var{n}th such event.  Events that are not lists, such as function keys
-and @acronym{ASCII} characters, do not count where @samp{e} is concerned.
+Можно использовать @samp{e} более одного раза в интерактивной спецификации
+одной команды.  Если последовательность ключей, вызвавшая команду, имеет
+@var{n} событий, которые являются списками, @var{n} @samp{e} предоставляет
+такое событие @var{n}.  События, не входящие в списки, такие как
+функциональные ключи и символы @acronym{ASCII}, не учитываются в случае
+@samp{e}.
 
 @item f
-A file name of an existing file (@pxref{File Names}).  The default
-directory is @code{default-directory}.  Existing, Completion, Default,
-Prompt.
+Имя существующего файла (@pxref{File Names}).  Каталог по умолчанию -
+@code{default-directory}.  Существующий, Завершение, По умолчанию, Запрос.
 
 @item F
-A file name.  The file need not exist.  Completion, Default, Prompt.
+Имя файла.  Файл не должен существовать.
+Завершение, По умолчанию, Подсказка.
 
 @item G
-A file name.  The file need not exist.  If the user enters just a
-directory name, then the value is just that directory name, with no
-file name within the directory added.  Completion, Default, Prompt.
+Имя файла.  Файл не должен существовать.  Если пользователь вводит только
+имя каталога, тогда значением будет просто имя этого каталога без добавления
+имени файла в этом каталоге.  Завершение, По умолчанию, Подсказка.
 
 @item i
-An irrelevant argument.  This code always supplies @code{nil} as
-the argument's value.  No I/O.
+Неуместный аргумент.  Этот код всегда предоставляет @code{nil} в качестве
+значения аргумента.  Нет ввода/вывода.
 
 @item k
-A key sequence (@pxref{Key Sequences}).  This keeps reading events
-until a command (or undefined command) is found in the current key
-maps.  The key sequence argument is represented as a string or vector.
-The cursor does not move into the echo area.  Prompt.
+Последовательность ключей (@pxref{Key Sequences}).  Это продолжает считывать
+события, пока команда (или неопределенная команда) не будет найдена в
+текущих ключевых картах.  Аргумент ключевой последовательности представлен в
+виде строки или вектора.  Курсор не перемещается в эхо-область.
+Незамедлительный.
 
-If @samp{k} reads a key sequence that ends with a down-event, it also
-reads and discards the following up-event.  You can get access to that
-up-event with the @samp{U} code character.
+Если @samp{k} считывается последовательность ключей, которая заканчивается
+событием down, также считывается и отбрасывается следующее событие up.
+Можно получить доступ к этому up-событию с помощью символа кода @samp{U}.
 
-This kind of input is used by commands such as @code{describe-key} and
+Этот тип ввода используется такими командами, как @code{describe-key} и
 @code{global-set-key}.
 
 @item K
-A key sequence, whose definition you intend to change.  This works like
-@samp{k}, except that it suppresses, for the last input event in the key
-sequence, the conversions that are normally used (when necessary) to
-convert an undefined key into a defined one.
+Ключевая последовательность, определение которой потребовалося изменить.
+Это работает как @samp{k}, за исключением того, что подавляется для
+последнего события ввода в последовательности ключей преобразования, которые
+обычно используются (при необходимости) для преобразования неопределенного
+ключа в определенный.
 
 @item m
 @cindex marker argument
-The position of the mark, as an integer.  No I/O.
+Положение метки в виде целого числа.  Нет ввода/вывода.
 
 @item M
-Arbitrary text, read in the minibuffer using the current buffer's input
-method, and returned as a string (@pxref{Input Methods,,, emacs, The GNU
-Emacs Manual}).  Prompt.
+Произвольный текст, читаемый в минибуфере с использованием метода ввода
+текущего буфера и возвращаемый в виде строки
+(@pxref{Input Methods,,, emacs, The GNU Emacs Manual}).  Незамедлительный.
 
 @item n
-A number, read with the minibuffer.  If the input is not a number, the
-user has to try again.  @samp{n} never uses the prefix argument.
-Prompt.
+Число, считываемое с помощью минибуфера.  Если введено не число,
+пользователь должен повторить попытку.  @samp{n} никогда не использует
+аргумент префикса.  Незамедлительный.
 
 @item N
-The numeric prefix argument; but if there is no prefix argument, read
-a number as with @kbd{n}.  The value is always a number.  @xref{Prefix
-Command Arguments}.  Prompt.
+Аргумент числового префикса; но если аргумента префикса нет, считается
+число, как с @kbd{n}.  Значение всегда является числом.
+@xref{Prefix Command Arguments}.  Незамедлительный.
 
 @item p
 @cindex numeric prefix argument usage
-The numeric prefix argument.  (Note that this @samp{p} is lower case.)
-No I/O.
+Аргумент числового префикса.  (Обратить внимание, что @samp{p} в нижнем
+регистре).  Нет ввода-вывода.
 
 @item P
 @cindex raw prefix argument usage
-The raw prefix argument.  (Note that this @samp{P} is upper case.)  No
-I/O.
+Аргумент необработанного префикса.  (Обратить внимание, что @samp{P} в
+верхнем регистре).  Нет ввода-вывода.
 
 @item r
 @cindex region argument
-Point and the mark, as two numeric arguments, smallest first.  This is
-the only code letter that specifies two successive arguments rather than
-one.  This will signal an error if the mark is not set in the buffer
-which is current when the command is invoked.  No I/O.
+Точка и метка в виде двух числовых аргументов, наименьший первым.  Это
+единственная кодовый символ, который указывает два последовательных
+аргумента, а не один.  Сигнализируется об ошибке, если метка не установлена
+в буфере, который является текущим при вызове команды.  Нет ввода/вывода.
 
 @item s
-Arbitrary text, read in the minibuffer and returned as a string
-(@pxref{Text from Minibuffer}).  Terminate the input with either
-@kbd{C-j} or @key{RET}.  (@kbd{C-q} may be used to include either of
-these characters in the input.)  Prompt.
+Произвольный текст, читается в минибуфере и возвращается в виде строки
+(@pxref{Text from Minibuffer}).  Завершается ввод с помощью @kbd{C-j} или
+@key{RET}.  (@kbd{C-q} может использоваться для включения любого из этих
+символов во входные данные).  Подсказка.
 
 @item S
-An interned symbol whose name is read in the minibuffer.  Terminate
-the input with either @kbd{C-j} or @key{RET}.  Other characters that
-normally terminate a symbol (e.g., whitespace, parentheses and
-brackets) do not do so here.  Prompt.
+Интернированный символ, имя которого читается в минибуфере.  Завершите ввод
+с помощью @kbd{C-j} или @key{RET}.  Другие символы, которые обычно завершают
+символ (например, пробелы, круглые и квадратные скобки), здесь не
+используются.  Незамедлительный.
 
 @item U
-A key sequence or @code{nil}.  Can be used after a @samp{k} or
-@samp{K} argument to get the up-event that was discarded (if any)
-after @samp{k} or @samp{K} read a down-event.  If no up-event has been
-discarded, @samp{U} provides @code{nil} as the argument.  No I/O.
+Последовательность ключей или @code{nil}.  Может использоваться после
+аргумента @samp{k} или @samp{K} для получения события up, которое было
+отброшено (если оно было) после того, как @samp{k} или @samp{K} прочитано
+событие down.  Если ни одно событие up не было отброшено, @samp{U}
+предоставляет в качестве аргумента @code{nil}.  Нет ввода/вывода.
 
 @item v
-A variable declared to be a user option (i.e., satisfying the
-predicate @code{custom-variable-p}).  This reads the variable using
-@code{read-variable}.  @xref{Definition of read-variable}.  Existing,
-Completion, Prompt.
+Переменная, объявленная как пользовательская опция (т. е. удовлетворяющая
+предикату @code{custom-variable-p}).  Читается переменная с помощью
+@code{read-variable}.  @xref{Definition of read-variable}.  Существующий,
+Завершение, Подсказка.
 
 @item x
-A Lisp object, specified with its read syntax, terminated with a
-@kbd{C-j} or @key{RET}.  The object is not evaluated.  @xref{Object from
-Minibuffer}.  Prompt.
+Объект Lisp, заданный синтаксисом чтения, завершается @kbd{C-j} или
+@key{RET}.  Объект не оценивается.  @xref{Object from Minibuffer}.
+Незамедлительный.
 
 @item X
 @cindex evaluated expression argument
-A Lisp form's value.  @samp{X} reads as @samp{x} does, then evaluates
-the form so that its value becomes the argument for the command.
-Prompt.
+Значение формы Lisp.  @samp{X} читает, как @samp{x}, затем оценивает форму,
+так что ее значение становится аргументом для команды.  Незамедлительный.
 
 @item z
-A coding system name (a symbol).  If the user enters null input, the
-argument value is @code{nil}.  @xref{Coding Systems}.  Completion,
-Existing, Prompt.
+Название системы кодирования (символ).  Если пользователь вводит пустой
+ввод, значение аргумента - @code{nil}.  @xref{Coding Systems}.  Завершение,
+Существующее, Подсказка.
 
 @item Z
-A coding system name (a symbol)---but only if this command has a prefix
-argument.  With no prefix argument, @samp{Z} provides @code{nil} as the
-argument value.  Completion, Existing, Prompt.
+Имя системы кодирования (символ) --- но только если эта команда имеет
+аргумент префикса.  Без аргумента префикса @samp{Z} предоставляет @code{nil}
+в качестве значения аргумента.  Завершение, Существующее, Подсказка.
 @end table
 
 @node Interactive Examples
-@subsection Examples of Using @code{interactive}
+@subsection Примеры Использования @code{interactive}
 @cindex examples of using @code{interactive}
 @cindex @code{interactive}, examples of using
 
-  Here are some examples of @code{interactive}:
+  Вот несколько примеров @code{interactive}:
 
 @example
 @group
-(defun foo1 ()              ; @r{@code{foo1} takes no arguments,}
-    (interactive)           ;   @r{just moves forward two words.}
+(defun foo1 ()              ; @r{@code{foo1} не принимает аргументов,}
+    (interactive)           ;   @r{просто перемещает вперед на два слова.}
     (forward-word 2))
      @result{} foo1
 @end group
 
 @group
-(defun foo2 (n)             ; @r{@code{foo2} takes one argument,}
-    (interactive "^p")      ;   @r{which is the numeric prefix.}
-                            ; @r{under @code{shift-select-mode},}
-                            ;   @r{will activate or extend region.}
+(defun foo2 (n)             ; @r{@code{foo2} принимает один аргумент -}
+    (interactive "^p")      ;   @r{числовой префикс.}
+                            ; @r{по средствам @code{shift-select-mode},}
+                            ;   @r{активируется или расширяется регион.}
     (forward-word (* 2 n)))
      @result{} foo2
 @end group
 
 @group
-(defun foo3 (n)             ; @r{@code{foo3} takes one argument,}
-    (interactive "nCount:") ;   @r{which is read with the Minibuffer.}
+(defun foo3 (n)             ; @r{@code{foo3} принимает один аргумент,}
+    (interactive "nCount:") ;   @r{ который читается с помощью минибуфера.}
     (forward-word (* 2 n)))
      @result{} foo3
 @end group
 
 @group
 (defun three-b (b1 b2 b3)
-  "Select three existing buffers.
-Put them into three windows, selecting the last one."
+  "Выберите три существующих буфера.
+Поместите их в три окна, выбрав последнее."
 @end group
-    (interactive "bBuffer1:\nbBuffer2:\nbBuffer3:")
+    (interactive "bБуфер1:\nbБуфер2:\nbБуфер3:")
     (delete-other-windows)
     (split-window (selected-window) 8)
     (switch-to-buffer b1)
@@ -589,76 +587,74 @@ Put them into three windows, selecting the last one."
 @end example
 
 @node Generic Commands
-@subsection Select among Command Alternatives
+@subsection Выбор Среди Альтернативных Команд
 @cindex generic commands
 @cindex alternatives, defining
 
-The macro @code{define-alternatives} can be used to define
-@dfn{generic commands}.  These are interactive functions whose
-implementation can be selected from several alternatives, as a matter
-of user preference.
+Макрос @code{define-alternatives} может использоваться для определения
+@dfn{generic commands}.  Это интерактивные функции, реализация которых может
+быть выбрана из нескольких альтернатив по желанию пользователя.
 
 @defmac define-alternatives command &rest customizations
-Define the new command @var{command}, a symbol.
+Определить новую команду @var{command}, символ.
 
-When a user runs @kbd{M-x @var{command} @key{RET}} for the first time,
-Emacs prompts for which real form of the command to use, and records
-the selection by way of a custom variable.  Using a prefix argument
-repeats this process of choosing an alternative.
+Когда пользователь запускает @kbd{M-x @var{command} @key{RET}} в первый раз,
+Emacs запрашивает, какую реальную форму команды использовать, и записывает
+выбор с помощью пользовательской переменной.  Использование аргумента
+префикса повторяет этот процесс выбора альтернативы.
 
-The variable @code{@var{command}-alternatives} should contain an alist
-with alternative implementations of @var{command}.
-Until this variable is set, @code{define-alternatives} has no effect.
+Переменная @code{@var{command}-alternatives} должна содержать список
+альтернативных реализаций @var{command}.  Пока эта переменная не
+установлена, @code{define-alternatives} не действует.
 
-If @var{customizations} is non-@code{nil}, it should consist of
-alternating @code{defcustom} keywords (typically @code{:group} and
-@code{:version}) and values to add to the declaration of
+Если @var{customizations} установлено в не-@code{nil}, должно состоять из
+чередующихся ключевых слов @code{defcustom} (обычно @code{:group} и
+@code{:version}) и значений, добавляемых к объявлению
 @code{@var{command}-alternatives}.
 @end defmac
 
 @node Interactive Call
-@section Interactive Call
+@section Интерактивный Вызов
 @cindex interactive call
 
-  After the command loop has translated a key sequence into a command,
-it invokes that command using the function @code{command-execute}.  If
-the command is a function, @code{command-execute} calls
-@code{call-interactively}, which reads the arguments and calls the
-command.  You can also call these functions yourself.
+  После того, как командный цикл преобразовал последовательность ключей в
+команду, вызывается эта команда, используя функцию @code{command-execute}.
+Если команда является функцией, @code{command-execute} вызывает
+@code{call-interactively}, которой считываются аргументы и вызывается
+команда.  Также можете вызвать эти функции самостоятельно.
 
-  Note that the term ``command'', in this context, refers to an
-interactively callable function (or function-like object), or a
-keyboard macro.  It does not refer to the key sequence used to invoke
-a command (@pxref{Keymaps}).
+  Обратить внимание, что термин ``command'' в этом контексте относится к
+интерактивно вызываемой функции (или объекту, подобному функции), или
+макросу клавиатуры.  Это не относится к последовательности ключей,
+используемой для вызова команды (@pxref{Keymaps}).
 
 @defun commandp object &optional for-call-interactively
-This function returns @code{t} if @var{object} is a command.
-Otherwise, it returns @code{nil}.
+Эта функция возвращает @code{t}, если @var{object} - команда.  В противном
+случае возвращается @code{nil}.
 
-Commands include strings and vectors (which are treated as keyboard
-macros), lambda expressions that contain a top-level
-@code{interactive} form (@pxref{Using Interactive}), byte-code
-function objects made from such lambda expressions, autoload objects
-that are declared as interactive (non-@code{nil} fourth argument to
-@code{autoload}), and some primitive functions.  Also, a symbol is
-considered a command if it has a non-@code{nil}
-@code{interactive-form} property, or if its function definition
-satisfies @code{commandp}.
+Команды включают строки и векторы (которые рассматриваются как макросы
+клавиатуры), лямбда-выражения, содержащие форму @code{interactive} верхнего
+уровня (@pxref{Using Interactive}), объекты функций байт кода, созданные из
+таких лямбда-выражений, объекты автозагрузки, объявленные как интерактивные
+(четвертый аргумент не-@code{nil} для @code{autoload} ) и некоторые
+примитивные функции.  Кроме того, символ считается командой, если он имеет
+свойство не-@code{nil} @code{interactive-form} или если его определение
+функции удовлетворяет @code{commandp}.
 
-If @var{for-call-interactively} is non-@code{nil}, then
-@code{commandp} returns @code{t} only for objects that
-@code{call-interactively} could call---thus, not for keyboard macros.
+Если @var{for-call-interactively} равен не-@code{nil}, тогда @code{commandp}
+возвращает @code{t} только для объектов, которые может вызывать
+@code{call-interactively} --- таким образом, не для макросов клавиатуры.
 
-See @code{documentation} in @ref{Accessing Documentation}, for a
-realistic example of using @code{commandp}.
+Смотреть @code{documentation} в @ref{Accessing Documentation}, для
+реалистичного примера использования @code{commandp}.
 @end defun
 
 @defun call-interactively command &optional record-flag keys
-This function calls the interactively callable function @var{command},
-providing arguments according to its interactive calling specifications.
-It returns whatever @var{command} returns.
+Функция вызывает интерактивно вызываемую функцию @var{command}, предоставляя
+аргументы в соответствии со спецификациями интерактивного вызова.
+Возвращается все, что возвращается @var{command}.
 
-If, for instance, you have a function with the following signature:
+Если, например, есть функция со следующей спецификацией:
 
 @example
 (defun foo (begin end)
@@ -666,86 +662,85 @@ If, for instance, you have a function with the following signature:
   ...)
 @end example
 
-then saying
+затем производя
 
 @example
 (call-interactively 'foo)
 @end example
 
-will call @code{foo} with the region (@code{point} and @code{mark}) as
-the arguments.
+вызовет @code{foo} с регионом (@code{point} и @code{mark}) в качестве
+аргументов.
 
-An error is signaled if @var{command} is not a function or if it
-cannot be called interactively (i.e., is not a command).  Note that
-keyboard macros (strings and vectors) are not accepted, even though
-they are considered commands, because they are not functions.  If
-@var{command} is a symbol, then @code{call-interactively} uses its
-function definition.
+Об ошибке сообщается, если @var{command} не является функцией или если не
+может быть вызвана интерактивно (то есть не является командой).  Обратить
+внимание, что макросы клавиатуры (строки и векторы) не принимаются, даже
+если считаются командами, поскольку не являются функциями.  Если
+@var{command} - символ, тогда @code{call-interactively} использует
+определение своей функции.
 
 @cindex record command history
-If @var{record-flag} is non-@code{nil}, then this command and its
-arguments are unconditionally added to the list @code{command-history}.
-Otherwise, the command is added only if it uses the minibuffer to read
-an argument.  @xref{Command History}.
+Если @var{record-flag} равен не-@code{nil}, то эта команда и ее аргументы
+безоговорочно добавляются в список @code{command-history}.  В противном
+случае команда добавляется, только если она использует минибуфер для чтения
+аргумента.  @xref{Command History}.
 
-The argument @var{keys}, if given, should be a vector which specifies
-the sequence of events to supply if the command inquires which events
-were used to invoke it.  If @var{keys} is omitted or @code{nil}, the
-default is the return value of @code{this-command-keys-vector}.
+Аргумент @var{keys}, если он задан, должен быть вектором, который определяет
+последовательность событий, которые необходимо предоставить, если команда
+запрашивает, какие события использовались для ее вызова.  Если @var{keys} не
+указан или @code{nil}, по умолчанию возвращается значение
+@code{this-command-keys-vector}.
 @xref{Definition of this-command-keys-vector}.
 @end defun
 
 @defun funcall-interactively function &rest arguments
-This function works like @code{funcall} (@pxref{Calling Functions}),
-but it makes the call look like an interactive invocation: a call to
-@code{called-interactively-p} inside @var{function} will return
-@code{t}.  If @var{function} is not a command, it is called without
-signaling an error.
+Функция работает как @code{funcall} (@pxref{Calling Functions}), но
+делается вызов похожим на интерактивный вызов: вызов
+@code{called-interactively-p} внутри @var{function} вернет @code{t}.  Если
+@var{function} не является командой, вызывается без сообщения об ошибке.
 @end defun
 
 @defun command-execute command &optional record-flag keys special
 @cindex keyboard macro execution
-This function executes @var{command}.  The argument @var{command} must
-satisfy the @code{commandp} predicate; i.e., it must be an interactively
-callable function or a keyboard macro.
+Функция выполняет @var{command}.  Аргумент @var{command} должен
+удовлетворять предикату @code{commandp}; т.е. это должна быть интерактивно
+вызываемая функция или клавиатурный макрос.
 
-A string or vector as @var{command} is executed with
-@code{execute-kbd-macro}.  A function is passed to
-@code{call-interactively} (see above), along with the
-@var{record-flag} and @var{keys} arguments.
+Строка или вектор как @var{command} выполняется с @code{execute-kbd-macro}.
+Функция передается в @code{call-interactively} (смотреть выше) вместе с
+аргументами @var{record-flag} и @var{keys}.
 
-If @var{command} is a symbol, its function definition is used in its
-place.  A symbol with an @code{autoload} definition counts as a
-command if it was declared to stand for an interactively callable
-function.  Such a definition is handled by loading the specified
-library and then rechecking the definition of the symbol.
+Если @var{command} является символом, вместо него используется определение
+его функции.  Символ с определением @code{autoload} считается командой, если
+он был объявлен как обозначающий интерактивно вызываемую функцию.  Такое
+определение обрабатывается путем загрузки указанной библиотеки и повторной
+проверки определения символа.
 
-The argument @var{special}, if given, means to ignore the prefix
-argument and not clear it.  This is used for executing special events
+Аргумент @var{special}, если он задан, означает игнорировать аргумент
+префикса и не очищать его.  Используется для выполнения специальных событий
 (@pxref{Special Events}).
 @end defun
 
 @deffn Command execute-extended-command prefix-argument
 @cindex read command name
-This function reads a command name from the minibuffer using
-@code{completing-read} (@pxref{Completion}).  Then it uses
-@code{command-execute} to call the specified command.  Whatever that
-command returns becomes the value of @code{execute-extended-command}.
+Функция считывает имя команды из минибуфера с помощью @code{completing-read}
+(@pxref{Completion}).  Затем используется @code{command-execute} для вызова
+указанной команды.  Все, что возвращает эта команда, становится значением
+@code{execute-extended-command}.
 
 @cindex execute with prefix argument
-If the command asks for a prefix argument, it receives the value
-@var{prefix-argument}.  If @code{execute-extended-command} is called
-interactively, the current raw prefix argument is used for
-@var{prefix-argument}, and thus passed on to whatever command is run.
+Если команда запрашивает аргумент префикса, получает значение
+@var{prefix-argument}.  Если @code{execute-extended-command} вызывается
+интерактивно, текущий необработанный аргумент префикса используется для
+@var{prefix-argument} и, таким образом, передается любой запущенной команде.
 
-@c !!! Should this be @kindex?
+@c !!! Если это будет @kindex?
 @cindex @kbd{M-x}
-@code{execute-extended-command} is the normal definition of @kbd{M-x},
-so it uses the string @w{@samp{M-x }} as a prompt.  (It would be better
-to take the prompt from the events used to invoke
-@code{execute-extended-command}, but that is painful to implement.)  A
-description of the value of the prefix argument, if any, also becomes
-part of the prompt.
+@code{execute-extended-command} - обычное определение @kbd{M-x}, поэтому в
+качестве подсказки используется строка @w{@samp{M-x }}.  (Было бы лучше
+брать подсказку из событий, используемых для вызова
+@code{execute-extended-command}, но это болезненно реализовать).  Описание
+значения аргумента префикса, если таковое имеется, также становится частью
+подсказки.
 
 @example
 @group
@@ -759,17 +754,17 @@ part of the prompt.
 @end deffn
 
 @node Distinguish Interactive
-@section Distinguish Interactive Calls
+@section Отличия Интерактивных Вызовов
 @cindex distinguish interactive calls
 @cindex is this call interactive
 
-  Sometimes a command should display additional visual feedback (such
-as an informative message in the echo area) for interactive calls
-only.  There are three ways to do this.  The recommended way to test
-whether the function was called using @code{call-interactively} is to
-give it an optional argument @code{print-message} and use the
-@code{interactive} spec to make it non-@code{nil} in interactive
-calls.  Here's an example:
+  Иногда команда должна отображать дополнительную визуальную обратную связь
+(например, информативное сообщение в эхо-области) только для интерактивных
+вызовов.  Это можно сделать тремя способами.  Рекомендуемый способ
+проверить, была ли функция вызвана с помощью @code{call-interactively} -
+дать ей необязательный аргумент @code{print-message} и использовать
+спецификацию @code{interactive}, чтобы сделать ее не-@code{nil} в
+интерактивных вызовах.  Вот пример:
 
 @example
 (defun foo (&optional print-message)
@@ -779,37 +774,39 @@ calls.  Here's an example:
 @end example
 
 @noindent
-We use @code{"p"} because the numeric prefix argument is never
-@code{nil}.  Defined in this way, the function does display the
-message when called from a keyboard macro.
+Используется @code{"p"}, потому что аргумент числового префикса никогда не
+равен @code{nil}.  Определенная таким образом функция отображает сообщение
+при вызове из макроса клавиатуры.
 
-  The above method with the additional argument is usually best,
-because it allows callers to say ``treat this call as interactive''.
-But you can also do the job by testing @code{called-interactively-p}.
+  Вышеупомянутый метод с дополнительным аргументом обычно лучше, потому что
+позволяет вызывающим абонентам сказать ``рассматривать этот вызов как
+интерактивный''.  Но также можно выполнить эту работу, протестировав
+@code{called-interactively-p}.
 
 @defun called-interactively-p kind
-This function returns @code{t} when the calling function was called
-using @code{call-interactively}.
+Функция возвращает @code{t}, когда вызывающая функция была вызвана с
+использованием @code{call-interactively}.
 
-The argument @var{kind} should be either the symbol @code{interactive}
-or the symbol @code{any}.  If it is @code{interactive}, then
-@code{called-interactively-p} returns @code{t} only if the call was
-made directly by the user---e.g., if the user typed a key sequence
-bound to the calling function, but @emph{not} if the user ran a
-keyboard macro that called the function (@pxref{Keyboard Macros}).  If
-@var{kind} is @code{any}, @code{called-interactively-p} returns
-@code{t} for any kind of interactive call, including keyboard macros.
+Аргумент @var{kind} должен быть либо символом @code{interactive}, либо
+символом @code{any}.  Если это @code{interactive}, то
+@code{called-interactively-p} возвращает @code{t} только в том случае, если
+вызов был сделан непосредственно пользователем --- например, если
+пользователь набрал последовательность ключей, связанную с вызывающей
+функцией, но @emph{не} если пользователь запустил макрос клавиатуры, который
+вызвал функцию (@pxref{Keyboard Macros}).  Если @var{kind} равен @code{any},
+@code{called-interactively-p}, возвращает @code{t} для любого интерактивного
+вызова, включая макросы клавиатуры.
 
-If in doubt, use @code{any}; the only known proper use of
-@code{interactive} is if you need to decide whether to display a
-helpful message while a function is running.
+В случае сомнений используется @code{any}; единственное известное правильное
+использование @code{interactive} - это если требуется решить, отображать ли
+полезное сообщение во время работы функции.
 
-A function is never considered to be called interactively if it was
-called via Lisp evaluation (or with @code{apply} or @code{funcall}).
+Функция никогда не считается вызываемой интерактивно, если она была вызвана
+посредством вычисления Lisp (или с помощью @code{apply} или @code{funcall}).
 @end defun
 
 @noindent
-Here is an example of using @code{called-interactively-p}:
+Вот пример использования @code{called-interactively-p}:
 
 @example
 @group
@@ -821,7 +818,7 @@ Here is an example of using @code{called-interactively-p}:
 @end group
 
 @group
-;; @r{Type @kbd{M-x foo}.}
+;; @r{Набрать @kbd{M-x foo}.}
      @print{} Interactive!
 @end group
 
@@ -832,7 +829,7 @@ Here is an example of using @code{called-interactively-p}:
 @end example
 
 @noindent
-Here is another example that contrasts direct and indirect calls to
+Вот еще один пример, который противопоставляет прямые и косвенные вызовы
 @code{called-interactively-p}.
 
 @example
@@ -843,106 +840,107 @@ Here is another example that contrasts direct and indirect calls to
 @end group
 
 @group
-;; @r{Type @kbd{M-x bar}.}
+;; @r{Набрать @kbd{M-x bar}.}
      @print{} (nil t)
 @end group
 @end example
 
 @node Command Loop Info
-@section Information from the Command Loop
+@section Информация из Командного Цикла
 @cindex command loop variables
 
-The editor command loop sets several Lisp variables to keep status
-records for itself and for commands that are run.  With the exception of
-@code{this-command} and @code{last-command} it's generally a bad idea to
-change any of these variables in a Lisp program.
+Редоктор командного цикла устанавливает несколько переменных Lisp для
+хранения записей состояния для себя и для выполняемых команд.  За
+исключением @code{this-command} и @code{last-command}, обычно плохая идея
+изменять любую из этих переменных в программе на Lisp.
 
 @defvar last-command
-This variable records the name of the previous command executed by the
-command loop (the one before the current command).  Normally the value
-is a symbol with a function definition, but this is not guaranteed.
+Переменная записывает имя предыдущей команды, выполненной командным циклом
+(той, которая была перед текущей командой).  Обычно значение представляет
+собой символ с определением функции, но это не гарантируется.
 
-The value is copied from @code{this-command} when a command returns to
-the command loop, except when the command has specified a prefix
-argument for the following command.
+Значение копируется из @code{this-command}, когда команда возвращается в
+командный цикл, за исключением случаев, когда команда задала аргумент
+префикса для следующей команды.
 
-This variable is always local to the current terminal and cannot be
-buffer-local.  @xref{Multiple Terminals}.
+Переменная всегда является локальной для текущего терминала и не может быть
+локальной для буфера.  @xref{Multiple Terminals}.
 @end defvar
 
 @defvar real-last-command
-This variable is set up by Emacs just like @code{last-command},
-but never altered by Lisp programs.
+Переменная устанавливается Emacs точно так же, как @code{last-command}, но
+никогда не изменяется программами Lisp.
 @end defvar
 
 @defvar last-repeatable-command
-This variable stores the most recently executed command that was not
-part of an input event.  This is the command @code{repeat} will try to
-repeat, @xref{Repeating,,, emacs, The GNU Emacs Manual}.
+В переменной хранится последняя выполненная команда, которая не была частью
+входного события.  Это команда @code{repeat} попытается повторить,
+@xref{Repeating,,, emacs, The GNU Emacs Manual}.
 @end defvar
 
 @defvar this-command
 @cindex current command
-This variable records the name of the command now being executed by
-the editor command loop.  Like @code{last-command}, it is normally a symbol
-with a function definition.
+Переменная записывает имя команды, которая теперь выполняется в цикле команд
+редактора.  Как и @code{last-command}, это обычно символ с определением
+функции.
 
-The command loop sets this variable just before running a command, and
-copies its value into @code{last-command} when the command finishes
-(unless the command specified a prefix argument for the following
-command).
+Цикл команд устанавливает эту переменную непосредственно перед запуском
+команды и копирует ее значение в @code{last-command}, когда команда
+завершается (если команда не указала аргумент префикса для следующей
+команды).
 
 @cindex kill command repetition
-Some commands set this variable during their execution, as a flag for
-whatever command runs next.  In particular, the functions for killing text
-set @code{this-command} to @code{kill-region} so that any kill commands
-immediately following will know to append the killed text to the
-previous kill.
+Некоторые команды устанавливают эту переменную во время своего выполнения в
+качестве флага для следующей команды.  В частности, функции для уничтожения
+текста устанавливают @code{this-command} в @code{kill-region}, чтобы любые
+команды уничтожения, следующие сразу же, знали, что нужно добавить
+уничтоженный текст к предыдущему уничтожению.
 @end defvar
 
-If you do not want a particular command to be recognized as the previous
-command in the case where it got an error, you must code that command to
-prevent this.  One way is to set @code{this-command} to @code{t} at the
-beginning of the command, and set @code{this-command} back to its proper
-value at the end, like this:
+Если не требуется, чтобы определенная команда распознавалась как предыдущая
+в случае ошибки, потребуется закодировать эту команду, чтобы предотвратить
+это.  Один из способов - установить @code{this-command} в @code{t} в начале
+команды и вернуть @code{this-command} обратно в правильное значение в конце,
+как здеся:
 
 @example
 (defun foo (args@dots{})
   (interactive @dots{})
   (let ((old-this-command this-command))
     (setq this-command t)
-    @r{@dots{}do the work@dots{}}
+    @r{@dots{}выполнять работу@dots{}}
     (setq this-command old-this-command)))
 @end example
 
 @noindent
-We do not bind @code{this-command} with @code{let} because that would
-restore the old value in case of error---a feature of @code{let} which
-in this case does precisely what we want to avoid.
+Не связывается @code{this-command} с @code{let}, потому что это восстановит
+старое значение в случае ошибки - особенность @code{let}, которая в данном
+случае делает именно то, чего требуется избежать.
 
 @defvar this-original-command
-This has the same value as @code{this-command} except when command
-remapping occurs (@pxref{Remapping Commands}).  In that case,
-@code{this-command} gives the command actually run (the result of
-remapping), and @code{this-original-command} gives the command that
-was specified to run but remapped into another command.
+Имеет то же значение, что и @code{this-command}, за исключением случаев,
+когда выполняется переназначение команд (@pxref{Remapping Commands}).  В
+этом случае @code{this-command} дает команду, фактически выполняемую
+(результат переназначения), а @code{this-original-command} дает команду,
+которая была указана для выполнения, но переназначена в другую команду.
 @end defvar
 
 @defun this-command-keys
-This function returns a string or vector containing the key sequence
-that invoked the present command, plus any previous commands that
-generated the prefix argument for this command.  Any events read by the
-command using @code{read-event} without a timeout get tacked on to the end.
+Функция возвращает строку или вектор, содержащий последовательность ключей,
+которая вызвала текущую команду, плюс любые предыдущие команды, которые
+сгенерировали аргумент префикса для этой команды.  Любые события,
+прочитанные командой, использующей @code{read-event}, без тайм-аута,
+прикрепляются к концу.
 
-However, if the command has called @code{read-key-sequence}, it
-returns the last read key sequence.  @xref{Key Sequence Input}.  The
-value is a string if all events in the sequence were characters that
-fit in a string.  @xref{Input Events}.
+Однако, если команда вызвала @code{read-key-sequence}, возвращается
+последняя прочитанная последовательность ключей.  @xref{Key Sequence Input}.
+Значение является строкой, если все события в последовательности были
+символами, которые помещаются в строку.  @xref{Input Events}.
 
 @example
 @group
 (this-command-keys)
-;; @r{Now use @kbd{C-u C-x C-e} to evaluate that.}
+;; @r{Теперь использовать @kbd{C-u C-x C-e} чтобы оценить это.}
      @result{} "^U^X^E"
 @end group
 @end example
@@ -950,129 +948,130 @@ fit in a string.  @xref{Input Events}.
 
 @defun this-command-keys-vector
 @anchor{Definition of this-command-keys-vector}
-Like @code{this-command-keys}, except that it always returns the events
-in a vector, so you don't need to deal with the complexities of storing
-input events in a string (@pxref{Strings of Events}).
+Подобно @code{this-command-keys}, за исключением того, что всегда
+возвращается события в векторе, поэтому потребуется иметь дело со
+сложностями хранения входных событий в строке (@pxref{Strings of Events}).
 @end defun
 
 @defun clear-this-command-keys &optional keep-record
-This function empties out the table of events for
-@code{this-command-keys} to return.  Unless @var{keep-record} is
-non-@code{nil}, it also empties the records that the function
-@code{recent-keys} (@pxref{Recording Input}) will subsequently return.
-This is useful after reading a password, to prevent the password from
-echoing inadvertently as part of the next command in certain cases.
+Функцией очищается таблица событий для возврата @code{this-command-keys}.
+Если @var{keep-record} не не-@code{nil}, также очищаются записи, которые
+функция @code{recent-keys} (@pxref{Recording Input}) впоследствии вернет.
+Это полезно после прочтения пароля, чтобы предотвратить случайное эхо пароля
+в некоторых случаях как часть следующей команды.
 @end defun
 
 @defvar last-nonmenu-event
-This variable holds the last input event read as part of a key sequence,
-not counting events resulting from mouse menus.
+Переменная содержит последнее входное событие, считанное как часть
+последовательности ключей, не считая событий, происходящих из меню мыши.
 
-One use of this variable is for telling @code{x-popup-menu} where to pop
-up a menu.  It is also used internally by @code{y-or-n-p}
+Одно из применений этой переменной - указать @code{x-popup-menu}, где
+открыть всплывающее меню. Также используется внутри @code{y-or-n-p}
 (@pxref{Yes-or-No Queries}).
 @end defvar
 
 @defvar last-command-event
-This variable is set to the last input event that was read by the
-command loop as part of a command.  The principal use of this variable
-is in @code{self-insert-command}, which uses it to decide which
-character to insert.
+Переменная устанавливается на последнее событие ввода, которое было
+прочитано командным циклом как часть команды.  В основном эта переменная
+используется в @code{self-insert-command}, которая использует ее, чтобы
+решить, какой символ вставить.
 
 @example
 @group
 last-command-event
-;; @r{Now use @kbd{C-u C-x C-e} to evaluate that.}
+;; @r{Теперь используйте @kbd{C-u C-x C-e}, чтобы оценить это.}
      @result{} 5
 @end group
 @end example
 
 @noindent
-The value is 5 because that is the @acronym{ASCII} code for @kbd{C-e}.
+Значение равно 5, потому что это код @acronym{ASCII} для @kbd{C-e}.
 @end defvar
 
 @defvar last-event-frame
-This variable records which frame the last input event was directed to.
-Usually this is the frame that was selected when the event was
-generated, but if that frame has redirected input focus to another
-frame, the value is the frame to which the event was redirected.
+Переменная записывает, в какой кадр было направлено последнее входное
+событие.  Обычно это кадр, который был выбран при создании события, но если
+этот кадр перенаправил фокус ввода на другой кадр, значением является кадр,
+на который было перенаправлено событие.
 @xref{Input Focus}.
 
-If the last event came from a keyboard macro, the value is @code{macro}.
+Если последнее событие пришло из макроса клавиатуры, значение будет
+@code{macro}.
 @end defvar
 
 @node Adjusting Point
-@section Adjusting Point After Commands
+@section Управление Расположением Точки После Команд
 @cindex adjusting point
 @cindex invisible/intangible text, and point
 @cindex @code{display} property, and point display
 @cindex @code{composition} property, and point display
 
-  Emacs cannot display the cursor when point is in the middle of a
-sequence of text that has the @code{display} or @code{composition}
-property, or is invisible.  Therefore, after a command finishes and
-returns to the command loop, if point is within such a sequence, the
-command loop normally moves point to the edge of the sequence, making this
-sequence effectively intangible.
+  Emacs не может отображать курсор, когда точка находится в середине
+последовательности текста, имеющего свойство @code{display} или
+@code{composition}, или когда точка невидима.  Следовательно, после того,
+как команда завершается и возвращается в командный цикл, если точка
+находится в такой последовательности, командный цикл обычно перемещает точку
+к краю последовательности, что делает эту последовательность фактически
+неосязаемой.
 
-  A command can inhibit this feature by setting the variable
+  Команда может запретить эту функцию, установив переменную
 @code{disable-point-adjustment}:
 
 @defvar disable-point-adjustment
-If this variable is non-@code{nil} when a command returns to the
-command loop, then the command loop does not check for those text
-properties, and does not move point out of sequences that have them.
+Если эта переменная - не-@code{nil}, когда команда возвращается в командный
+цикл, то командный цикл не проверяет эти текстовые свойства и не перемещает
+точку из последовательности в которой она находится.
 
-The command loop sets this variable to @code{nil} before each command,
-so if a command sets it, the effect applies only to that command.
+Цикл команд устанавливает для этой переменной значение @code{nil} перед
+каждой командой, поэтому, если команда устанавливает ее, эффект применяется
+только к этой команде.
 @end defvar
 
 @defvar global-disable-point-adjustment
-If you set this variable to a non-@code{nil} value, the feature of
-moving point out of these sequences is completely turned off.
+Если установить для этой переменной значение не-@code{nil}, функция
+перемещения точки из текстовых последовательностей полностью отключится.
 @end defvar
 
 @node Input Events
-@section Input Events
+@section Входные События
 @cindex events
 @cindex input events
 
-The Emacs command loop reads a sequence of @dfn{input events} that
-represent keyboard or mouse activity, or system events sent to Emacs.
-The events for keyboard activity are characters or symbols; other
-events are always lists.  This section describes the representation
-and meaning of input events in detail.
+Цикл команд Emacs читает последовательность @dfn{входных событий}, которая
+представляет активность клавиатуры или мыши или системных событий,
+отправленные в Emacs.  Событиями для активности клавиатуры являются клавиши
+или символы; другие события всегда списки.  В этом разделе подробно
+описывается представление и значение входных событий.
 
 @defun eventp object
-This function returns non-@code{nil} if @var{object} is an input event
-or event type.
+Функция возвращает не-@code{nil}, если @var{object} является входным
+событием или типом события.
 
-Note that any symbol might be used as an event or an event type.
-@code{eventp} cannot distinguish whether a symbol is intended by Lisp
-code to be used as an event.  Instead, it distinguishes whether the
-symbol has actually been used in an event that has been read as input in
-the current Emacs session.  If a symbol has not yet been so used,
-@code{eventp} returns @code{nil}.
+Обратить внимание, что любой символ может использоваться как событие или
+тип события.  @code{eventp} не может определить, предназначен ли символ для
+использования в коде Lisp в качестве события.  Вместо этого определяется,
+действительно ли символ использовался в событии, считанном как ввод в
+текущем сеансе Emacs.  Если символ еще не использовался, @code{eventp}
+возвращает @code{nil}.
 @end defun
 
 @menu
-* Keyboard Events::             Ordinary characters -- keys with symbols on them.
-* Function Keys::               Function keys -- keys with names, not symbols.
-* Mouse Events::                Overview of mouse events.
-* Click Events::                Pushing and releasing a mouse button.
-* Drag Events::                 Moving the mouse before releasing the button.
-* Button-Down Events::          A button was pushed and not yet released.
-* Repeat Events::               Double and triple click (or drag, or down).
-* Motion Events::               Just moving the mouse, not pushing a button.
-* Focus Events::                Moving the mouse between frames.
-* Misc Events::                 Other events the system can generate.
-* Event Examples::              Examples of the lists for mouse events.
-* Classifying Events::          Finding the modifier keys in an event symbol.
-                                Event types.
-* Accessing Mouse::             Functions to extract info from mouse events.
-* Accessing Scroll::            Functions to get info from scroll bar events.
-* Strings of Events::           Special considerations for putting
-                                  keyboard character events in a string.
+* Keyboard Events::             Обычные символы - клавиши с символами на них.
+* Function Keys::               Функциональные клавиши - клавиши с именами, а не символами.
+* Mouse Events::                Обзор событий мыши.
+* Click Events::                Нажатие и отпускание кнопки мыши.
+* Drag Events::                 Перемещение мыши перед отпусканием кнопки.
+* Button-Down Events::          Была нажата кнопка, но еще не отпущена.
+* Repeat Events::               Два или три щелчка (перетаскивание, вниз).
+* Motion Events::               Просто движение мышью, не нажимая кнопку.
+* Focus Events::                Перемещение мыши между фреймами.
+* Misc Events::                 Другие события, генерируемые системой.
+* Event Examples::              Примеры списков событий мыши.
+* Classifying Events::          Поиск клавиш-модификаторов в символе события.
+                                Типы событий.
+* Accessing Mouse::             Функции извлечения информации из событий мыши.
+* Accessing Scroll::            Функции для получения информации о событиях полосы прокрутки.
+* Strings of Events::           Особые рекомендации по помещению событий символов клавиатуры в строку.
 @end menu
 
 @node Keyboard Events
