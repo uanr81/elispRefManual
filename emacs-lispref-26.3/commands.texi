@@ -1075,247 +1075,245 @@ last-command-event
 @end menu
 
 @node Keyboard Events
-@subsection Keyboard Events
+@subsection События Клавиатуры
 @cindex keyboard events
 
 @cindex character event
-There are two kinds of input you can get from the keyboard: ordinary
-keys, and function keys.  Ordinary keys correspond to (possibly
-modified) characters; the events they generate are represented in Lisp
-as characters.  The event type of a @dfn{character event} is the
-character itself (an integer), which might have some modifier bits
-set; see @ref{Classifying Events}.
+Есть два типа ввода, которые можно получить с клавиатуры: обычные ключи и
+функциональные ключи.  Обычные ключи соответствуют (возможно, измененным)
+символам; генерируемые ими события представлены в Lisp как символы.  Тип
+события @dfn{символьное событие} - это сам символ (целое число), для
+которого могут быть установлены некоторые биты модификатора; смотреть
+@ref{Classifying Events}.
 
 @cindex modifier bits (of input character)
 @cindex basic code (of input character)
-An input character event consists of a @dfn{basic code} between 0 and
-524287, plus any or all of these @dfn{modifier bits}:
+Событие входного символа состоит из @dfn{базового кода} от 0 до 524287,
+плюс любой или всё из этого @dfn{биты модификатора}:
 
 @table @asis
 @item meta
-The
+
 @tex
 @math{2^{27}}
 @end tex
 @ifnottex
 2**27
 @end ifnottex
-bit in the character code indicates a character
-typed with the meta key held down.
+бит в коде символа указывает символ, набранный с нажатой мета-клавишей.
 
 @item control
-The
+
 @tex
 @math{2^{26}}
 @end tex
 @ifnottex
 2**26
 @end ifnottex
-bit in the character code indicates a non-@acronym{ASCII}
-control character.
+бит в коде символа указывает управляющий не-@acronym{ASCII} символ.
 
-@sc{ascii} control characters such as @kbd{C-a} have special basic
-codes of their own, so Emacs needs no special bit to indicate them.
-Thus, the code for @kbd{C-a} is just 1.
+Управляющие символы @sc{ascii}, такие как @kbd{C-a}, имеют собственные
+специальные базовые коды, поэтому Emacs не нуждается в специальных битах для
+их обозначения.  Таким образом, код для @kbd{C-a} равен 1.
 
-But if you type a control combination not in @acronym{ASCII}, such as
-@kbd{%} with the control key, the numeric value you get is the code
-for @kbd{%} plus
+Но если вводится комбинация элементов управления не в @acronym{ASCII},
+например @kbd{%}, с помощью клавиш управления, числовое значение, которое
+получится, будет кодом для @kbd{%} плюс
 @tex
 @math{2^{26}}
 @end tex
 @ifnottex
 2**26
 @end ifnottex
-(assuming the terminal supports non-@acronym{ASCII}
-control characters), i.e.@: with the 27th bit set.
+(предполагается, что терминал поддерживает управляющие не-@acronym{ASCII}
+символы), т.е. @: с установленным 27-м битом.
 
 @item shift
-The
-@tex
-@math{2^{25}}
-@end tex
-@ifnottex
-2**25
-@end ifnottex
-bit (the 26th bit) in the character event code indicates an
-@acronym{ASCII} control character typed with the shift key held down.
 
-For letters, the basic code itself indicates upper versus lower case;
-for digits and punctuation, the shift key selects an entirely different
-character with a different basic code.  In order to keep within the
-@acronym{ASCII} character set whenever possible, Emacs avoids using the
 @tex
 @math{2^{25}}
 @end tex
 @ifnottex
 2**25
 @end ifnottex
-bit for those character events.
+бит (26-й бит) в символьном коде события указывает на управляющий символ
+@acronym{ASCII}, набранный с зажатой клавишей Shift.
 
-However, @acronym{ASCII} provides no way to distinguish @kbd{C-A} from
-@kbd{C-a}, so Emacs uses the
+Для букв сам основной код указывает верхний регистр или нижний регистр; для
+цифр и знаков препинания клавиша Shift выбирает совершенно другой символ с
+другим базовым кодом.  Чтобы по возможности придерживаться набора символов
+@acronym{ASCII}, Emacs избегает использования
 @tex
 @math{2^{25}}
 @end tex
 @ifnottex
 2**25
 @end ifnottex
-bit in @kbd{C-A} and not in
+немного для символьных событий.
+
+Однако @acronym{ASCII} не дает возможности отличить @kbd{C-A} от @kbd{C-a},
+поэтому Emacs использует
+@tex
+@math{2^{25}}
+@end tex
+@ifnottex
+2**25
+@end ifnottex
+бит в @kbd{C-A}, а не в
 @kbd{C-a}.
 
 @item hyper
-The
+
 @tex
 @math{2^{24}}
 @end tex
 @ifnottex
 2**24
 @end ifnottex
-bit in the character event code indicates a character
-typed with the hyper key held down.
+бит в символьном коде события указывает символ, набранный с нажатой
+гипер-клавишей.
 
 @item super
-The
+
 @tex
 @math{2^{23}}
 @end tex
 @ifnottex
 2**23
 @end ifnottex
-bit in the character event code indicates a character
-typed with the super key held down.
+бит в символьном коде события указывает символ, набранный с зажатой
+супер-клавишей.
 
 @item alt
-The
+
 @tex
 @math{2^{22}}
 @end tex
 @ifnottex
 2**22
 @end ifnottex
-bit in the character event code indicates a character typed with the
-alt key held down.  (The key labeled @key{Alt} on most keyboards is
-actually treated as the meta key, not this.)
+бит в символьном коде события указывает символ, набранный с нажатой клавишей
+alt.  (Ключ с пометкой @key{Alt} на большинстве клавиатур фактически
+рассматривается как мета-ключ, а не alt.)
 @end table
 
-  It is best to avoid mentioning specific bit numbers in your program.
-To test the modifier bits of a character, use the function
-@code{event-modifiers} (@pxref{Classifying Events}).  When making key
-bindings, you can use the read syntax for characters with modifier bits
-(@samp{\C-}, @samp{\M-}, and so on).  For making key bindings with
-@code{define-key}, you can use lists such as @code{(control hyper ?x)} to
-specify the characters (@pxref{Changing Key Bindings}).  The function
-@code{event-convert-list} converts such a list into an event type
-(@pxref{Classifying Events}).
+  Лучше избегать упоминания конкретных номеров битов в программе.  Чтобы
+проверить биты модификатора символа, используется функция
+@code{event-modifiers} (@pxref{Classifying Events}).  При привязке ключей
+можно использовать синтаксис чтения для символов с битами модификатора
+(@samp{\C-}, @samp{\M-} и т. д.).  Для привязки ключей с помощью
+@code{define-key} можно использовать списки, такие как
+@code{(control hyper ?x)}, чтобы указать символы
+(@pxref{Changing Key Bindings}).  Функция @code{event-convert-list}
+преобразует такой список в тип события (@pxref{Classifying Events}).
 
 @node Function Keys
-@subsection Function Keys
+@subsection Функциональные Ключи
 
 @cindex function keys
-Most keyboards also have @dfn{function keys}---keys that have names or
-symbols that are not characters.  Function keys are represented in
-Emacs Lisp as symbols; the symbol's name is the function key's label,
-in lower case.  For example, pressing a key labeled @key{F1} generates
-an input event represented by the symbol @code{f1}.
+На большинстве клавиатур также есть клавиши @dfn{функциональный ключ} ---,
+имена или символы которых не являются символами.  Функциональные клавиши
+представлены в Emacs Lisp как символы; имя символа - это подпись
+функциональной клавиши в нижнем регистре.  Например, нажатие клавиши
+@key{F1} генерирует событие ввода, представленное символом @code{f1}.
 
-The event type of a function key event is the event symbol itself.
+Тип события события функциональной клавиши - это сам символ события.
 @xref{Classifying Events}.
 
-Here are a few special cases in the symbol-naming convention for
-function keys:
+Вот несколько особых случаев в соглашении об именах символов для
+функциональных клавиш:
 
 @table @asis
 @item @code{backspace}, @code{tab}, @code{newline}, @code{return}, @code{delete}
-These keys correspond to common @acronym{ASCII} control characters that have
-special keys on most keyboards.
+Эти клавиши соответствуют обычным управляющим символам @acronym{ASCII},
+которые имеют специальные клавиши на большинстве клавиатур.
 
-In @acronym{ASCII}, @kbd{C-i} and @key{TAB} are the same character.  If the
-terminal can distinguish between them, Emacs conveys the distinction to
-Lisp programs by representing the former as the integer 9, and the
-latter as the symbol @code{tab}.
+В @acronym{ASCII}, @kbd{C-i} и @key{TAB} такие же символы.  Если терминал
+может различать их, Emacs передает это различие программам на Lisp,
+представляя первое как целое число 9, а второе как символ @code{tab}.
 
-Most of the time, it's not useful to distinguish the two.  So normally
-@code{local-function-key-map} (@pxref{Translation Keymaps}) is set up
-to map @code{tab} into 9.  Thus, a key binding for character code 9
-(the character @kbd{C-i}) also applies to @code{tab}.  Likewise for
-the other symbols in this group.  The function @code{read-char}
-likewise converts these events into characters.
+В большинстве случаев различать их нецелесообразно.  Так что обычно
+@code{local-function-key-map} (@pxref{Translation Keymaps}) настроен для
+отображения @code{tab} в 9.  Таким образом, привязка ключа для кода символа
+9 (символ @kbd{C-i}) также применяется к @code{tab}.  То же самое и с
+другими символами в этой группе.  Функция @code{read-char} также преобразует
+эти события в символы.
 
-In @acronym{ASCII}, @key{BS} is really @kbd{C-h}.  But @code{backspace}
-converts into the character code 127 (@key{DEL}), not into code 8
-(@key{BS}).  This is what most users prefer.
+В @acronym{ASCII}, @key{BS} действительно есть @kbd{C-h}.  Но
+@code{backspace} преобразует в код символа 127 (@key{DEL}), а не в код 8
+(@key{BS}).  Это то, что предпочитает большинство пользователей.
 
 @item @code{left}, @code{up}, @code{right}, @code{down}
-Cursor arrow keys
+Клавиши курсора со стрелками
 @item @code{kp-add}, @code{kp-decimal}, @code{kp-divide}, @dots{}
-Keypad keys (to the right of the regular keyboard).
+Клавиши клавиатуры (справа от обычной клавиатуры).
 @item @code{kp-0}, @code{kp-1}, @dots{}
-Keypad keys with digits.
+Клавиши клавиатуры с цифрами.
 @item @code{kp-f1}, @code{kp-f2}, @code{kp-f3}, @code{kp-f4}
-Keypad PF keys.
+Клавиатура PF клавиш.
 @item @code{kp-home}, @code{kp-left}, @code{kp-up}, @code{kp-right}, @code{kp-down}
-Keypad arrow keys.  Emacs normally translates these into the
-corresponding non-keypad keys @code{home}, @code{left}, @dots{}
+Клавиши со стрелками на клавиатуре.  Emacs обычно переводит их в
+соответствующие клавиши без клавиатуры @code{home}, @code{left}, @dots{}
 @item @code{kp-prior}, @code{kp-next}, @code{kp-end}, @code{kp-begin}, @code{kp-insert}, @code{kp-delete}
-Additional keypad duplicates of keys ordinarily found elsewhere.  Emacs
-normally translates these into the like-named non-keypad keys.
+Дополнительные дубликаты клавиш клавиатуры, которые обычно можно найти в
+других местах.  Emacs обычно переводит их в одноименные клавиши без
+клавиатуры.
 @end table
 
-You can use the modifier keys @key{ALT}, @key{CTRL}, @key{HYPER},
-@key{META}, @key{SHIFT}, and @key{SUPER} with function keys.  The way to
-represent them is with prefixes in the symbol name:
+Можно использовать клавиши-модификаторы @key{ALT}, @key{CTRL}, @key{HYPER},
+@key{META}, @key{SHIFT}, и @key{SUPER} с функциональными клавишами.  Их
+можно представить с помощью префиксов в имени символа:
 
 @table @samp
 @item A-
-The alt modifier.
+Модификатор alt.
 @item C-
-The control modifier.
+Модификатор управления.
 @item H-
-The hyper modifier.
+Гипермодификатор.
 @item M-
-The meta modifier.
+Мета-модификатор.
 @item S-
-The shift modifier.
+Модификатор сдвига.
 @item s-
-The super modifier.
+Супер модификатор.
 @end table
 
-Thus, the symbol for the key @key{F3} with @key{META} held down is
-@code{M-f3}.  When you use more than one prefix, we recommend you
-write them in alphabetical order; but the order does not matter in
-arguments to the key-binding lookup and modification functions.
+Таким образом, символ для клавиши @key{F3} с нажатой клавишей @key{META}
+будет @code{M-f3}.  Если используется более одного префикса, рекомендуется
+писать их в алфавитном порядке; но порядок не имеет значения в аргументах
+функций поиска и модификации привязки ключей.
 
 @node Mouse Events
-@subsection Mouse Events
+@subsection События Мыши
 
-Emacs supports four kinds of mouse events: click events, drag events,
-button-down events, and motion events.  All mouse events are represented
-as lists.  The @sc{car} of the list is the event type; this says which
-mouse button was involved, and which modifier keys were used with it.
-The event type can also distinguish double or triple button presses
-(@pxref{Repeat Events}).  The rest of the list elements give position
-and time information.
+Emacs поддерживает четыре типа событий мыши: события щелчка, события
+перетаскивания, события нажатия кнопки и события движения.  Все события мыши
+представлены в виде списков.  @sc{car} списка - тип события; это указывает,
+какая кнопка мыши была задействована, и какие клавиши-модификаторы
+использовались с ней.  По типу события также можно различать двойное или
+тройное нажатие кнопки (@pxref{Repeat Events}).  Остальные элементы списка
+предоставляют информацию о положении и времени.
 
-For key lookup, only the event type matters: two events of the same type
-necessarily run the same command.  The command can access the full
-values of these events using the @samp{e} interactive code.
+Для поиска ключа имеет значение только тип события: два события одного типа
+обязательно запускают одну и ту же команду.  Команда может получить доступ к
+полным значениям этих событий с помощью интерактивного кода @samp{e}.
 @xref{Interactive Codes}.
 
-A key sequence that starts with a mouse event is read using the keymaps
-of the buffer in the window that the mouse was in, not the current
-buffer.  This does not imply that clicking in a window selects that
-window or its buffer---that is entirely under the control of the command
-binding of the key sequence.
+Последовательность ключей, которая начинается с события мыши, считывается с
+использованием ключевых карт буфера в окне, в котором находилась мышь, а не
+текущего буфера.  Это не означает, что щелчок в окне выбирает это окно или
+его буфер, который полностью находится под контролем привязки команды
+последовательности ключей.
 
 @node Click Events
-@subsection Click Events
+@subsection События Нажатия
 @cindex click event
 @cindex mouse click event
 
-When the user presses a mouse button and releases it at the same
-location, that generates a @dfn{click} event.  All mouse click event
-share the same format:
+Когда пользователь нажимает кнопку мыши и отпускает ее в том же месте,
+генерируется событие @dfn{щелчок}.  Все события щелчка мыши имеют один и тот
+же формат:
 
 @example
 (@var{event-type} @var{position} @var{click-count})
@@ -1323,35 +1321,35 @@ share the same format:
 
 @table @asis
 @item @var{event-type}
-This is a symbol that indicates which mouse button was used.  It is
-one of the symbols @code{mouse-1}, @code{mouse-2}, @dots{}, where the
-buttons are numbered left to right.
+Символ, указывающий, какая кнопка мыши была использована.  Это один из
+символов @code{mouse-1}, @code{mouse-2}, @dots{}, где кнопки нумеруются
+слева направо.
 
-You can also use prefixes @samp{A-}, @samp{C-}, @samp{H-}, @samp{M-},
-@samp{S-} and @samp{s-} for modifiers alt, control, hyper, meta, shift
-and super, just as you would with function keys.
+Также можно использовать префиксы @samp{A-}, @samp{C-}, @samp{H-},
+@samp{M-}, @samp{S-} и @samp{s-} для модификаторов alt, control, hyper,
+meta, shift и super, как и с функциональными клавишами.
 
-This symbol also serves as the event type of the event.  Key bindings
-describe events by their types; thus, if there is a key binding for
-@code{mouse-1}, that binding would apply to all events whose
-@var{event-type} is @code{mouse-1}.
+Этот символ также служит типом события.  Привязки ключей описывают события
+по их типам; таким образом, если есть привязка ключа для @code{mouse-1},
+эта привязка будет применяться ко всем событиям, у которых @var{event-type}
+есть @code{mouse-1}.
 
 @item @var{position}
 @cindex mouse position list
-This is a @dfn{mouse position list} specifying where the mouse click
-occurred; see below for details.
+Это @dfn{mouse position list}, указывающий, где произошел щелчок мышью;
+подробности смотреть ниже.
 
 @item @var{click-count}
-This is the number of rapid repeated presses so far of the same mouse
-button.  @xref{Repeat Events}.
+Это количество частых повторных нажатий одной и той же кнопки мыши до сих
+пор.  @xref{Repeat Events}.
 @end table
 
-  To access the contents of a mouse position list in the
-@var{position} slot of a click event, you should typically use the
-functions documented in @ref{Accessing Mouse}.  The explicit format of
-the list depends on where the click occurred.  For clicks in the text
-area, mode line, header line, or in the fringe or marginal areas, the
-mouse position list has the form
+  Чтобы получить доступ к содержимому списка позиций мыши в слоте
+@var{position} события щелчка, обычно потребуется использовать функции,
+описанные в @ref{Accessing Mouse}.  Явный формат списка зависит от того, где
+произошел щелчок.  Для щелчков в текстовой области, строке режима, строке
+заголовка или в краевых или маргинальных областях список позиций мыши имеет
+вид
 
 @example
 (@var{window} @var{pos-or-area} (@var{x} . @var{y}) @var{timestamp}
@@ -1360,89 +1358,86 @@ mouse position list has the form
 @end example
 
 @noindent
-The meanings of these list elements are as follows:
+Значения этих элементов списка следующие:
 
 @table @asis
 @item @var{window}
-The window in which the click occurred.
+Окно, в котором произошел щелчок.
 
 @item @var{pos-or-area}
-The buffer position of the character clicked on in the text area; or,
-if the click was outside the text area, the window area where it
-occurred.  It is one of the symbols @code{mode-line},
+Положение в буфере символа, по которому щелкнули в текстовой области; или,
+если щелчок произошел за пределами текстовой области, область окна, в
+которой он произошел.  Это один из символов @code{mode-line},
 @code{header-line}, @code{vertical-line}, @code{left-margin},
-@code{right-margin}, @code{left-fringe}, or @code{right-fringe}.
+@code{right-margin}, @code{left-fringe}, или @code{right-fringe}.
 
-In one special case, @var{pos-or-area} is a list containing a symbol
-(one of the symbols listed above) instead of just the symbol.  This
-happens after the imaginary prefix keys for the event are registered
-by Emacs.  @xref{Key Sequence Input}.
+В одном частном случае @var{pos-or-area} - это список, содержащий символ
+(один из символов, перечисленных выше), а не только символ.  Это происходит
+после того, как Emacs регистрирует воображаемые префиксные ключи для
+события.  @xref{Key Sequence Input}.
 
 @item @var{x}, @var{y}
-The relative pixel coordinates of the click.  For clicks in the text
-area of a window, the coordinate origin @code{(0 . 0)} is taken to be
-the top left corner of the text area.  @xref{Window Sizes}.  For
-clicks in a mode line or header line, the coordinate origin is the top
-left corner of the window itself.  For fringes, margins, and the
-vertical border, @var{x} does not have meaningful data.  For fringes
-and margins, @var{y} is relative to the bottom edge of the header
-line.  In all cases, the @var{x} and @var{y} coordinates increase
-rightward and downward respectively.
+Относительные пиксельные координаты щелчка.  Для щелчков в текстовой области
+окна за начало координат @code{(0 . 0)} берется верхний левый угол текстовойобласти.  @xref{Window Sizes}.  Для щелчков в строке режима или строке
+заголовка источником координат является верхний левый угол самого окна.  Для
+полос, полей и вертикальной границы @var{x} не имеет значимых данных.  Для
+бахромы и полей @var{y} отсчитывается относительно нижнего края строки
+заголовка.  Во всех случаях координаты @var{x} и @var{y} увеличиваются
+вправо и вниз соответственно.
 
 @item @var{timestamp}
-The time at which the event occurred, as an integer number of
-milliseconds since a system-dependent initial time.
+Время, в которое произошло событие, в виде целого числа миллисекунд с
+системно-зависимого начального времени.
 
 @item @var{object}
-Either @code{nil}, which means the click occurred on buffer text, or a
-cons cell of the form @w{(@var{string} . @var{string-pos})} if there
-is a string from a text property or an overlay at the click position.
+Либо @code{nil}, что означает, что щелчок произошел по тексту буфера, либо
+cons-ячейка формы @w{(@var{string} . @var{string-pos})}, если есть строка из
+текстового свойства или наложение в позиции щелчка.
 
 @table @asis
 @item @var{string}
-The string which was clicked on, including any properties.
+Строка, по которой был выполнен щелчок, включая любые свойства.
 
 @item @var{string-pos}
-The position in the string where the click occurred.
+Позиция в строке, где произошел щелчок.
 @end table
 
 @item @var{text-pos}
-For clicks on a marginal area or on a fringe, this is the buffer
-position of the first visible character in the corresponding line in
-the window.  For clicks on the mode line or the header line, this is
-@code{nil}.  For other events, it is the buffer position closest to
-the click.
+Для щелчков по маргинальной области или по краю это буферная позиция первого
+видимого символа в соответствующей строке в окне.  Для щелчков по строке
+режима или строке заголовка это @code{nil}.  Для других событий это позиция
+буфера, ближайшая к щелчку.
 
 @item @var{col}, @var{row}
-These are the actual column and row coordinate numbers of the glyph
-under the @var{x}, @var{y} position.  If @var{x} lies beyond the last
-column of actual text on its line, @var{col} is reported by adding
-fictional extra columns that have the default character width.  Row 0
-is taken to be the header line if the window has one, or the topmost
-row of the text area otherwise.  Column 0 is taken to be the leftmost
-column of the text area for clicks on a window text area, or the
-leftmost mode line or header line column for clicks there.  For clicks
-on fringes or vertical borders, these have no meaningful data.  For
-clicks on margins, @var{col} is measured from the left edge of the
-margin area and @var{row} is measured from the top of the margin area.
+Это фактические координаты столбца и строки глифа под позицией @var{x},
+@var{y}.  Если @var{x} лежит за пределами последнего столбца фактического
+текста в своей строке, @var{col} сообщается путем добавления вымышленных
+дополнительных столбцов с шириной символа по умолчанию.  Строка 0 считается
+строкой заголовка, если она есть в окне, или самой верхней строкой текстовой
+области в противном случае.  Столбец 0 считается крайним левым столбцом
+текстовой области для щелчков в текстовой области окна или крайней левой
+строкой режима или столбцом строки заголовка для щелчков в этой области.
+Для щелчков по краям или вертикальным границам они не имеют значимых данных.
+Для щелчков по полям @var{col} измеряется от левого края области полей, а
+@var{row} - от верха области полей.
 
 @item @var{image}
-If there is an image at the click location, this is the image object
-as returned by @code{find-image} (@pxref{Defining Images}); otherwise
-this is @code{nil}.
+Если в месте щелчка есть изображение, это объект изображения, возвращенный
+@code{find-image} (@pxref{Defining Images}); в противном случае это
+@code{nil}.
 
 @item @var{dx}, @var{dy}
-These are the pixel coordinates of the click, relative to the top left
-corner of @var{object}, which is @code{(0 . 0)}.  If @var{object} is
-@code{nil}, which stands for a buffer, the coordinates are relative to
-the top left corner of the character glyph clicked on.
+Это пиксельные координаты щелчка относительно верхнего левого угла
+@var{object}, который равен @code{(0 . 0)}.  Если @var{object} равно
+@code{nil}, что означает буфер, координаты отсчитываются относительно левого
+верхнего угла глифа символа, на котором щелкнули мышью.
 
 @item @var{width}, @var{height}
-These are the pixel width and height of @var{object} or, if this is
-@code{nil}, those of the character glyph clicked on.
+Это ширина и высота в пикселях @var{object} или, если это @code{nil},
+пиксели глифа, по которому щелкнули.
 @end table
 
-For clicks on a scroll bar, @var{position} has this form:
+Для щелчков по полосе прокрутки @var{position} имеет такую форму:
 
 @example
 (@var{window} @var{area} (@var{portion} . @var{whole}) @var{timestamp} @var{part})
@@ -1450,47 +1445,46 @@ For clicks on a scroll bar, @var{position} has this form:
 
 @table @asis
 @item @var{window}
-The window whose scroll bar was clicked on.
+Окно, полоса прокрутки которого была нажата.
 
 @item @var{area}
-This is the symbol @code{vertical-scroll-bar}.
+Это символ @code{vertical-scroll-bar}.
 
 @item @var{portion}
-The number of pixels from the top of the scroll bar to the click
-position.  On some toolkits, including GTK+, Emacs cannot extract this
-data, so the value is always @code{0}.
+Количество пикселей от верха полосы прокрутки до позиции щелчка.  В
+некоторых наборах инструментов, включая GTK+, Emacs не может извлечь эти
+данные, поэтому значение всегда равно @code{0}.
 
 @item @var{whole}
-The total length, in pixels, of the scroll bar.  On some toolkits,
-including GTK+, Emacs cannot extract this data, so the value is always
-@code{0}.
+Общая длина полосы прокрутки в пикселях.  В некоторых инструментах, включая
+GTK+, Emacs не может извлечь эти данные, поэтому значение всегда @code{0}.
 
 @item @var{timestamp}
-The time at which the event occurred, in milliseconds.  On some
-toolkits, including GTK+, Emacs cannot extract this data, so the value
-is always @code{0}.
+Время, когда произошло событие, в миллисекундах.  В некоторых наборах
+инструментов, включая GTK+, Emacs не может извлечь эти данные, поэтому
+значение всегда равно @code{0}.
 
 @item @var{part}
-The part of the scroll bar on which the click occurred.  It is one of
-the symbols @code{handle} (the scroll bar handle), @code{above-handle}
-(the area above the handle), @code{below-handle} (the area below the
-handle), @code{up} (the up arrow at one end of the scroll bar), or
-@code{down} (the down arrow at one end of the scroll bar).
+Часть полосы прокрутки, по которой произошел щелчок.  Это один из символов
+@code{handle} (маркер полосы прокрутки), @code{above-handle} (область над
+маркером), @code{below-handle} (область под маркером), @code{up} (стрелка
+вверх на одном конце полосы прокрутки) или @code{down} (стрелка вниз на
+одном конце полосы прокрутки).
 @c The 'top', 'bottom', and 'end-scroll' codes don't seem to be used.
 @end table
 
 
 @node Drag Events
-@subsection Drag Events
+@subsection Событие Перетаскивания
 @cindex drag event
 @cindex mouse drag event
 
-With Emacs, you can have a drag event without even changing your
-clothes.  A @dfn{drag event} happens every time the user presses a mouse
-button and then moves the mouse to a different character position before
-releasing the button.  Like all mouse events, drag events are
-represented in Lisp as lists.  The lists record both the starting mouse
-position and the final position, like this:
+С Emacs можно провести событие перетаскивания, даже не приготавливаясь.
+@dfn{Событие перетаскивания} происходит каждый раз, когда пользователь
+нажимает кнопку мыши, а затем перемещает мышь в другую позицию символа перед
+тем, как отпустить кнопку.  Как и все события мыши, события перетаскивания
+представлены в Lisp в виде списков.  В списках записывается как начальная,
+так и конечная позиция мыши, например:
 
 @example
 (@var{event-type}
@@ -1498,293 +1492,294 @@ position and the final position, like this:
  (@var{window2} END-POSITION))
 @end example
 
-For a drag event, the name of the symbol @var{event-type} contains the
-prefix @samp{drag-}.  For example, dragging the mouse with button 2
-held down generates a @code{drag-mouse-2} event.  The second and third
-elements of the event give the starting and ending position of the
-drag, as mouse position lists (@pxref{Click Events}).  You can access
-the second element of any mouse event in the same way.  However, the
-drag event may end outside the boundaries of the frame that was
-initially selected.  In that case, the third element's position list
-contains that frame in place of a window.
+Для события перетаскивания имя символа @var{event-type} содержит префикс
+@samp{drag-}.  Например, перетаскивание мыши с нажатой кнопкой 2 генерирует
+событие @code{drag-mouse-2}.  Второй и третий элементы события задают
+начальную и конечную позицию перетаскивания, так как положение мыши
+перечисляет (@pxref{Click Events}).  Таким же образом можно получить доступ
+ко второму элементу любого события мыши.  Однако событие перетаскивания
+может закончиться за пределами изначально выбранного кадра.  В этом случае
+список позиций третьего элемента содержит этот фрейм вместо окна.
 
-The @samp{drag-} prefix follows the modifier key prefixes such as
-@samp{C-} and @samp{M-}.
+Префикс @samp{drag-} следует за префиксом ключа-модификатора, например
+@samp{C-} и @samp{M-}.
 
-If @code{read-key-sequence} receives a drag event that has no key
-binding, and the corresponding click event does have a binding, it
-changes the drag event into a click event at the drag's starting
-position.  This means that you don't have to distinguish between click
-and drag events unless you want to.
+Если @code{read-key-sequence} получает событие перетаскивания, которое не
+имеет привязки к ключам, и соответствующее событие щелчка имеет привязку,
+изменяется событие перетаскивания на событие щелчка в начальной позиции
+перетаскивания.  Это означает, что не требуется различать события щелчка и
+перетаскивания, если этого не нужно.
 
 @node Button-Down Events
-@subsection Button-Down Events
+@subsection События при Нажатии Кнопки
 @cindex button-down event
 
-Click and drag events happen when the user releases a mouse button.
-They cannot happen earlier, because there is no way to distinguish a
-click from a drag until the button is released.
+События щелчка и перетаскивания происходят, когда пользователь отпускает
+кнопку мыши.  Они не могут произойти раньше, потому что нет возможности
+отличить щелчок от перетаскивания, пока кнопка не будет отпущена.
 
-If you want to take action as soon as a button is pressed, you need to
-handle @dfn{button-down} events.@footnote{Button-down is the
-conservative antithesis of drag.}  These occur as soon as a button is
-pressed.  They are represented by lists that look exactly like click
-events (@pxref{Click Events}), except that the @var{event-type} symbol
-name contains the prefix @samp{down-}.  The @samp{down-} prefix follows
-modifier key prefixes such as @samp{C-} and @samp{M-}.
+Если трбуется действовать, как только кнопка нажата, нужно обработать
+событие @dfn{нажатие кнопки}.@footnote{Нажатие кнопки - это консервативная
+противоположность перетаскиванию.}  Это происходит, как только нажимается
+кнопка.  Представлены списками, которые выглядят точно так же, как события
+щелчка (@pxref{Click Events}), за исключением того, что имя символа
+@var{event-type} содержит префикс @samp{down-}.  Префикс @samp{down-}
+следует за префиксом клавиш-модификаторов, например @samp{C-} и @samp{M-}.
 
-The function @code{read-key-sequence} ignores any button-down events
-that don't have command bindings; therefore, the Emacs command loop
-ignores them too.  This means that you need not worry about defining
-button-down events unless you want them to do something.  The usual
-reason to define a button-down event is so that you can track mouse
-motion (by reading motion events) until the button is released.
+Функция @code{read-key-sequence} игнорирует любые события нажатия кнопки,
+для которых нет привязки команд; поэтому цикл команд Emacs их тоже
+игнорирует.  Это означает, что не нужно беспокоиться об определении событий
+нажатия кнопки, если не нужно, чтобы они что-то делали.  Обычная причина для
+определения события нажатия кнопки состоит в том, чтобы можно было
+отслеживать движение мыши (считывая события движения), пока кнопка не будет
+отпущена.
 @xref{Motion Events}.
 
 @node Repeat Events
-@subsection Repeat Events
+@subsection Повторение События
 @cindex repeat events
 @cindex double-click events
 @cindex triple-click events
 @cindex mouse events, repeated
 
-If you press the same mouse button more than once in quick succession
-without moving the mouse, Emacs generates special @dfn{repeat} mouse
-events for the second and subsequent presses.
+Если нажимать одну и ту же кнопку мыши более одного раза в быстрой
+последовательности, не перемещая мышь, Emacs сгенерирует специальные события
+мыши @dfn{repeat} для второго и последующих нажатий.
 
-The most common repeat events are @dfn{double-click} events.  Emacs
-generates a double-click event when you click a button twice; the event
-happens when you release the button (as is normal for all click
-events).
+Наиболее частыми повторяющимися событиями являются события
+@dfn{(двойной-щелчок) double-click}.  Emacs генерирует событие двойного
+щелчка, когда дважды щелкается кнопка; событие происходит, когда отпускается
+кнопка (как обычно для всех событий щелчка).
 
-The event type of a double-click event contains the prefix
-@samp{double-}.  Thus, a double click on the second mouse button with
-@key{meta} held down comes to the Lisp program as
-@code{M-double-mouse-2}.  If a double-click event has no binding, the
-binding of the corresponding ordinary click event is used to execute
-it.  Thus, you need not pay attention to the double click feature
-unless you really want to.
+Тип события для события двойного щелчка содержит префикс @samp{double-}.
+Таким образом, двойной щелчок по второй кнопке мыши с зажатой @key{meta}
+переходит в программу Lisp как @code{M-double-mouse-2}.  Если событие
+двойного щелчка не имеет привязки, для его выполнения используется привязка
+соответствующего обычного события щелчка.  Таким образом, не нужно обращать
+внимание на функцию двойного щелчка, если действительно этого не нужно.
 
-When the user performs a double click, Emacs generates first an ordinary
-click event, and then a double-click event.  Therefore, you must design
-the command binding of the double click event to assume that the
-single-click command has already run.  It must produce the desired
-results of a double click, starting from the results of a single click.
+Когда пользователь выполняет двойной щелчок, Emacs сначала генерирует
+обычное событие щелчка, а затем событие двойного щелчка.  Следовательно,
+потребуется спроектировать привязку команды для события двойного щелчка, что
+бы предполагать, что команда одиночного щелчка уже была запущена.  Это будет
+давать желаемые результаты двойного щелчка, начиная с результатов одного
+щелчка.
 
-This is convenient, if the meaning of a double click somehow builds
-on the meaning of a single click---which is recommended user interface
-design practice for double clicks.
+Это удобно, если значение двойного щелчка каким-то образом основывается на
+значении одиночного щелчка - что рекомендуется для разработки
+пользовательского интерфейса при двойном щелчке.
 
-If you click a button, then press it down again and start moving the
-mouse with the button held down, then you get a @dfn{double-drag} event
-when you ultimately release the button.  Its event type contains
-@samp{double-drag} instead of just @samp{drag}.  If a double-drag event
-has no binding, Emacs looks for an alternate binding as if the event
-were an ordinary drag.
+Если нажимается кнопка, затем снова нажмается и начинается перемещение мыши,
+с удерживанием нажатой кнопки, получается событие
+@dfn{двойное перетаскивание}, когда в конечном итоге отпустите кнопку.  Его
+тип события содержит @samp{двойное перетаскивание}, а не только
+@samp{перетаскивание}.  Если событие двойного перетаскивания не имеет
+привязки, Emacs ищет альтернативную привязку, как если бы событие было
+обычным перетаскиванием.
 
-Before the double-click or double-drag event, Emacs generates a
-@dfn{double-down} event when the user presses the button down for the
-second time.  Its event type contains @samp{double-down} instead of just
-@samp{down}.  If a double-down event has no binding, Emacs looks for an
-alternate binding as if the event were an ordinary button-down event.
-If it finds no binding that way either, the double-down event is
-ignored.
+Перед событием двойного щелчка или двойного перетаскивания Emacs генерирует
+событие @dfn{двойное нажатие}, когда пользователь нажимает кнопку во второй
+раз.  Его тип события содержит @samp{double-down}, а не только
+@samp{нажатие}.  Если событие двойного нажатия не имеет привязки, Emacs
+ищет альтернативную привязку, как если бы событие было обычным событием
+нажатия кнопки.  Если и в этом случае привязка не обнаруживается, событие
+удвоения игнорируется.
 
-To summarize, when you click a button and then press it again right
-away, Emacs generates a down event and a click event for the first
-click, a double-down event when you press the button again, and finally
-either a double-click or a double-drag event.
+Подводя итог, когда щёлкается кнопка, а затем сразу же нажимается снова,
+Emacs генерирует событие нажатия и событие щелчка для первого щелчка,
+событие двойного нажатия при повторном нажатии кнопки и, наконец, либо
+двойной щелчок, либо событие двойного перетаскивания.
 
-If you click a button twice and then press it again, all in quick
-succession, Emacs generates a @dfn{triple-down} event, followed by
-either a @dfn{triple-click} or a @dfn{triple-drag}.  The event types of
-these events contain @samp{triple} instead of @samp{double}.  If any
-triple event has no binding, Emacs uses the binding that it would use
-for the corresponding double event.
+Если дважды нажмется кнопка, а затем снова быстрое нажатие, Emacs
+сгенерирует событие @dfn{тройное нажатие}, за которым следует
+@dfn{тройной щелчок} или @dfn{тройное перетаскивание}.  Типы событий этих
+событий содержат @samp{тройной} вместо @samp{двойной}.  Если какое-либо
+тройное событие не имеет привязки, Emacs использует привязку, которую он
+использовал бы для соответствующего двойного события.
 
-If you click a button three or more times and then press it again, the
-events for the presses beyond the third are all triple events.  Emacs
-does not have separate event types for quadruple, quintuple, etc.@:
-events.  However, you can look at the event list to find out precisely
-how many times the button was pressed.
+Если нажмете кнопку три или более раз, а затем нажмете ее снова, все события
+для нажатий после третьего будут тройными.  В Emacs нет отдельных типов
+событий для четверных, пятикратных и т.д. @: событий.  Однако можно
+посмотреть список событий, чтобы точно узнать, сколько раз была нажата
+кнопка.
 
 @defun event-click-count event
-This function returns the number of consecutive button presses that led
-up to @var{event}.  If @var{event} is a double-down, double-click or
-double-drag event, the value is 2.  If @var{event} is a triple event,
-the value is 3 or greater.  If @var{event} is an ordinary mouse event
-(not a repeat event), the value is 1.
+Функция возвращает количество последовательных нажатий кнопок, которые
+привели к @var{event}.  Если @var{event} является событием двойного нажатия,
+двойного щелчка или двойного перетаскивания, значение равно 2.  Если
+@var{event} - тройное событие, значение равно 3 или больше.  Если
+@var{event} - обычное событие мыши (не повторение), значение равно 1.
 @end defun
 
 @defopt double-click-fuzz
-To generate repeat events, successive mouse button presses must be at
-approximately the same screen position.  The value of
-@code{double-click-fuzz} specifies the maximum number of pixels the
-mouse may be moved (horizontally or vertically) between two successive
-clicks to make a double-click.
+Чтобы генерировать повторяющиеся события, последовательные нажатия кнопок
+мыши должны происходить примерно в одном и том же положении на экране.
+Значение @code{double-click-fuzz} указывает максимальное количество
+пикселей, на которое мышь может быть перемещена (по горизонтали или
+вертикали) между двумя последовательными щелчками, чтобы сделать двойной
+щелчок.
 
-This variable is also the threshold for motion of the mouse to count
-as a drag.
+Эта переменная также является порогом, при котором движение мыши считается
+перетаскиванием.
 @end defopt
 
 @defopt double-click-time
-To generate repeat events, the number of milliseconds between
-successive button presses must be less than the value of
-@code{double-click-time}.  Setting @code{double-click-time} to
-@code{nil} disables multi-click detection entirely.  Setting it to
-@code{t} removes the time limit; Emacs then detects multi-clicks by
-position only.
+Для генерации повторяющихся событий количество миллисекунд между
+последовательными нажатиями кнопок должно быть меньше значения
+@code{double-click-time}.  Установка @code{double-click-time} в @code{nil}
+полностью отключает обнаружение множественного щелчка.  Установка @code{t}
+снимает ограничение по времени; Emacs затем обнаруживает множественные
+щелчки только по позиции.
 @end defopt
 
 @node Motion Events
-@subsection Motion Events
+@subsection События Движения
 @cindex motion event
 @cindex mouse motion events
 
-Emacs sometimes generates @dfn{mouse motion} events to describe motion
-of the mouse without any button activity.  Mouse motion events are
-represented by lists that look like this:
+Emacs иногда генерирует события @dfn{движение мыши} для описания движения
+мыши без каких-либо действий кнопок.  События движения мыши представлены
+списками, которые выглядят следующим образом:
 
 @example
 (mouse-movement POSITION)
 @end example
 
 @noindent
-@var{position} is a mouse position list (@pxref{Click Events}),
-specifying the current position of the mouse cursor.  As with the
-end-position of a drag event, this position list may represent a
-location outside the boundaries of the initially selected frame, in
-which case the list contains that frame in place of a window.
+@var{position} - это список позиций мыши (@pxref{Click Events}),
+определяющий текущую позицию курсора мыши.  Как и в случае с конечной
+позицией события перетаскивания, этот список позиций может представлять
+местоположение за пределами границ первоначально выбранного кадра, и в этом
+случае список содержит этот кадр вместо окна.
 
-The special form @code{track-mouse} enables generation of motion
-events within its body.  Outside of @code{track-mouse} forms, Emacs
-does not generate events for mere motion of the mouse, and these
-events do not appear.  @xref{Mouse Tracking}.
+Специальная форма @code{track-mouse} позволяет генерировать события движения
+внутри своего тела.  Вне форм @code{track-mouse} Emacs не генерирует события
+для простого движения мыши, и эти события не появляются.
+@xref{Mouse Tracking}.
 
 @node Focus Events
-@subsection Focus Events
+@subsection Событие Фокуса
 @cindex focus event
 
-Window systems provide general ways for the user to control which window
-gets keyboard input.  This choice of window is called the @dfn{focus}.
-When the user does something to switch between Emacs frames, that
-generates a @dfn{focus event}.  The normal definition of a focus event,
-in the global keymap, is to select a new frame within Emacs, as the user
-would expect.  @xref{Input Focus}, which also describes hooks related
-to focus events.
+Оконные системы предоставляют пользователю общие способы управления окном,
+получающим ввод с клавиатуры.  Этот выбор окна называется @dfn{focus}.
+Когда пользователь что-то делает для переключения между кадрами Emacs,
+генерируется @dfn{focus event}.  Обычное определение события фокуса в
+глобальной таблице ключей - это выбрать новый фрейм в Emacs, как и ожидал
+пользователь.  @xref{Input Focus}, который также описывает ловушки,
+связанные с событиями фокуса.
 
-Focus events are represented in Lisp as lists that look like this:
+События фокуса представлены в Lisp в виде списков, которые выглядят
+следующим образом:
 
 @example
 (switch-frame @var{new-frame})
 @end example
 
 @noindent
-where @var{new-frame} is the frame switched to.
+где @var{new-frame} - это кадр, на который переключился.
 
-Some X window managers are set up so that just moving the mouse into a
-window is enough to set the focus there.  Usually, there is no need
-for a Lisp program to know about the focus change until some other
-kind of input arrives.  Emacs generates a focus event only when the
-user actually types a keyboard key or presses a mouse button in the
-new frame; just moving the mouse between frames does not generate a
-focus event.
+Некоторые диспетчеры окон X настроены так, что достаточно просто переместить
+мышь в окно, чтобы установить там фокус.  Обычно программе на Lisp нет
+необходимости знать об изменении фокуса до тех пор, пока не поступит
+какой-либо другой тип ввода.  Emacs генерирует событие фокуса только тогда,
+когда пользователь фактически набирает клавишу клавиатуры или нажимает
+кнопку мыши в новом кадре; простое перемещение мыши между кадрами не
+приводит к возникновению события фокуса.
 
-A focus event in the middle of a key sequence would garble the
-sequence.  So Emacs never generates a focus event in the middle of a key
-sequence.  If the user changes focus in the middle of a key
-sequence---that is, after a prefix key---then Emacs reorders the events
-so that the focus event comes either before or after the multi-event key
-sequence, and not within it.
+Событие фокуса в середине ключевой последовательности искажает
+последовательность.  Таким образом, Emacs никогда не генерирует событие
+фокуса в середине ключевой последовательности.  Если пользователь меняет
+фокус в середине последовательности ключей - то есть после префиксного ключа
+- то Emacs переупорядочивает события так, чтобы событие фокуса происходило
+либо до, либо после последовательности ключей с несколькими событиями, а не
+внутри.
 
 @node Misc Events
-@subsection Miscellaneous System Events
+@subsection Разные Системные События
 
-A few other event types represent occurrences within the system.
+Несколько других типов событий представляют собой события в системе.
 
 @table @code
 @cindex @code{delete-frame} event
 @item (delete-frame (@var{frame}))
-This kind of event indicates that the user gave the window manager
-a command to delete a particular window, which happens to be an Emacs frame.
+Событие такого типа указывает на то, что пользователь дал оконному менеджеру
+команду на удаление определенного окна, которое оказывается фреймом Emacs.
 
-The standard definition of the @code{delete-frame} event is to delete @var{frame}.
+Стандартное определение события @code{delete-frame} - удалить @var{frame}.
 
 @cindex @code{iconify-frame} event
 @item (iconify-frame (@var{frame}))
-This kind of event indicates that the user iconified @var{frame} using
-the window manager.  Its standard definition is @code{ignore}; since the
-frame has already been iconified, Emacs has no work to do.  The purpose
-of this event type is so that you can keep track of such events if you
-want to.
+Этот вид событий указывает на то, что пользователь сделал значок @var{frame}
+иконкой с помощью оконного менеджера.  Его стандартное определение -
+@code{ignore}; поскольку фрейм уже обозначен значком, Emacs не может ничего
+сделать.  Назначение этого типа событий состоит в том, чтобы иметь
+возможность отслеживать такие события, если хотите.
 
 @cindex @code{make-frame-visible} event
 @item (make-frame-visible (@var{frame}))
-This kind of event indicates that the user deiconified @var{frame} using
-the window manager.  Its standard definition is @code{ignore}; since the
-frame has already been made visible, Emacs has no work to do.
+Событие такого типа указывает на то, что пользователь деактивировал
+@var{frame} с помощью оконного менеджера.  Его стандартное определение -
+@code{ignore}; поскольку фрейм уже стал видимым, Emacs не может ничего
+сделать.
 
 @cindex @code{wheel-up} event
 @cindex @code{wheel-down} event
 @item (wheel-up @var{position})
 @itemx (wheel-down @var{position})
-These kinds of event are generated by moving a mouse wheel.  The
-@var{position} element is a mouse position list (@pxref{Click
-Events}), specifying the position of the mouse cursor when the event
-occurred.
+События такого типа генерируются при перемещении колеса мыши.  Элемент
+@var{position} - это список положений мыши (@pxref{Click Events}),
+определяющий положение курсора мыши, когда произошло событие.
 
 @vindex mouse-wheel-up-event
 @vindex mouse-wheel-down-event
-This kind of event is generated only on some kinds of systems.  On some
-systems, @code{mouse-4} and @code{mouse-5} are used instead.  For
-portable code, use the variables @code{mouse-wheel-up-event} and
-@code{mouse-wheel-down-event} defined in @file{mwheel.el} to determine
-what event types to expect for the mouse wheel.
+Подобные события генерируются только в определённых системах.  В некоторых
+системах вместо него используется @code{mouse-4} и @code{mouse-5}.  Для
+переносимости кода используютсяе переменные @code{mouse-wheel-up-event} и
+@code{mouse-wheel-down-event}, определенные в @file{mwheel.el}, чтобы
+определить, какие типы событий ожидать от колеса мыши.
 
 @cindex @code{drag-n-drop} event
 @item (drag-n-drop @var{position} @var{files})
-This kind of event is generated when a group of files is
-selected in an application outside of Emacs, and then dragged and
-dropped onto an Emacs frame.
+Этот тип событий генерируется, когда группа файлов выбирается в приложении
+вне Emacs, а затем перетаскивается на фрейм Emacs.
 
-The element @var{position} is a list describing the position of the
-event, in the same format as used in a mouse-click event (@pxref{Click
-Events}), and @var{files} is the list of file names that were dragged
-and dropped.  The usual way to handle this event is by visiting these
-files.
+Элемент @var{position} - это список, описывающий позицию события, в том же
+формате, что и в событии щелчка мышью (@pxref{Click Events}), и @var{files},
+представляет собой список имен файлов, которые были перетащены.  Обычный
+способ обработать это событие - посетить эти файлы.
 
-This kind of event is generated, at present, only on some kinds of
-systems.
+В настоящее время такого рода события генерируются только в некоторых типах
+систем.
 
 @cindex @code{help-echo} event
 @item help-echo
-This kind of event is generated when a mouse pointer moves onto a
-portion of buffer text which has a @code{help-echo} text property.
-The generated event has this form:
+Событие такого типа генерируется, когда указатель мыши перемещается на часть
+текста буфера, имеющую текстовое свойство @code{help-echo}.  Сгенерированное
+событие имеет такую форму:
 
 @example
 (help-echo @var{frame} @var{help} @var{window} @var{object} @var{pos})
 @end example
 
 @noindent
-The precise meaning of the event parameters and the way these
-parameters are used to display the help-echo text are described in
-@ref{Text help-echo}.
+Точное значение параметров события и способ использования этих параметров
+для отображения текста эхо-справки описаны в @ref{Text help-echo}.
 
 @cindex @code{sigusr1} event
 @cindex @code{sigusr2} event
 @cindex user signals
 @item sigusr1
 @itemx sigusr2
-These events are generated when the Emacs process receives
-the signals @code{SIGUSR1} and @code{SIGUSR2}.  They contain no
-additional data because signals do not carry additional information.
-They can be useful for debugging (@pxref{Error Debugging}).
+Эти события генерируются, когда процесс Emacs получает сигналы
+@code{SIGUSR1} и @code{SIGUSR2}.  Они не содержат дополнительных данных,
+поскольку сигналы не несут дополнительной информации.  Они могут быть
+полезны для отладки (@pxref{Error Debugging}).
 
-To catch a user signal, bind the corresponding event to an interactive
-command in the @code{special-event-map} (@pxref{Active Keymaps}).
-The command is called with no arguments, and the specific signal event is
-available in @code{last-input-event}.  For example:
+Чтобы поймать пользовательский сигнал, привяжите соответствующее событие к
+интерактивной команде в @code{special-event-map} (@pxref{Active Keymaps}).
+Команда вызывается без аргументов, а конкретное сигнальное событие доступно
+в @code{last-input-event}. Например:
 
 @smallexample
 (defun sigusr-handler ()
@@ -1794,7 +1789,8 @@ available in @code{last-input-event}.  For example:
 (define-key special-event-map [sigusr1] 'sigusr-handler)
 @end smallexample
 
-To test the signal handler, you can make Emacs send a signal to itself:
+Чтобы проверить обработчик сигнала, можно заставить Emacs посылать сигнал
+самому себе:
 
 @smallexample
 (signal-process (emacs-pid) 'sigusr1)
@@ -1802,25 +1798,23 @@ To test the signal handler, you can make Emacs send a signal to itself:
 
 @cindex @code{language-change} event
 @item language-change
-This kind of event is generated on MS-Windows when the input language
-has changed.  This typically means that the keyboard keys will send to
-Emacs characters from a different language.  The generated event has
-this form:
+Событие такого типа генерируется в MS-Windows при изменении языка ввода.
+Обычно это означает, что ключи клавиатуры будут отправлять в Emacs символы
+другого языка.  Сгенерированное событие имеет такую форму:
 
 @smallexample
 (language-change @var{frame} @var{codepage} @var{language-id})
 @end smallexample
 
 @noindent
-Here @var{frame} is the frame which was current when the input
-language changed; @var{codepage} is the new codepage number; and
-@var{language-id} is the numerical ID of the new input language.  The
-coding-system (@pxref{Coding Systems}) that corresponds to
-@var{codepage} is @code{cp@var{codepage}} or
-@code{windows-@var{codepage}}.  To convert @var{language-id} to a
-string (e.g., to use it for various language-dependent features, such
-as @code{set-language-environment}), use the
-@code{w32-get-locale-info} function, like this:
+Здесь @var{frame} - это фрейм, который был текущим на момент изменения языка
+ввода; @var{codepage} - номер новой кодовой страницы; @var{language-id} -
+числовой идентификатор нового языка ввода.  Система кодирования
+(@pxref {Coding Systems}), которая соответствует @var{codepage}, - это
+@code{cp@var{codepage}} или @code{windows-@var{codepage}}.  Чтобы
+преобразовать @var{language-id} в строку (например, чтобы использовать его
+для различных языковых функций, таких как @code{set-language-environment}),
+используйте функцию @code{w32-get-locale-info}, например:
 
 @smallexample
 ;; Get the abbreviated language name, such as "ENU" for English
@@ -1833,25 +1827,25 @@ as @code{set-language-environment}), use the
 @end smallexample
 @end table
 
-  If one of these events arrives in the middle of a key sequence---that
-is, after a prefix key---then Emacs reorders the events so that this
-event comes either before or after the multi-event key sequence, not
-within it.
+  Если одно из этих событий наступает в середине ключевой последовательности
+- то есть после префиксного ключа - то Emacs переупорядочивает события так,
+чтобы это событие происходило либо до, либо после многособытийной ключевой
+последовательности, а не внутри неё.
 
 @node Event Examples
-@subsection Event Examples
+@subsection Примеры Событий
 
-If the user presses and releases the left mouse button over the same
-location, that generates a sequence of events like this:
+Если пользователь нажимает и отпускает левую кнопку мыши в том же месте, это
+генерирует последовательность событий, подобную этой:
 
 @smallexample
 (down-mouse-1 (#<window 18 on NEWS> 2613 (0 . 38) -864320))
 (mouse-1      (#<window 18 on NEWS> 2613 (0 . 38) -864180))
 @end smallexample
 
-While holding the control key down, the user might hold down the
-second mouse button, and drag the mouse from one line to the next.
-That produces two events, as shown here:
+Удерживая нажатой клавишу управления, пользователь может удерживать вторую
+кнопку мыши и перетаскивать мышь от одной строки к другой.  Это создает два
+события, как показано здесь:
 
 @smallexample
 (C-down-mouse-2 (#<window 18 on NEWS> 3440 (0 . 27) -731219))
@@ -1859,9 +1853,9 @@ That produces two events, as shown here:
                 (#<window 18 on NEWS> 3510 (0 . 28) -729648))
 @end smallexample
 
-While holding down the meta and shift keys, the user might press the
-second mouse button on the window's mode line, and then drag the mouse
-into another window.  That produces a pair of events like these:
+Удерживая нажатыми клавиши meta и shift, пользователь может нажать вторую
+кнопку мыши на строке режима окна, а затем перетащить мышь в другое окно.
+Это создает пару таких событий:
 
 @smallexample
 (M-S-down-mouse-2 (#<window 18 on NEWS> mode-line (33 . 31) -457844))
@@ -1870,16 +1864,16 @@ into another window.  That produces a pair of events like these:
                    -453816))
 @end smallexample
 
-The frame with input focus might not take up the entire screen, and
-the user might move the mouse outside the scope of the frame.  Inside
-the @code{track-mouse} special form, that produces an event like this:
+Рамка с фокусом ввода может не занимать весь экран, и пользователь может
+переместить мышь за пределы рамки.  Внутри специальной формы
+@code{track-mouse}, которая генерирует подобное событие:
 
 @smallexample
 (mouse-movement (#<frame *ielm* 0x102849a30> nil (563 . 205) 532301936))
 @end smallexample
 
-To handle a SIGUSR1 signal, define an interactive function, and
-bind it to the @code{signal usr1} event sequence:
+Чтобы обработать сигнал SIGUSR1, определяется интерактивная функцию и
+привязывается к последовательности событий @code{signal usr1}:
 
 @smallexample
 (defun usr1-handler ()
@@ -1889,45 +1883,46 @@ bind it to the @code{signal usr1} event sequence:
 @end smallexample
 
 @node Classifying Events
-@subsection Classifying Events
+@subsection Классификация Событий
 @cindex event type
 @cindex classifying events
 
-  Every event has an @dfn{event type}, which classifies the event for
-key binding purposes.  For a keyboard event, the event type equals the
-event value; thus, the event type for a character is the character, and
-the event type for a function key symbol is the symbol itself.  For
-events that are lists, the event type is the symbol in the @sc{car} of
-the list.  Thus, the event type is always a symbol or a character.
+  У каждого события есть @dfn{тип события}, который классифицирует событие
+для целей привязки ключей.  Для события клавиатуры тип события равен
+значению события; таким образом, тип события для символа - это символ, а
+тип события для символа функциональной клавиши - это сам символ.  Для
+событий, которые являются списками, тип события - это символ в @sc{car}
+списка.  Таким образом, тип события всегда является символом или знаком.
 
-  Two events of the same type are equivalent where key bindings are
-concerned; thus, they always run the same command.  That does not
-necessarily mean they do the same things, however, as some commands look
-at the whole event to decide what to do.  For example, some commands use
-the location of a mouse event to decide where in the buffer to act.
+  Два события одного типа эквивалентны в том, что касается привязки ключей;
+таким образом, они всегда запускают одну и ту же команду.  Однако это не
+обязательно означает, что они делают одно и то же, поскольку некоторые
+команды смотрят на все событие, чтобы решить, что делать.  Например,
+некоторые команды используют местоположение события мыши, чтобы решить, где
+в буфере действовать.
 
-  Sometimes broader classifications of events are useful.  For example,
-you might want to ask whether an event involved the @key{META} key,
-regardless of which other key or mouse button was used.
+  Иногда полезны более широкие классификации событий.  Например, можно
+спросить, связано ли событие с клавишей @key{META}, независимо от того,
+какая другая клавиша или кнопка мыши была использована.
 
-  The functions @code{event-modifiers} and @code{event-basic-type} are
-provided to get such information conveniently.
+  Функции @code{event-modifiers} и @code{event-basic-type} предназначены для
+удобного получения такой информации.
 
 @defun event-modifiers event
-This function returns a list of the modifiers that @var{event} has.  The
-modifiers are symbols; they include @code{shift}, @code{control},
-@code{meta}, @code{alt}, @code{hyper} and @code{super}.  In addition,
-the modifiers list of a mouse event symbol always contains one of
-@code{click}, @code{drag}, and @code{down}.  For double or triple
-events, it also contains @code{double} or @code{triple}.
+Эта функция возвращает список модификаторов, которые есть у @var{event}.
+Модификаторы представляют собой символы; они включают @code{shift},
+@code{control}, @code{meta}, @code{alt}, @code{hyper} и @code{super}.  Кроме
+того, список модификаторов символа события мыши всегда содержит один из
+@code{click}, @code{drag}, и @code{down}.  Для двойных или тройных событий
+также содержит @code{double} или @code{triple}.
 
-The argument @var{event} may be an entire event object, or just an
-event type.  If @var{event} is a symbol that has never been used in an
-event that has been read as input in the current Emacs session, then
-@code{event-modifiers} can return @code{nil}, even when @var{event}
-actually has modifiers.
+Аргумент @var{event} может быть целым объектом события или только типом
+события.  Если @var{event} - это символ, который никогда не использовался в
+событии, считанном как ввод в текущем сеансе Emacs, тогда
+@code{event-modifiers} может вернуть @code{nil}, даже если @var{event}
+действительно имеет модификаторы.
 
-Here are some examples:
+Вот несколько примеров:
 
 @example
 (event-modifiers ?a)
@@ -1952,18 +1947,18 @@ Here are some examples:
      @result{} (down)
 @end example
 
-The modifiers list for a click event explicitly contains @code{click},
-but the event symbol name itself does not contain @samp{click}.
-Similarly, the modifiers list for an @acronym{ASCII} control
-character, such as @samp{C-a}, contains @code{control}, even though
-reading such an event via @code{read-char} will return the value 1
-with the control modifier bit removed.
+Список модификаторов для события щелчка явно содержит @code{click}, но само
+имя символа события не содержит @samp{click}.  Точно так же список
+модификаторов для управляющего символа @acronym{ASCII}, такого как
+@samp{C-a}, содержит @code{control}, хотя чтение такого события через
+@code{read-char} вернет значение 1 с удаленным битом модификатора
+управления.
 @end defun
 
 @defun event-basic-type event
-This function returns the key or mouse button that @var{event}
-describes, with all modifiers removed.  The @var{event} argument is as
-in @code{event-modifiers}.  For example:
+Эта функция возвращает ключ или кнопку мыши, которые описывает @var{event},
+со всеми удаленными модификаторами.  Аргумент @var{event} такой же, как в
+@code{event-modifiers}.  Например:
 
 @example
 (event-basic-type ?a)
@@ -1986,14 +1981,14 @@ in @code{event-modifiers}.  For example:
 @end defun
 
 @defun mouse-movement-p object
-This function returns non-@code{nil} if @var{object} is a mouse movement
-event.  @xref{Motion Events}.
+Эта функция возвращает не-@code{nil}, если @var{object} является событием
+движения мыши.  @xref{Motion Events}.
 @end defun
 
 @defun event-convert-list list
-This function converts a list of modifier names and a basic event type
-to an event type which specifies all of them.  The basic event type
-must be the last element of the list.  For example,
+Эта функция преобразует список имен модификаторов и базовый тип события в
+тип события, который определяет их все.  Базовый тип события должен быть
+последним элементом списка.  Например,
 
 @example
 (event-convert-list '(control ?a))
@@ -2006,76 +2001,76 @@ must be the last element of the list.  For example,
 @end defun
 
 @node Accessing Mouse
-@subsection Accessing Mouse Events
+@subsection Доступ к Событиям Мыши
 @cindex mouse events, data in
 @cindex keyboard events, data in
 
-  This section describes convenient functions for accessing the data in
-a mouse button or motion event.  Keyboard event data can be accessed
-using the same functions, but data elements that aren't applicable to
-keyboard events are zero or @code{nil}.
+  В этом разделе описаны удобные функции для доступа к данным при нажатии
+кнопки мыши или событии движения.  Доступ к данным событий клавиатуры можно
+получить с помощью тех же функций, но элементы данных, которые не применимы
+к событиям клавиатуры, равны нулю или @code{nil}.
 
-  The following two functions return a mouse position list
-(@pxref{Click Events}), specifying the position of a mouse event.
+  Следующие две функции возвращают список положения мыши
+(@pxref{Click Events}), определяющий позицию события мыши.
 
 @defun event-start event
-This returns the starting position of @var{event}.
+Это возвращает начальную позицию @var{event}.
 
-If @var{event} is a click or button-down event, this returns the
-location of the event.  If @var{event} is a drag event, this returns the
-drag's starting position.
+Если @var{event} является событием щелчка или нажатия кнопки, это возвращает
+местоположение события.  Если @var{event} является событием перетаскивания,
+это возвращает начальную позицию перетаскивания.
 @end defun
 
 @defun event-end event
-This returns the ending position of @var{event}.
+Это возвращает конечную позицию @var{event}.
 
-If @var{event} is a drag event, this returns the position where the user
-released the mouse button.  If @var{event} is a click or button-down
-event, the value is actually the starting position, which is the only
-position such events have.
+Если @var{event} является событием перетаскивания, это возвращает позицию, в
+которой пользователь отпустил кнопку мыши.  Если @var{event} является
+событием щелчка или нажатия кнопки, значение фактически является начальной
+позицией, которая является единственной позицией, которую имеют такие
+события.
 @end defun
 
 @defun posnp object
-This function returns non-@code{nil} if @var{object} is a mouse
-position list, in the format documented in @ref{Click Events}); and
-@code{nil} otherwise.
+Функцией возвращается не-@code{nil}, если @var{object} - это список позиций
+мыши, в формате, задокументированном в @ref{Click Events}); и @code{nil} в
+противном случае.
 @end defun
 
 @cindex mouse position list, accessing
-  These functions take a mouse position list as argument, and return
-various parts of it:
+  Этими функциями принимается список позиций мыши в качестве аргумента и
+возвращаются различные его части:
 
 @defun posn-window position
-Return the window that @var{position} is in.  If @var{position}
-represents a location outside the frame where the event was initiated,
-return that frame instead.
+Вернётся окно, в котором находится @var{position}. Если @var{position}
+представляет место за пределами фрейма, где было инициировано событие,
+возвращается этот кадр.
 @end defun
 
 @defun posn-area position
-Return the window area recorded in @var{position}.  It returns @code{nil}
-when the event occurred in the text area of the window; otherwise, it
-is a symbol identifying the area in which the event occurred.
+Вернуть область окна, записанную в @var{position}.  Возвращается @code{nil},
+когда событие произошло в текстовой области окна; в противном случае это
+символ, обозначающий область, в которой произошло событие.
 @end defun
 
 @defun posn-point position
-Return the buffer position in @var{position}.  When the event occurred
-in the text area of the window, in a marginal area, or on a fringe,
-this is an integer specifying a buffer position.  Otherwise, the value
-is undefined.
+Вернуть буферную позицию в @var{position}.  Когда событие произошло в
+текстовой области окна, в области полей или на краю, это целое число,
+определяющее позицию буфера.  В противном случае значение не определено.
 @end defun
 
 @defun posn-x-y position
-Return the pixel-based x and y coordinates in @var{position}, as a
-cons cell @w{@code{(@var{x} . @var{y})}}.  These coordinates are
-relative to the window given by @code{posn-window}.
+Возвращаются пиксельные координаты x и y в @var{position} как cons-ячейка
+@w{@code{(@var{x} . @var{y})}}.  Эти координаты относятся к окну
+@code{posn-window}.
 
-This example shows how to convert the window-relative coordinates in
-the text area of a window into frame-relative coordinates:
+В этом примере показано, как преобразовать координаты относительно окна в
+текстовой области окна в координаты относительно кадра:
 
 @example
 (defun frame-relative-coordinates (position)
-  "Return frame-relative coordinates from POSITION.
-POSITION is assumed to lie in a window text area."
+  "Вернуть координаты относительно кадра из POSITION.
+   Предполагается, что POSITION находится в текстовой области окна."
   (let* ((x-y (posn-x-y position))
          (window (posn-window position))
          (edges (window-inside-pixel-edges window)))
@@ -2085,119 +2080,119 @@ POSITION is assumed to lie in a window text area."
 @end defun
 
 @defun posn-col-row position
-This function returns a cons cell @w{@code{(@var{col} .  @var{row})}},
-containing the estimated column and row corresponding to buffer
-position described by @var{position}.  The return value is given in
-units of the frame's default character width and default line height
-(including spacing), as computed from the @var{x} and @var{y} values
-corresponding to @var{position}.  (So, if the actual characters have
-non-default sizes, the actual row and column may differ from these
-computed values.)
+Функцией возвращается cons-ячейка @w{@code{(@var{col} .  @var{row})}},
+содержащая оценочный столбец и строку, соответствующие позиции в буфере,
+описанной @var{position}.  Возвращаемое значение дается в единицах ширины
+символа фрейма по умолчанию и высоты строки по умолчанию (включая интервал),
+вычисленных из значений @var{x} и @var{y}, соответствующих @var{position}.
+(Таким образом, если фактические символы имеют размер, отличный от размера
+по умолчанию, фактическая строка и столбец могут отличаться от этих
+вычисленных значений.)
 
-Note that @var{row} is counted from the top of the text area.  If the
-window given by @var{position} possesses a header line (@pxref{Header
-Lines}), it is @emph{not} included in the @var{row} count.
+Обратите внимание, что @var{row} отсчитывается от верха текстовой области.
+Если окно, заданное параметром @var{position}, имеет строку заголовка
+(@pxref{Header Lines}), оно включается в счет @var{row}.
 @end defun
 
 @defun posn-actual-col-row position
-Return the actual row and column in @var{position}, as a cons cell
-@w{@code{(@var{col} . @var{row})}}.  The values are the actual row and
-column numbers in the window given by @var{position}.  @xref{Click
-Events}, for details.  The function returns @code{nil} if
-@var{position} does not include actual position values; in that case
-@code{posn-col-row} can be used to get approximate values.
+Возвращется фактическая строка и столбец в @var{position} как cons-ячейка
+@w{@code{(@var{col} . @var{row})}}.  Значения представляют собой фактические
+номера строк и столбцов в окне, заданном @var{position}.
+@xref{Click Events}, для подробностей.  Функция возвращает @code{nil}, если
+@var{position} не включает фактические значения положения; в этом случае
+@code{posn-col-row} можно использовать для получения приблизительных
+значений.
 
-Note that this function doesn't account for the visual width of
-characters on display, like the number of visual columns taken by a
-tab character or an image.  If you need the coordinates in canonical
-character units, use @code{posn-col-row} instead.
+Обратить внимание, что эта функция не учитывает визуальную ширину
+отображаемых символов, например количество визуальных столбцов, занимаемых
+символом табуляции или изображением.  Если требуются координаты в
+канонических символьных единицах, используется вместо них
+@code{posn-col-row}.
 @end defun
 
 @defun posn-string position
-Return the string object described by @var{position}, either
-@code{nil} (which means @var{position} describes buffer text), or a
-cons cell @w{@code{(@var{string} . @var{string-pos})}}.
+Возвращается строковый объект, описанный @var{position}, либо @code{nil}
+(что означает, что @var{position} описывает текст буфера), либо cons-ячейка
+@w{@code{(@var{string} . @var{string-pos})}}.
 @end defun
 
 @defun posn-image position
-Return the image object in @var{position}, either @code{nil} (if
-there's no image at @var{position}), or an image spec @w{@code{(image
-@dots{})}}.
+Возвращается объект изображения в @var{position}, либо в @code{nil} (если в
+@var{position} нет изображения), либо в спецификации изображения
+@w{@code{(image @dots{})}}.
 @end defun
 
 @defun posn-object position
-Return the image or string object described by @var{position}, either
-@code{nil} (which means @var{position} describes buffer text), an
-image @w{@code{(image @dots{})}}, or a cons cell
+Возвращается изображение или строковый объект, описанный @var{position},
+либо @code{nil} (что означает, что @var{position} описывает текст буфера),
+изображение @w{@code{(image @dots{})}} или cons-ячейка
 @w{@code{(@var{string} . @var{string-pos})}}.
 @end defun
 
 @defun posn-object-x-y position
-Return the pixel-based x and y coordinates relative to the upper left
-corner of the object described by @var{position}, as a cons cell
-@w{@code{(@var{dx} . @var{dy})}}.  If the @var{position} describes
-buffer text, return the relative coordinates of the buffer-text character
-closest to that position.
+Возвращаются пиксельные координаты x и y относительно верхнего левого угла
+объекта, описанного @var{position}, в виде cons-ячейки
+@w{@code{(@var{dx} . @var{dy})}}.  Если @var{position} описывает буферный
+текст, возвращает относительные координаты символа буферного текста,
+ближайшего к этой позиции.
 @end defun
 
 @defun posn-object-width-height position
-Return the pixel width and height of the object described by
-@var{position}, as a cons cell @code{(@var{width} . @var{height})}.
-If the @var{position} describes a buffer position, return the size of
-the character at that position.
+Возвращается ширина и высота в пикселях объекта, описанного @var{position},
+как cons-ячейка @code{(@var{width} . @var{height})}.  Если @var{position}
+описывает позицию в буфере, возвращается позиция этого символа.
 @end defun
 
 @cindex timestamp of a mouse event
 @defun posn-timestamp position
-Return the timestamp in @var{position}.  This is the time at which the
-event occurred, in milliseconds.
+Вернуть метку времени в @var{position}.  Это время, в которое произошло
+событие, в миллисекундах.
 @end defun
 
-  These functions compute a position list given particular buffer
-position or screen position.  You can access the data in this position
-list with the functions described above.
+  Эти функции вычисляют список позиций с учетом конкретной позиции в буфере
+или на экране.  Можно получить доступ к данным в этом списке позиций с
+помощью функций, описанных выше.
 
 @defun posn-at-point &optional pos window
-This function returns a position list for position @var{pos} in
-@var{window}.  @var{pos} defaults to point in @var{window};
-@var{window} defaults to the selected window.
+Эта функция возвращает список позиций для позиции @var{pos} в @var{window}.
+@var{pos} по умолчанию указывает на @var{window}; @var{window} по умолчанию
+используется в выбранном окне.
 
-@code{posn-at-point} returns @code{nil} if @var{pos} is not visible in
-@var{window}.
+@code{posn-at-point} возвращается @code{nil}, если @var{pos} не отображается
+в @var{window}.
 @end defun
 
 @defun posn-at-x-y x y &optional frame-or-window whole
-This function returns position information corresponding to pixel
-coordinates @var{x} and @var{y} in a specified frame or window,
-@var{frame-or-window}, which defaults to the selected window.
-The coordinates @var{x} and @var{y} are relative to the
-frame or window used.
-If @var{whole} is @code{nil}, the coordinates are relative
-to the window text area, otherwise they are relative to
-the entire window area including scroll bars, margins and fringes.
+Эта функция возвращает информацию о позиции, соответствующую координатам
+пикселей @var{x} и @var{y} в указанном кадре или окне,
+@var{frame-or-window}, которое по умолчанию соответствует выбранному окну.
+Координаты @var{x} и @var{y} относятся к используемому фрейму или окну.
+Если @var{whole} равен @code{nil}, координаты относятся к текстовой области
+окна, в противном случае они относятся ко всей области окна, включая полосы
+прокрутки, поля и полосы.
 @end defun
 
 @node Accessing Scroll
-@subsection Accessing Scroll Bar Events
+@subsection Доступ к Событиям Полосы Прокрутки
 @cindex scroll bar events, data in
 
-  These functions are useful for decoding scroll bar events.
+  Эти функции полезны для декодирования событий полосы прокрутки.
 
 @defun scroll-bar-event-ratio event
-This function returns the fractional vertical position of a scroll bar
-event within the scroll bar.  The value is a cons cell
-@code{(@var{portion} . @var{whole})} containing two integers whose ratio
-is the fractional position.
+Функцией возвращается дробная вертикальную позиция события полосы прокрутки
+внутри полосы прокрутки.  Значение представляет собой cons-ячейку
+@code{(@var{portion} . @var{whole})}, содержащую два целых числа, отношение
+которых является дробной позицией.
 @end defun
 
 @defun scroll-bar-scale ratio total
-This function multiplies (in effect) @var{ratio} by @var{total},
-rounding the result to an integer.  The argument @var{ratio} is not a
-number, but rather a pair @code{(@var{num} . @var{denom})}---typically a
-value returned by @code{scroll-bar-event-ratio}.
+Функцией умножается (фактически) @var{ratio} на @var{total}, округляется
+результат до целого числа.  Аргумент @var{ratio} - это не число, а точечная
+пара @code{(@var{num}. @var{denom})} --- обычно значение, возвращаемое
+@code{scroll-bar-event-ratio}.
 
-This function is handy for scaling a position on a scroll bar into a
-buffer position.  Here's how to do that:
+Эта функция удобна для масштабирования позиции на полосе прокрутки в
+буферную позицию.  Вот как это сделать:
 
 @example
 (+ (point-min)
@@ -2206,207 +2201,208 @@ buffer position.  Here's how to do that:
       (- (point-max) (point-min))))
 @end example
 
-Recall that scroll bar events have two integers forming a ratio, in place
-of a pair of x and y coordinates.
+Напомнается, что события полосы прокрутки имеют два целых числа, образующих
+отношение, вместо пары координат x и y.
 @end defun
 
 @node Strings of Events
-@subsection Putting Keyboard Events in Strings
+@subsection Помещение Событий Клавиатуры в Строки
 @cindex keyboard events in strings
 @cindex strings with keyboard events
 
-  In most of the places where strings are used, we conceptualize the
-string as containing text characters---the same kind of characters found
-in buffers or files.  Occasionally Lisp programs use strings that
-conceptually contain keyboard characters; for example, they may be key
-sequences or keyboard macro definitions.  However, storing keyboard
-characters in a string is a complex matter, for reasons of historical
-compatibility, and it is not always possible.
+  В большинстве случаев, когда используются строки, концептуализируется
+строка как содержащая текстовые символы - символы того же типа, что и в
+буферах или файлах.  Иногда программы на Lisp используют строки, которые
+концептуально содержат символы клавиатуры; например, это могут быть
+последовательности ключей или определения макросов клавиатуры.  Однако
+сохранение клавиатурных символов в строке - сложный вопрос по причинам
+исторической совместимости, и это не всегда возможно.
 
-  We recommend that new programs avoid dealing with these complexities
-by not storing keyboard events in strings.  Here is how to do that:
+  Рекомендуется, чтобы новые программы избегали решения этих проблем, не
+сохраняя события клавиатуры в строках.  Вот как это делается:
 
 @itemize @bullet
 @item
-Use vectors instead of strings for key sequences, when you plan to use
-them for anything other than as arguments to @code{lookup-key} and
-@code{define-key}.  For example, you can use
-@code{read-key-sequence-vector} instead of @code{read-key-sequence}, and
-@code{this-command-keys-vector} instead of @code{this-command-keys}.
+Используются векторы вместо строк для ключевых последовательностей, если
+планируется использовать их для чего-либо, кроме аргументов
+@code{lookup-key} и @code{define-key}.  Например, можно использовать
+@code{read-key-sequence-vector} вместо @code{read-key-sequence} и
+@code{this-command-keys-vector} вместо @code{this-command-keys}.
 
 @item
-Use vectors to write key sequence constants containing meta characters,
-even when passing them directly to @code{define-key}.
+Используются векторы для записи констант последовательности ключей,
+содержащих метасимволы, даже при передаче их напрямую в @code{define-key}.
 
 @item
-When you have to look at the contents of a key sequence that might be a
-string, use @code{listify-key-sequence} (@pxref{Event Input Misc})
-first, to convert it to a list.
+Когда нужно просмотреть содержимое ключевой последовательности, которая
+может быть строкой, сначала используется @code{listify-key-sequence}
+(@pxref{Event Input Misc}), чтобы преобразовать ее в список.
 @end itemize
 
-  The complexities stem from the modifier bits that keyboard input
-characters can include.  Aside from the Meta modifier, none of these
-modifier bits can be included in a string, and the Meta modifier is
-allowed only in special cases.
+  Сложности проистекают из битов-модификаторов, которые могут включать
+символы ввода с клавиатуры.  За исключением модификатора Meta, ни один из
+этих битов модификатора не может быть включен в строку, а модификатор Meta
+разрешен только в особых случаях.
 
-  The earliest GNU Emacs versions represented meta characters as codes
-in the range of 128 to 255.  At that time, the basic character codes
-ranged from 0 to 127, so all keyboard character codes did fit in a
-string.  Many Lisp programs used @samp{\M-} in string constants to stand
-for meta characters, especially in arguments to @code{define-key} and
-similar functions, and key sequences and sequences of events were always
-represented as strings.
+  Самые ранние версии GNU Emacs представляли метасимволы в виде кодов в
+диапазоне от 128 до 255.  В то время базовые коды символов варьировались от
+0 до 127, поэтому все коды символов клавиатуры помещались в строку.  Многие
+программы на Lisp использовали @samp{\M-} в строковых константах для
+обозначения метасимволов, особенно в аргументах для @code{define-key} и
+подобных функций, а последовательности клавиш и последовательности событий
+всегда представлялись в виде строк.
 
-  When we added support for larger basic character codes beyond 127, and
-additional modifier bits, we had to change the representation of meta
-characters.  Now the flag that represents the Meta modifier in a
-character is
+  Когда добавилась поддержка более крупных кодов основных символов,
+превышающих 127, и дополнительных битов-модификаторов, пришлось изменить
+представление метасимволов.  Теперь флаг, который представляет модификатор
+Мета в символе, -
 @tex
 @math{2^{27}}
 @end tex
 @ifnottex
 2**27
 @end ifnottex
-and such numbers cannot be included in a string.
+и такие числа не могут быть включены в строку.
 
-  To support programs with @samp{\M-} in string constants, there are
-special rules for including certain meta characters in a string.
-Here are the rules for interpreting a string as a sequence of input
-characters:
+  Для поддержки программ с @samp{\M-} в строковых константах существуют
+специальные правила для включения определенных метасимволов в строку.  Вот
+правила интерпретации строки как последовательности входных символов:
 
 @itemize @bullet
 @item
-If the keyboard character value is in the range of 0 to 127, it can go
-in the string unchanged.
+Если значение символа клавиатуры находится в диапазоне от 0 до 127, оно
+может оставаться в строке без изменений.
 
 @item
-The meta variants of those characters, with codes in the range of
+Метаварианты этих символов с кодами в диапазоне от
 @tex
 @math{2^{27}}
 @end tex
 @ifnottex
 2**27
 @end ifnottex
-to
+до
 @tex
 @math{2^{27} + 127},
 @end tex
 @ifnottex
 2**27+127,
 @end ifnottex
-can also go in the string, but you must change their
-numeric values.  You must set the
+также могут входить в строку, но потребуется изменить их числовые значения.
+Также следует установить
 @tex
 @math{2^{7}}
 @end tex
 @ifnottex
 2**7
 @end ifnottex
-bit instead of the
+бит вместо
 @tex
 @math{2^{27}}
 @end tex
 @ifnottex
 2**27
 @end ifnottex
-bit, resulting in a value between 128 and 255.  Only a unibyte string
-can include these codes.
+бит, в результате чего получается значение от 128 до 255.  Только
+однобайтная строка может включать эти коды.
 
 @item
-Non-@acronym{ASCII} characters above 256 can be included in a multibyte string.
+Не-@acronym{ASCII} символов выше 256 могут быть включены в многобайтовую
+строку.
 
 @item
-Other keyboard character events cannot fit in a string.  This includes
-keyboard events in the range of 128 to 255.
+Другие события символов клавиатуры не могут поместиться в строку.  Сюда
+входят события клавиатуры в диапазоне от 128 до 255.
 @end itemize
 
-  Functions such as @code{read-key-sequence} that construct strings of
-keyboard input characters follow these rules: they construct vectors
-instead of strings, when the events won't fit in a string.
+  Такие функции, как @code{read-key-sequence}, которые создают строки
+символов ввода с клавиатуры, следуют этим правилам: они создают векторы
+вместо строк, когда события не помещаются в строку.
 
-  When you use the read syntax @samp{\M-} in a string, it produces a
-code in the range of 128 to 255---the same code that you get if you
-modify the corresponding keyboard event to put it in the string.  Thus,
-meta events in strings work consistently regardless of how they get into
-the strings.
+  Когда используется синтаксис чтения @samp{\M-} в строке, создается код в
+диапазоне от 128 до 255 - тот же код, который получается, если изменяется
+соответствующее событие клавиатуры, чтобы поместить его в строку.  Таким
+образом, мета-события в строках работают согласованно, независимо от того,
+как они попадают в строки.
 
-  However, most programs would do well to avoid these issues by
-following the recommendations at the beginning of this section.
+  Однако большинству программ следует избегать этих проблем, следуя
+рекомендациям в начале этого раздела.
 
 @node Reading Input
-@section Reading Input
+@section Чтение Ввода
 @cindex read input
 @cindex keyboard input
 
-  The editor command loop reads key sequences using the function
-@code{read-key-sequence}, which uses @code{read-event}.  These and other
-functions for event input are also available for use in Lisp programs.
-See also @code{momentary-string-display} in @ref{Temporary Displays},
-and @code{sit-for} in @ref{Waiting}.  @xref{Terminal Input}, for
-functions and variables for controlling terminal input modes and
-debugging terminal input.
+  Командный цикл редактора считывает последовательности клавиш с помощью
+функции @code{read-key-sequence}, которая использует @code{read-event}.  Эти
+и другие функции для ввода событий также доступны для использования в
+программах на Lisp.  Смотреть также @code{momentary-string-display} в
+@ref{Temporary Displays} и @code{sit-for} в @ref{Waiting}.
+@xref{Terminal Input}, для функций и переменных для управления режимами
+ввода терминала и отладки ввода терминала.
 
-  For higher-level input facilities, see @ref{Minibuffers}.
+  Для устройств ввода более высокого уровня, смотреть @ref{Minibuffers}.
 
 @menu
-* Key Sequence Input::          How to read one key sequence.
-* Reading One Event::           How to read just one event.
-* Event Mod::                   How Emacs modifies events as they are read.
-* Invoking the Input Method::   How reading an event uses the input method.
-* Quoted Character Input::      Asking the user to specify a character.
-* Event Input Misc::            How to reread or throw away input events.
+* Key Sequence Input::          Как читать одну ключевую последовательность.
+* Reading One Event::           Как прочитать только одно событие.
+* Event Mod::                  Как Emacs изменяет события по мере их чтения.
+* Invoking the Input Method::   Как чтение события использует метод ввода.
+* Quoted Character Input::      Просить пользователя указать символ.
+* Event Input Misc::            Как перечитать или выбросить события ввода.
 @end menu
 
 @node Key Sequence Input
-@subsection Key Sequence Input
+@subsection Ввод Последовательности Ключей
 @cindex key sequence input
 
-  The command loop reads input a key sequence at a time, by calling
-@code{read-key-sequence}.  Lisp programs can also call this function;
-for example, @code{describe-key} uses it to read the key to describe.
+  Командный цикл читает ключевую последовательность за раз, вызывая
+@code{read-key-sequence}.  Программы Lisp также могут вызывать эту функцию;
+например, @code{describe-key} используется его для чтения описания ключа.
 
 @defun read-key-sequence prompt &optional continue-echo dont-downcase-last switch-frame-ok command-loop
-This function reads a key sequence and returns it as a string or
-vector.  It keeps reading events until it has accumulated a complete key
-sequence; that is, enough to specify a non-prefix command using the
-currently active keymaps.  (Remember that a key sequence that starts
-with a mouse event is read using the keymaps of the buffer in the
-window that the mouse was in, not the current buffer.)
+Функцией считывается ключевая последовательность ключей и возвращается она в
+виде строки или вектора.  Продолжается считывание события, пока не наберется
+полная ключевая последовательность; то есть достаточная, чтобы указать
+команду без префикса с использованием текущих активных ключевых карт.
+(Напоминание, последовательность ключей, которая начинается с события мыши,
+считывается с использованием ключевых карт буфера в окне, в котором
+находилась мышь, а не текущего буфера.)
 
-If the events are all characters and all can fit in a string, then
-@code{read-key-sequence} returns a string (@pxref{Strings of Events}).
-Otherwise, it returns a vector, since a vector can hold all kinds of
-events---characters, symbols, and lists.  The elements of the string or
-vector are the events in the key sequence.
+Если все события представляют собой символы и все могут уместиться в строке,
+то @code{read-key-sequence} возвращает строку (@pxref{Strings of Events}).
+В противном случае возвращается вектор, поскольку вектор может содержать все
+виды событий - символы, символы и списки.  Элементы строки или вектора - это
+события в ключевой последовательности.
 
-Reading a key sequence includes translating the events in various
-ways.  @xref{Translation Keymaps}.
+Чтение ключевой последовательности включает в себя перевод событий
+различными способами.  @xref{Translation Keymaps}.
 
-The argument @var{prompt} is either a string to be displayed in the
-echo area as a prompt, or @code{nil}, meaning not to display a prompt.
-The argument @var{continue-echo}, if non-@code{nil}, means to echo
-this key as a continuation of the previous key.
+Аргумент @var{prompt} - это либо строка, которая должна отображаться в
+эхо-области как подсказка, либо @code{nil}, означающая, что подсказка не
+отображается.  Аргумент @var{continue-echo}, если не-@code{nil}, означает
+вывод этого ключа как продолжение предыдущего ключа.
 
-Normally any upper case event is converted to lower case if the
-original event is undefined and the lower case equivalent is defined.
-The argument @var{dont-downcase-last}, if non-@code{nil}, means do not
-convert the last event to lower case.  This is appropriate for reading
-a key sequence to be defined.
+Обычно любое событие в верхнем регистре преобразуется в нижний регистр, если
+исходное событие не определено и определен его эквивалент в нижнем регистре.
+Аргумент @var{dont-downcase-last}, если не-@code{nil}, означает не
+преобразовывать последнее событие в нижний регистр. Это подходит для чтения
+ключевой последовательности, которую необходимо определить.
 
-The argument @var{switch-frame-ok}, if non-@code{nil}, means that this
-function should process a @code{switch-frame} event if the user
-switches frames before typing anything.  If the user switches frames
-in the middle of a key sequence, or at the start of the sequence but
-@var{switch-frame-ok} is @code{nil}, then the event will be put off
-until after the current key sequence.
+Аргумент @var{switch-frame-ok}, если не-@code{nil}, означает, что эта
+функция должна обрабатывать событие @code{switch-frame}, если пользователь
+переключает кадры перед тем, как что-либо печатать.  Если пользователь
+переключает кадры в середине последовательности клавиш или в начале
+последовательности, но @var{switch-frame-ok} имеет значение @code{nil}, то
+событие будет отложено до окончания текущей последовательности клавиш.
 
-The argument @var{command-loop}, if non-@code{nil}, means that this
-key sequence is being read by something that will read commands one
-after another.  It should be @code{nil} if the caller will read just
-one key sequence.
+Аргумент @var{command-loop}, если не-@code{nil}, означает, что эта
+последовательность клавиш читается чем-то, что будет читать команды одну за
+другой.  Это должно быть @code{nil}, если вызывающий будет читать только
+одну последовательность ключей.
 
-In the following example, Emacs displays the prompt @samp{?} in the
-echo area, and then the user types @kbd{C-x C-f}.
+В следующем примере Emacs отображает приглашение @samp{?} в эхо-области, а
+затем пользователь вводит @kbd{C-x C-f}.
 
 @example
 (read-key-sequence "?")
@@ -2420,39 +2416,40 @@ echo area, and then the user types @kbd{C-x C-f}.
 @end group
 @end example
 
-The function @code{read-key-sequence} suppresses quitting: @kbd{C-g}
-typed while reading with this function works like any other character,
-and does not set @code{quit-flag}.  @xref{Quitting}.
+Функция @code{read-key-sequence} подавляет завершение: @kbd{C-g}, набор
+прочитанный с помощью этой функции, работает как любой другой символ и не
+устанавливает @code{quit-flag}.  @xref{Quitting}.
 @end defun
 
 @defun read-key-sequence-vector prompt &optional continue-echo dont-downcase-last switch-frame-ok command-loop
-This is like @code{read-key-sequence} except that it always
-returns the key sequence as a vector, never as a string.
+Это похоже на @code{read-key-sequence}, за исключением того, что всегда
+возвращается ключевая последовательность как вектор, а не как строка.
 @xref{Strings of Events}.
 @end defun
 
 @cindex upper case key sequence
 @cindex downcasing in @code{lookup-key}
 @cindex shift-translation
-If an input character is upper-case (or has the shift modifier) and
-has no key binding, but its lower-case equivalent has one, then
-@code{read-key-sequence} converts the character to lower case.  Note
-that @code{lookup-key} does not perform case conversion in this way.
+Если вводимый символ имеет верхний регистр (или имеет модификатор сдвига) и
+не имеет привязки ключей, а его эквивалент в нижнем регистре имеет нижний
+регистр, то @code{read-key-sequence} преобразует символ в нижний регистр.
+Обратить внимание, что @code{lookup-key} не выполняет преобразование
+регистра таким образом.
 
 @vindex this-command-keys-shift-translated
-When reading input results in such a @dfn{shift-translation}, Emacs
-sets the variable @code{this-command-keys-shift-translated} to a
-non-@code{nil} value.  Lisp programs can examine this variable if they
-need to modify their behavior when invoked by shift-translated keys.
-For example, the function @code{handle-shift-selection} examines the
-value of this variable to determine how to activate or deactivate the
-region (@pxref{The Mark, handle-shift-selection}).
+Когда чтение ввода приводит к такому @dfn{shift-translation}, Emacs
+устанавливает для переменной @code{this-command-keys-shift-translated}
+значение не-@code{nil}.  Программой на Lisp может проверятся эта переменная,
+если нужно изменить свое поведение при вызове с помощью ключей с
+преобразованием сдвига.  Например, функция @code{handle-shift-selection}
+проверяет значение этой переменной, чтобы определить, как активировать или
+деактивировать регистр.  (@pxref{The Mark, handle-shift-selection}).
 
-The function @code{read-key-sequence} also transforms some mouse events.
-It converts unbound drag events into click events, and discards unbound
-button-down events entirely.  It also reshuffles focus events and
-miscellaneous window events so that they never appear in a key sequence
-with any other events.
+Функцией @code{read-key-sequence} также преобразуются некоторые события
+мыши.  Преобразуются несвязанные события перетаскивания в события щелчка и
+полностью отбрасывает несвязанные события нажатия кнопки.  Также
+перетасовываются события фокуса и разные события окна, чтобы они никогда не
+появлялись в ключевых последовательностях с любыми другими событиями.
 
 @cindex @code{header-line} prefix key
 @cindex @code{mode-line} prefix key
@@ -2461,23 +2458,22 @@ with any other events.
 @cindex @code{vertical-scroll-bar} prefix key
 @cindex @code{menu-bar} prefix key
 @cindex mouse events, in special parts of frame
-When mouse events occur in special parts of a window, such as a mode
-line or a scroll bar, the event type shows nothing special---it is the
-same symbol that would normally represent that combination of mouse
-button and modifier keys.  The information about the window part is kept
-elsewhere in the event---in the coordinates.  But
-@code{read-key-sequence} translates this information into imaginary
-prefix keys, all of which are symbols: @code{header-line},
-@code{horizontal-scroll-bar}, @code{menu-bar}, @code{mode-line},
-@code{vertical-line}, and @code{vertical-scroll-bar}.  You can define
-meanings for mouse clicks in special window parts by defining key
-sequences using these imaginary prefix keys.
+Когда события мыши происходят в особых частях окна, таких как строка режима
+или полоса прокрутки, тип события не показывает ничего особенного - это тот
+же символ, который обычно представляет комбинацию кнопки мыши и
+клавиш-модификаторов.  Информация о оконной части хранится в другом месте
+события --- в координатах.  Но @code{read-key-sequence} преобразует эту
+информацию в воображаемые префиксные ключи, которые являются символами:
+@code{header-line}, @code{horizontal-scroll-bar}, @code{menu-bar},
+@code{mode-line}, @code{vertical-line}, и @code{vertical-scroll-bar}.  Можно
+определить значения щелчков мыши в специальных частях окна, задав
+последовательности ключей с помощью этих воображаемых префиксных клавиш.
 
-For example, if you call @code{read-key-sequence} and then click the
-mouse on the window's mode line, you get two events, like this:
+Например, если вызывается @code{read-key-sequence}, а затем щелкается мышь
+по строке режима окна, получается два события, например:
 
 @example
-(read-key-sequence "Click on the mode line: ")
+(read-key-sequence "Щелкните строку режима: ")
      @result{} [mode-line
          (mouse-1
           (#<window 6 on NEWS> mode-line
@@ -2485,69 +2481,70 @@ mouse on the window's mode line, you get two events, like this:
 @end example
 
 @defvar num-input-keys
-This variable's value is the number of key sequences processed so far in
-this Emacs session.  This includes key sequences read from the terminal
-and key sequences read from keyboard macros being executed.
+Значение этой переменной - это количество ключевых последовательностей,
+обработанных на данный момент в этом сеансе Emacs.  Сюда входят
+последовательности ключей, считываемые с терминала, и последовательности
+ключей, считываемые из выполняемых макросов клавиатуры.
 @end defvar
 
 @node Reading One Event
-@subsection Reading One Event
+@subsection Чтение Одного События
 @cindex reading a single event
 @cindex event, reading only one
 
-  The lowest level functions for command input are @code{read-event},
-@code{read-char}, and @code{read-char-exclusive}.
+  Функции самого нижнего уровня для ввода команд - @code{read-event},
+@code{read-char} и @code{read-char-exclusive}.
 
 @defun read-event &optional prompt inherit-input-method seconds
-This function reads and returns the next event of command input,
-waiting if necessary until an event is available.
+Эта функция считывает и возвращает следующее событие ввода команды, ожидая,
+если необходимо, пока событие не станет доступным.
 
-The returned event may come directly from the user, or from a keyboard
-macro.  It is not decoded by the keyboard's input coding system
+Возвращаемое событие может исходить непосредственно от пользователя или из
+макроса клавиатуры.  Не декодируется системой кодирования ввода клавиатуры
 (@pxref{Terminal I/O Encoding}).
 
-If the optional argument @var{prompt} is non-@code{nil}, it should be a
-string to display in the echo area as a prompt.  Otherwise,
-@code{read-event} does not display any message to indicate it is waiting
-for input; instead, it prompts by echoing: it displays descriptions of
-the events that led to or were read by the current command.  @xref{The
-Echo Area}.
+Если необязательный аргумент @var{prompt} - не-@code{nil}, это должна быть
+строка, отображаемая в эхо-области в качестве приглашения.  В противном
+случае @code{read-event} не отображается никаких сообщений, указывающих на
+то, что ожидается на ввод; вместо этого выводится подсказка в виде эха:
+отображается описания событий, которые привели к текущей команде или были
+прочитаны ею.  @xref{The Echo Area}.
 
-If @var{inherit-input-method} is non-@code{nil}, then the current input
-method (if any) is employed to make it possible to enter a
-non-@acronym{ASCII} character.  Otherwise, input method handling is disabled
-for reading this event.
+Если @var{inherit-input-method} равен не-@code{nil}, то используется текущий
+метод ввода (если есть), чтобы можно было ввести не-@acronym{ASCII} символ.
+В противном случае обработка метода ввода отключена для чтения этого
+события.
 
-If @code{cursor-in-echo-area} is non-@code{nil}, then @code{read-event}
-moves the cursor temporarily to the echo area, to the end of any message
-displayed there.  Otherwise @code{read-event} does not move the cursor.
+Если @code{cursor-in-echo-area} равен не-@code{nil}, то @code{read-event}
+временно перемещает курсор в эхо-область, в конец любого отображаемого там
+сообщения.  В противном случае @code{read-event} не перемещает курсор.
 
-If @var{seconds} is non-@code{nil}, it should be a number specifying
-the maximum time to wait for input, in seconds.  If no input arrives
-within that time, @code{read-event} stops waiting and returns
-@code{nil}.  A floating point @var{seconds} means to wait
-for a fractional number of seconds.  Some systems support only a whole
-number of seconds; on these systems, @var{seconds} is rounded down.
-If @var{seconds} is @code{nil}, @code{read-event} waits as long as
-necessary for input to arrive.
+Если @var{seconds} равен не-@code{nil}, это должно быть число, указывающее
+максимальное время ожидания ввода в секундах.  Если в течение этого времени
+ввод не поступает, @code{read-event} прекращает ожидание и возвращает
+@code{nil}.  @var{seconds} с плавающей запятой означает ожидание дробного
+числа секунд.  Некоторые системы поддерживают только целое количество
+секунд, в этих системах @var{seconds} округляется в меньшую сторону.  Если
+@var{seconds} равен @code{nil}, @code{read-event} ожидает поступления ввода
+столько, сколько необходимо.
 
-If @var{seconds} is @code{nil}, Emacs is considered idle while waiting
-for user input to arrive.  Idle timers---those created with
-@code{run-with-idle-timer} (@pxref{Idle Timers})---can run during this
-period.  However, if @var{seconds} is non-@code{nil}, the state of
-idleness remains unchanged.  If Emacs is non-idle when
-@code{read-event} is called, it remains non-idle throughout the
-operation of @code{read-event}; if Emacs is idle (which can happen if
-the call happens inside an idle timer), it remains idle.
+Если @var{seconds} равен @code{nil}, Emacs считается бездействующим в
+ожидании поступления пользовательского ввода.  Таймеры простоя - созданные с
+помощью @code{run-with-idle-timer} (@pxref{Idle Timers}) - могут работать в
+этот период.  Однако, если @var{seconds} равен не-@code{nil}, состояние
+бездействия остается неизменным.  Если Emacs не находится в состоянии
+ожидания при вызове @code{read-event}, он остается неактивным на протяжении
+всей работы @code{read-event}; если Emacs простаивает (что может произойти,
+если вызов происходит внутри таймера простоя), он остается бездействующим.
 
-If @code{read-event} gets an event that is defined as a help character,
-then in some cases @code{read-event} processes the event directly without
-returning.  @xref{Help Functions}.  Certain other events, called
-@dfn{special events}, are also processed directly within
+Если @code{read-event} получает событие, которое определяется как символ
+справки, тогда в некоторых случаях @code{read-event} обрабатывает событие на
+прямую, не возвращаясь.  @xref{Help Functions}.  Некоторые другие события,
+называемые @dfn{special events}, также обрабатываются непосредственно в
 @code{read-event} (@pxref{Special Events}).
 
-Here is what happens if you call @code{read-event} and then press the
-right-arrow function key:
+Вот что произойдет, если вызыватется @code{read-event} и затем нажмается
+функциональная клавиша со стрелкой вправо:
 
 @example
 @group
@@ -2558,31 +2555,31 @@ right-arrow function key:
 @end defun
 
 @defun read-char &optional prompt inherit-input-method seconds
-This function reads and returns a character input event.  If the
-user generates an event which is not a character (i.e., a mouse click or
-function key event), @code{read-char} signals an error.  The arguments
-work as in @code{read-event}.
+Эта функция считывает и возвращает событие символа.  Если пользователь
+генерирует событие, не являющееся символом (т.е. событие щелчка мыши или
+функциональной клавиши), @code{read-char} сигнализирует об ошибке.
+Аргументы работают как в @code{read-event}.
 
-If the event has modifiers, Emacs attempts to resolve them and return
-the code of the corresponding character.  For example, if the user
-types @kbd{C-a}, the function returns 1, which is the @acronym{ASCII}
-code of the @samp{C-a} character.  If some of the modifiers cannot be
-reflected in the character code, @code{read-char} leaves the
-unresolved modifier bits set in the returned event.  For example, if
-the user types @kbd{C-M-a}, the function returns 134217729, 8000001 in
-hex, i.e.@: @samp{C-a} with the Meta modifier bit set.  This value is
-not a valid character code: it fails the @code{characterp} test
-(@pxref{Character Codes}).  Use @code{event-basic-type}
-(@pxref{Classifying Events}) to recover the character code with the
-modifier bits removed; use @code{event-modifiers} to test for
-modifiers in the character event returned by @code{read-char}.
+Если у события есть модификаторы, Emacs пытается разрешить их и вернуть код
+соответствующего символа.  Например, если пользователь вводит @kbd{C-a},
+функция возвращает 1, который является кодом @acronym{ASCII} символа
+@samp{C-a}.  Если некоторые из модификаторов не могут быть отражены в коде
+символа, @code{read-char} оставляет неразрешенные биты модификатора,
+установленные в возвращенном событии.  Например, если пользователь вводит
+@kbd{C-M-a}, функция возвращает 134217729, 8000001 в шестнадцатеричном
+формате, то есть @: @samp{C-a} с установленным битом модификатора Meta.
+Это значение не является допустимым символьным кодом: оно не проходит тест
+@code{characterp} (@pxref{Character Codes}).  Используйте
+@code{event-basic-type} (@pxref{Classifying Events}), чтобы восстановить код
+символа с удаленными битами модификатора; используйте @code{event-modifiers}
+для проверки модификаторов в событии символа, возвращаемом @code{read-char}.
 
-In the first example below, the user types the character @kbd{1}
-(@acronym{ASCII} code 49).  The second example shows a keyboard macro
-definition that calls @code{read-char} from the minibuffer using
-@code{eval-expression}.  @code{read-char} reads the keyboard macro's
-very next character, which is @kbd{1}.  Then @code{eval-expression}
-displays its return value in the echo area.
+В первом примере ниже пользователь вводит символ @kbd{1} (код
+@acronym{ASCII} 49).  Во втором примере показано определение макроса
+клавиатуры, которое вызывает @code{read-char} из минибуфера с помощью
+@code{eval-expression}.  @code{read-char} читает следующий символ макроса
+клавиатуры - @kbd{1}.  Затем @code{eval-expression} отображает возвращаемое
+значение в эхо-области.
 
 @example
 @group
@@ -2591,7 +2588,7 @@ displays its return value in the echo area.
 @end group
 
 @group
-;; @r{We assume here you use @kbd{M-:} to evaluate this.}
+;; @r{Предполагается, что здесь используется @kbd{M-:} для оценки этого.}
 (symbol-function 'foo)
      @result{} "^[:(read-char)^M1"
 @end group
@@ -2604,60 +2601,63 @@ displays its return value in the echo area.
 @end defun
 
 @defun read-char-exclusive &optional prompt inherit-input-method seconds
-This function reads and returns a character input event.  If the
-user generates an event which is not a character event,
-@code{read-char-exclusive} ignores it and reads another event, until it
-gets a character.  The arguments work as in @code{read-event}.  The
-returned value may include modifier bits, as with @code{read-char}.
+Эта функция считывает и возвращает событие ввода символа.  Если пользователь
+генерирует событие, которое не является символьным событием,
+@code{read-char-exclusive} игнорирует его и читает другое событие, пока не
+получит символ.  Аргументы работают как в @code{read-event}.  Возвращаемое
+значение может включать биты модификатора, как в случае с @code{read-char}.
 @end defun
 
-  None of the above functions suppress quitting.
+  Ни одна из вышеперечисленных функций не подавляет выход.
 
 @defvar num-nonmacro-input-events
-This variable holds the total number of input events received so far
-from the terminal---not counting those generated by keyboard macros.
+Эта переменная содержит общее количество событий ввода, полученных на данный
+момент от терминала, не считая событий, сгенерированных макросами
+клавиатуры.
 @end defvar
 
-  We emphasize that, unlike @code{read-key-sequence}, the functions
-@code{read-event}, @code{read-char}, and @code{read-char-exclusive} do
-not perform the translations described in @ref{Translation Keymaps}.
-If you wish to read a single key taking these translations into
-account, use the function @code{read-key}:
+  Подчеркнем, что, в отличие от @code{read-key-sequence}, функции
+@code{read-event}, @code{read-char}, и @code{read-char-exclusive} не
+выполняют трансляции, описанные в @ref{Translation Keymaps}.  Если требуется
+прочитать один ключ с учетом этих прансляций, используйте функцию
+@code{read-key}:
 
 @defun read-key &optional prompt
-This function reads a single key.  It is intermediate between
-@code{read-key-sequence} and @code{read-event}.  Unlike the former, it
-reads a single key, not a key sequence.  Unlike the latter, it does
-not return a raw event, but decodes and translates the user input
-according to @code{input-decode-map}, @code{local-function-key-map},
-and @code{key-translation-map} (@pxref{Translation Keymaps}).
+Эта функция считывает одну клавишу.  Это промежуточное звено между
+@code{read-key-sequence} и @code{read-event}.  В отличие от первого,
+считывается один ключ, а не последовательность ключей.  В отличие от
+последнего, не возвращается исходное событие, а декодируется и преобразуется
+ввод пользователя в соответствии с @code{input-decode-map},
+@code{local-function-key-map} и @code{key-translation-map}
+(@pxref{Translation Keymaps}).
 
-The argument @var{prompt} is either a string to be displayed in the
-echo area as a prompt, or @code{nil}, meaning not to display a prompt.
+Аргумент @var{prompt} - это либо строка, которая должна отображаться в
+эхо-области как подсказка, либо @code{nil}, означающая, что подсказка не
+отображается.
 @end defun
 
 @defun read-char-choice prompt chars &optional inhibit-quit
-This function uses @code{read-key} to read and return a single
-character.  It ignores any input that is not a member of @var{chars},
-a list of accepted characters.  Optionally, it will also ignore
-keyboard-quit events while it is waiting for valid input.  If you bind
-@code{help-form} (@pxref{Help Functions}) to a non-@code{nil} value
-while calling @code{read-char-choice}, then pressing @code{help-char}
-causes it to evaluate @code{help-form} and display the result.  It
-then continues to wait for a valid input character, or keyboard-quit.
+Эта функция использует @code{read-key} для чтения и возврата одного символа.Игнорирует любой ввод, который не является членом @var{chars}, списка
+допустимых символов.  При желании также будет игнорировать события выхода с
+клавиатуры, пока ожидает действительного ввода.  Если привязывать
+@code{help-form} (@pxref{Help Functions}) к значению не-@code{nil} при
+вызове @code{read-char-choice}, то нажатие @code{help-char} заставляет
+вычислить @code{help-form} и отобразить результат.  Затем продолжается
+ожидание допустимого входного символа или выхода с клавиатуры.
 @end defun
 
 @defun read-multiple-choice prompt choices
-Ask user a multiple choice question.  @var{prompt} should be a string
-that will be displayed as the prompt.
+Задайте пользователю вопрос с несколькими вариантами ответов.  @var{prompt}
+должно быть строкой, которая будет отображаться как приглашение.
 
-@var{choices} is an alist where the first element in each entry is a
-character to be entered, the second element is a short name for the
-entry to be displayed while prompting (if there's room, it might be
-shortened), and the third, optional entry is a longer explanation that
-will be displayed in a help buffer if the user requests more help.
+@var{choices} - это список, в котором первый элемент в каждой записи - это
+вводимый символ, второй элемент - это короткое имя записи, которая будет
+отображаться при запросе (если есть место, оно может быть сокращено), а
+третья, необязательная запись - более подробное объяснение, которое будет
+отображаться в буфере справки, если пользователь запросит дополнительную
+помощь.
 
-The return value is the matching value from @var{choices}.
+Возвращаемое значение - это совпадающее значение из @var{choices}.
 
 @lisp
 (read-multiple-choice
@@ -2667,64 +2667,62 @@ The return value is the matching value from @var{choices}.
    (?n "no" "Refuse to use certificate, close connection.")))
 @end lisp
 
-The @code{read-multiple-choice-face} face is used to highlight the
-matching characters in the name string on graphical terminals.
+Грань @code{read-multiple-choice-face} используется для выделения
+совпадающих символов в строке имени на графических терминалах.
 
 @end defun
 
 @node Event Mod
-@subsection Modifying and Translating Input Events
+@subsection Изменение и Преобразование Входных Событий
 @cindex modifiers of events
 @cindex translating input events
 @cindex event translation
 
-  Emacs modifies every event it reads according to
-@code{extra-keyboard-modifiers}, then translates it through
-@code{keyboard-translate-table} (if applicable), before returning it
-from @code{read-event}.
+  Emacs модифицирует каждое считываемое событие в соответствии с
+@code{extra-keyboard-modifiers}, затем транслирует его через
+@code{keyboard-translate-table} (если применимо), прежде чем вернуть его из
+@code{read-event}.
 
 @defvar extra-keyboard-modifiers
-This variable lets Lisp programs ``press'' the modifier keys on the
-keyboard.  The value is a character.  Only the modifiers of the
-character matter.  Each time the user types a keyboard key, it is
-altered as if those modifier keys were held down.  For instance, if
-you bind @code{extra-keyboard-modifiers} to @code{?\C-\M-a}, then all
-keyboard input characters typed during the scope of the binding will
-have the control and meta modifiers applied to them.  The character
-@code{?\C-@@}, equivalent to the integer 0, does not count as a control
-character for this purpose, but as a character with no modifiers.
-Thus, setting @code{extra-keyboard-modifiers} to zero cancels any
-modification.
+Эта переменная позволяет программам Lisp ``press'' использовать
+клавиши-модификаторы на клавиатуре.  Значение - это символ.  Имеют значение
+только символьные модификаторы.  Каждый раз, когда пользователь набирает
+клавишу на клавиатуре, она изменяется, как если бы эти клавиши-модификаторы
+удерживались.  Например, если привязано @code{extra-keyboard-modifiers} к
+@code{?\C-\M-a}, то ко всем вводимым с клавиатуры символам, набранным во
+время привязки, будут применены модификаторы control и meta.  Символ
+@code{?\C-@@}, эквивалентный целому числу 0, считается для этой цели не
+управляющим символом, а символом без модификаторов. Таким образом, установка
+@code{extra-keyboard-modifiers} в ноль отменяет любые изменения.
 
-When using a window system, the program can press any of the
-modifier keys in this way.  Otherwise, only the @key{CTL} and @key{META}
-keys can be virtually pressed.
+При использовании оконной системы программа может таким образом нажимать
+любую из клавиш-модификаторов.  В противном случае виртуально можно будет
+нажимать только клавиши @key{CTL} и @key{META}.
 
-Note that this variable applies only to events that really come from
-the keyboard, and has no effect on mouse events or any other events.
+Обратить внимание, что эта переменная применяется только к событиям, которые
+действительно исходят с клавиатуры, и не влияет на события мыши или любые
+другие события.
 @end defvar
 
 @defvar keyboard-translate-table
-This terminal-local variable is the translate table for keyboard
-characters.  It lets you reshuffle the keys on the keyboard without
-changing any command bindings.  Its value is normally a char-table, or
-else @code{nil}.  (It can also be a string or vector, but this is
-considered obsolete.)
+Эта локальная для терминала переменная представляет собой таблицу перевода
+символов клавиатуры.  Это позволяет перетасовывать клавиши на клавиатуре, не
+меняя привязки команд.  Значение обычно представляет собой таблицу символов
+или @code{nil}.  (Это также может быть строка или вектор, но это считается
+устаревшим.)
 
-If @code{keyboard-translate-table} is a char-table
-(@pxref{Char-Tables}), then each character read from the keyboard is
-looked up in this char-table.  If the value found there is
-non-@code{nil}, then it is used instead of the actual input character.
+Если @code{keyboard-translate-table} - это таблица символов
+(@pxref{Char-Tables}), то каждый символ, считанный с клавиатуры, ищется в
+этой таблице символов.  Если найденное значение - не-@code{nil}, то оно
+используется вместо фактического входного символа.
 
-Note that this translation is the first thing that happens to a
-character after it is read from the terminal.  Record-keeping features
-such as @code{recent-keys} and dribble files record the characters after
-translation.
+Обратить внимание, что этот перевод - первое, что происходит с символом
+после его чтения с терминала.  Функции ведения записи, такие как файлы
+@code{recent-keys} и dribble, записывают символы после перевода.
 
-Note also that this translation is done before the characters are
-supplied to input methods (@pxref{Input Methods}).  Use
-@code{translation-table-for-input} (@pxref{Translation of Characters}),
-if you want to translate characters after input methods operate.
+Также обратить внимание, что этот перевод выполняется до того, как символы
+будут переданы в методы ввода (@pxref{Input Methods}).  Использовать
+@code{translation-table-for-input} (@pxref{Translation of Characters}), еслитребуется переводить символы после срабатывания методов ввода.
 @end defvar
 
 @defun keyboard-translate from to
