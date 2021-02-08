@@ -4,484 +4,499 @@
 @c Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Modes
-@chapter Major and Minor Modes
+@chapter Основные и Дополнительные режимы
 @cindex mode
 
-  A @dfn{mode} is a set of definitions that customize Emacs behavior
-in useful ways.  There are two varieties of modes: @dfn{minor modes},
-which provide features that users can turn on and off while editing;
-and @dfn{major modes}, which are used for editing or interacting with
-a particular kind of text.  Each buffer has exactly one @dfn{major
-mode} at a time.
+  @dfn{Режим} - это набор определений, которые полезными способами
+настраивают поведение Emacs.  Есть две разновидности режимов:
+@dfn{основной режим}, предоставляет функции, которые пользователи могут
+включать и выключать во время редактирования; и @dfn{дополнительный режим},
+используется для редактирования или взаимодействия с определенным типом
+текста.  Каждый буфер имеет ровно один @dfn{основной режим} за раз.
 
-  This chapter describes how to write both major and minor modes, how to
-indicate them in the mode line, and how they run hooks supplied by the
-user.  For related topics such as keymaps and syntax tables, see
-@ref{Keymaps}, and @ref{Syntax Tables}.
+  В этой главе описывается, как писать как основной, так и вспомогательный
+режимы, как указывать их в строке режима и как они запускают обработчики,
+предоставленные пользователем.  Для связанных тем, таких как карты ключей и
+синтаксические таблицы, смотреть @ref{Keymaps}, и @ref{Syntax Tables}.
 
 @menu
-* Hooks::             How to use hooks; how to write code that provides hooks.
-* Major Modes::       Defining major modes.
-* Minor Modes::       Defining minor modes.
-* Mode Line Format::  Customizing the text that appears in the mode line.
-* Imenu::             Providing a menu of definitions made in a buffer.
-* Font Lock Mode::    How modes can highlight text according to syntax.
-* Auto-Indentation::  How to teach Emacs to indent for a major mode.
-* Desktop Save Mode:: How modes can have buffer state saved between
-                        Emacs sessions.
+* Hooks::             Как пользоваться перехватчиками; как написать код,
+который предоставляет ловушки.
+* Major Modes::       Определение основных режимов.
+* Minor Modes::       Определение второстепенных режимов.
+* Mode Line Format::  Настройка текста, отображаемого в строке режима.
+* Imenu::             Предоставление меню определений, сделанных в буфере.
+* Font Lock Mode::    Как режимы могут выделять текст в соответствии с
+синтаксисом.
+* Auto-Indentation::  Как научить Emacs делать отступ для основного режима.
+* Desktop Save Mode:: Как режимы могут сохранять состояние буфера между
+сеансами Emacs.
 @end menu
 
 @node Hooks
-@section Hooks
+@section Ловушки
 @cindex hooks
 
-  A @dfn{hook} is a variable where you can store a function or functions
-to be called on a particular occasion by an existing program.  Emacs
-provides hooks for the sake of customization.  Most often, hooks are set
-up in the init file (@pxref{Init File}), but Lisp programs can set them also.
-@xref{Standard Hooks}, for a list of some standard hook variables.
+  @dfn{Ловушка} - это переменная, в которой можно сохранить функцию или
+функции, которые будут вызываться в конкретном случае существующей
+программой.  Emacs предоставляет ловушки для настройки.  Чаще всего
+настраиваются в файле инициализации (@pxref{Init File}), но программы Lisp
+также могут их устанавливать.  @xref{Standard Hooks} - список некоторых
+стандартных переменных ловушки.
 
 @cindex normal hook
-  Most of the hooks in Emacs are @dfn{normal hooks}.  These variables
-contain lists of functions to be called with no arguments.  By
-convention, whenever the hook name ends in @samp{-hook}, that tells
-you it is normal.  We try to make all hooks normal, as much as
-possible, so that you can use them in a uniform way.
+  Большинство ловушек в Emacs - это @dfn{стандартные ловушки}.  Эти
+переменные содержат списки функций, которые должны быть вызваны без
+аргументов.  По соглашению, всякий раз, когда имя ловушки заканчивается на
+@samp{-hook}, это означает, что это стандартная ловушка.  Проявляется
+старание сделать все ловушки максимально стандартными, чтобы можно было
+использовать их единообразно.
 
-  Every major mode command is supposed to run a normal hook called the
-@dfn{mode hook} as one of the last steps of initialization.  This makes
-it easy for a user to customize the behavior of the mode, by overriding
-the buffer-local variable assignments already made by the mode.  Most
-minor mode functions also run a mode hook at the end.  But hooks are
-used in other contexts too.  For example, the hook @code{suspend-hook}
-runs just before Emacs suspends itself (@pxref{Suspending Emacs}).
+  Предполагается, что каждая команда основного режима запускает обычный
+обработчик, называемый @dfn{ловушка режима}, в качестве одного из последних
+шагов инициализации.  Это упрощает пользователю настройку поведения режима
+путем переопределения назначений локальных переменных буфера, уже сделанных
+режимом.  Большинство второстепенных функций режима также запускают в конце
+обработчик режима.  Но ловушки используются и в других контекстах.
+Например, ловушка @code{suspend-hook} запускается непосредственно перед тем,
+как Emacs приостанавливает свою работу (@pxref{Suspending Emacs}).
 
-  The recommended way to add a hook function to a hook is by calling
-@code{add-hook} (@pxref{Setting Hooks}).  The hook functions may be any
-of the valid kinds of functions that @code{funcall} accepts (@pxref{What
-Is a Function}).  Most normal hook variables are initially void;
-@code{add-hook} knows how to deal with this.  You can add hooks either
-globally or buffer-locally with @code{add-hook}.
+  Рекомендуемый способ добавить функцию перехвата в перехватчик - вызвать
+@code{add-hook} (@pxref{Setting Hooks}).  Функции ловушки могут быть любыми
+из допустимых типов функций, которые @code{funcall} принимает
+(@pxref{What Is a Function}).  Большинство обычных переменных-ловушек
+изначально недействительны; @code{add-hook} знает, как с этим бороться.
+Можноете добавить ловушки глобально или локально в буфере с помощью
+@code{add-hook}.
 
 @cindex abnormal hook
-  If the hook variable's name does not end with @samp{-hook}, that
-indicates it is probably an @dfn{abnormal hook}.  That means the hook
-functions are called with arguments, or their return values are used
-in some way.  The hook's documentation says how the functions are
-called.  You can use @code{add-hook} to add a function to an abnormal
-hook, but you must write the function to follow the hook's calling
-convention.  By convention, abnormal hook names end in @samp{-functions}.
+  Если имя переменной ловушки не заканчивается на @samp{-hook}, это
+означает, что, вероятно, это @dfn{ненормальная ловушка}.  Это означает, что
+функции-перехватчики вызываются с аргументами или каким-то образом
+используются их возвращаемые значения.  Документация ловушки говорит, как
+вызываются функции.  Можно использовать @code{add-hook} для добавления
+функции к ненормальной ловушке, но потребуется написать функцию, чтобы
+следовать соглашению о вызове ловушки.  По соглашению, имена ненормальных
+ловушек заканчиваются на @samp{-functions}.
 
 @cindex single-function hook
-If the variable's name ends in @samp{-function}, then its value is
-just a single function, not a list of functions.  @code{add-hook} cannot be
-used to modify such a @emph{single function hook}, and you have to use
-@code{add-function} instead (@pxref{Advising Functions}).
+Если имя переменной заканчивается на @samp{-function}, то ее значение - это
+просто одна функция, а не список функций.  @code{add-hook} нельзя
+использовать для изменения такой @emph{однофункциональной ловушки}, и
+потребуется использовать @code{add-function} вместо
+(@pxref{Advising Functions}).
 
 @menu
-* Running Hooks::    How to run a hook.
-* Setting Hooks::    How to put functions on a hook, or remove them.
+* Running Hooks::    Как запустить ловушку.
+* Setting Hooks::    Как поставить функции в ловушки или убрать их.
 @end menu
 
 @node Running Hooks
-@subsection Running Hooks
+@subsection Запуск Ловушки
 
-  In this section, we document the @code{run-hooks} function, which is
-used to run a normal hook.  We also document the functions for running
-various kinds of abnormal hooks.
+  В этом разделе документируется функция @code{run-hooks}, которая
+используется для запуска обычной ловушки.  Также документируется функция для
+запуска различных видов ненормальных ловушек.
 
 @defun run-hooks &rest hookvars
-This function takes one or more normal hook variable names as
-arguments, and runs each hook in turn.  Each argument should be a
-symbol that is a normal hook variable.  These arguments are processed
-in the order specified.
+Функция принимает в качестве аргументов одно или несколько обычных имен
+переменных ловушки и запускает каждую ловушку по очереди.  Каждый аргумент
+должен быть символом, который является обычной переменной ловушки.  Эти
+аргументы обрабатываются в указанном порядке.
 
-If a hook variable has a non-@code{nil} value, that value should be a
-list of functions.  @code{run-hooks} calls all the functions, one by
-one, with no arguments.
+Если переменная-ловушка имеет значение не-@code{nil}, это значение должно
+быть списком функций.  @code{run-hooks} вызывает все функции одну за другой
+без аргументов.
 
-The hook variable's value can also be a single function---either a
-lambda expression or a symbol with a function definition---which
-@code{run-hooks} calls.  But this usage is obsolete.
+Значение переменной ловушки также может быть одной функцией - либо
+лямбда-выражением, либо символом с определением функции, - которую вызывает
+@code{run-hooks}.  Но это использование устарело.
 
-If the hook variable is buffer-local, the buffer-local variable will
-be used instead of the global variable.  However, if the buffer-local
-variable contains the element @code{t}, the global hook variable will
-be run as well.
+Если переменная-ловушка является локальной в буфере, вместо глобальной будет
+использоваться переменная, локальная в буфере.  Однако, если локальная
+переменная буфера содержит элемент @code{t}, глобальная переменная ловушки
+также будет запущена.
 @end defun
 
 @defun run-hook-with-args hook &rest args
-This function runs an abnormal hook by calling all the hook functions in
-@var{hook}, passing each one the arguments @var{args}.
+Эта функция запускает ненормальную ловушку, вызывая все функции ловушки в
+@var{hook}, передавая каждой из аргументов @var{args}.
 @end defun
 
 @defun run-hook-with-args-until-failure hook &rest args
-This function runs an abnormal hook by calling each hook function in
-turn, stopping if one of them fails by returning @code{nil}.  Each
-hook function is passed the arguments @var{args}.  If this function
-stops because one of the hook functions fails, it returns @code{nil};
-otherwise it returns a non-@code{nil} value.
+Функция запускает ненормальную ловушку, вызывая каждую функцию ловушки по
+очереди, останавливаясь, если одна из них не работает, возвращая @code{nil}.
+Каждой функции ловушки передаются аргументы @var{args}.  Если эта функция
+останавливается из-за сбоя одной из функций ловушки, она возвращает
+@code{nil}; в противном случае возвращается значение не-@code{nil}.
 @end defun
 
 @defun run-hook-with-args-until-success hook &rest args
-This function runs an abnormal hook by calling each hook function,
-stopping if one of them succeeds by returning a non-@code{nil}
-value.  Each hook function is passed the arguments @var{args}.  If this
-function stops because one of the hook functions returns a
-non-@code{nil} value, it returns that value; otherwise it returns
-@code{nil}.
+Функция запускает ненормальную ловушку, вызывая каждую функцию ловушки,
+останавливаясь, если одна из них преуспевает, возвращая значение
+не-@code{nil}.  Каждой функции ловушки передаются аргументы @var{args}.
+Если эта функция останавливается, потому что одна из функций ловушки
+возвращает значение не-@code{nil}, она возвращает это значение; в противном
+случае возвращается @code{nil}.
 @end defun
 
 @node Setting Hooks
-@subsection Setting Hooks
+@subsection Настройка Ловушек
 
-  Here's an example that uses a mode hook to turn on Auto Fill mode when
-in Lisp Interaction mode:
+  Вот пример, который использует обработчик режима для включения режима
+Auto Fill в режиме Lisp Interaction:
 
 @example
 (add-hook 'lisp-interaction-mode-hook 'auto-fill-mode)
 @end example
 
 @defun add-hook hook function &optional append local
-This function is the handy way to add function @var{function} to hook
-variable @var{hook}.  You can use it for abnormal hooks as well as for
-normal hooks.  @var{function} can be any Lisp function that can accept
-the proper number of arguments for @var{hook}.  For example,
+Эта функция - удобный способ добавить функцию @var{function} к переменной
+@var{hook}.  Можно использовать её как для ненормальных, так и для обычных
+ловушек.  @var{function} может быть любой функцией Lisp, которая может
+принимать правильное количество аргументов для @var{hook}.  Например,
 
 @example
 (add-hook 'text-mode-hook 'my-text-hook-function)
 @end example
 
 @noindent
-adds @code{my-text-hook-function} to the hook called @code{text-mode-hook}.
+добавляет @code{my-text-hook-function} к ловушке @code{text-mode-hook}.
+Если @var{function} уже присутствует в @var{hook} (сравнение с
+использованием @code{equal}), то @code{add-hook} не добавляет его второй
+раз.
 
-If @var{function} is already present in @var{hook} (comparing using
-@code{equal}), then @code{add-hook} does not add it a second time.
+Если @var{function} имеет свойство не-@code{nil}
+@code{permanent-local-hook}, то @code{kill-all-local-variables} (или
+изменение основных режимов) не удалит её из локального значения переменной
+ловушки.
 
-If @var{function} has a non-@code{nil} property
-@code{permanent-local-hook}, then @code{kill-all-local-variables} (or
-changing major modes) won't delete it from the hook variable's local
-value.
+Для обычной ловушки функции ловушки должны быть спроектированы так, чтобы
+порядок их выполнения не имел значения.  Любая зависимость от порядка
+порождает неприятности.  Однако порядок предсказуем: обычно @var{function}
+идет в начале списка ловушек, поэтому она выполняется первой (за исключением
+другого вызова @code{add-hook}).  Если необязательный аргумент @var{append}
+- не-@code{nil}, новая функция ловушки идет в конец списка ловушек и
+выполняется последней.
 
-For a normal hook, hook functions should be designed so that the order
-in which they are executed does not matter.  Any dependence on the order
-is asking for trouble.  However, the order is predictable: normally,
-@var{function} goes at the front of the hook list, so it is executed
-first (barring another @code{add-hook} call).  If the optional argument
-@var{append} is non-@code{nil}, the new hook function goes at the end of
-the hook list and is executed last.
+@code{add-hook} может обрабатывать случаи, когда @var{hook} недействителен
+или её значение является единственной функцией; она устанавливает или
+изменяет значение списка функций.
 
-@code{add-hook} can handle the cases where @var{hook} is void or its
-value is a single function; it sets or changes the value to a list of
-functions.
-
-If @var{local} is non-@code{nil}, that says to add @var{function} to the
-buffer-local hook list instead of to the global hook list.  This makes
-the hook buffer-local and adds @code{t} to the buffer-local value.  The
-latter acts as a flag to run the hook functions in the default value as
-well as in the local value.
+Если @var{local} равен не-@code{nil}, это говорит о добавлении
+@var{function} в список локальных ловушек буфера, а не в глобальный список
+ловушек.  Это делает перехватчик буфера локальным и добавляет @code{t} к
+локальному значению буфера.  Последний действует как флаг для запуска
+функций ловушки в значении по умолчанию, а также в локальном значении.
 @end defun
 
 @defun remove-hook hook function &optional local
-This function removes @var{function} from the hook variable
-@var{hook}.  It compares @var{function} with elements of @var{hook}
-using @code{equal}, so it works for both symbols and lambda
-expressions.
+Функция удаляет @var{function} из переменной ловушки @var{hook}.  Сравнивает
+@var{function} с элементами @var{hook} с помощью @code{equal}, поэтому
+работает как для символов, так и для лямбда-выражений.
 
-If @var{local} is non-@code{nil}, that says to remove @var{function}
-from the buffer-local hook list instead of from the global hook list.
+Если @var{local} равен не-@code{nil}, это говорит об удалении @var{function}
+из списка локальных ловушек, а не из глобального списка ловушек.
 @end defun
 
 @node Major Modes
-@section Major Modes
+@section Основной Режим
 @cindex major mode
 
 @cindex major mode command
-  Major modes specialize Emacs for editing or interacting with
-particular kinds of text.  Each buffer has exactly one major mode at a
-time.  Every major mode is associated with a @dfn{major mode command},
-whose name should end in @samp{-mode}.  This command takes care of
-switching to that mode in the current buffer, by setting various
-buffer-local variables such as a local keymap.  @xref{Major Mode
-Conventions}.  Note that unlike minor modes there is no way to ``turn
-off'' a major mode, instead the buffer must be switched to a different
-one.
+  Основные режимы специализируются на Emacs для редактирования или
+взаимодействия с определенными типами текста.  У каждого буфера одновременно
+есть ровно один основной режим.  Каждый основной режим связан с
+@dfn{командами основного режима}, имя которого должно заканчиваться на
+@samp{-mode}.  Эта команда заботится о переключении в этот режим в текущем
+буфере, устанавливая различные локальные переменные буфера, такие как
+локальная карта ключей.  @xref{Major Mode Conventions}.  Обратить внимание,
+что в отличие от второстепенных режимов нет возможности ``выключения''
+основного режима, вместо этого буфер должен быть переключен на другой.
 
-  The least specialized major mode is called @dfn{Fundamental mode},
-which has no mode-specific definitions or variable settings.
+  Наименее специализированный основной режим называется
+@dfn{Fundamental mode}, он не имеет специфических для режима определений или
+настроек переменных.
 
 @deffn Command fundamental-mode
-This is the major mode command for Fundamental mode.  Unlike other mode
-commands, it does @emph{not} run any mode hooks (@pxref{Major Mode
-Conventions}), since you are not supposed to customize this mode.
+Это основная режимная команда для основного режима.  В отличие от других
+команд режима, @emph{не} запускает любые обработчики режима
+(@pxref{Major Mode Conventions}), так как не нужно настраивать этот режим.
 @end deffn
 
-  The easiest way to write a major mode is to use the macro
-@code{define-derived-mode}, which sets up the new mode as a variant of
-an existing major mode.  @xref{Derived Modes}.  We recommend using
-@code{define-derived-mode} even if the new mode is not an obvious
-derivative of another mode, as it automatically enforces many coding
-conventions for you.  @xref{Basic Major Modes}, for common modes to
-derive from.
+  Самый простой способ написать основной режим - использовать макрос
+@code{define-derived-mode}, который устанавливает новый режим как вариант
+существующего основного режима.  @xref{Derived Modes}.  Рекомендуется
+использовать @code{define-derived-mode}, даже если новый режим не является
+очевидным производным от другого режима, поскольку он автоматически
+обеспечивает соблюдение многих соглашений о кодировании.
+@xref{Basic Major Modes}, для получения общих режимов.
 
-  The standard GNU Emacs Lisp directory tree contains the code for
-several major modes, in files such as @file{text-mode.el},
-@file{texinfo.el}, @file{lisp-mode.el}, and @file{rmail.el}.  You can
-study these libraries to see how modes are written.
+  Стандартное дерево каталогов GNU Emacs Lisp содержит код для нескольких
+основных режимов в таких файлах, как @file{text-mode.el}, @file{texinfo.el},
+@file{lisp-mode.el} и @file{rmail.el}.  Можете изучить эти библиотеки, чтобы
+увидеть, как пишутся режимы.
 
 @defopt major-mode
-The buffer-local value of this variable holds the symbol for the current
-major mode.  Its default value holds the default major mode for new
-buffers.  The standard default value is @code{fundamental-mode}.
+Локальное в буфере значение этой переменной содержит символ текущего
+основного режима.  Его значение по умолчанию содержит основной режим по
+умолчанию для новых буферов.  Стандартное значение по умолчанию -
+@code{fundamental-mode}.
 
-If the default value is @code{nil}, then whenever Emacs creates a new
-buffer via a command such as @kbd{C-x b} (@code{switch-to-buffer}), the
-new buffer is put in the major mode of the previously current buffer.
-As an exception, if the major mode of the previous buffer has a
-@code{mode-class} symbol property with value @code{special}, the new
-buffer is put in Fundamental mode (@pxref{Major Mode Conventions}).
+Если значение по умолчанию - @code{nil}, то всякий раз, когда Emacs создает
+новый буфер с помощью такой команды, как @kbd{C-x b}
+(@code{switch-to-buffer}), новый буфер помещается в основной режим
+предыдущего текущего буфера.  В качестве исключения, если основной режим
+предыдущего буфера имеет свойство символа @code{mode-class} со значением
+@code{special}, новый буфер переводится в основной режим
+(@pxref{Major Mode Conventions}).
 @end defopt
 
 @menu
-* Major Mode Conventions::  Coding conventions for keymaps, etc.
-* Auto Major Mode::         How Emacs chooses the major mode automatically.
-* Mode Help::               Finding out how to use a mode.
-* Derived Modes::           Defining a new major mode based on another major
-                              mode.
-* Basic Major Modes::       Modes that other modes are often derived from.
-* Mode Hooks::              Hooks run at the end of major mode functions.
-* Tabulated List Mode::     Parent mode for buffers containing tabulated data.
-* Generic Modes::           Defining a simple major mode that supports
-                              comment syntax and Font Lock mode.
-* Example Major Modes::     Text mode and Lisp modes.
+* Major Mode Conventions:: Соглашения о кодировании для ключевых карт и т.д.
+* Auto Major Mode::         Как Emacs автоматически выбирает основной режим.
+* Mode Help::               Узнаем, как использовать режим.
+* Derived Modes::           Определение нового основного режима на основе
+                                 другого основного режима.
+* Basic Major Modes::     Режимы, из которых часто происходят другие режимы.
+* Mode Hooks::          Ловушки запускаются в конце основных функций режима.
+* Tabulated List Mode:: Родительский режим для буферов, содержащих
+                                 табличные данные.
+* Generic Modes::           Определение простого основного режима, который
+                                 поддерживает синтаксис комментариев и
+                                 режим Font Lock.
+* Example Major Modes::     Текстовый режим и режимы Lisp.
 @end menu
 
 @node Major Mode Conventions
-@subsection Major Mode Conventions
+@subsection Условные Обозначения Рсновного Режима
 @cindex major mode conventions
 @cindex conventions for writing major modes
 
-  The code for every major mode should follow various coding
-conventions, including conventions for local keymap and syntax table
-initialization, function and variable names, and hooks.
+  Код для каждого основного режима должен соответствовать различным
+соглашениям о кодировании, включая соглашения для локальной ключевой карты
+и инициализации таблицы синтаксиса, имен функций, переменных и ловушек.
 
-  If you use the @code{define-derived-mode} macro, it will take care of
-many of these conventions automatically.  @xref{Derived Modes}.  Note
-also that Fundamental mode is an exception to many of these conventions,
-because it represents the default state of Emacs.
+  Если используется макрос @code{define-derived-mode}, он автоматически
+позаботится о многих из этих соглашений.  @xref{Derived Modes}.  Также
+обратить внимание, что режим Fundamental является исключением из многих этих
+соглашений, поскольку он представляет состояние Emacs по умолчанию.
 
-  The following list of conventions is only partial.  Each major mode
-should aim for consistency in general with other Emacs major modes, as
-this makes Emacs as a whole more coherent.  It is impossible to list
-here all the possible points where this issue might come up; if the
-Emacs developers point out an area where your major mode deviates from
-the usual conventions, please make it compatible.
+  Следующий список условных обозначений является неполным.  Каждый основной
+режим должен быть в целом согласован с другими основными режимами Emacs, так
+как это делает Emacs в целом более согласованным.  Здесь невозможно
+перечислить все возможные моменты, по которым может возникнуть эта проблема;
+если разработчики Emacs указывают на область, в которой основной режим
+отличается от обычных соглашений, пожалуйста, сделайте его совместимым.
 
 @itemize @bullet
 @item
-Define a major mode command whose name ends in @samp{-mode}.  When
-called with no arguments, this command should switch to the new mode in
-the current buffer by setting up the keymap, syntax table, and
-buffer-local variables in an existing buffer.  It should not change the
-buffer's contents.
+Определить команду основного режима, имя которой заканчивается на
+@samp{-mode}.  При вызове без аргументов эта команда должна переключиться в
+новый режим в текущем буфере, установив ключевую карту, таблицу синтаксиса и
+локальные переменные буфера в существующем буфере.  Это не должно изменять
+содержимое буфера.
 
 @item
-Write a documentation string for this command that describes the special
-commands available in this mode.  @xref{Mode Help}.
+Написать строку документации для этой команды, которая описывает специальные
+команды, доступные в этом режиме.  @xref{Mode Help}.
 
-The documentation string may include the special documentation
-substrings, @samp{\[@var{command}]}, @samp{\@{@var{keymap}@}}, and
-@samp{\<@var{keymap}>}, which allow the help display to adapt
-automatically to the user's own key bindings.  @xref{Keys in
-Documentation}.
-
-@item
-The major mode command should start by calling
-@code{kill-all-local-variables}.  This runs the normal hook
-@code{change-major-mode-hook}, then gets rid of the buffer-local
-variables of the major mode previously in effect.  @xref{Creating
-Buffer-Local}.
+Строка документации может включать специальные подстроки документации,
+@samp{\[@var{command}]}, @samp{\@{@var{keymap}@}} и @samp{\<@var{keymap}>},
+которые позволяют отображению справки автоматически адаптироваться к
+собственным привязкам ключей пользователя.  @xref{Keys in Documentation}.
 
 @item
-The major mode command should set the variable @code{major-mode} to the
-major mode command symbol.  This is how @code{describe-mode} discovers
-which documentation to print.
+Команда основного режима должна начинаться с вызова
+@code{kill-all-local-variables}.  Это запускает обычный обработчик
+@code{change-major-mode-hook}, а затем избавляется от локальных в буфере
+переменных основного режима, который ранее действовал.
+@xref{Creating Buffer-Local}.
 
 @item
-The major mode command should set the variable @code{mode-name} to the
-``pretty'' name of the mode, usually a string (but see @ref{Mode Line
-Data}, for other possible forms).  The name of the mode appears
-in the mode line.
+Команда основного режима должна установить переменную @code{major-mode} как
+символ команды основного режима.  Вот так @code{describe-mode} обнаруживает,
+какую документацию печатать.
 
 @item
-Calling the major mode command twice in direct succession should not
-fail and should do the same thing as calling the command only once.
-In other words, the major mode command should be idempotent.
+Команда основного режима должна установить для переменной @code{mode-name}
+имя режима, ``достаточно'' обычно строку (но другие возможные формы смотреть
+в @ref{Mode Line Data}).  Название режима отображается в строке режима.
+
+@item
+Вызов команды основного режима дважды подряд не должен давать сбоев и должен
+делать то же самое, что и вызов команды только один раз.  Другими словами,
+команда основного режима должна быть идемпотентной.
 
 @item
 @cindex functions in modes
-Since all global names are in the same name space, all the global
-variables, constants, and functions that are part of the mode should
-have names that start with the major mode name (or with an abbreviation
-of it if the name is long).  @xref{Coding Conventions}.
+Поскольку все глобальные имена находятся в одном пространстве имен, все
+глобальные переменные, константы и функции, которые являются частью режима,
+должны иметь имена, начинающиеся с основного имени режима (или с его
+аббревиатуры, если имя длинное).  @xref{Coding Conventions}.
 
 @item
-In a major mode for editing some kind of structured text, such as a
-programming language, indentation of text according to structure is
-probably useful.  So the mode should set @code{indent-line-function}
-to a suitable function, and probably customize other variables
-for indentation.  @xref{Auto-Indentation}.
+В основном режиме для редактирования какого-либо структурированного текста,
+такого как язык программирования, возможно, будет полезен отступ текста в
+соответствии со структурой.  Таким образом, режим должен установить
+@code{indent-line-function} на подходящую функцию и, возможно, настроить
+другие переменные для отступов.  @xref{Auto-Indentation}.
 
 @item
 @cindex keymaps in modes
-The major mode should usually have its own keymap, which is used as the
-local keymap in all buffers in that mode.  The major mode command should
-call @code{use-local-map} to install this local map.  @xref{Active
-Keymaps}, for more information.
+Основной режим обычно должен иметь свою собственную ключевую карту, которая
+используется как локальная ключевая карта во всех буферах в этом режиме.
+Команда основного режима должна вызвать @code{use-local-map} для установки
+этой локальной карты.  @xref{Active Keymaps}, для получения дополнительной
+информации.
 
-This keymap should be stored permanently in a global variable named
-@code{@var{modename}-mode-map}.  Normally the library that defines the
-mode sets this variable.
+Эта карта должна постоянно храниться в глобальной переменной с именем
+@code{@var{modename}-mode-map}.  Обычно эту переменную устанавливает
+библиотека, определяющая режим.
 
-@xref{Tips for Defining}, for advice about how to write the code to set
-up the mode's keymap variable.
-
-@item
-The key sequences bound in a major mode keymap should usually start with
-@kbd{C-c}, followed by a control character, a digit, or @kbd{@{},
-@kbd{@}}, @kbd{<}, @kbd{>}, @kbd{:} or @kbd{;}.  The other punctuation
-characters are reserved for minor modes, and ordinary letters are
-reserved for users.
-
-A major mode can also rebind the keys @kbd{M-n}, @kbd{M-p} and
-@kbd{M-s}.  The bindings for @kbd{M-n} and @kbd{M-p} should normally
-be some kind of moving forward and backward, but this does not
-necessarily mean cursor motion.
-
-It is legitimate for a major mode to rebind a standard key sequence if
-it provides a command that does the same job in a way better
-suited to the text this mode is used for.  For example, a major mode
-for editing a programming language might redefine @kbd{C-M-a} to
-move to the beginning of a function in a way that works better for
-that language.  The recommended way of tailoring @kbd{C-M-a} to the
-needs of a major mode is to set @code{beginning-of-defun-function}
-(@pxref{List Motion}) to invoke the function specific to the mode.
-
-It is also legitimate for a major mode to rebind a standard key
-sequence whose standard meaning is rarely useful in that mode.  For
-instance, minibuffer modes rebind @kbd{M-r}, whose standard meaning is
-rarely of any use in the minibuffer.  Major modes such as Dired or
-Rmail that do not allow self-insertion of text can reasonably redefine
-letters and other printing characters as special commands.
+@xref{Tips for Defining}, совет о том, как написать код для установки
+переменной карты режима.
 
 @item
-Major modes for editing text should not define @key{RET} to do
-anything other than insert a newline.  However, it is ok for
-specialized modes for text that users don't directly edit, such as
-Dired and Info modes, to redefine @key{RET} to do something entirely
-different.
+Последовательности ключей, связанные в карте ключей основного режима, обычно
+должны начинаться с @kbd{C-c}, за которым следует управляющий символ, цифра,
+@kbd{@{}, @kbd{@}}, @kbd{<}, @kbd{>}, @kbd{:} или @kbd{;}. Остальные знаки
+пунктуации зарезервированы для второстепенных режимов, а обычные буквы
+зарезервированы для пользователей.
+
+Основной режим также может повторно привязать ключи @kbd{M-n}, @kbd{M-p} и
+@kbd{M-s}.  Привязки для @kbd{M-n} и @kbd{M-p} обычно должны быть своего
+рода движением вперед и назад, но это не обязательно означает движение
+курсора.
+
+Для основного режима допустимо повторное связывание стандартной
+последовательности ключей, если он предоставляет команду, которая выполняет
+ту же работу способом, более подходящим для текста, для которого
+используется этот режим.  Например, основной режим редактирования языка
+программирования может переопределить @kbd{C-M-a}, чтобы перейти к началу
+функции способом, который лучше подходит для этого языка.  Рекомендуемый
+способ адаптации @kbd{C-M-a} к потребностям основного режима - установить
+@code{beginning-of-defun-function} (@pxref{List Motion}) для вызова функции,
+специфичной для этого режима.
+
+Для основного режима также допустимо повторное связывание стандартной
+последовательности ключей, стандартное значение которой редко используется в
+этом режиме.  Например, режимы минибуфера повторно связывают @kbd{M-r},
+стандартное значение которого редко используется в минибуфере.  Основные
+режимы, такие как Dired или Rmail, которые не позволяют вставлять текст
+самостоятельно, могут разумно переопределить буквы и другие печатные символы
+как специальные команды.
 
 @item
-Major modes should not alter options that are primarily a matter of user
-preference, such as whether Auto-Fill mode is enabled.  Leave this to
-each user to decide.  However, a major mode should customize other
-variables so that Auto-Fill mode will work usefully @emph{if} the user
-decides to use it.
+Основные режимы редактирования текста не должны определять @key{RET} для
+выполнения чего-либо, кроме вставки новой строки.  Однако в
+специализированных режимах для текста, которые пользователи не редактируют
+напрямую, таких как режимы Dired и Info, можно переопределить @key{RET} для
+выполнения чего-то совершенно другого.
+
+@item
+Основные режимы не должны изменять параметры, которые в первую очередь
+зависят от предпочтений пользователя, например, включен ли режим Auto-Fill.
+Оставить это на усмотрение каждого пользователя.  Однако основной режим
+должен настраивать другие переменные, чтобы режим Auto-Fill работал с
+пользой, @emph{если} пользователь решит его использовать. 
 
 @item
 @cindex syntax tables in modes
-The mode may have its own syntax table or may share one with other
-related modes.  If it has its own syntax table, it should store this in
-a variable named @code{@var{modename}-mode-syntax-table}.  @xref{Syntax
-Tables}.
+Режим может иметь свою собственную таблицу синтаксиса или может использовать
+её совместно с другими связанными режимами.  Если у него есть собственная
+таблица синтаксиса, он должен сохранить ее в переменной с именем
+@code{@var{modename}-mode-syntax-table}.  @xref{Syntax Tables}.
 
 @item
-If the mode handles a language that has a syntax for comments, it should
-set the variables that define the comment syntax.  @xref{Options for
-Comments,, Options Controlling Comments, emacs, The GNU Emacs Manual}.
+Если режим обрабатывает язык, имеющий синтаксис для комментариев, он должен
+установить переменные, которые определяют синтаксис комментария.
+@xref{Options for Comments,, Options Controlling Comments, emacs, The GNU Emacs Manual}.
 
 @item
 @cindex abbrev tables in modes
-The mode may have its own abbrev table or may share one with other
-related modes.  If it has its own abbrev table, it should store this
-in a variable named @code{@var{modename}-mode-abbrev-table}.  If the
-major mode command defines any abbrevs itself, it should pass @code{t}
-for the @var{system-flag} argument to @code{define-abbrev}.
+Режим может иметь свою собственную таблицу сокращений или может
+использоваться совместно с другими связанными режимами.  Если у него есть
+своя собственная таблица сокращений, он должен сохранить ее в переменной с
+именем @code{@var{modename}-mode-abbrev-table}.  Если команда основного
+режима сама определяет какие-либо сокращения, она должна передать @code{t}
+для аргумента @var{system-flag} в @code{define-abbrev}.
 @xref{Defining Abbrevs}.
 
 @item
-The mode should specify how to do highlighting for Font Lock mode, by
-setting up a buffer-local value for the variable
+Режим должен указывать, как делать выделение для режима Font Lock,
+устанавливая локальное в буфере значение для переменной
 @code{font-lock-defaults} (@pxref{Font Lock Mode}).
 
 @item
-Each face that the mode defines should, if possible, inherit from an
-existing Emacs face.  @xref{Basic Faces}, and @ref{Faces for Font Lock}.
+Каждое лицо, определяемое режимом, должно, если возможно, наследовать
+существующее лицо Emacs.  @xref{Basic Faces} и @ref{Faces for Font Lock}.
 
 @item
-The mode should specify how Imenu should find the definitions or
-sections of a buffer, by setting up a buffer-local value for the
-variable @code{imenu-generic-expression}, for the two variables
-@code{imenu-prev-index-position-function} and
-@code{imenu-extract-index-name-function}, or for the variable
+Режим должен указывать, как Imenu должен находить определения или разделы
+буфера, устанавливая локальное в буфере значение для переменной
+@code{imenu-generic-expression}, для двух переменных
+@code{imenu-prev-index-position-function} и
+@code{imenu-extract-index-name-function} или для переменной
 @code{imenu-create-index-function} (@pxref{Imenu}).
 
 @item
-The mode can specify a local value for
-@code{eldoc-documentation-function} to tell ElDoc mode how to handle
-this mode.
+Режим может указывать локальное значение для
+@code{eldoc-documentation-function}, чтобы сообщить режиму ElDoc, как
+обрабатывать этот режим.
 
 @item
-The mode can specify how to complete various keywords by adding one or
-more buffer-local entries to the special hook
+Режим может указывать, как заполнять различные ключевые слова, добавляя одну
+или несколько локальных в буфере записей в специальный обработчик
 @code{completion-at-point-functions}.  @xref{Completion in Buffers}.
 
 @item
 @cindex buffer-local variables in modes
-To make a buffer-local binding for an Emacs customization variable, use
-@code{make-local-variable} in the major mode command, not
-@code{make-variable-buffer-local}.  The latter function would make the
-variable local to every buffer in which it is subsequently set, which
-would affect buffers that do not use this mode.  It is undesirable for a
-mode to have such global effects.  @xref{Buffer-Local Variables}.
+Чтобы сделать локальную привязку к буферу для переменной настройки Emacs,
+используйте @code{make-local-variable} в команде основного режима, а не
+@code{make-variable-buffer-local}.  Последняя функция сделает переменную
+локальной для каждого буфера, в котором она впоследствии будет установлена,
+что повлияет на буферы, которые не используют этот режим.  Нежелательно,
+чтобы режим имел такие глобальные эффекты.  @xref{Buffer-Local Variables}.
 
-With rare exceptions, the only reasonable way to use
-@code{make-variable-buffer-local} in a Lisp package is for a variable
-which is used only within that package.  Using it on a variable used by
-other packages would interfere with them.
+За редкими исключениями, единственный разумный способ использовать
+@code{make-variable-buffer-local} в пакете Lisp - для переменной, которая
+используется только внутри этого пакета.  Использование этого в переменной,
+используемой другими пакетами, может помешать им.
 
 @item
 @cindex mode hook
 @cindex major mode hook
-Each major mode should have a normal @dfn{mode hook} named
-@code{@var{modename}-mode-hook}.  The very last thing the major mode command
-should do is to call @code{run-mode-hooks}.  This runs the normal
-hook @code{change-major-mode-after-body-hook}, the mode hook, the
-function @code{hack-local-variables} (when the buffer is visiting a file),
-and then the normal hook @code{after-change-major-mode-hook}.
+Каждый основной режим должен иметь нормальную @dfn{ловушку режима} с именем
+@code{@var{modename}-mode-hook}.  Последнее, что должна сделать основная
+команда режима, - это вызвать @code{run-mode-hooks}.  Это запускает
+нормальную ловушку @code{change-major-mode-after-body-hook}, ловушку
+режима, функцию @code{hack-local-variables} (когда буфер обращается к
+файлу), а затем нормальную ловушку @code{after-change-major-mode-hook}.
 @xref{Mode Hooks}.
 
 @item
-The major mode command may start by calling some other major mode
-command (called the @dfn{parent mode}) and then alter some of its
-settings.  A mode that does this is called a @dfn{derived mode}.  The
-recommended way to define one is to use the @code{define-derived-mode}
-macro, but this is not required.  Such a mode should call the parent
-mode command inside a @code{delay-mode-hooks} form.  (Using
-@code{define-derived-mode} does this automatically.)  @xref{Derived
-Modes}, and @ref{Mode Hooks}.
+Команда основного режима может начинаться с вызова какой-либо другой команды
+основного режима (называемый @dfn{родительским режимом}), а затем изменять
+некоторые настройки.  Режим, который делает это, называется
+@dfn{производный режим}.  Рекомендуемый способ его определения -
+использовать макрос @code{define-derived-mode}, но это не обязательно.
+Такой режим должен вызывать команду родительского режима внутри формы
+@code{delay-mode-hooks}.  (Использование @code{define-derived-mode} делает
+это автоматически.)  @xref{Derived Modes} и @ref{Mode Hooks}.
 
 @item
-If something special should be done if the user switches a buffer from
-this mode to any other major mode, this mode can set up a buffer-local
-value for @code{change-major-mode-hook} (@pxref{Creating Buffer-Local}).
+Если нужно сделать что-то особенное, если пользователь переключает буфер из
+этого режима в любой другой основной режим, этот режим может установить
+локальное значение буфера для @code{change-major-mode-hook}
+(@pxref{Creating Buffer-Local}).
 
 @item
-If this mode is appropriate only for specially-prepared text produced by
-the mode itself (rather than by the user typing at the keyboard or by an
-external file), then the major mode command symbol should have a
-property named @code{mode-class} with value @code{special}, put on as
-follows:
+Если этот режим подходит только для специально подготовленного текста,
+созданного самим режимом (а не вводом пользователем с клавиатуры или с
+помощью внешнего файла), тогда символ команды основного режима должен иметь
+свойство с именем @code{mode-class} со значением @code{special}, помещается
+следующее:
 
 @kindex mode-class @r{(property)}
 @cindex @code{special} modes
@@ -490,132 +505,134 @@ follows:
 @end example
 
 @noindent
-This tells Emacs that new buffers created while the current buffer is in
-Funny mode should not be put in Funny mode, even though the default
-value of @code{major-mode} is @code{nil}.  By default, the value of
-@code{nil} for @code{major-mode} means to use the current buffer's major
-mode when creating new buffers (@pxref{Auto Major Mode}), but with such
-@code{special} modes, Fundamental mode is used instead.  Modes such as
-Dired, Rmail, and Buffer List use this feature.
+Это сообщает Emacs, что новые буферы, созданные, пока текущий буфер
+находится в режиме Funny, не следует переводить в режим Funny, даже если
+значение @code{major-mode} по умолчанию - @code{nil}.  По умолчанию значение
+@code{nil} для @code{major-mode} означает использование основного режима
+текущего буфера при создании новых буферов (@pxref{Auto Major Mode}), но с
+такими режимами @code{special} вместо него используется режим Fundamental.
+Такие режимы, как Dired, Rmail, и Buffer List, используют эту функцию.
 
-The function @code{view-buffer} does not enable View mode in buffers
-whose mode-class is special, because such modes usually provide their
-own View-like bindings.
+Функция @code{view-buffer} не включает режим просмотра в буферах, чей класс
+режима является особым, потому что такие режимы обычно предоставляют свои
+собственные привязки, подобные View.
 
-The @code{define-derived-mode} macro automatically marks the derived
-mode as special if the parent mode is special.  Special mode is a
-convenient parent for such modes to inherit from; @xref{Basic Major
-Modes}.
+Макрос @code{define-derived-mode} автоматически помечает производный режим
+как особый, если родительский режим особенный.  Специальный режим является
+удобным родительским элементом для наследования таких режимов;
+@xref{Basic Major Modes}.
 
 @item
-If you want to make the new mode the default for files with certain
-recognizable names, add an element to @code{auto-mode-alist} to select
-the mode for those file names (@pxref{Auto Major Mode}).  If you
-define the mode command to autoload, you should add this element in
-the same file that calls @code{autoload}.  If you use an autoload
-cookie for the mode command, you can also use an autoload cookie for
-the form that adds the element (@pxref{autoload cookie}).  If you do
-not autoload the mode command, it is sufficient to add the element in
-the file that contains the mode definition.
+Если потребуется сделать новый режим по умолчанию для файлов с определенными
+узнаваемыми именами, добавляется элемент в @code{auto-mode-alist}, чтобы
+выбрать режим для этих имен файлов (@pxref{Auto Major Mode}).  Если
+определяется команда режима для автозагрузки, потребуется добавить этот
+элемент в тот же файл, который вызывает @code{autoload}.  Если используется
+cookie автозагрузки для команды режима, также возможно использовать cookie
+автозагрузки для формы, которая добавляет элемент (@pxref{autoload cookie}).
+Если не загружается команда режима автоматически, достаточно добавить
+элемент в файл, содержащий определение режима.
 
 @item
 @cindex mode loading
-The top-level forms in the file defining the mode should be written so
-that they may be evaluated more than once without adverse consequences.
-For instance, use @code{defvar} or @code{defcustom} to set mode-related
-variables, so that they are not reinitialized if they already have a
-value (@pxref{Defining Variables}).
+Формы верхнего уровня в файле, определяющие режим, должны быть написаны так,
+чтобы их можно было оценивать более одного раза без неблагоприятных
+последствий.  Например, используется @code{defvar} или @code{defcustom} для
+установки переменных, связанных с режимом, чтобы они не
+переинициализировались, если они уже имеют значение
+(@pxref{Defining Variables}).
 
 @end itemize
 
 @node Auto Major Mode
-@subsection How Emacs Chooses a Major Mode
+@subsection Как Emacs Выбирает Основной Режим
 @cindex major mode, automatic selection
 
-  When Emacs visits a file, it automatically selects a major mode for
-the buffer based on information in the file name or in the file itself.
-It also processes local variables specified in the file text.
+  Когда Emacs посещает файл, он автоматически выбирает основной режим для
+буфера на основе информации в имени файла или в самом файле.  Он также
+обрабатывает локальные переменные, указанные в тексте файла.
 
 @deffn Command normal-mode &optional find-file
-This function establishes the proper major mode and buffer-local
-variable bindings for the current buffer.  It calls
-@code{set-auto-mode} (see below).  As of Emacs 26.1, it no longer
-runs @code{hack-local-variables}, this now being done in
-@code{run-mode-hooks} at the initialization of major modes
-(@pxref{Mode Hooks}).
+Функция устанавливает правильный основной режим и привязки переменных к
+локальному буферу для текущего буфера.  Она вызывает @code{set-auto-mode}
+(смотреть ниже).  Начиная с Emacs 26.1, больше не запускается
+@code{hack-local-variables}, теперь это делается в @code{run-mode-hooks} при
+инициализации основных режимов (@pxref{Mode Hooks}).
 
-If the @var{find-file} argument to @code{normal-mode} is non-@code{nil},
-@code{normal-mode} assumes that the @code{find-file} function is calling
-it.  In this case, it may process local variables in the @samp{-*-}
-line or at the end of the file.  The variable
-@code{enable-local-variables} controls whether to do so.  @xref{File
-Variables, , Local Variables in Files, emacs, The GNU Emacs Manual},
-for the syntax of the local variables section of a file.
+Если аргумент @var{find-file} для @code{normal-mode} равен не-@code{nil},
+@code{normal-mode}, предполагается, что его вызывает функция
+@code{find-file}.  В этом случае он может обрабатывать локальные переменные
+в строке @samp{-*-} или в конце файла.  Переменная
+@code{enable-local-variables} определяет, нужно ли это делать.
+@xref{File Variables, , Local Variables in Files, emacs, The GNU Emacs Manual},
+для синтаксиса раздела локальных переменных файла.
 
-If you run @code{normal-mode} interactively, the argument
-@var{find-file} is normally @code{nil}.  In this case,
-@code{normal-mode} unconditionally processes any file local variables.
+Если запускается @code{normal-mode} в интерактивном режиме, аргумент
+@var{find-file} обычно имеет вид @code{nil}.  В этом случае
+@code{normal-mode} безоговорочно обрабатывает любые локальные переменные
+файла.
 
-The function calls @code{set-auto-mode} to choose and set a major
-mode.  If this does not specify a mode, the buffer stays in the major
-mode determined by the default value of @code{major-mode} (see below).
+Функция вызывает @code{set-auto-mode} для выбора и установки основного
+режима.  Если здесь не указан режим, буфер остается в основном режиме,
+определяемом значением по умолчанию @code{major-mode} (смотреть ниже).
 
 @cindex file mode specification error
-@code{normal-mode} uses @code{condition-case} around the call to the
-major mode command, so errors are caught and reported as a @samp{File
-mode specification error}, followed by the original error message.
+@code{normal-mode} использует @code{condition-case} вокруг вызова команды
+основного режима, поэтому ошибки выявляются и сообщаются как
+@samp{File mode specification error}, за которым следует исходное сообщение
+об ошибке.
 @end deffn
 
 @defun set-auto-mode &optional keep-mode-if-same
 @cindex visited file mode
-  This function selects and sets the major mode that is appropriate
-for the current buffer.  It bases its decision (in order of
-precedence) on the @w{@samp{-*-}} line, on any @samp{mode:} local
-variable near the end of a file, on the @w{@samp{#!}} line (using
-@code{interpreter-mode-alist}), on the text at the beginning of the
-buffer (using @code{magic-mode-alist}), and finally on the visited
-file name (using @code{auto-mode-alist}).  @xref{Choosing Modes, , How
-Major Modes are Chosen, emacs, The GNU Emacs Manual}.  If
-@code{enable-local-variables} is @code{nil}, @code{set-auto-mode} does
-not check the @w{@samp{-*-}} line, or near the end of the file, for
-any mode tag.
+  Функция выбирает и устанавливает основной режим, подходящий для текущего
+буфера.  Она основывает свое решение (в порядке приоритета) на строке
+@w{@samp{-*-}}, на любой локальной переменной @samp{mode:} рядом с концом
+файла, на строке @w{@samp{#!}} (используя @code{interpreter-mode-alist}),
+на тексте в начале буфера (используя @code{magic-mode-alist}), и, наконец,
+по имени посещенного файла (используя @code{auto-mode-alist}).
+@xref{Choosing Modes, , How Major Modes are Chosen, emacs, The GNU Emacs Manual}.
+Если @code{enable-local-variables} равен @code{nil}, @code{set-auto-mode} не
+проверяет строку @w{@samp{-*-}} или около конца файла на наличие тегов
+режима.
 
 @vindex inhibit-local-variables-regexps
-There are some file types where it is not appropriate to scan the file
-contents for a mode specifier.  For example, a tar archive may happen to
-contain, near the end of the file, a member file that has a local
-variables section specifying a mode for that particular file.  This
-should not be applied to the containing tar file.  Similarly, a tiff
-image file might just happen to contain a first line that seems to
-match the @w{@samp{-*-}} pattern.  For these reasons, both these file
-extensions are members of the list @code{inhibit-local-variables-regexps}.
-Add patterns to this list to prevent Emacs searching them for local
-variables of any kind (not just mode specifiers).
+Существуют некоторые типы файлов, в которых нецелесообразно сканировать
+содержимое файла на предмет определения режима.  Например, tar-архив может
+содержать ближе к концу файла файл-член, в котором есть секция локальных
+переменных, определяющая режим для этого конкретного файла.  Это не должно
+применяться к содержащему tar-файлу.  Точно так же файл изображения tiff
+может просто содержать первую строку, которая, кажется, соответствует
+шаблону @w{@samp{-*-}}.  По этим причинам оба этих расширения файлов входят
+в список @code{inhibit-local-variables-regexps}.  Следует добавить шаблоны в
+этот список, чтобы Emacs не искал в них локальные переменные любого типа (а
+не только спецификаторы режима).
 
-If @var{keep-mode-if-same} is non-@code{nil}, this function does not
-call the mode command if the buffer is already in the proper major
-mode.  For instance, @code{set-visited-file-name} sets this to
-@code{t} to avoid killing buffer local variables that the user may
-have set.
+Если @var{keep-mode-if-same} равен не-@code{nil}, эта функция не вызывает
+команду режима, если буфер уже находится в правильном основном режиме.
+Например, @code{set-visited-file-name} устанавливает это значение в
+@code{t}, чтобы избежать уничтожения локальных переменных буфера, которые
+мог установить пользователь.
 @end defun
 
 @defun set-buffer-major-mode buffer
-This function sets the major mode of @var{buffer} to the default value of
-@code{major-mode}; if that is @code{nil}, it uses the
-current buffer's major mode (if that is suitable).  As an exception,
-if @var{buffer}'s name is @file{*scratch*}, it sets the mode to
+Функция устанавливает для основного режима @var{buffer} значение по
+умолчанию @code{major-mode}; если это @code{nil}, она использует основной
+режим текущего буфера (если это подходит).  В виде исключения, если имя
+@var{buffer} - @file{*scratch*}, устанавливается режим
 @code{initial-major-mode}.
 
-The low-level primitives for creating buffers do not use this function,
-but medium-level commands such as @code{switch-to-buffer} and
-@code{find-file-noselect} use it whenever they create buffers.
+Примитивы низкого уровня для создания буферов не используют эту функцию, но
+команды среднего уровня, такие как @code{switch-to-buffer} и
+@code{find-file-noselect}, используют ее всякий раз, когда они создают
+буферы.
 @end defun
 
 @defopt initial-major-mode
 @cindex @file{*scratch*}
-The value of this variable determines the major mode of the initial
-@file{*scratch*} buffer.  The value should be a symbol that is a major
-mode command.  The default value is @code{lisp-interaction-mode}.
+Значение этой переменной определяет основной режим начального буфера
+@file{*scratch*}.  Значение должно быть символом, который является командой
+основного режима.  Значение по умолчанию - @code{lisp-interaction-mode}.
 @end defopt
 
 @defvar interpreter-mode-alist
