@@ -2685,409 +2685,404 @@ Fortran использует это так:
 @end menu
 
 @node Font Lock Basics
-@subsection Font Lock Basics
+@subsection Основы Блокировки Шрифтов
 
-  The Font Lock functionality is based on several basic functions.
-Each of these calls the function specified by the corresponding
-variable.  This indirection allows major and minor modes to modify the
-way fontification works in the buffers of that mode, and even use the
-Font Lock mechanisms for features that have nothing to do with
-fontification.  (This is why the description below says ``should''
-when it describes what the functions do: the mode can customize the
-values of the corresponding variables to do something entirely
-different.)  The variables mentioned below are described in @ref{Other
-Font Lock Variables}.
+  Функциональность Font Lock основана на нескольких основных функциях.
+Каждый из них вызывает функцию, указанную соответствующей переменной.  Это
+косвенное обращение позволяет основным и второстепенным режимам изменять
+способ работы фонификации в буферах этого режима и даже использовать
+механизмы блокировки шрифта для функций, которые не имеют ничего общего с
+фонтификацией.  (Вот почему в описании ниже указано ``should (должен)'',
+когда оно описывает, что делают функции: режим может настраивать значения
+соответствующих переменных, чтобы делать что-то совершенно иное).
+Переменные, упомянутые ниже, описаны в @ref{Other Font Lock Variables}.
 
 @ftable @code
 @item font-lock-fontify-buffer
-This function should fontify the current buffer's accessible portion,
-by calling the function specified by
-@code{font-lock-fontify-buffer-function}.
+Эта функция должна поддерживать доступную часть текущего буфера, вызывая
+функцию, указанную в @code{font-lock-fontify-buffer-function}.
 
 @item font-lock-unfontify-buffer
-Used when turning Font Lock off to remove the fontification.  Calls
-the function specified by @code{font-lock-unfontify-buffer-function}.
+Используется при отключении Font Lock для удаления фонетизации.  Вызывает
+функцию, указанную @code{font-lock-unfontify-buffer-function}.
 
 @item font-lock-fontify-region beg end &optional loudly
-Should fontify the region between @var{beg} and @var{end}.  If
-@var{loudly} is не-@code{nil}, should display status messages while
-fontifying.  Calls the function specified by
+Следует осветлить область между @var{beg} и @var{end}. Если @var{loudly}
+равен не-@code{nil}, при фонтификации должны отображаться сообщения о
+статусе.  Вызывает функцию, указанную в
 @code{font-lock-fontify-region-function}.
 
 @item font-lock-unfontify-region beg end
-Should remove fontification from the region between @var{beg} and
-@var{end}.  Calls the function specified by
-@code{font-lock-unfontify-region-function}.
+Следует удалить фонтификацию из области между @var{beg} и @var{end}.
+Вызывает функцию, указанную @code{font-lock-unfontify-region-function}.
 
 @item font-lock-flush &optional beg end
-This function should mark the fontification of the region between
-@var{beg} and @var{end} as outdated.  If not specified or @code{nil},
-@var{beg} and @var{end} default to the beginning and end of the
-buffer's accessible portion.  Calls the function specified by
-@code{font-lock-flush-function}.
+Эта функция должна пометить фонтификацию области между @var{beg} и @var{end}
+как устаревшую.  Если не указано или @code{nil}, @var{beg} and @var{end} по
+умолчанию равняется началу и концу доступной части буфера. Вызывает функцию,
+указанную в @code{font-lock-flush-function}.
 
 @item font-lock-ensure &optional beg end
-This function should make sure the region between @var{beg} and
-@var{end} has been fontified.  The optional arguments @var{beg} and
-@var{end} default to the beginning and the end of the buffer's
-accessible portion.  Calls the function specified by
-@code{font-lock-ensure-function}.
+Эта функция должна убедиться, что область между @var{beg} и @var{end} была
+фонтифицирована.  Необязательные аргументы @var{beg} и @var{end} по
+умолчанию равны началу и концу доступной части буфера.  Вызывает функцию,
+указанную в @code{font-lock-ensure-function}.
 @end ftable
 
-  There are several variables that control how Font Lock mode highlights
-text.  But major modes should not set any of these variables directly.
-Instead, they should set @code{font-lock-defaults} as a buffer-local
-variable.  The value assigned to this variable is used, if and when Font
-Lock mode is enabled, to set all the other variables.
+  Есть несколько переменных, которые определяют, как режим Font Lock
+выделяет текст.  Но основные режимы не должны устанавливать какие-либо из
+этих переменных напрямую.  Вместо этого устанавливается
+@code{font-lock-defaults} как локальная переменная буфера.  Значение,
+присвоенное этой переменной, используется, если и когда включен режим
+Font Lock, для установки всех других переменных.
 
 @defvar font-lock-defaults
-This variable is set by modes to specify how to fontify text in that
-mode.  It automatically becomes buffer-local when set.  If its value
-is @code{nil}, Font Lock mode does no highlighting, and you can use
-the @samp{Faces} menu (under @samp{Edit} and then @samp{Text
-Properties} in the menu bar) to assign faces explicitly to text in the
-buffer.
+Эта переменная устанавливается режимами, чтобы указать, как фонировать текст
+в этом режиме.  При установке автоматически становится локальной в буфере.
+Если её значение - @code{nil}, режим Font Lock не выделяет, и можно
+использовать меню @samp{Faces} (под @samp{Edit}, а затем
+@samp{Text Properties} в строке меню), чтобы явно назначить грани тексту в
+буфере.
 
-If не-@code{nil}, the value should look like this:
+Если не-@code{nil}, значение должно выглядеть так:
 
 @example
 (@var{keywords} [@var{keywords-only} [@var{case-fold}
  [@var{syntax-alist} @var{other-vars}@dots{}]]])
 @end example
 
-The first element, @var{keywords}, indirectly specifies the value of
-@code{font-lock-keywords} which directs search-based fontification.
-It can be a symbol, a variable or a function whose value is the list
-to use for @code{font-lock-keywords}.  It can also be a list of
-several such symbols, one for each possible level of fontification.
-The first symbol specifies the @samp{mode default} level of
-fontification, the next symbol level 1 fontification, the next level 2,
-and so on.  The @samp{mode default} level is normally the same as level
-1.  It is used when @code{font-lock-maximum-decoration} has a @code{nil}
-value.  @xref{Levels of Font Lock}.
+Первый элемент, @var{keywords}, косвенно определяет значение
+@code{font-lock-keywords}, которое направляет фонтификацию на основе поиска.
+Это может быть символ, переменная или функция, значение которой является
+списком, используемым для @code{font-lock-keywords}.  Это также может быть
+список из нескольких таких символов, по одному для каждого возможного уровня
+фонификации.  Первый символ определяет уровень фонификации
+@samp{mode default}, следующий символ - уровень фонификации 1, следующий
+уровень 2 и так далее.  Уровень @samp{mode default} обычно такой же, как и
+уровень 1.  Используется, когда @code{font-lock-maximum-decoration} имеет
+значение @code{nil}.  @xref{Levels of Font Lock}.
 
-The second element, @var{keywords-only}, specifies the value of the
-variable @code{font-lock-keywords-only}.  If this is omitted or
-@code{nil}, syntactic fontification (of strings and comments) is also
-performed.  If this is не-@code{nil}, syntactic fontification is not
-performed.  @xref{Syntactic Font Lock}.
+Второй элемент, @var{keywords-only}, указывает значение переменной
+@code{font-lock-keywords-only}.  Если это опущено или @code{nil}, также
+выполняется синтаксическая фонификация (строк и комментариев).  Если это
+не-@code{nil}, синтаксическая фонификация не выполняется.
+@xref{Syntactic Font Lock}.
 
-The third element, @var{case-fold}, specifies the value of
-@code{font-lock-keywords-case-fold-search}.  If it is не-@code{nil},
-Font Lock mode ignores case during search-based fontification.
+Третий элемент, @var{case-fold}, указывает значение
+@code{font-lock-keywords-case-fold-search}.  Если это не-@code{nil}, режим
+Font Lock игнорирует регистр во время фонификации на основе поиска.
 
-If the fourth element, @var{syntax-alist}, is не-@code{nil}, it should
-be a list of cons cells of the form @code{(@var{char-or-string}
-. @var{string})}.  These are used to set up a syntax table for syntactic
-fontification; the resulting syntax table is stored in
-@code{font-lock-syntax-table}.  If @var{syntax-alist} is omitted or
-@code{nil}, syntactic fontification uses the syntax table returned by
-the @code{syntax-table} function.  @xref{Syntax Table Functions}.
+Если четвертым элементом @var{syntax-alist} является не-@code{nil}, это
+должен быть список cons-ячеек в форме
+@code{(@var{char-or-string} . @var{string})}.  Это используются для создания
+таблицы синтаксиса для синтаксической фонификации; итоговая таблица
+синтаксиса сохраняется в @code{font-lock-syntax-table}.  Если
+@var{syntax-alist} опущен или @code {nil}, синтаксическое оформление
+использует синтаксическую таблицу, возвращаемую функцией
+@code{syntax-table}.  @xref{Syntax Table Functions}.
 
-All the remaining elements (if any) are collectively called
-@var{other-vars}.  Each of these elements should have the form
-@code{(@var{variable} . @var{value})}---which means, make
-@var{variable} buffer-local and then set it to @var{value}.  You can
-use these @var{other-vars} to set other variables that affect
-fontification, aside from those you can control with the first five
-elements.  @xref{Other Font Lock Variables}.
+Все остальные элементы (если есть) вместе называются @var{other-vars}.
+Каждый из этих элементов должен иметь форму
+@code{(@var{variable} . @var{value})} --- что означает сделать
+@var{variable} локальным в буфере и затем установить для него @var{value}.
+Можно использовать эти @var{other-vars} для установки других переменных,
+влияющих на фонтификацию, помимо тех, которыми можно управлять с помощью
+первых пяти элементов.  @xref{Other Font Lock Variables}.
 @end defvar
 
-  If your mode fontifies text explicitly by adding
-@code{font-lock-face} properties, it can specify @code{(nil t)} for
-@code{font-lock-defaults} to turn off all automatic fontification.
-However, this is not required; it is possible to fontify some things
-using @code{font-lock-face} properties and set up automatic
-fontification for other parts of the text.
+  Если режим явно выделяет текст, добавляя свойства @code{font-lock-face},
+он может указать @code{(nil t)} для @code{font-lock-defaults}, чтобы
+отключить автоматическое фонирование.  Однако этого не требуется; можно
+фонировать некоторые вещи с помощью свойств @code{font-lock-face} и
+настроить автоматическое фонирование для других частей текста.
 
 @node Search-based Fontification
-@subsection Search-based Fontification
+@subsection Фонтификация на Основе Поиска
 
-  The variable which directly controls search-based fontification is
-@code{font-lock-keywords}, which is typically specified via the
-@var{keywords} element in @code{font-lock-defaults}.
+  Переменная, которая напрямую управляет фонтификацией на основе поиска -
+это @code{font-lock-keywords}, которая обычно указывается через элемент
+@var{keywords} в @code{font-lock-defaults}.
 
 @defvar font-lock-keywords
-The value of this variable is a list of the keywords to highlight.  Lisp
-programs should not set this variable directly.  Normally, the value is
-automatically set by Font Lock mode, using the @var{keywords} element in
-@code{font-lock-defaults}.  The value can also be altered using the
-functions @code{font-lock-add-keywords} and
-@code{font-lock-remove-keywords} (@pxref{Customizing Keywords}).
+Значение этой переменной представляет собой список ключевых слов, которые
+нужно выделить.  Программы на Lisp не должны устанавливать эту переменную
+напрямую.  Обычно значение устанавливается автоматически в режиме Font Lock
+с использованием элемента @var{keywords} в @code{font-lock-defaults}.
+Значение также можно изменить с помощью функций
+@code{font-lock-add-keywords} и @code{font-lock-remove-keywords}
+(@pxref{Customizing Keywords}).
 @end defvar
 
-  Each element of @code{font-lock-keywords} specifies how to find
-certain cases of text, and how to highlight those cases.  Font Lock mode
-processes the elements of @code{font-lock-keywords} one by one, and for
-each element, it finds and handles all matches.  Ordinarily, once
-part of the text has been fontified already, this cannot be overridden
-by a subsequent match in the same text; but you can specify different
-behavior using the @var{override} element of a @var{subexp-highlighter}.
+  Каждый элемент @code{font-lock-keywords} указывает, как найти определенные
+соответствия текста и как выделить это.  Режим Font Lock обрабатывает
+элементы @code{font-lock-keywords} один за другим, и для каждого элемента
+находит и обрабатывает все совпадения.  Обычно, если часть текста уже была
+фонтифицирована, это не может быть отменено последующим совпадением в том же
+тексте; но возможно указать другое поведение, используя элемент
+@var{override} из @var{subexp-highlighter}.
 
-  Each element of @code{font-lock-keywords} should have one of these
-forms:
+  Каждый элемент @code{font-lock-keywords} должен иметь одну из этих форм:
 
 @table @code
 @item @var{regexp}
-Highlight all matches for @var{regexp} using
-@code{font-lock-keyword-face}.  For example,
+Выделить все совпадения для @var{regexp} с помощью
+@code{font-lock-keyword-face}.  Для примера,
 
 @example
-;; @r{Highlight occurrences of the word @samp{foo}}
-;; @r{using @code{font-lock-keyword-face}.}
+;; @r{Выделить вхождения слова @samp{foo}}
+;; @r{с помощью @code{font-lock-keyword-face}.}
 "\\<foo\\>"
 @end example
 
-Be careful when composing these regular expressions; a poorly written
-pattern can dramatically slow things down!  The function
-@code{regexp-opt} (@pxref{Regexp Functions}) is useful for calculating
-optimal regular expressions to match several keywords.
+Осторожно при составлении этих регулярных выражений; плохо написанный шаблон
+может значительно замедлить работу!  Функция @code{regexp-opt}
+(@pxref{Regexp Functions}) полезна для вычисления оптимальных регулярных
+выражений для соответствия нескольким ключевым словам.
 
 @item @var{function}
-Find text by calling @var{function}, and highlight the matches
-it finds using @code{font-lock-keyword-face}.
+Найти текст, вызвав @var{function}, и выделить совпадения, которые он
+находит, используя @code{font-lock-keyword-face}.
 
-When @var{function} is called, it receives one argument, the limit of
-the search; it should begin searching at point, and not search beyond the
-limit.  It should return не-@code{nil} if it succeeds, and set the
-match data to describe the match that was found.  Returning @code{nil}
-indicates failure of the search.
+Когда вызывается @var{function}, получается один аргумент, предел поиска; 
+должен начинать поиск с точки, а не искать за пределами предела.  Должен
+вернуться не-@code{nil} в случае успеха и установить данные соответствия для
+описания найденного совпадения.  Возврат @code{nil} указывает на неудачный
+поиск.
 
-Fontification will call @var{function} repeatedly with the same limit,
-and with point where the previous invocation left it, until
-@var{function} fails.  On failure, @var{function} need not reset point
-in any particular way.
+Фонтификация будет вызывать @var{function} несколько раз с тем же пределом
+и с той точки, где его оставил предыдущий вызов, пока @var{function} не
+завершится ошибкой.  В случае сбоя @var{function} не нужно сбрасывать точку
+каким-либо определенным образом.
 
 @item (@var{matcher} . @var{subexp})
-In this kind of element, @var{matcher} is either a regular
-expression or a function, as described above.  The @sc{cdr},
-@var{subexp}, specifies which subexpression of @var{matcher} should be
-highlighted (instead of the entire text that @var{matcher} matched).
+В этом типе элемента @var{matcher} является либо регулярным выражением, либо
+функцией, как описано выше.  @sc{cdr}, @var{subexp}, указывает, какое
+подвыражение @var{matcher} должно быть выделено (вместо всего текста,
+сопоставленного @var{matcher}).
 
 @example
-;; @r{Highlight the @samp{bar} in each occurrence of @samp{fubar},}
-;; @r{using @code{font-lock-keyword-face}.}
+;; @r{Выделить @samp{bar} в каждом появлении @samp{fubar},}
+;; @r{ используя @code{font-lock-keyword-face}.}
 ("fu\\(bar\\)" . 1)
 @end example
 
-If you use @code{regexp-opt} to produce the regular expression
-@var{matcher}, you can use @code{regexp-opt-depth} (@pxref{Regexp
-Functions}) to calculate the value for @var{subexp}.
+Если используется @code{regexp-opt} для создания регулярного выражения
+@var{matcher}, можно использовать @code{regexp-opt-depth}
+(@pxref{Regexp Functions}) для вычисления значения @var{subexp}.
 
 @item (@var{matcher} . @var{facespec})
-In this kind of element, @var{facespec} is an expression whose value
-specifies the face to use for highlighting.  In the simplest case,
-@var{facespec} is a Lisp variable (a symbol) whose value is a face
-name.
+В этом типе элемента @var{facespec} - это выражение, значение которого
+определяет лицо, используемое для выделения. В простейшем случае
+@var{facespec} - это переменная Lisp (символ), значением которой является
+имя внешнего вида.
 
 @example
-;; @r{Highlight occurrences of @samp{fubar},}
-;; @r{using the face which is the value of @code{fubar-face}.}
+;; @r{Выделить вхождения @samp{fubar}, используя внешний вид,}
+;; @r{которое является значением @code{fubar-face}.}
 ("fubar" . fubar-face)
 @end example
 
-However, @var{facespec} can also evaluate to a list of this form:
+Однако @var{facespec} также может вычислять список в этой форме:
 
 @example
 (face @var{face} @var{prop1} @var{val1} @var{prop2} @var{val2}@dots{})
 @end example
 
 @noindent
-to specify the face @var{face} and various additional text properties
-to put on the text that matches.  If you do this, be sure to add the
-other text property names that you set in this way to the value of
-@code{font-lock-extra-managed-props} so that the properties will also
-be cleared out when they are no longer appropriate.  Alternatively,
-you can set the variable @code{font-lock-unfontify-region-function} to
-a function that clears these properties.  @xref{Other Font Lock
-Variables}.
+чтобы указать внешний вид @var{face} и различные дополнительные свойства
+текста, которые будут помещены в совпадающий текст.  Если это сделано,
+обязательно добавляются другие имена текстовых свойств, которые установлены
+таким образом, к значению @code{font-lock-extra-managed-props}, чтобы
+свойства также очищались, когда они больше не подходят.  В качестве
+альтернативы можно установить переменную
+@code{font-lock-unfontify-region-function} как функцию, очищающую эти
+свойства.  @xref{Other Font Lock Variables}.
 
 @item (@var{matcher} . @var{subexp-highlighter})
-In this kind of element, @var{subexp-highlighter} is a list
-which specifies how to highlight matches found by @var{matcher}.
-It has the form:
+В этом типе элемента @var{subexp-highlighter} - это список, который
+указывает, как выделять совпадения, найденные @var{matcher}.
+Он имеет вид:
 
 @example
 (@var{subexp} @var{facespec} [@var{override} [@var{laxmatch}]])
 @end example
 
-The @sc{car}, @var{subexp}, is an integer specifying which subexpression
-of the match to fontify (0 means the entire matching text).  The second
-subelement, @var{facespec}, is an expression whose value specifies the
-face, as described above.
+@sc{car}, @var{subexp} - целое число, определяющее, какое подвыражение
+совпадения нужно фонировать (0 означает весь соответствующий текст).  Второй
+подэлемент @var{facespec} - это выражение, значение которого определяет
+внешний вид, как описано выше.
 
-The last two values in @var{subexp-highlighter}, @var{override} and
-@var{laxmatch}, are optional flags.  If @var{override} is @code{t},
-this element can override existing fontification made by previous
-elements of @code{font-lock-keywords}.  If it is @code{keep}, then
-each character is fontified if it has not been fontified already by
-some other element.  If it is @code{prepend}, the face specified by
-@var{facespec} is added to the beginning of the @code{font-lock-face}
-property.  If it is @code{append}, the face is added to the end of the
-@code{font-lock-face} property.
+Последние два значения в @var{subexp-highlighter}, @var{override} и
+@var{laxmatch} являются необязательными флагами.  Если @var{override} равен
+@code{t}, этот элемент может переопределить существующее фонирование,
+сделанное предыдущими элементами @code{font-lock-keywords}.  Если это
+@code{keep}, то каждый символ будет фонтифицирован, если он еще не был
+фонтифицирован каким-либо другим элементом.  Если это @code{prepend}, вид,
+указанный в @var{facespec}, добавляется в начало свойства
+@code{font-lock-face}.  Если это @code{append}, грань добавляется в конец
+свойства @code{font-lock-face}.
 
-If @var{laxmatch} is не-@code{nil}, it means there should be no error
-if there is no subexpression numbered @var{subexp} in @var{matcher}.
-Obviously, fontification of the subexpression numbered @var{subexp} will
-not occur.  However, fontification of other subexpressions (and other
-regexps) will continue.  If @var{laxmatch} is @code{nil}, and the
-specified subexpression is missing, then an error is signaled which
-terminates search-based fontification.
+Если @var{laxmatch} равен не-@code{nil}, это означает, что ошибок не должно
+быть, если в @var{matcher} нет подвыражения с номером @var{subexp}.
+Очевидно, что фонификация подвыражения с номером @var{subexp} не произойдет.
+Однако фонификация других подвыражений (и других регулярных выражений) будет
+продолжена.  Если @var{laxmatch} равен @code{nil} и указанное подвыражение
+отсутствует, то выдается сигнал об ошибке, что завершает фонтификацию на
+основе поиска.
 
-Here are some examples of elements of this kind, and what they do:
+Вот несколько примеров таких элементов и их назначение.:
 
 @smallexample
-;; @r{Highlight occurrences of either @samp{foo} or @samp{bar}, using}
-;; @r{@code{foo-bar-face}, even if they have already been highlighted.}
-;; @r{@code{foo-bar-face} should be a variable whose value is a face.}
+;; @r{Выделить вхождения либо @samp{foo} либо @samp{bar},}
+;; @r{используя @code{foo-bar-face}, даже если они уже были выделены,}
+;; @r{@code{foo-bar-face} - переменная, значением которой является вид.}
 ("foo\\|bar" 0 foo-bar-face t)
 
-;; @r{Highlight the first subexpression within each occurrence}
-;; @r{that the function @code{fubar-match} finds,}
-;; @r{using the face which is the value of @code{fubar-face}.}
+;; @r{Выделить первое подвыражение в каждом вхождении,}
+;; @r{которое находит функция @code{fubar-match},}
+;; @r{с использованием вида, который является значением @code{fubar-face}.}
 (fubar-match 1 fubar-face)
 @end smallexample
 
 @item (@var{matcher} . @var{anchored-highlighter})
-In this kind of element, @var{anchored-highlighter} specifies how to
-highlight text that follows a match found by @var{matcher}.  So a
-match found by @var{matcher} acts as the anchor for further searches
-specified by @var{anchored-highlighter}.  @var{anchored-highlighter}
-is a list of the following form:
+В этом типе элемента @var{anchored-highlighter} указывает, как выделить
+текст, следующий за совпадением, найденным @var{matcher}.  Таким образом,
+совпадение, найденное @var{matcher}, действует как якорь для дальнейшего
+поиска, указанного @var{anchored-highlighter}.  @var{anchored-highlighter} -
+это список следующего вида:
 
 @example
 (@var{anchored-matcher} @var{pre-form} @var{post-form}
                         @var{subexp-highlighters}@dots{})
 @end example
 
-Here, @var{anchored-matcher}, like @var{matcher}, is either a regular
-expression or a function.  After a match of @var{matcher} is found,
-point is at the end of the match.  Now, Font Lock evaluates the form
-@var{pre-form}.  Then it searches for matches of
-@var{anchored-matcher} and uses @var{subexp-highlighters} to highlight
-these.  A @var{subexp-highlighter} is as described above.  Finally,
-Font Lock evaluates @var{post-form}.
+Здесь @var{anchored-matcher}, как и @var{matcher}, является либо регулярным
+выражением, либо функцией.  После того как совпадение @var{matcher} найдено,
+точка находится в конце соответствия.  Теперь Font Lock оценивает форму
+@var{pre-form}.  Затем ищется совпадения с @var{anchored-matcher} и
+используется @var{subexp-highlighters} для их выделения.  А
+@var{subexp-highlighter} такой, как описано выше.  Наконец, Font Lock
+оценивает @var{post-form}.
 
-The forms @var{pre-form} and @var{post-form} can be used to initialize
-before, and cleanup after, @var{anchored-matcher} is used.  Typically,
-@var{pre-form} is used to move point to some position relative to the
-match of @var{matcher}, before starting with @var{anchored-matcher}.
-@var{post-form} might be used to move back, before resuming with
-@var{matcher}.
+Формы @var{pre-form} и @var{post-form} могут использоваться для
+инициализации до и очистки после @var{anchored-matcher}.  Обычно
+@var{pre-form} используется для перемещения точки в некоторую позицию
+относительно соответствия @var{matcher} перед тем, как начать с
+@var{anchored-matcher}.  @var{post-form} можно использовать для возврата,
+прежде чем продолжить с @var{matcher}.
 
-After Font Lock evaluates @var{pre-form}, it does not search for
-@var{anchored-matcher} beyond the end of the line.  However, if
-@var{pre-form} returns a buffer position that is greater than the
-position of point after @var{pre-form} is evaluated, then the position
-returned by @var{pre-form} is used as the limit of the search instead.
-It is generally a bad idea to return a position greater than the end
-of the line; in other words, the @var{anchored-matcher} search should
-not span lines.
+После того, как Font Lock оценивает @var{pre-form}, ищется
+@var{anchored-matcher} после конца строки.  Однако, если @var{pre-form}
+возвращает позицию в буфере, которая больше, чем позиция точки после оценки
+@var{pre-form}, то позиция, возвращаемая @var{pre-form}, вместо этого
+используется как предел поиска.  Как правило, возвращать позицию больше
+конца строки - плохая идея; другими словами, поиск @var{anchored-matcher} не
+должен охватывать строки.
 
-For example,
+Например,
 
 @smallexample
-;; @r{Highlight occurrences of the word @samp{item} following}
-;; @r{an occurrence of the word @samp{anchor} (on the same line)}
-;; @r{in the value of @code{item-face}.}
+;; @r{Выделить вхождения слова @samp{item}, следующего после,}
+;; @r{когда слово @samp{anchor} (в той же строке) }
+;; @r{в значении @code{item-face}.}
 ("\\<anchor\\>" "\\<item\\>" nil nil (0 item-face))
 @end smallexample
 
-Here, @var{pre-form} and @var{post-form} are @code{nil}.  Therefore
-searching for @samp{item} starts at the end of the match of
-@samp{anchor}, and searching for subsequent instances of @samp{anchor}
-resumes from where searching for @samp{item} concluded.
+Здесь @var{pre-form} и @var{post-form} - это @code{nil}.  Поэтому поиск
+@samp{item} начинается в конце совпадения с @samp{anchor}, а поиск
+последующих экземпляров @samp{anchor} возобновляется с того места, где
+завершился поиск @samp{item}.
 
 @item (@var{matcher} @var{highlighters}@dots{})
-This sort of element specifies several @var{highlighter} lists for a
-single @var{matcher}.  A @var{highlighter} list can be of the type
-@var{subexp-highlighter} or @var{anchored-highlighter} as described
-above.
+Этот тип элемента определяет несколько списков @var{highlighter} для одного
+@var{matcher}.  Список @var{highlighter} может иметь тип
+@var{subexp-highlighter} или @var{anchored-highlighter}, как описано выше.
 
-For example,
+Например,
 
 @smallexample
-;; @r{Highlight occurrences of the word @samp{anchor} in the value}
-;; @r{of @code{anchor-face}, and subsequent occurrences of the word}
-;; @r{@samp{item} (on the same line) in the value of @code{item-face}.}
+;; @r{Выделить вхождения слова @samp{anchor} в значении}
+;; @r{параметра @code{anchor-face} и последующие вхождения слова}
+;; @r{@samp{item} (в той же строке) в значении @code{item-face}.}
 ("\\<anchor\\>" (0 anchor-face)
                 ("\\<item\\>" nil nil (0 item-face)))
 @end smallexample
 
 @item (eval . @var{form})
-Here @var{form} is an expression to be evaluated the first time
-this value of @code{font-lock-keywords} is used in a buffer.
-Its value should have one of the forms described in this table.
+Здесь @var{form} - это выражение, которое нужно оценить при первом
+использовании этого значения @code{font-lock-keywords} в буфере.  Его
+значение должно иметь одну из форм, описанных в этой таблице.
 @end table
 
-@strong{Warning:} Do not design an element of @code{font-lock-keywords}
-to match text which spans lines; this does not work reliably.
-For details, @pxref{Multiline Font Lock}.
+@strong{Предупреждение:} Не создавайть элемент @code{font-lock-keywords} для
+соответствия тексту, занимающему строки; это не работает надежно.
+Для деталей, @pxref{Multiline Font Lock}.
 
-You can use @var{case-fold} in @code{font-lock-defaults} to specify
-the value of @code{font-lock-keywords-case-fold-search} which says
-whether search-based fontification should be case-insensitive.
+Можно использовать @var{case-fold} в @code{font-lock-defaults}, чтобы
+указать значение @code{font-lock-keywords-case-fold-search}, которое
+указывает, должна ли фонификация на основе поиска быть нечувствительной к
+регистру.
 
 @defvar font-lock-keywords-case-fold-search
-не-@code{nil} means that regular expression matching for the sake of
-@code{font-lock-keywords} should be case-insensitive.
+не-@code{nil} означает, что сопоставление регулярного выражения для
+@code{font-lock-keywords} должно быть нечувствительным к регистру.
 @end defvar
 
 @node Customizing Keywords
-@subsection Customizing Search-Based Fontification
+@subsection Настройка Фонетизации на Основе поиска
 
-  You can use @code{font-lock-add-keywords} to add additional
-search-based fontification rules to a major mode, and
-@code{font-lock-remove-keywords} to remove rules.
+  Можно использовать @code{font-lock-add-keywords} для добавления
+дополнительных правил фонификации на основе поиска в основной режим и
+@code{font-lock-remove-keywords} для удаления правил.
 
 @defun font-lock-add-keywords mode keywords &optional how
-This function adds highlighting @var{keywords}, for the current buffer
-or for major mode @var{mode}.  The argument @var{keywords} should be a
-list with the same format as the variable @code{font-lock-keywords}.
+Эта функция добавляет выделение @var{keywords} для текущего буфера или для
+основного режима @var{mode}.  Аргумент @var{keywords} должен быть списком
+того же формата, что и переменная @code{font-lock-keywords}.
 
-If @var{mode} is a symbol which is a major mode command name, such as
-@code{c-mode}, the effect is that enabling Font Lock mode in
-@var{mode} will add @var{keywords} to @code{font-lock-keywords}.
-Calling with a не-@code{nil} value of @var{mode} is correct only in
-your @file{~/.emacs} file.
+Если @var{mode} - это символ, который является именем основной команды
+режима, например @code{c-mode}, в результате включение режима блокировки
+шрифта в @var{mode} добавит @var{keywords} к @code{font-lock-keywords}.
+Вызов с не-@code{nil} значением @var{mode} корректно только в вашем файле
+@file{~/.emacs}.
 
-If @var{mode} is @code{nil}, this function adds @var{keywords} to
-@code{font-lock-keywords} in the current buffer.  This way of calling
-@code{font-lock-add-keywords} is usually used in mode hook functions.
+Если @var{mode} равен @code{nil}, эта функция добавляет @var{keywords} к
+@code{font-lock-keywords} в текущем буфере.  Этот способ вызова
+@code{font-lock-add-keywords} обычно используется в функциях перехвата
+режима.
 
-By default, @var{keywords} are added at the beginning of
-@code{font-lock-keywords}.  If the optional argument @var{how} is
-@code{set}, they are used to replace the value of
-@code{font-lock-keywords}.  If @var{how} is any other не-@code{nil}
-value, they are added at the end of @code{font-lock-keywords}.
+По умолчанию @var{keywords} добавляется в начало @code{font-lock-keywords}.
+Если необязательный аргумент @var{how} - @code{set}, используются для замены
+значения @code{font-lock-keywords}.  Если @var{how} - любое другое значение
+не-@code{nil}, добавляются в конец @code{font-lock-keywords}.
 
-Some modes provide specialized support you can use in additional
-highlighting patterns.  See the variables
-@code{c-font-lock-extra-types}, @code{c++-font-lock-extra-types},
-and @code{java-font-lock-extra-types}, for example.
+Некоторые режимы предоставляют специализированную поддержку, которую можно
+использовать в дополнительных узорах подсветки.  Смотреть пример, переменные
+@code{c-font-lock-extra-types}, @code{c++-font-lock-extra-types} и
+@code{java-font-lock-extra-types}.
 
-@strong{Warning:} Major mode commands must not call
-@code{font-lock-add-keywords} under any circumstances, either directly
-or indirectly, except through their mode hooks.  (Doing so would lead to
-incorrect behavior for some minor modes.)  They should set up their
-rules for search-based fontification by setting
+@strong{Предупреждение:} Команды основного режима не должны вызывать
+@code{font-lock-add-keywords} ни при каких обстоятельствах, прямо или
+косвенно, кроме как через их обработчики режима.  (Это может привести к
+некорректному поведению некоторых второстепенных режимов.).  Им следует
+установить свои правила для фонификации на основе поиска, установив
 @code{font-lock-keywords}.
 @end defun
 
 @defun font-lock-remove-keywords mode keywords
-This function removes @var{keywords} from @code{font-lock-keywords}
-for the current buffer or for major mode @var{mode}.  As in
-@code{font-lock-add-keywords}, @var{mode} should be a major mode
-command name or @code{nil}.  All the caveats and requirements for
-@code{font-lock-add-keywords} apply here too.  The argument
-@var{keywords} must exactly match the one used by the corresponding
+Эта функция удаляет @var{keywords} из @code{font-lock-keywords} для текущего
+буфера или для основного режима @var{mode}.  Как и в
+@code{font-lock-add-keywords}, @var{mode}, должно быть имя команды основного
+режима или @code{nil}.  Здесь также действуют все предостережения и
+требования к @code{font-lock-add-keywords}.  Аргумент @var{keywords} должен
+точно совпадать с аргументом, используемым соответствующим
 @code{font-lock-add-keywords}.
 @end defun
 
-  For example, the following code adds two fontification patterns for C
-mode: one to fontify the word @samp{FIXME}, even in comments, and
-another to fontify the words @samp{and}, @samp{or} and @samp{not} as
-keywords.
+  Например, следующий код добавляет два шаблона фонирования для режима C:
+один для фонирования слова @samp{FIXME} даже в комментариях, а другой для
+фонирования слова @samp{and}, @samp{or} и @samp{not} в качестве ключевых
+слов.
 
 @smallexample
 (font-lock-add-keywords 'c-mode
@@ -3096,8 +3091,8 @@ keywords.
 @end smallexample
 
 @noindent
-This example affects only C mode proper.  To add the same patterns to C
-mode @emph{and} all modes derived from it, do this instead:
+Этот пример влияет только на режим C.  Чтобы добавить те же шаблоны в режим
+C @emph{and} для всех производных от него режимов, сделайте это вместо:
 
 @smallexample
 (add-hook 'c-mode-hook
@@ -3109,241 +3104,237 @@ mode @emph{and} all modes derived from it, do this instead:
 @end smallexample
 
 @node Other Font Lock Variables
-@subsection Other Font Lock Variables
+@subsection Другие Переменные Font Lock
 
-  This section describes additional variables that a major mode can
-set by means of @var{other-vars} in @code{font-lock-defaults}
+  В этом разделе описаны дополнительные переменные, которые основной режим
+может установить с помощью @var{other-vars} в @code{font-lock-defaults}
 (@pxref{Font Lock Basics}).
 
 @defvar font-lock-mark-block-function
-If this variable is не-@code{nil}, it should be a function that is
-called with no arguments, to choose an enclosing range of text for
-refontification for the command @kbd{M-o M-o}
-(@code{font-lock-fontify-block}).
+Если эта переменная - не-@code{nil}, это должна быть функция, которая
+вызывается без аргументов, чтобы выбрать охватывающий диапазон текста для
+рефонтификации для команды @kbd{M-o M-o} (@code{font-lock-fontify-block}).
 
-The function should report its choice by placing the region around it.
-A good choice is a range of text large enough to give proper results,
-but not too large so that refontification becomes slow.  Typical values
-are @code{mark-defun} for programming modes or @code{mark-paragraph} for
-textual modes.
+Функция должна сообщить о своем выборе, поместив вокруг него область.
+Хороший выбор - это достаточно большой диапазон текста, чтобы дать
+правильные результаты, но не слишком большой, чтобы переформатирование
+стало медленным.  Типичные значения: @code{mark-defun} для режимов
+программирования или @code{mark-paragraph} для текстовых режимов.
 @end defvar
 
 @defvar font-lock-extra-managed-props
-This variable specifies additional properties (other than
-@code{font-lock-face}) that are being managed by Font Lock mode.  It
-is used by @code{font-lock-default-unfontify-region}, which normally
-only manages the @code{font-lock-face} property.  If you want Font
-Lock to manage other properties as well, you must specify them in a
-@var{facespec} in @code{font-lock-keywords} as well as add them to
-this list.  @xref{Search-based Fontification}.
+Эта переменная определяет дополнительные свойства (кроме
+@code{font-lock-face}), которыми управляет режим Font Lock.  Используется
+@code{font-lock-default-unfontify-region}, которая обычно управляет только
+свойством @code{font-lock-face}.  Если требуется, чтобы Font Lock управлял
+и другими свойствами, указываются они в @var{facespec} в
+@code{font-lock-keywords}, а также добавляются в этот список.
+@xref{Search-based Fontification}.
 @end defvar
 
 @defvar font-lock-fontify-buffer-function
-Function to use for fontifying the buffer.  The default value is
+Функция для использования в буфере.  Значение по умолчанию -
 @code{font-lock-default-fontify-buffer}.
 @end defvar
 
 @defvar font-lock-unfontify-buffer-function
-Function to use for unfontifying the buffer.  This is used when
-turning off Font Lock mode.  The default value is
+Функция, используемая для очистки буфера.  Используется при отключении
+режима блокировки шрифта.  Значение по умолчанию -
 @code{font-lock-default-unfontify-buffer}.
 @end defvar
 
 @defvar font-lock-fontify-region-function
-Function to use for fontifying a region.  It should take two
-arguments, the beginning and end of the region, and an optional third
-argument @var{verbose}.  If @var{verbose} is не-@code{nil}, the
-function should print status messages.  The default value is
+Функция, используемая для обозначения региона.  Должна принимать два
+аргумента: начало и конец области и необязательный третий аргумент
+@var{verbose}.  Если @var{verbose} равен не-@code{nil}, функция должна
+выводить сообщения о состоянии.  Значение по умолчанию -
 @code{font-lock-default-fontify-region}.
 @end defvar
 
 @defvar font-lock-unfontify-region-function
-Function to use for unfontifying a region.  It should take two
-arguments, the beginning and end of the region.  The default value is
+Функция, используемая для отмены регистрации региона.  Должна принимать два
+аргумента, начало и конец региона.  Значение по умолчанию -
 @code{font-lock-default-unfontify-region}.
 @end defvar
 
 @defvar font-lock-flush-function
-Function to use for declaring that a region's fontification is out of
-date.  It takes two arguments, the beginning and end of the region.
-The default value of this variable is
-@code{font-lock-after-change-function}.
+Функция, используемая для объявления о том, что фонтификация региона
+устарела.  Требуется два аргумента: начало и конец области.  Значение по
+умолчанию для этой переменной - @code{font-lock-after-change-function}.
 @end defvar
 
 @defvar font-lock-ensure-function
-Function to use for making sure a region of the current buffer has
-been fontified.  It is called with two arguments, the beginning and
-end of the region.  The default value of this variable is a function
-that calls @code{font-lock-default-fontify-buffer} if the buffer is
-not fontified; the effect is to make sure the entire accessible
-portion of the buffer is fontified.
+Функция, используемая для проверки того, что область текущего буфера была
+выделена.  Вызывается с двумя аргументами, началом и концом области.
+Значение по умолчанию этой переменной - это функция, которая вызывает
+@code{font-lock-default-fontify-buffer}, если буфер не фонтифицирован;
+эффект состоит в том, чтобы обеспечить фонтизацию всей доступной части
+буфера.
 @end defvar
 
 @defun jit-lock-register function &optional contextual
-This function tells Font Lock mode to run the Lisp function
-@var{function} any time it has to fontify or refontify part of the
-current buffer.  It calls @var{function} before calling the default
-fontification functions, and gives it two arguments, @var{start} and
-@var{end}, which specify the region to be fontified or refontified.
+Эта функция сообщает режиму Font Lock запускать Lisp-функцию @var{function}
+каждый раз, когда нужно фонировать или обновлять часть текущего буфера.
+Вызывает @var{function} перед вызовом функций фонификации по умолчанию и
+дает ему два аргумента, @var{start} и @var{end}, которые определяют регион,
+который будет фонтифицирован или реорганизован.
 
-The optional argument @var{contextual}, if не-@code{nil}, forces Font
-Lock mode to always refontify a syntactically relevant part of the
-buffer, and not just the modified lines.  This argument can usually be
-omitted.
+Необязательный аргумент @var{contextual}, если не-@code{nil}, заставляет
+режим Font Lock всегда обновлять синтаксически значимую часть буфера, а не
+только измененные строки.  Этот аргумент обычно можно опустить.
 @end defun
 
 @defun jit-lock-unregister function
-If @var{function} was previously registered as a fontification
-function using @code{jit-lock-register}, this function unregisters it.
+Если @var{function} ранее был зарегистрирован как функция фонификации с
+помощью @code{jit-lock-register}, эта функция отменяет регистрацию.
 @end defun
 
 @node Levels of Font Lock
-@subsection Levels of Font Lock
+@subsection Уровни Блокировки Шрифта
 
-  Some major modes offer three different levels of fontification.  You
-can define multiple levels by using a list of symbols for @var{keywords}
-in @code{font-lock-defaults}.  Each symbol specifies one level of
-fontification; it is up to the user to choose one of these levels,
-normally by setting @code{font-lock-maximum-decoration} (@pxref{Font
-Lock,,, emacs, the GNU Emacs Manual}).  The chosen level's symbol value
-is used to initialize @code{font-lock-keywords}.
+  Некоторые основные режимы предлагают три разных уровня фонификации.  Можно
+определить несколько уровней, используя список символов для @var{keywords} в
+@code{font-lock-defaults}.  Каждый символ обозначает один уровень
+фонификации; Пользователь может выбрать один из этих уровней, обычно
+устанавливая @code{font-lock-maximum-decoration}
+(@pxref{Font Lock,,, emacs, the GNU Emacs Manual}).  Значение символа
+выбранного уровня используется для инициализации @code{font-lock-keywords}.
 
-  Here are the conventions for how to define the levels of
-fontification:
+  Вот правила определения уровней фонификации:
 
 @itemize @bullet
 @item
-Level 1: highlight function declarations, file directives (such as include or
-import directives), strings and comments.  The idea is speed, so only
-the most important and top-level components are fontified.
+Уровень 1: выделите объявления функций, файловые директивы (например,
+директивы include или import), строки и комментарии. Идея в скорости,
+поэтому только самые важные и высокоуровневые компоненты поддерживаются.
 
 @item
-Level 2: in addition to level 1, highlight all language keywords,
-including type names that act like keywords, as well as named constant
-values.  The idea is that all keywords (either syntactic or semantic)
-should be fontified appropriately.
+Уровень 2: в дополнение к уровню 1 выделите все ключевые слова языка,
+включая имена типов, которые действуют как ключевые слова, а также
+именованные значения констант. Идея состоит в том, что все ключевые слова
+(синтаксические или семантические) должны иметь соответствующее фонирование.
 
 @item
-Level 3: in addition to level 2, highlight the symbols being defined in
-function and variable declarations, and all builtin function names,
-wherever they appear.
+Уровень 3: в дополнение к уровню 2 выделите символы, определенные в
+объявлениях функций и переменных, и все имена встроенных функций, где бы они
+ни появлялись.
 @end itemize
 
 @node Precalculated Fontification
-@subsection Precalculated Fontification
+@subsection Предварительно Рассчитанное Фонирование
 
-  Some major modes such as @code{list-buffers} and @code{occur}
-construct the buffer text programmatically.  The easiest way for them
-to support Font Lock mode is to specify the faces of text when they
-insert the text in the buffer.
+  Некоторые основные режимы, такие как @code{list-buffers} и @code{occur},
+создают текст буфера программно.  Самый простой способ поддержать режим
+Font Lock - указать лицевую сторону текста при вставке текста в буфер.
 
-  The way to do this is to specify the faces in the text with the
-special text property @code{font-lock-face} (@pxref{Special
-Properties}).  When Font Lock mode is enabled, this property controls
-the display, just like the @code{face} property.  When Font Lock mode
-is disabled, @code{font-lock-face} has no effect on the display.
+  Для этого нужно указать вид в тексте с помощью специального текстового
+свойства @code{font-lock-face} (@pxref{Special Properties}).  Когда режим
+Font Lock включен, это свойство управляет отображением, как и свойство
+@code{face}.  Когда режим Font Lock отключен, @code{font-lock-face} не
+влияет на отображение.
 
-  It is ok for a mode to use @code{font-lock-face} for some text and
-also use the normal Font Lock machinery.  But if the mode does not use
-the normal Font Lock machinery, it should not set the variable
-@code{font-lock-defaults}.  In this case the @code{face} property will
-not be overriden, so using the @code{face} property could work too.
-However, using @code{font-lock-face} is generally preferable as it
-allows the user to control the fontification by toggling
-@code{font-lock-mode}, and lets the code work regardless of whether
-the mode uses Font Lock machinery or not.
+  Это нормально для режима использовать @code{font-lock-face} для некоторого
+текста, а также использовать обычный механизм Font Lock.  Но если режим не
+использует обычный механизм Font Lock, он не должен устанавливать переменную
+@code{font-lock-defaults}.  В этом случае свойство @code{face} не будет
+переопределено, поэтому использование свойства @code{face} также может
+работать.  Однако использование @code{font-lock-face} обычно
+предпочтительнее, так как оно позволяет пользователю управлять
+фонтификацией, переключая @code{font-lock-mode}, и позволяет коду работать
+независимо от того, использует ли режим механизм Font Lock или нет.
 
 @node Faces for Font Lock
-@subsection Faces for Font Lock
+@subsection Внешний Вид для Font Lock
 @cindex faces for font lock
 @cindex font lock faces
 
-  Font Lock mode can highlight using any face, but Emacs defines several
-faces specifically for Font Lock to use to highlight text.  These
-@dfn{Font Lock faces} are listed below.  They can also be used by major
-modes for syntactic highlighting outside of Font Lock mode (@pxref{Major
-Mode Conventions}).
+  В режиме Font Lock можно выделить любой вид, но Emacs определяет несколько
+начертаний специально для Font Lock, чтобы использовать его для выделения
+текста.  Эти @dfn{Font Lock виды} перечислены ниже.  Они также могут
+использоваться основными режимами для синтаксической подсветки вне режима
+Font Lock (@pxref{Major Mode Conventions}).
 
-  Each of these symbols is both a face name, and a variable whose
-default value is the symbol itself.  Thus, the default value of
-@code{font-lock-comment-face} is @code{font-lock-comment-face}.
+  Каждый из этих символов является одновременно именем вида и переменной,
+значением по умолчанию которой является сам символ.  Таким образом, значение
+@code{font-lock-comment-face} по умолчанию - @code{font-lock-comment-face}.
 
-  The faces are listed with descriptions of their typical usage, and in
-order of greater to lesser prominence.  If a mode's syntactic
-categories do not fit well with the usage descriptions, the faces can be
-assigned using the ordering as a guide.
+  Виды перечислены с описанием их типичного использования и в порядке
+возрастания значимости.  Если синтаксические категории режима не
+соответствуют описаниям использования, виды могут быть назначены, используя
+порядок в качестве руководства.
 
 @table @code
 @item font-lock-warning-face
 @vindex font-lock-warning-face
-for a construct that is peculiar, or that greatly changes the meaning of
-other text, like @samp{;;;###autoload} in Emacs Lisp and @samp{#error}
-in C.
+для конструкции, которая является своеобразной или сильно изменяет значение
+другого текста, например @samp{;;;###autoload} в Emacs Lisp и @samp{#error}
+в C.
 
 @item font-lock-function-name-face
 @vindex font-lock-function-name-face
-for the name of a function being defined or declared.
+для имени определяемой или объявляемой функции.
 
 @item font-lock-variable-name-face
 @vindex font-lock-variable-name-face
-for the name of a variable being defined or declared.
+для имени определяемой или объявляемой переменной.
 
 @item font-lock-keyword-face
 @vindex font-lock-keyword-face
-for a keyword with special syntactic significance, like @samp{for} and
-@samp{if} in C.
+для ключевого слова с особым синтаксическим значением, например
+@samp{for} и @samp{if} в C.
 
 @item font-lock-comment-face
 @vindex font-lock-comment-face
-for comments.
+для комментариев.
 
 @item font-lock-comment-delimiter-face
 @vindex font-lock-comment-delimiter-face
-for comments delimiters, like @samp{/*} and @samp{*/} in C@.  On most
-terminals, this inherits from @code{font-lock-comment-face}.
+для разделителей комментариев, например @samp{/*} и @samp{*/} в C@.  На
+большинстве терминалов наследуется от @code{font-lock-comment-face}.
 
 @item font-lock-type-face
 @vindex font-lock-type-face
-for the names of user-defined data types.
+для имен определяемых пользователем типов данных.
 
 @item font-lock-constant-face
 @vindex font-lock-constant-face
-for the names of constants, like @samp{NULL} in C.
+для имен констант, например @samp{NULL} в C.
 
 @item font-lock-builtin-face
 @vindex font-lock-builtin-face
-for the names of built-in functions.
+для имен встроенных функций.
 
 @item font-lock-preprocessor-face
 @vindex font-lock-preprocessor-face
-for preprocessor commands.  This inherits, by default, from
+для команд препроцессора.  По умолчанию наследуется от
 @code{font-lock-builtin-face}.
 
 @item font-lock-string-face
 @vindex font-lock-string-face
-for string constants.
+для строковых констант.
 
 @item font-lock-doc-face
 @vindex font-lock-doc-face
-for documentation strings in the code.  This inherits, by default, from
+для строк документации в коде. По умолчанию наследуется от
 @code{font-lock-string-face}.
 
 @item font-lock-negation-char-face
 @vindex font-lock-negation-char-face
-for easily-overlooked negation characters.
+для символов отрицания, которые легко не заметить.
 @end table
 
 @node Syntactic Font Lock
-@subsection Syntactic Font Lock
+@subsection Синтаксис Font Lock
 @cindex syntactic font lock
 
-Syntactic fontification uses a syntax table (@pxref{Syntax Tables}) to
-find and highlight syntactically relevant text.  If enabled, it runs
-prior to search-based fontification.  The variable
-@code{font-lock-syntactic-face-function}, documented below, determines
-which syntactic constructs to highlight.  There are several variables
-that affect syntactic fontification; you should set them by means of
-@code{font-lock-defaults} (@pxref{Font Lock Basics}).
+Синтаксическое оформление использует синтаксическую таблицу
+(@pxref{Syntax Tables}) для поиска и выделения синтаксически релевантного
+текста.  Если этот параметр включен, он запускается перед фонтификацией на
+основе поиска.  Переменная @code{font-lock-syntactic-face-function},
+задокументированная ниже, определяет, какие синтаксические конструкции
+выделять.  Есть несколько переменных, которые влияют на синтаксическое
+оформление; потребуется установить их с помощью @code{font-lock-defaults}
+(@pxref{Font Lock Basics}).
 
   Whenever Font Lock mode performs syntactic fontification on a stretch
 of text, it first calls the function specified by
