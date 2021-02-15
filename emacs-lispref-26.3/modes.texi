@@ -3336,429 +3336,439 @@ Font Lock (@pxref{Major Mode Conventions}).
 оформление; потребуется установить их с помощью @code{font-lock-defaults}
 (@pxref{Font Lock Basics}).
 
-  Whenever Font Lock mode performs syntactic fontification on a stretch
-of text, it first calls the function specified by
-@code{syntax-propertize-function}.  Major modes can use this to apply
-@code{syntax-table} text properties to override the buffer's syntax
-table in special cases.  @xref{Syntax Properties}.
+  Каждый раз, когда режим Font Lock выполняет синтаксическое фонирование для
+фрагмента текста, сначала вызывает функцию, указанную
+@code{syntax-propertize-function}.  В основных режимах это можно
+использовать для применения текстовых свойств @code{syntax-table} для отмены
+синтаксической таблицы буфера в особых случаях.  @xref{Syntax Properties}.
 
 @defvar font-lock-keywords-only
-If the value of this variable is не-@code{nil}, Font Lock does not do
-syntactic fontification, only search-based fontification based on
-@code{font-lock-keywords}.  It is normally set by Font Lock mode based
-on the @var{keywords-only} element in @code{font-lock-defaults}.
+Если значение этой переменной - не-@code{nil}, Font Lock не выполняет
+синтаксическую фонификацию, а только фонтификацию на основе поиска используя
+@code{font-lock-keywords}.  Обычно устанавливается в режиме Font Lock на
+основе элемента @var{keywords-only} в @code{font-lock-defaults}.
 @end defvar
 
 @defvar font-lock-syntax-table
-This variable holds the syntax table to use for fontification of
-comments and strings.  It is normally set by Font Lock mode based on the
-@var{syntax-alist} element in @code{font-lock-defaults}.  If this value
-is @code{nil}, syntactic fontification uses the buffer's syntax table
-(the value returned by the function @code{syntax-table}; @pxref{Syntax
-Table Functions}).
+Эта переменная содержит синтаксическую таблицу, используемую для фонификации
+строк и комментариев.  Обычно устанавливается в режиме Font Lock на основе
+элемента @var{syntax-alist} в @code{font-lock-defaults}.  Если это значение
+- @code{nil}, синтаксическая фонификация использует таблицу синтаксиса
+буфера (значение, возвращаемое функцией @code{syntax-table};
+@pxref{Syntax Table Functions}).
 @end defvar
 
 @defvar font-lock-syntactic-face-function
-If this variable is не-@code{nil}, it should be a function to determine
-which face to use for a given syntactic element (a string or a comment).
-The value is normally set through an @var{other-vars} element in
-@code{font-lock-defaults}.
+Если эта переменная - не-@code{nil}, это должна быть функция, определяющая,
+какой вид использовать для данного синтаксического элемента (строки или
+комментария).  Значение обычно устанавливается через элемент
+@var{other-vars} в @code{font-lock-defaults}.
 
-The function is called with one argument, the parse state at point
-returned by @code{parse-partial-sexp}, and should return a face.  The
-default value returns @code{font-lock-comment-face} for comments and
-@code{font-lock-string-face} for strings (@pxref{Faces for Font Lock}).
+Функция вызывается с одним аргументом, состоянием синтаксического анализа в
+точке, возвращаемой @code{parse-partial-sexp}, и должна возвращать вид.
+Значение по умолчанию возвращает @code{font-lock-comment-face} для
+комментариев и @code{font-lock-string-face} для строк
+(@pxref{Faces for Font Lock}).
 @end defvar
 
 @node Multiline Font Lock
-@subsection Multiline Font Lock Constructs
+@subsection Многострочные Конструкции Font Lock
 @cindex multiline font lock
 
-  Normally, elements of @code{font-lock-keywords} should not match
-across multiple lines; that doesn't work reliably, because Font Lock
-usually scans just part of the buffer, and it can miss a multi-line
-construct that crosses the line boundary where the scan starts.  (The
-scan normally starts at the beginning of a line.)
+  Обычно элементы @code{font-lock-keywords} не должны совпадать в нескольких
+строках; это работает ненадежно, потому что Font Lock обычно сканирует
+только часть буфера и может пропустить многострочную конструкцию, которая
+пересекает границу строки, где начинается сканирование. (Обычно сканирование
+начинается с начала строки.)
 
-  Making elements that match multiline constructs work properly has
-two aspects: correct @emph{identification} and correct
-@emph{rehighlighting}.  The first means that Font Lock finds all
-multiline constructs.  The second means that Font Lock will correctly
-rehighlight all the relevant text when a multiline construct is
-changed---for example, if some of the text that was previously part of
-a multiline construct ceases to be part of it.  The two aspects are
-closely related, and often getting one of them to work will appear to
-make the other also work.  However, for reliable results you must
-attend explicitly to both aspects.
+  Обеспечение правильной работы элементов, соответствующих многострочным
+конструкциям, имеет два аспекта: правильная @emph{идентификация} и
+правильное @emph{повторное выделение}.  Первое означает, что Font Lock
+находит все многострочные конструкции.  Второе означает, что Font Lock будет
+правильно повторно выделять весь соответствующий текст при изменении
+многострочной конструкции - например, если какой-то текст, который ранее был
+частью многострочной конструкции, перестает быть ее частью.  Эти два аспекта
+тесно связаны, и часто оказывается, что заставляя один из них работать,
+заставляет работать и другой.  Однако для получения надежных результатов
+потребуется четко учитывать оба аспекта.
 
-  There are three ways to ensure correct identification of multiline
-constructs:
+  Есть три способа обеспечить правильную идентификацию многострочных
+  конструкций:
 
 @itemize
 @item
-Add a function to @code{font-lock-extend-region-functions} that does
-the @emph{identification} and extends the scan so that the scanned
-text never starts or ends in the middle of a multiline construct.
+Добавить в @code{font-lock-extend-region-functions} функцию, которая
+выполняет @emph{идентификацию} и расширяет сканирование, чтобы сканированный
+текст никогда не начинался и не заканчивался в середине многострочной
+конструкции.
 @item
-Use the @code{font-lock-fontify-region-function} hook similarly to
-extend the scan so that the scanned text never starts or ends in the
-middle of a multiline construct.
+Аналогичным образом используется ловушка
+@code{font-lock-fontify-region-function}, чтобы расширить сканирование,
+чтобы отсканированный текст никогда не начинался и не заканчивался в
+середине многострочной конструкции.
 @item
-Somehow identify the multiline construct right when it gets inserted
-into the buffer (or at any point after that but before font-lock
-tries to highlight it), and mark it with a @code{font-lock-multiline}
-which will instruct font-lock not to start or end the scan in the
-middle of the construct.
+Каким-то образом идентифицируется многострочная конструкция сразу, когда она
+вставляется в буфер (или в любой момент после этого, но до того, как
+font-lock попытается выделить ее), и пометить ее @code{font-lock-multiline},
+которая проинструктирует font-lock не начинать и не завершать сканирование в
+середине конструкции.
 @end itemize
 
-  There are three ways to do rehighlighting of multiline constructs:
+  Есть три способа сделать повторное выделение многострочных конструкций:
 
 @itemize
 @item
-Place a @code{font-lock-multiline} property on the construct.  This
-will rehighlight the whole construct if any part of it is changed.  In
-some cases you can do this automatically by setting the
-@code{font-lock-multiline} variable, which see.
+Поместить в конструкцию свойство @code{font-lock-multiline}.  Это повторно
+выделит всю конструкцию, если какая-либо ее часть будет изменена.  В
+некоторых случаях можно сделать это автоматически, установив переменную
+@code{font-lock-multiline}.
 @item
-Make sure @code{jit-lock-contextually} is set and rely on it doing its
-job.  This will only rehighlight the part of the construct that
-follows the actual change, and will do it after a short delay.
-This only works if the highlighting of the various parts of your
-multiline construct never depends on text in subsequent lines.
-Since @code{jit-lock-contextually} is activated by default, this can
-be an attractive solution.
+Убедится, что @code{jit-lock-contextually} установлен, и полагайтесь на его
+работу.  Это приведет к повторному выделению только той части конструкции,
+которая следует за фактическим изменением, и сделает это с небольшой
+задержкой.  Это работает только в том случае, если выделение различных
+частей многострочной конструкции никогда не зависит от текста в последующих
+строках.  Поскольку @code{jit-lock-contextually} активирован по умолчанию,
+это может быть привлекательным решением.
 @item
-Place a @code{jit-lock-defer-multiline} property on the construct.
-This works only if @code{jit-lock-contextually} is used, and with the
-same delay before rehighlighting, but like @code{font-lock-multiline},
-it also handles the case where highlighting depends on
-subsequent lines.
+Поместить в конструкцию свойство @code{jit-lock-defer-multiline}.  Это
+работает, только если используется @code{jit-lock-contextually} и с той же
+задержкой перед повторным выделением, но, как и @code{font-lock-multiline},
+также обрабатывает случай, когда выделение зависит от последующих строк.
 @end itemize
 
 @menu
-* Font Lock Multiline::         Marking multiline chunks with a text property.
-* Region to Refontify::         Controlling which region gets refontified
-                                  after a buffer change.
+* Font Lock Multiline::         Маркировка многострочных фрагментов
+                                   текстовым свойством.
+* Region to Refontify::         Контроль того, какая область обновляется
+                                   после изменения буфера.
 @end menu
 
 @node Font Lock Multiline
-@subsubsection Font Lock Multiline
+@subsubsection Многострочный Font Lock
 
-  One way to ensure reliable rehighlighting of multiline Font Lock
-constructs is to put on them the text property @code{font-lock-multiline}.
-It should be present and не-@code{nil} for text that is part of a
-multiline construct.
+  Один из способов обеспечить надежное повторное выделение многострочных
+конструкций Font Lock - присвоить им текстовое свойство
+@code{font-lock-multiline}.  Должно присутствовать и содержать не-@code{nil}
+для текста, который является частью многострочной конструкции.
 
-  When Font Lock is about to highlight a range of text, it first
-extends the boundaries of the range as necessary so that they do not
-fall within text marked with the @code{font-lock-multiline} property.
-Then it removes any @code{font-lock-multiline} properties from the
-range, and highlights it.  The highlighting specification (mostly
-@code{font-lock-keywords}) must reinstall this property each time,
-whenever it is appropriate.
+  Когда Font Lock собирается выделить диапазон текста, сначала расширяет
+границы диапазона по мере необходимости, чтобы они не попадали в текст,
+отмеченный свойством @code{font-lock-multiline}.  Затем удаляет все свойства
+@code{font-lock-multiline} из диапазона и выделяет его.  Спецификация
+выделения (в основном @code{font-lock-keywords}) должна переустанавливать
+это свойство каждый раз, когда это необходимо.
 
-  @strong{Warning:} don't use the @code{font-lock-multiline} property
-on large ranges of text, because that will make rehighlighting slow.
+  @strong{Предупреждение:} не использовать свойство
+@code{font-lock-multiline} для больших диапазонов текста, потому что это
+замедлит повторное выделение.
 
 @defvar font-lock-multiline
-If the @code{font-lock-multiline} variable is set to @code{t}, Font
-Lock will try to add the @code{font-lock-multiline} property
-automatically on multiline constructs.  This is not a universal
-solution, however, since it slows down Font Lock somewhat.  It can
-miss some multiline constructs, or make the property larger or smaller
-than necessary.
+Если для переменной @code{font-lock-multiline} задано значение @code{t},
+Font Lock попытается автоматически добавить свойство
+@code{font-lock-multiline} в многострочные конструкции.  Однако это не
+универсальное решение, так как оно несколько замедляет Font Lock.  Может
+пропустить некоторые многострочные конструкции или сделать свойство больше
+или меньше, чем необходимо.
 
-For elements whose @var{matcher} is a function, the function should
-ensure that submatch 0 covers the whole relevant multiline construct,
-even if only a small subpart will be highlighted.  It is often just as
-easy to add the @code{font-lock-multiline} property by hand.
+Для элементов, у которых @var{matcher} является функцией, функция должна
+гарантировать, что подчиненное совпадение 0 охватывает всю соответствующую
+многострочную конструкцию, даже если будет выделена только небольшая часть.
+Часто так же просто добавить свойство @code{font-lock-multiline} вручную.
 @end defvar
 
-  The @code{font-lock-multiline} property is meant to ensure proper
-refontification; it does not automatically identify new multiline
-constructs.  Identifying them requires that Font Lock mode operate on
-large enough chunks at a time.  This will happen by accident on many
-cases, which may give the impression that multiline constructs magically
-work.  If you set the @code{font-lock-multiline} variable
-не-@code{nil}, this impression will be even stronger, since the
-highlighting of those constructs which are found will be properly
-updated from then on.  But that does not work reliably.
+  Свойство @code{font-lock-multiline} предназначено для корректной
+рефонтификации; оно не определяет автоматически новые многострочные
+конструкции.  Для их идентификации необходимо, чтобы режим Font Lock работал
+с достаточно большими фрагментами одновременно.  Во многих случаях это
+происходит случайно, и может создаться впечатление, что многострочные
+конструкции работают волшебным образом.  Если установить переменную
+@code{font-lock-multiline} в не-@code{nil}, это впечатление будет еще более
+сильным, так как с этого момента подсветка найденных конструкций будет
+правильно обновляться.  Но это не работает надежно.
 
-  To find multiline constructs reliably, you must either manually place
-the @code{font-lock-multiline} property on the text before Font Lock
-mode looks at it, or use @code{font-lock-fontify-region-function}.
+  Чтобы надежно найти многострочные конструкции, потребуется либо вручную
+поместить свойство @code{font-lock-multiline} в текст, прежде чем режим
+Font Lock будет его рассматривать, либо использовать
+@code{font-lock-fontify-region-function}.
 
 @node Region to Refontify
-@subsubsection Region to Fontify after a Buffer Change
+@subsubsection Регион для Фонирования После Смены Буфера
 
-  When a buffer is changed, the region that Font Lock refontifies is
-by default the smallest sequence of whole lines that spans the change.
-While this works well most of the time, sometimes it doesn't---for
-example, when a change alters the syntactic meaning of text on an
-earlier line.
+  При изменении буфера область, которую обновляет Font Lock, по умолчанию
+является наименьшей последовательностью целых строк, охватывающих изменение.
+Хотя в большинстве случаев это работает хорошо, иногда это не так -
+например, когда изменение изменяет синтаксическое значение текста в
+предыдущей строке.
 
-  You can enlarge (or even reduce) the region to refontify by setting
-the following variable:
+  Можно увеличить (или даже уменьшить) область, которую нужно обновить,
+установив следующую переменную:
 
 @defvar font-lock-extend-after-change-region-function
-This buffer-local variable is either @code{nil} or a function for Font
-Lock mode to call to determine the region to scan and fontify.
+Эта локальная в буфере переменная является либо @code{nil}, либо функцией
+для вызова режима Font Lock, чтобы определить область для сканирования и
+фонирования.
 
-The function is given three parameters, the standard @var{beg},
-@var{end}, and @var{old-len} from @code{after-change-functions}
-(@pxref{Change Hooks}).  It should return either a cons of the
-beginning and end buffer positions (in that order) of the region to
-fontify, or @code{nil} (which means choose the region in the standard
-way).  This function needs to preserve point, the match-data, and the
-current restriction.  The region it returns may start or end in the
-middle of a line.
+У функции есть три параметра, стандартный @var{beg}, @var{end}, и
+@var{old-len} из @code{after-change-functions} (@pxref{Change Hooks}).
+Должно возвращать либо указание начальной и конечной позиции буфера (в
+указанном порядке) области для фонирования, либо @code{nil} (что означает
+выбор региона стандартным способом).  Эта функция должна сохранять точку,
+данные соответствия и текущее ограничение.  Возвращаемый регион может
+начинаться или заканчиваться в середине строки.
 
-Since this function is called after every buffer change, it should be
-reasonably fast.
+Поскольку эта функция вызывается после каждого изменения буфера, она должна
+быть достаточно быстрой.
 @end defvar
 
 @node Auto-Indentation
-@section Automatic Indentation of code
+@section Автоматический Отступ Кода
 
-For programming languages, an important feature of a major mode is to
-provide automatic indentation.  There are two parts: one is to decide what
-is the right indentation of a line, and the other is to decide when to
-reindent a line.  By default, Emacs reindents a line whenever you
-type a character in @code{electric-indent-chars}, which by default only
-includes Newline.  Major modes can add chars to @code{electric-indent-chars}
-according to the syntax of the language.
+Для языков программирования важной особенностью основного режима является
+обеспечение автоматического отступа.  Есть две части: первая - решить,
+каков правильный отступ строки, а вторая - решить, когда изменить отступ
+строки.  По умолчанию Emacs переставляет строку в столбец всякий раз, когда
+вводится символ в @code{electric-indent-chars}, который по умолчанию
+включает только новую строку.  Основные режимы могут добавлять символы в
+@code{electric-indent-chars} в соответствии с синтаксисом языка.
 
-Deciding what is the right indentation is controlled in Emacs by
-@code{indent-line-function} (@pxref{Mode-Specific Indent}).  For some modes,
-the @emph{right} indentation cannot be known reliably, typically because
-indentation is significant so several indentations are valid but with different
-meanings.  In that case, the mode should set @code{electric-indent-inhibit} to
-make sure the line is not constantly re-indented against the user's wishes.
+Выбор правильного отступа контролируется в Emacs с помощью
+@code{indent-line-function} (@pxref{Mode-Specific Indent}).  Для некоторых
+режимов отступ @emph{right} не может быть достоверно известен, как правило,
+потому что отступ значительный, поэтому допустимы несколько отступов, но с
+разными значениями.  В этом случае режим должен установить
+@code{electric-indent-inhibit}, чтобы гарантировать, что строка не будет
+постоянно изменяться против желаний пользователя.  Написание хорошей функции
+отступа может быть трудным, и в значительной степени это все еще черное
+искусство.  Многие авторы основных режимов начнут с написания простой
+функции отступа, которая работает в простых случаях, например, сравнивая с
+отступом предыдущей текстовой строки.  Для большинства языков
+программирования, которые на самом деле не являются линейными, это имеет
+тенденцию очень плохо масштабироваться: улучшение такой функции, чтобы она
+позволяла ей обрабатывать более разнообразные ситуации, имеет тенденцию
+становиться все более и более сложным, что в конечном итоге приводит к
+большим, сложным, неустойчивым функциям отступа, с которыми никто не захочет
+связываться.
 
-Writing a good indentation function can be difficult and to a large extent it
-is still a black art.  Many major mode authors will start by writing a simple
-indentation function that works for simple cases, for example by comparing with
-the indentation of the previous text line.  For most programming languages that
-are not really line-based, this tends to scale very poorly: improving
-such a function to let it handle more diverse situations tends to become more
-and more difficult, resulting in the end with a large, complex, unmaintainable
-indentation function which nobody dares to touch.
+Хорошая функция отступа обычно должна фактически анализировать текст в
+соответствии с синтаксисом языка.  К счастью, нет необходимости
+анализировать текст так подробно, как это было бы необходимо для
+компилятора, но, с другой стороны, синтаксический анализатор, встроенный в
+код отступа, захочет быть в некоторой степени дружественным к синтаксически
+некорректному коду.
 
-A good indentation function will usually need to actually parse the
-text, according to the syntax of the language.  Luckily, it is not
-necessary to parse the text in as much detail as would be needed
-for a compiler, but on the other hand, the parser embedded in the
-indentation code will want to be somewhat friendly to syntactically
-incorrect code.
+Хорошие поддерживаемые функции отступа обычно делятся на две категории: либо
+анализ вперед от некоторой безопасной начальной точки до интересующей
+позиции, либо анализ назад от интересующей позиции.  Ни один из этих двух
+вариантов не является явно лучшим выбором, чем другой: анализ в обратном
+направлении часто сложнее, чем анализ вперед, потому что языки
+программирования предназначены для анализа вперед, но для целей контроля
+отступов у него есть преимущество в том, что нет необходимости угадывать
+безопасную точку запуска, и обычно обладает тем свойством, что для
+определения отступа строки будет анализироваться только минимум текста,
+поэтому на отступы, как правило, меньше влияют синтаксические ошибки в
+некоторых ранее не связанных фрагментах кода.  С другой стороны, прямой
+синтаксический анализ обычно проще и имеет то преимущество, что позволяет
+эффективно восстанавливать вставку целой области за раз с помощью одного
+синтаксического анализа.
 
-Good maintainable indentation functions usually fall into two categories:
-either parsing forward from some safe starting point until the
-position of interest, or parsing backward from the position of interest.
-Neither of the two is a clearly better choice than the other: parsing
-backward is often more difficult than parsing forward because
-programming languages are designed to be parsed forward, but for the
-purpose of indentation it has the advantage of not needing to
-guess a safe starting point, and it generally enjoys the property
-that only a minimum of text will be analyzed to decide the indentation
-of a line, so indentation will tend to be less affected by syntax errors in
-some earlier unrelated piece of code.  Parsing forward on the other hand
-is usually easier and has the advantage of making it possible to
-reindent efficiently a whole region at a time, with a single parse.
-
-Rather than write your own indentation function from scratch, it is
-often preferable to try and reuse some existing ones or to rely
-on a generic indentation engine.  There are sadly few such
-engines.  The CC-mode indentation code (used with C, C++, Java, Awk
-and a few other such modes) has been made more generic over the years,
-so if your language seems somewhat similar to one of those languages,
-you might try to use that engine.  @c FIXME: documentation?
-Another one is SMIE which takes an approach in the spirit
-of Lisp sexps and adapts it to non-Lisp languages.
+Вместо того, чтобы писать свою собственную функцию отступов с нуля, часто
+предпочтительнее попробовать и повторно использовать некоторые из
+существующих или полагаться на универсальный механизм отступов.  К
+сожалению, таких движков мало.  Код отступа в режиме CС (используемый с C,
+C++, Java, Awk и некоторыми другими подобными режимами) с годами стал более
+универсальным, поэтому, если язык кажется чем-то похожим на один из этих
+языков, можно попробовать использовать этот движек. @c FIXME: Документация?
+Другой - SMIE, который использует подход в духе Lisp sexps и адаптирует его
+к языкам, отличным от Lisp.
 
 @menu
-* SMIE::                        A simple minded indentation engine.
+* SMIE::                        Простой движок отступов.
 @end menu
 
 @node SMIE
-@subsection Simple Minded Indentation Engine
+@subsection Простой Механизм Отступов
 @cindex SMIE
 
-SMIE is a package that provides a generic navigation and indentation
-engine.  Based on a very simple parser using an operator precedence
-grammar, it lets major modes extend the sexp-based navigation of Lisp
-to non-Lisp languages as well as provide a simple to use but reliable
-auto-indentation.
+SMIE - это пакет, который предоставляет общий механизм навигации и отступов.
+Основанный на очень простом синтаксическом анализаторе, использующем
+грамматику приоритета операторов, позволяет основным режимам расширять
+основанную на sexp навигацию Lisp на языки, отличные от Lisp, а также
+обеспечивает простой в использовании, но надежный автоматический отступ.
 
-Operator precedence grammar is a very primitive technology for parsing
-compared to some of the more common techniques used in compilers.
-It has the following characteristics: its parsing power is very limited,
-and it is largely unable to detect syntax errors, but it has the
-advantage of being algorithmically efficient and able to parse forward
-just as well as backward.  In practice that means that SMIE can use it
-for indentation based on backward parsing, that it can provide both
-@code{forward-sexp} and @code{backward-sexp} functionality, and that it
-will naturally work on syntactically incorrect code without any extra
-effort.  The downside is that it also means that most programming
-languages cannot be parsed correctly using SMIE, at least not without
-resorting to some special tricks (@pxref{SMIE Tricks}).
+Грамматика приоритета операторов - это очень примитивная технология
+синтаксического анализа по сравнению с некоторыми из наиболее
+распространенных методов, используемых в компиляторах.  Имеет следующие
+характеристики: возможности синтаксического анализа очень ограничены, и в
+значительной степени неспособен обнаруживать синтаксические ошибки, но
+имеет преимущество в том, что он алгоритмически эффективен и может
+анализировать как вперед, так и назад.  На практике это означает, что SMIE
+может использоваться для создания отступов на основе обратного
+синтаксического анализа, что может обеспечивать как функцию
+@code{forward-sexp} и @code{backward-sexp}, так и естественно работать с
+синтаксически некорректным кодом без каких-либо дополнительных усилий.
+Обратной стороной является то, что это также означает, что большинство
+языков программирования не может быть правильно проанализировано с помощью
+SMIE, по крайней мере, без использования некоторых специальных уловок
+(@pxref{SMIE Tricks}).
 
 @menu
-* SMIE setup::                  SMIE setup and features.
-* Operator Precedence Grammars::  A very simple parsing technique.
-* SMIE Grammar::                Defining the grammar of a language.
-* SMIE Lexer::                  Defining tokens.
-* SMIE Tricks::                 Working around the parser's limitations.
-* SMIE Indentation::            Specifying indentation rules.
-* SMIE Indentation Helpers::    Helper functions for indentation rules.
-* SMIE Indentation Example::    Sample indentation rules.
-* SMIE Customization::          Customizing indentation.
+* SMIE setup::                  Настройка и особенности SMIE.
+* Operator Precedence Grammars::  Очень простая техника парсинга.
+* SMIE Grammar::                Определение грамматики языка.
+* SMIE Lexer::                  Определение токенов.
+* SMIE Tricks::                 Обход ограничений парсера.
+* SMIE Indentation::            Определение правил отступа.
+* SMIE Indentation Helpers::    Вспомогательные функции для правил отступов.
+* SMIE Indentation Example::    Примеры правил отступов.
+* SMIE Customization::          Настройка отступа.
 @end menu
 
 @node SMIE setup
-@subsubsection SMIE Setup and Features
+@subsubsection Настройка и Особенности SMIE
 
-SMIE is meant to be a one-stop shop for structural navigation and
-various other features which rely on the syntactic structure of code, in
-particular automatic indentation.  The main entry point is
-@code{smie-setup} which is a function typically called while setting
-up a major mode.
+SMIE призван быть универсальным магазином для структурной навигации и
+различных других функций, которые полагаются на синтаксическую структуру
+кода, в частности, автоматический отступ.  Основная точка входа -
+@code{smie-setup}, функция, обычно вызываемая при настройке основного
+режима.
 
 @defun smie-setup grammar rules-function &rest keywords
-Setup SMIE navigation and indentation.
-@var{grammar} is a grammar table generated by @code{smie-prec2->grammar}.
-@var{rules-function} is a set of indentation rules for use on
-@code{smie-rules-function}.
-@var{keywords} are additional arguments, which can include the following
-keywords:
+Настроить SMIE-навигацию и отступ.  @var{grammar} - это таблица грамматики,
+созданная @code{smie-prec2->grammar}.  @var{rules-function} - это набор
+правил отступов для использования на @code{smie-rules-function}.
+@var{keywords} - дополнительные аргументы, которые могут включать следующие
+ключевые слова:
 @itemize
 @item
-@code{:forward-token} @var{fun}: Specify the forward lexer to use.
+@code{:forward-token} @var{fun}: Указать используемый прямой лексер.
 @item
-@code{:backward-token} @var{fun}: Specify the backward lexer to use.
+@code{:backward-token} @var{fun}: Указать обратный лексер для использования.
 @end itemize
 @end defun
 
-Calling this function is sufficient to make commands such as
-@code{forward-sexp}, @code{backward-sexp}, and @code{transpose-sexps} be
-able to properly handle structural elements other than just the paired
-parentheses already handled by syntax tables.  For example, if the
-provided grammar is precise enough, @code{transpose-sexps} can correctly
-transpose the two arguments of a @code{+} operator, taking into account
-the precedence rules of the language.
+Вызов этой функции достаточно для того, чтобы такие команды, как
+@code{forward-sexp}, @code{backward-sexp}, и @code{transpose-sexps}, могли
+правильно обрабатывать структурные элементы, отличные от парных скобок, уже
+обработанных синтаксическими таблицами.  Например, если предоставленная
+грамматика достаточно точна, @code{transpose-sexps} может правильно
+транспонировать два аргумента оператора @code{+} с учетом правил приоритета
+языка.
 
-Calling @code{smie-setup} is also sufficient to make @key{TAB}
-indentation work in the expected way, extends
-@code{blink-matching-paren} to apply to elements like
-@code{begin...end}, and provides some commands that you can bind in
-the major mode keymap.
+Вызов @code{smie-setup} также достаточно для того, чтобы отступ @key{TAB}
+работал ожидаемым образом, расширяет @code{blink-matching-paren} для
+применения к таким элементам, как @code{begin...end}, и предоставляет
+некоторые команды, которые можно привязать к ключевой карте основного
+режима.
 
 @deffn Command smie-close-block
-This command closes the most recently opened (and not yet closed) block.
+Эта команда закрывает последний открытый (и еще не закрытый) блок.
 @end deffn
 
 @deffn Command smie-down-list &optional arg
-This command is like @code{down-list} but it also pays attention to
-nesting of tokens other than parentheses, such as @code{begin...end}.
+Эта команда похожа на @code{down-list}, но также обращает внимание на
+вложение токенов, отличных от скобок, например @code{begin...end}.
 @end deffn
 
 @node Operator Precedence Grammars
-@subsubsection Operator Precedence Grammars
+@subsubsection Грамматики Приоритета Операторов
 
-SMIE's precedence grammars simply give to each token a pair of
-precedences: the left-precedence and the right-precedence.  We say
-@code{T1 < T2} if the right-precedence of token @code{T1} is less than
-the left-precedence of token @code{T2}.  A good way to read this
-@code{<} is as a kind of parenthesis: if we find @code{... T1 something
-T2 ...}  then that should be parsed as @code{... T1 (something T2 ...}
-rather than as @code{... T1 something) T2 ...}.  The latter
-interpretation would be the case if we had @code{T1 > T2}.  If we have
-@code{T1 = T2}, it means that token T2 follows token T1 in the same
-syntactic construction, so typically we have @code{"begin" = "end"}.
-Such pairs of precedences are sufficient to express left-associativity
-or right-associativity of infix operators, nesting of tokens like
-parentheses and many other cases.
+Грамматики приоритета SMIE просто присваивают каждому токену пару
+приоритетов: левый приоритет и правый приоритет.  Понимается @code{T1 < T2},
+если правый приоритет токена @code{T1} меньше левого приоритета токена
+@code{T2}.  Хороший способ читать этот @code{<} - как своего рода скобка:
+если находится @code{... T1 something T2 ...}, то его следует анализировать
+как @code{... T1 (something T2 ...}, а не как
+@code{... T1 something) T2 ...}.  Последняя интерпретация была бы верна,
+если бы у был @code{T1 > T2}.  Если у есть @code{T1 = T2}, это означает, что
+токен T2 следует за токеном T1 в той же синтаксической конструкции, поэтому
+обычно у нас есть @code{"begin" = "end"}.  Таких пар приоритетов достаточно
+для выражения левоассоциативности или правоассоциативности инфиксных
+операторов, вложенности лексем, таких как круглые скобки, и многих других
+случаев.
 
-@c Let's leave this undocumented to leave it more open for change!
+@c Оставим это недокументированным, чтобы оставить его более открытым для
+@c изменений!
 @c @defvar smie-grammar
-@c The value of this variable is an alist specifying the left and right
-@c precedence of each token.  It is meant to be initialized by using one of
-@c the functions below.
+@c Значение этой переменной представляет собой список, определяющий левый и
+@c правый приоритет каждого токена.  Предназначена для инициализации с
+@c помощью одной из следующих функций.
 @c @end defvar
 
 @defun smie-prec2->grammar table
-This function takes a @emph{prec2} grammar @var{table} and returns an
-alist suitable for use in @code{smie-setup}.  The @emph{prec2}
-@var{table} is itself meant to be built by one of the functions below.
+Эта функция принимает грамматику @emph{prec2} @var{table} и возвращает
+список, подходящий для использования в @code{smie-setup}.  @emph{prec2} сам
+@var{table} предназначен для создания одной из следующих функций.
 @end defun
 
 @defun smie-merge-prec2s &rest tables
-This function takes several @emph{prec2} @var{tables} and merges them
-into a new @emph{prec2} table.
+Эта функция берет несколько @emph{prec2} @var{tables} и объединяет их в
+новую таблицу @emph{prec2}.
 @end defun
 
 @defun smie-precs->prec2 precs
-This function builds a @emph{prec2} table from a table of precedences
-@var{precs}.  @var{precs} should be a list, sorted by precedence (for
-example @code{"+"} will come before @code{"*"}), of elements of the form
-@code{(@var{assoc} @var{op} ...)}, where each @var{op} is a token that
-acts as an operator; @var{assoc} is their associativity, which can be
-either @code{left}, @code{right}, @code{assoc}, or @code{nonassoc}.
-All operators in a given element share the same precedence level
-and associativity.
+Эта функция строит таблицу @emph{prec2} из таблицы приоритетов @var{precs}.
+@var{precs} должен быть списком, отсортированным по приоритету (например,
+@code{"+"} будет стоять перед @code{"*"}), элементов формы
+@code{(@var{assoc} @var{op} ...)}, где каждый @var{op} - токен, который
+действует как оператор; @var{assoc} - их ассоциативность, которая может быть
+либо @code{left}, @code{right}, @code{assoc}, или @code{nonassoc}.  Все
+операторы в данном элементе имеют одинаковый уровень приоритета и
+ассоциативность.
 @end defun
 
 @defun smie-bnf->prec2 bnf &rest resolvers
-This function lets you specify the grammar using a BNF notation.
-It accepts a @var{bnf} description of the grammar along with a set of
-conflict resolution rules @var{resolvers}, and
-returns a @emph{prec2} table.
+Эта функция позволяет определять грамматику, используя нотацию BNF.
+Принимает описание грамматики @var{bnf} вместе с набором правил разрешения
+конфликтов @var{resolvers} и возвращает таблицу @emph{prec2}.
 
-@var{bnf} is a list of nonterminal definitions of the form
-@code{(@var{nonterm} @var{rhs1} @var{rhs2} ...)} where each @var{rhs}
-is a (non-empty) list of terminals (aka tokens) or non-terminals.
+@var{bnf} - это список нетерминальных определений в форме
+@code{(@var{nonterm} @var{rhs1} @var{rhs2} ...)}, где каждый @var{rhs}
+представляет собой (непустой) список терминалов (также называемых токенами)
+или нетерминалов.
 
-Not all grammars are accepted:
+Не все грамматики принимаются:
 @itemize
 @item
-An @var{rhs} cannot be an empty list (an empty list is never needed,
-since SMIE allows all non-terminals to match the empty string anyway).
+@var{rhs} не может быть пустым списком (пустой список никогда не нужен,
+поскольку SMIE в любом случае позволяет всем нетерминалам соответствовать
+пустой строке).
 @item
-An @var{rhs} cannot have 2 consecutive non-terminals: each pair of
-non-terminals needs to be separated by a terminal (aka token).
-This is a fundamental limitation of operator precedence grammars.
+@var{rhs} не может иметь 2 последовательных нетерминала: каждая пара
+нетерминалов должна быть разделена терминалом (также известным как токен).
+Это фундаментальное ограничение грамматик приоритета операторов.
 @end itemize
 
-Additionally, conflicts can occur:
+Дополнительно могут возникать конфликты:
 @itemize
 @item
-The returned @emph{prec2} table holds constraints between pairs of tokens, and
-for any given pair only one constraint can be present: T1 < T2,
-T1 = T2, or T1 > T2.
+Возвращенная таблица @emph{prec2} содержит ограничения между парами токенов,
+и для любой данной пары может присутствовать только одно ограничение:
+T1 < T2, T1 = T2, or T1 > T2.
 @item
-A token can be an @code{opener} (something similar to an open-paren),
-a @code{closer} (like a close-paren), or @code{neither} of the two
-(e.g., an infix operator, or an inner token like @code{"else"}).
+Токен может быть @code{opener} (что-то похожее на open-paren), @code{closer}
+(например, close-paren) или @code{neither} из двух (например, инфиксный
+оператор или внутренний токен, например @code{"else"}).
 @end itemize
 
-Precedence conflicts can be resolved via @var{resolvers}, which
-is a list of @emph{precs} tables (see @code{smie-precs->prec2}): for
-each precedence conflict, if those @code{precs} tables
-specify a particular constraint, then the conflict is resolved by using
-this constraint instead, else a conflict is reported and one of the
-conflicting constraints is picked arbitrarily and the others are
-simply ignored.
+Конфликты приоритета могут быть разрешены с помощью @var{resolvers}, который
+представляет собой список таблиц @emph{precs} (@code{smie-precs->prec2}):
+для каждого конфликта приоритета, если в этих таблицах @code{precs} указано
+конкретное ограничение, то конфликт разрешается с использованием этого
+ограничения вместо этого, в противном случае сообщается о конфликте и одно
+из конфликтующих ограничений выбирается произвольно, а остальные просто
+игнорируются.
 @end defun
 
 @node SMIE Grammar
-@subsubsection Defining the Grammar of a Language
+@subsubsection Определение Грамматики Языка
 @cindex SMIE grammar
 @cindex grammar, SMIE
 
-The usual way to define the SMIE grammar of a language is by
-defining a new global variable that holds the precedence table by
-giving a set of BNF rules.
-For example, the grammar definition for a small Pascal-like language
-could look like:
+Обычный способ определить грамматику языка SMIE - это определить новую
+глобальную переменную, которая содержит таблицу приоритетов, задав набор
+правил BNF.  Например, определение грамматики для небольшого языка,
+подобного Паскалю, может выглядеть так:
 @example
 @group
 (require 'smie)
@@ -3786,67 +3796,69 @@ could look like:
 @end example
 
 @noindent
-A few things to note:
+Несколько замечаний:
 
 @itemize
 @item
-The above grammar does not explicitly mention the syntax of function
-calls: SMIE will automatically allow any sequence of sexps, such as
-identifiers, balanced parentheses, or @code{begin ... end} blocks
-to appear anywhere anyway.
+В приведенной выше грамматике явно не упоминается синтаксис вызовов функций:
+SMIE автоматически разрешает любую последовательность секций, такую как
+идентификаторы, сбалансированные круглые скобки или блоки
+@code{begin ... end}, в любом случае в любом месте.
 @item
-The grammar category @code{id} has no right hand side: this does not
-mean that it can match only the empty string, since as mentioned any
-sequence of sexps can appear anywhere anyway.
+Категория грамматики @code{id} не имеет правой части: это не означает, что
+она может соответствовать только пустой строке, поскольку, как уже
+упоминалось, любая последовательность sexps может появляться где угодно в
+любом случае.
 @item
-Because non terminals cannot appear consecutively in the BNF grammar, it
-is difficult to correctly handle tokens that act as terminators, so the
-above grammar treats @code{";"} as a statement @emph{separator} instead,
-which SMIE can handle very well.
+Поскольку нетерминалы не могут появляться последовательно в грамматике BNF,
+трудно правильно обрабатывать токены, которые действуют как терминаторы,
+поэтому в приведенной выше грамматике вместо этого @code{";"}
+рассматривается как оператор @emph{separator}, который SMIE может
+обрабатывать очень хорошо.
 @item
-Separators used in sequences (such as @code{","} and @code{";"} above)
-are best defined with BNF rules such as @code{(foo (foo "separator" foo) ...)}
-which generate precedence conflicts which are then resolved by giving
-them an explicit @code{(assoc "separator")}.
+Разделители, используемые в последовательностях (например, @code{","} и
+@code{";"} выше), лучше всего определяются с помощью правил BNF, таких как
+@code{(foo (foo "separator" foo) ...)}, которые генерируют конфликты
+приоритетов, которые затем разрешаются путем предоставления им явного
+@code{(assoc "separator")}.
 @item
-The @code{("(" exps ")")} rule was not needed to pair up parens, since
-SMIE will pair up any characters that are marked as having paren syntax
-in the syntax table.  What this rule does instead (together with the
-definition of @code{exps}) is to make it clear that @code{","} should
-not appear outside of parentheses.
+Правило @code{("(" exps ")")} не требовалось для объединения парных скобок,
+поскольку SMIE объединит в пары любые символы, помеченные как имеющие
+синтаксис парных символов в таблице синтаксиса. Вместо этого это правило
+(вместе с определением @code{exps}) разъясняет, что @code{","} не должен
+появляться вне скобок.
 @item
-Rather than have a single @emph{precs} table to resolve conflicts, it is
-preferable to have several tables, so as to let the BNF part of the
-grammar specify relative precedences where possible.
+Вместо того, чтобы иметь одну таблицу @emph{precs} для разрешения
+конфликтов, предпочтительно иметь несколько таблиц, чтобы позволить части
+грамматики BNF указывать относительные приоритеты там, где это возможно.
 @item
-Unless there is a very good reason to prefer @code{left} or
-@code{right}, it is usually preferable to mark operators as associative,
-using @code{assoc}.  For that reason @code{"+"} and @code{"*"} are
-defined above as @code{assoc}, although the language defines them
-formally as left associative.
+Если нет веской причины предпочесть @code{left} или @code{right}, обычно
+предпочтительно помечать операторы как ассоциативные с помощью @code{assoc}.
+По этой причине @code{"+"} и @code{"*"} определены выше как @code{assoc},
+хотя язык формально определяет их как левоассоциативные.
 @end itemize
 
 @node SMIE Lexer
-@subsubsection Defining Tokens
+@subsubsection Определение Токенов
 @cindex SMIE lexer
 @cindex defining tokens, SMIE
 
-SMIE comes with a predefined lexical analyzer which uses syntax tables
-in the following way: any sequence of characters that have word or
-symbol syntax is considered a token, and so is any sequence of
-characters that have punctuation syntax.  This default lexer is
-often a good starting point but is rarely actually correct for any given
-language.  For example, it will consider @code{"2,+3"} to be composed
-of 3 tokens: @code{"2"}, @code{",+"}, and @code{"3"}.
+SMIE поставляется с предопределенным лексическим анализатором, который
+использует таблицы синтаксиса следующим образом: любая последовательность
+символов, имеющая синтаксис слова или символа, считается токеном, как и
+любая последовательность символов с синтаксисом пунктуации.  Этот
+лексический анализатор по умолчанию часто является хорошей отправной точкой,
+но редко действительно подходит для любого данного языка.  Например, он
+будет считать, что @code{"2,+3"} состоит из 3 токенов: @code{"2"},
+@code{",+"}, и @code{"3"}.
 
-To describe the lexing rules of your language to SMIE, you need
-2 functions, one to fetch the next token, and another to fetch the
-previous token.  Those functions will usually first skip whitespace and
-comments and then look at the next chunk of text to see if it
-is a special token.  If so it should skip the token and
-return a description of this token.  Usually this is simply the string
-extracted from the buffer, but it can be anything you want.
-For example:
+Чтобы описать правила лексирования вашего языка в SMIE, вам понадобятся 2
+функции: одна для получения следующего токена, а другая для получения
+предыдущего токена.  Эти функции обычно сначала пропускают пробелы и
+комментарии, а затем просматривают следующий фрагмент текста, чтобы
+убедиться, что это специальный токен.  Если это так, он должен пропустить
+токен и вернуть описание этого токена.  Обычно это просто строка,
+извлеченная из буфера, но это может быть что угодно.  Например:
 @example
 @group
 (defvar sample-keywords-regexp
@@ -3878,23 +3890,23 @@ For example:
 @end group
 @end example
 
-Notice how those lexers return the empty string when in front of
-parentheses.  This is because SMIE automatically takes care of the
-parentheses defined in the syntax table.  More specifically if the lexer
-returns @code{nil} or an empty string, SMIE tries to handle the corresponding
-text as a sexp according to syntax tables.
+Обратите внимание, как эти лексеры возвращают пустую строку перед круглыми
+скобками.  Это потому, что SMIE автоматически заботится о скобках,
+определенных в таблице синтаксиса. Более конкретно, если лексер возвращает
+@code{nil} или пустую строку, SMIE пытается обработать соответствующий текст
+как sexp в соответствии с таблицами синтаксиса.
 
 @node SMIE Tricks
-@subsubsection Living With a Weak Parser
+@subsubsection Жизнь со Слабым Парсером
 
-The parsing technique used by SMIE does not allow tokens to behave
-differently in different contexts.  For most programming languages, this
-manifests itself by precedence conflicts when converting the
-BNF grammar.
+Техника синтаксического анализа, используемая SMIE, не позволяет токенам
+вести себя по-разному в разных контекстах. Для большинства языков
+программирования это проявляется в конфликтах приоритетов при преобразовании
+грамматики BNF.
 
-Sometimes, those conflicts can be worked around by expressing the
-grammar slightly differently.  For example, for Modula-2 it might seem
-natural to have a BNF grammar that looks like this:
+Иногда эти конфликты можно обойти, немного по-другому выразив грамматику.
+Например, для Modula-2 может показаться естественным иметь грамматику BNF,
+которая выглядит так::
 
 @example
   ...
@@ -3907,11 +3919,11 @@ natural to have a BNF grammar that looks like this:
   ...
 @end example
 
-But this will create conflicts for @code{"ELSE"}: on the one hand, the
-IF rule implies (among many other things) that @code{"ELSE" = "END"};
-but on the other hand, since @code{"ELSE"} appears within @code{cases},
-which appears left of @code{"END"}, we also have @code{"ELSE" > "END"}.
-We can solve the conflict either by using:
+Но это вызовет конфликты для @code{"ELSE"}: с одной стороны, правило IF
+подразумевает (среди многих других), что @code{"ELSE" = "END"}; но с другой
+стороны, поскольку @code{"ELSE"} появляется внутри @code{cases}, который
+появляется слева от @code{"END"}, у нас также есть @code{"ELSE" > "END"}.
+Можно решить конфликт, используя:
 @example
   ...
   (inst ("IF" exp "THEN" insts "ELSE" insts "END")
@@ -3932,177 +3944,178 @@ or
   ...
 @end example
 
-Reworking the grammar to try and solve conflicts has its downsides, tho,
-because SMIE assumes that the grammar reflects the logical structure of
-the code, so it is preferable to keep the BNF closer to the intended
-abstract syntax tree.
+Переработка грамматики для попытки разрешения конфликтов имеет свои
+недостатки, потому что SMIE предполагает, что грамматика отражает логическую
+структуру кода, поэтому желательно держать BNF ближе к предполагаемому
+абстрактному синтаксическому дереву.
 
-Other times, after careful consideration you may conclude that those
-conflicts are not serious and simply resolve them via the
-@var{resolvers} argument of @code{smie-bnf->prec2}.  Usually this is
-because the grammar is simply ambiguous: the conflict does not affect
-the set of programs described by the grammar, but only the way those
-programs are parsed.  This is typically the case for separators and
-associative infix operators, where you want to add a resolver like
-@code{'((assoc "|"))}.  Another case where this can happen is for the
-classic @emph{dangling else} problem, where you will use @code{'((assoc
-"else" "then"))}.  It can also happen for cases where the conflict is
-real and cannot really be resolved, but it is unlikely to pose a problem
-in practice.
+В других случаях после тщательного рассмотрения можно сделать вывод, что эти
+конфликты несерьезны, и просто разрешить их с помощью аргумента
+@var{resolvers} функции @code{smie-bnf->prec2}.  Обычно это происходит из-за
+того, что грамматика просто неоднозначна: конфликт влияет не на набор
+программ, описываемых грамматикой, а только на способ анализа этих программ.
+Обычно это относится к разделителям и ассоциативным инфиксным операторам,
+когда требуется добавить преобразователь, например @code{'((assoc "|"))}.
+Другой случай, когда это может произойти, - это классическая задача
+@emph{болтается еще}, где будет использоваться
+@code{'((assoc "else" "then"))}.  Это также может произойти в случаях, когда
+конфликт реален и не может быть действительно разрешен, но вряд ли создаст
+проблему на практике.
 
-Finally, in many cases some conflicts will remain despite all efforts to
-restructure the grammar.  Do not despair: while the parser cannot be
-made more clever, you can make the lexer as smart as you want.  So, the
-solution is then to look at the tokens involved in the conflict and to
-split one of those tokens into 2 (or more) different tokens.  E.g., if
-the grammar needs to distinguish between two incompatible uses of the
-token @code{"begin"}, make the lexer return different tokens (say
-@code{"begin-fun"} and @code{"begin-plain"}) depending on which kind of
-@code{"begin"} it finds.  This pushes the work of distinguishing the
-different cases to the lexer, which will thus have to look at the
-surrounding text to find ad-hoc clues.
+Наконец, во многих случаях некоторые конфликты останутся, несмотря на все
+усилия по реструктуризации грамматики.  Не отчаивайться: хотя синтаксический
+анализатор невозможно сделать более умным, можно сделать лексер настолько
+умным, насколько потребуется.  Итак, решение состоит в том, чтобы посмотреть
+на токены, участвующие в конфликте, и разделить один из этих токенов на 2
+(или более) разных токена.  Например, если грамматика должна различать два
+несовместимых использования токена @code{"begin"}, заставить лексер
+возвращать разные токены (скажем, @code{"begin-fun"} и @code{"begin-plain"})
+в зависимости от того, какой тип @code{"begin"} он находит.  Это
+подталкивает лексера к работе по различению различных случаев, который,
+таким образом, должен будет смотреть на окружающий текст, чтобы найти
+специальные подсказки.
 
 @node SMIE Indentation
-@subsubsection Specifying Indentation Rules
+@subsubsection Определение Правил Отступа
 @cindex indentation rules, SMIE
 
-Based on the provided grammar, SMIE will be able to provide automatic
-indentation without any extra effort.  But in practice, this default
-indentation style will probably not be good enough.  You will want to
-tweak it in many different cases.
+На основе предоставленной грамматики SMIE сможет обеспечить автоматический
+отступ без каких-либо дополнительных усилий.  Но на практике этого стиля
+отступа по умолчанию, вероятно, будет недостаточно.  Может понадобиться
+настроить его во многих разных случаях.
 
-SMIE indentation is based on the idea that indentation rules should be
-as local as possible.  To this end, it relies on the idea of
-@emph{virtual} indentation, which is the indentation that a particular
-program point would have if it were at the beginning of a line.
-Of course, if that program point is indeed at the beginning of a line,
-its virtual indentation is its current indentation.  But if not, then
-SMIE uses the indentation algorithm to compute the virtual indentation
-of that point.  Now in practice, the virtual indentation of a program
-point does not have to be identical to the indentation it would have if
-we inserted a newline before it.  To see how this works, the SMIE rule
-for indentation after a @code{@{} in C does not care whether the
-@code{@{} is standing on a line of its own or is at the end of the
-preceding line.  Instead, these different cases are handled in the
-indentation rule that decides how to indent before a @code{@{}.
+Отступы SMIE основаны на идее, что правила отступа должны быть как можно
+более локальными.  С этой целью происходит опирание на идею отступа
+@emph{virtual}, который представляет собой отступ, который имел бы
+конкретный программный пункт, если бы он находился в начале строки.
+Конечно, если эта программная точка действительно находится в начале строки,
+ее виртуальный отступ будет ее текущим отступом.  Но если нет, то SMIE
+использует алгоритм отступа для вычисления виртуального отступа этой точки.
+На практике виртуальный отступ точки программы не обязательно должен быть
+идентичным отступу, который он имел бы, если бы вставили перед ним новую
+строку.  Чтобы увидеть, как это работает, правило SMIE для отступа после
+@code{@{} в C не заботится о том, стоит ли @code{@{} на отдельной строке или
+в конце предыдущей строки.  Вместо этого эти разные случаи обрабатываются в
+правиле отступа, которое решает, как делать отступ перед @code{@{}.
 
-Another important concept is the notion of @emph{parent}: The
-@emph{parent} of a token, is the head token of the nearest enclosing
-syntactic construct.  For example, the parent of an @code{else} is the
-@code{if} to which it belongs, and the parent of an @code{if}, in turn,
-is the lead token of the surrounding construct.  The command
-@code{backward-sexp} jumps from a token to its parent, but there are
-some caveats: for @emph{openers} (tokens which start a construct, like
-@code{if}), you need to start with point before the token, while for
-others you need to start with point after the token.
-@code{backward-sexp} stops with point before the parent token if that is
-the @emph{opener} of the token of interest, and otherwise it stops with
-point after the parent token.
+Еще одна важная концепция - это понятие @emph{родитель}: @emph{родитель}
+токена - это главный токен ближайшей включающей синтаксической конструкции.
+Например, родительский объект @code{else} - это объект @code{if}, которому
+он принадлежит, а родительский объект @code{if}, в свою очередь, является
+ведущим токеном окружающей конструкции.  Команда @code{backward-sexp}
+переходит от токена к его родительскому элементу, но есть некоторые
+предостережения: для @emph{открывашки} (токенов, которые запускают конструкцию, например @code{if}) нужно начинать с точки перед токеном, а для других -
+с точки после.  @code{backward-sexp} останавливается с точкой перед
+родительским токеном, если это @emph{opener} интересующего токена, и в
+противном случае останавливается с точкой после родительского токена.
 
-SMIE indentation rules are specified using a function that takes two
-arguments @var{method} and @var{arg} where the meaning of @var{arg} and the
-expected return value depend on @var{method}.
+Правила отступа SMIE задаются с помощью функции, которая принимает два
+аргумента @var{method} и @var{arg}, где значение @var{arg} и ожидаемое
+возвращаемое значение зависят от @var{method}.
 
 @var{method} can be:
 @itemize
 @item
-@code{:after}, in which case @var{arg} is a token and the function
-should return the @var{offset} to use for indentation after @var{arg}.
+@code{:after}, и в этом случае @var{arg} является токеном, и функция должна
+возвращать @var{offset} для использования для отступа после @var{arg}.
 @item
-@code{:before}, in which case @var{arg} is a token and the function
-should return the @var{offset} to use to indent @var{arg} itself.
+@code{:before}, и в этом случае @var{arg} является токеном, и функция должна
+возвращать @var{offset}, чтобы использовать его для отступа самого
+@var{arg}.
 @item
-@code{:elem}, in which case the function should return either the offset
-to use to indent function arguments (if @var{arg} is the symbol
-@code{arg}) or the basic indentation step (if @var{arg} is the symbol
+@code{:elem}, и в этом случае функция должна возвращать либо смещение,
+используемое для отступа аргументов функции (если @var{arg} - это символ
+@code{arg}), либо основной шаг отступа (если @var{arg} - это символ
 @code{basic}).
 @item
-@code{:list-intro}, in which case @var{arg} is a token and the function
-should return не-@code{nil} if the token is followed by a list of
-expressions (not separated by any token) rather than an expression.
+@code{:list-intro}, и в этом случае @var{arg} является токеном, и функция
+должна возвращать не-@code{nil}, если за токеном следует список выражений
+(не разделенных никакими токенами), а не выражение.
 @end itemize
 
-When @var{arg} is a token, the function is called with point just before
-that token.  A return value of @code{nil} always means to fallback on the
-default behavior, so the function should return @code{nil} for arguments it
-does not expect.
+Когда @var{arg} является токеном, функция вызывается с точкой
+непосредственно перед этим токеном.  Возвращаемое значение @code{nil} всегда
+означает возврат к поведению по умолчанию, поэтому функция должна возвращать
+@code{nil} для аргументов, которых она не ожидает.
 
-@var{offset} can be:
+@var{offset} возможно:
 @itemize
 @item
-@code{nil}: use the default indentation rule.
+@code{nil}: использовать правило отступа по умолчанию.
 @item
-@code{(column . @var{column})}: indent to column @var{column}.
+@code{(column . @var{column})}: отступ до столбца @var{column}.
 @item
-@var{number}: offset by @var{number}, relative to a base token which is
-the current token for @code{:after} and its parent for @code{:before}.
+@var{number}: смещение на @var{number} относительно базового токена, который
+является текущим токеном для @code{:after} и его родительским для
+@code{:before}.
 @end itemize
 
 @node SMIE Indentation Helpers
-@subsubsection Helper Functions for Indentation Rules
+@subsubsection Вспомогательные Функции для Правил Отступа
 
-SMIE provides various functions designed specifically for use in the
-indentation rules function (several of those functions break if used in
-another context).  These functions all start with the prefix
-@code{smie-rule-}.
+SMIE предоставляет различные функции, разработанные специально для
+использования в функции правил отступа (некоторые из этих функций не
+работают, если используются в другом контексте).  Все эти функции начинаются
+с префикса @code{smie-rule-}.
 
 @defun smie-rule-bolp
-Return не-@code{nil} if the current token is the first on the line.
+Вернуть не-@code{nil}, если текущий токен является первым в строке.
 @end defun
 
 @defun smie-rule-hanging-p
-Return не-@code{nil} if the current token is @emph{hanging}.
-A token is @emph{hanging} if it is the last token on the line
-and if it is preceded by other tokens: a lone token on a line is not
-hanging.
+Вернуть не-@code{nil}, если текущий токен - @emph{висит}.  Токен
+@emph{висит}, если это последний токен в строке и если ему предшествуют
+другие токены: один токен в строке не висит.
 @end defun
 
 @defun smie-rule-next-p &rest tokens
-Return не-@code{nil} if the next token is among @var{tokens}.
+Вернуть не-@code{nil}, если следующий токен находится среди @var{tokens}.
 @end defun
 
 @defun smie-rule-prev-p &rest tokens
-Return не-@code{nil} if the previous token is among @var{tokens}.
+Вернуть не-@code{nil}, если предыдущий токен находится среди @var{tokens}.
 @end defun
 
 @defun smie-rule-parent-p &rest parents
-Return не-@code{nil} if the current token's parent is among @var{parents}.
+Вернуть не-@code{nil}, если родительский элемент текущего токена находится
+среди @var{parents}.
 @end defun
 
 @defun smie-rule-sibling-p
-Return не-@code{nil} if the current token's parent is actually a
-sibling.  This is the case for example when the parent of a @code{","}
-is just the previous @code{","}.
+Вернуть не-@code{nil}, если родительский элемент текущего токена на самом
+деле является братом.  Это имеет место, например, когда родительский объект
+@code{","} - это просто предыдущий @code{","}.
 @end defun
 
 @defun smie-rule-parent &optional offset
-Return the proper offset to align the current token with the parent.
-If не-@code{nil}, @var{offset} should be an integer giving an
-additional offset to apply.
+Вернуть правильное смещение, чтобы выровнять текущий токен с родительским.
+Если не-@code{nil}, @var{offset} должен быть целым числом, дающим
+дополнительное смещение для применения.
 @end defun
 
 @defun smie-rule-separator method
-Indent current token as a @emph{separator}.
+Сделать отступ для текущего токена как @emph{разделитель}.
 
-By @emph{separator}, we mean here a token whose sole purpose is to
-separate various elements within some enclosing syntactic construct, and
-which does not have any semantic significance in itself (i.e., it would
-typically not exist as a node in an abstract syntax tree).
+Под @emph{разделитель} подразумевается здесь токен, единственной целью
+которого является разделение различных элементов внутри некоторой включающей
+синтаксической конструкции, и который сам по себе не имеет никакого
+семантического значения (т.е. он обычно не существует как узел в абстрактном
+синтаксическом дереве).
 
-Such a token is expected to have an associative syntax and be closely
-tied to its syntactic parent.  Typical examples are @code{","} in lists
-of arguments (enclosed inside parentheses), or @code{";"} in sequences
-of instructions (enclosed in a @code{@{...@}} or @code{begin...end}
-block).
+Ожидается, что такой токен будет иметь ассоциативный синтаксис и будет
+тесно связан со своим синтаксическим родителем.  Типичными примерами
+являются @code{","} в списках аргументов (заключены в круглые скобки) или
+@code{";"} в последовательностях инструкций (заключены в блоки
+@code{@{...@}} или @code{begin...end}).
 
-@var{method} should be the method name that was passed to
+@var{method} должно быть именем метода, которое было передано
 @code{smie-rules-function}.
 @end defun
 
 @node SMIE Indentation Example
-@subsubsection Sample Indentation Rules
+@subsubsection Примеры Правил Отступа
 
-Here is an example of an indentation function:
+Вот пример функции отступа:
 
 @example
 (defun sample-smie-rules (kind token)
@@ -4118,21 +4131,20 @@ Here is an example of an indentation function:
 @end example
 
 @noindent
-A few things to note:
+Несколько замечаний:
 
 @itemize
 @item
-The first case indicates the basic indentation increment to use.
-If @code{sample-indent-basic} is @code{nil}, then SMIE uses the global
-setting @code{smie-indent-basic}.  The major mode could have set
-@code{smie-indent-basic} buffer-locally instead, but that
-is discouraged.
+В первом случае указывается основное используемое приращение отступа.  Если
+@code{sample-indent-basic} равен @code{nil}, то SMIE использует глобальную
+настройку @code{smie-indent-basic}.  В основном режиме вместо этого можно
+было бы установить @code{smie-indent-basic} buffer-locally, но это не
+рекомендуется.
 
 @item
-The rule for the token @code{","} make SMIE try to be more clever when
-the comma separator is placed at the beginning of lines.  It tries to
-outdent the separator so as to align the code after the comma; for
-example:
+Правило для токена @code{","} заставляет SMIE пытаться быть более умным,
+когда разделитель запятой ставится в начале строк.  Пытается выровнять
+разделитель, чтобы выровнять код после запятой; Например:
 
 @example
 x = longfunctionname (
@@ -4142,17 +4154,17 @@ x = longfunctionname (
 @end example
 
 @item
-The rule for indentation after @code{":="} exists because otherwise
-SMIE would treat @code{":="} as an infix operator and would align the
-right argument with the left one.
+Правило для отступа после @code{":="} существует, потому что в противном
+случае SMIE будет рассматривать @code{":="} как инфиксный оператор и
+выровнять правый аргумент с левым.
 
 @item
-The rule for indentation before @code{"begin"} is an example of the use
-of virtual indentation:  This rule is used only when @code{"begin"} is
-hanging, which can happen only when @code{"begin"} is not at the
-beginning of a line.  So this is not used when indenting
-@code{"begin"} itself but only when indenting something relative to this
-@code{"begin"}.  Concretely, this rule changes the indentation from:
+Правило для отступа перед @code{"begin"} является примером использования
+виртуального отступа: это правило используется только тогда, когда
+@code{"begin"} висит, что может произойти только тогда, когда @code{"begin"}
+не находится в начале строки.  Таким образом, это используется не при
+отступе самого @code{"begin"}, а только при отступе чего-либо относительно
+этого @code{"begin"}.  Конкретно это правило изменяет отступ от:
 
 @example
     if x > 0 then begin
@@ -4167,16 +4179,15 @@ to
 @end example
 
 @item
-The rule for indentation before @code{"if"} is similar to the one for
-@code{"begin"}, but where the purpose is to treat @code{"else if"}
-as a single unit, so as to align a sequence of tests rather than indent
-each test further to the right.  This function does this only in the
-case where the @code{"if"} is not placed on a separate line, hence the
-@code{smie-rule-bolp} test.
+Правило для отступа перед @code{"if"} аналогично правилу для @code{"begin"},
+но его цель состоит в том, чтобы рассматривать @code{"else if"} как единый
+блок, чтобы выровнять последовательность тестов, а не сдвигать каждый тест
+дальше вправо.  Эта функция делает это только в том случае, если @code{"if"}
+не помещается в отдельную строку, отсюда и проверка @code{smie-rule-bolp}.
 
-If we know that the @code{"else"} is always aligned with its @code{"if"}
-and is always at the beginning of a line, we can use a more efficient
-rule:
+Если известно, что @code{"else"} всегда выровнен со своим @code{"if"} и
+всегда находится в начале строки, можно использовать более эффективное
+правило:
 @example
 ((equal token "if")
  (and (not (smie-rule-bolp))
@@ -4186,79 +4197,81 @@ rule:
         (cons 'column (current-column)))))
 @end example
 
-The advantage of this formulation is that it reuses the indentation of
-the previous @code{"else"}, rather than going all the way back to the
-first @code{"if"} of the sequence.
+Преимущество этой формулировки состоит в том, что она повторно использует
+отступ предыдущего @code{"else"}, вместо того, чтобы полностью возвращаться
+к первому @code{"if"} последовательности.
 @end itemize
 
-@c In some sense this belongs more in the Emacs manual.
+@c В некотором смысле это больше относится к руководству Emacs.
 @node SMIE Customization
-@subsubsection Customizing Indentation
+@subsubsection Настройка Отступа
 
-If you are using a mode whose indentation is provided by SMIE, you can
-customize the indentation to suit your preferences.  You can do this
-on a per-mode basis (using the option @code{smie-config}), or a
-per-file basis (using the function @code{smie-config-local} in a
-file-local variable specification).
+Если используется режим, в котором отступ предоставляется SMIE, можно
+настроить отступ в соответствии со своими предпочтениями.  Можно сделать это
+для каждого режима (используя параметр @code{smie-config}) или для каждого
+файла (используя функцию @code{smie-config-local} в спецификации локальной
+переменной файла).
 
 @defopt smie-config
-This option lets you customize indentation on a per-mode basis.
-It is an alist with elements of the form @code{(@var{mode} . @var{rules})}.
-For the precise form of rules, see the variable's documentation; but
-you may find it easier to use the command @code{smie-config-guess}.
+Этот параметр позволяет настраивать отступ для каждого режима.  Это список
+с элементами вида @code{(@var{mode} . @var{rules})}. Точную форму правил
+смотрите в документации по переменной; но может быть проще использовать
+команду @code{smie-config-guess}.
 @end defopt
 
 @deffn Command smie-config-guess
-This command tries to work out appropriate settings to produce
-your preferred style of indentation.  Simply call the command while
-visiting a file that is indented with your style.
+Эта команда пытается определить соответствующие параметры для создания
+предпочитаемого стиля отступа.  Просто вызвать команду при посещении файла с
+отступом в требуемом стиле.
 @end deffn
 
 @deffn Command smie-config-save
-Call this command after using @code{smie-config-guess}, to save your
-settings for future sessions.
+Вызвать эту команду после использования @code{smie-config-guess}, чтобы
+сохранить настройки для будущих сеансов.
 @end deffn
 
 @deffn Command smie-config-show-indent &optional move
-This command displays the rules that are used to indent the current
-line.
+Эта команда отображает правила, которые используются для отступа текущей
+строки.
 @end deffn
 
 @deffn Command smie-config-set-indent
-This command adds a local rule to adjust the indentation of the current line.
+Эта команда добавляет локальное правило для настройки отступа текущей
+строки.
 @end deffn
 
 @defun smie-config-local rules
-This function adds @var{rules} as indentation rules for the current buffer.
-These add to any mode-specific rules defined by the @code{smie-config} option.
-To specify custom indentation rules for a specific file, add an entry
-to the file's local variables of the form:
-@code{eval: (smie-config-local '(@var{rules}))}.
+Эта функция добавляет @var{rules} в качестве правил отступа для текущего
+буфера.  Они добавляются к любым правилам, зависящим от режима, определенным
+параметром @code{smie-config}.  Чтобы указать собственные правила отступа
+для конкретного файла, добавляется запись в локальные переменные файла в
+форме: @code{eval: (smie-config-local '(@var{rules}))}.
 @end defun
 
 
 @node Desktop Save Mode
-@section Desktop Save Mode
+@section Режим Сохранения Рабочего Стола
 @cindex desktop save mode
 
-@dfn{Desktop Save Mode} is a feature to save the state of Emacs from
-one session to another.  The user-level commands for using Desktop
-Save Mode are described in the GNU Emacs Manual (@pxref{Saving Emacs
-Sessions,,, emacs, the GNU Emacs Manual}).  Modes whose buffers visit
-a file, don't have to do anything to use this feature.
+@dfn{Desktop Save Mode} - это функция для сохранения состояния Emacs от
+одного сеанса к другому.  Команды уровня пользователя для использования
+режима сохранения рабочего стола описаны в GNU Emacs Manual
+(@pxref{Saving Emacs Sessions,,, emacs, the GNU Emacs Manual}).  Режимы,
+буферы которых обращаются к файлу, не должны ничего делать, чтобы
+использовать эту функцию.
 
-For buffers not visiting a file to have their state saved, the major
-mode must bind the buffer local variable @code{desktop-save-buffer} to
-a не-@code{nil} value.
+Для буферов, не обращающихся к файлу, чтобы сохранить свое состояние,
+основной режим должен привязать локальную переменную буфера
+@code{desktop-save-buffer} к значению не-@code{nil}.
 
 @defvar desktop-save-buffer
-If this buffer-local variable is не-@code{nil}, the buffer will have
-its state saved in the desktop file at desktop save.  If the value is
-a function, it is called at desktop save with argument
-@var{desktop-dirname}, and its value is saved in the desktop file along
-with the state of the buffer for which it was called.  When file names
-are returned as part of the auxiliary information, they should be
-formatted using the call
+Если эта локальная переменная буфера - не-@code{nil}, состояние буфера будет
+сохранено в файле рабочего стола при сохранении рабочего стола.  Если
+значение является функцией, она вызывается при сохранении рабочего стола с
+аргументом @var{desktop-dirname}, и его значение сохраняется в файле
+рабочего стола вместе с состоянием буфера, для которого оно было вызвано.
+Когда имена файлов возвращаются как часть вспомогательной информации, их
+следует отформатировать с помощью вызова
 
 @example
 (desktop-file-name @var{file-name} @var{desktop-dirname})
@@ -4266,25 +4279,24 @@ formatted using the call
 
 @end defvar
 
-For buffers not visiting a file to be restored, the major mode must
-define a function to do the job, and that function must be listed in
-the alist @code{desktop-buffer-mode-handlers}.
+Для буферов, не обращающихся к файлу, который нужно восстановить, в основном
+режиме должна быть определена функция для выполнения работы, и эта функция
+должна быть указана в списке alist @code{desktop-buffer-mode-handlers}.
 
 @defvar desktop-buffer-mode-handlers
-Alist with elements
+Список с элементами
 
 @example
 (@var{major-mode} . @var{restore-buffer-function})
 @end example
 
-The function @var{restore-buffer-function} will be called with
-argument list
+Функция @var{restore-buffer-function} будет вызываться со списком аргументов
 
 @example
 (@var{buffer-file-name} @var{buffer-name} @var{desktop-buffer-misc})
 @end example
 
 and it should return the restored buffer.
-Here @var{desktop-buffer-misc} is the value returned by the function
-optionally bound to @code{desktop-save-buffer}.
+Здесь @var{desktop-buffer-misc} - это значение, возвращаемое функцией,
+необязательно связанной с @code{desktop-save-buffer}.
 @end defvar
