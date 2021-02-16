@@ -4,122 +4,118 @@
 @c Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Documentation
-@chapter Documentation
+@chapter Документация
 @cindex documentation strings
 
-  GNU Emacs has convenient built-in help facilities, most of which
-derive their information from documentation strings associated with
-functions and variables.  This chapter describes how to access
-documentation strings in Lisp programs.
+  GNU Emacs имеет удобные встроенные средства справки, большинство из
+которых получают информацию из строк документации, связанных с функциями и
+переменными.  В этой главе описывается, как получить доступ к строкам
+документации в программах на Lispе.
 
-  The contents of a documentation string should follow certain
-conventions.  In particular, its first line should be a complete
-sentence (or two complete sentences) that briefly describes what the
-function or variable does.  @xref{Documentation Tips}, for how to
-write good documentation strings.
+  Содержимое строки документации должно соответствовать определенным
+соглашениям.  В частности, первая строка должна быть полным предложением
+(или двумя полными предложениями), в котором кратко описывается, что делает
+функция или переменная.  @xref{Documentation Tips}, как писать хорошие
+строки документации.
 
-  Note that the documentation strings for Emacs are not the same thing
-as the Emacs manual.  Manuals have their own source files, written in
-the Texinfo language; documentation strings are specified in the
-definitions of the functions and variables they apply to.  A collection
-of documentation strings is not sufficient as a manual because a good
-manual is not organized in that fashion; it is organized in terms of
-topics of discussion.
+  Обратить внимание, что строки документации для Emacs - это не то же самое,
+что и руководство по Emacs.  Руководства имеют свои собственные исходные
+файлы, написанные на языке Texinfo; Строки документации указаны в
+определениях функций и переменных, к которым они применяются.  Сбора строк
+документации недостаточно в качестве руководства, потому что хорошее
+руководство не организовано таким образом; оно организован по темам
+обсуждения.
 
-  For commands to display documentation strings, see @ref{Help, ,
-Help, emacs, The GNU Emacs Manual}.
+  Информацию о командах для отображения строк документации смотреть в
+  разделе @ref{Help, , Help, emacs, The GNU Emacs Manual}.
 
 @menu
-* Documentation Basics::      Where doc strings are defined and stored.
-* Accessing Documentation::   How Lisp programs can access doc strings.
-* Keys in Documentation::     Substituting current key bindings.
-* Text Quoting Style::        Quotation marks in doc strings and messages.
-* Describing Characters::     Making printable descriptions of
-                                non-printing characters and key sequences.
-* Help Functions::            Subroutines used by Emacs help facilities.
+* Documentation Basics::      Где строки документа определены и сохранены.
+* Accessing Documentation::   Как программы на Lisp могут обращаться к
+                                строкам документации.
+* Keys in Documentation::     Замена текущих привязок ключей.
+* Text Quoting Style::        Кавычки в строках документов и сообщениях.
+* Describing Characters::     Создание печатных описаний непечатаемых
+                                символов и последовательностей ключей.
+* Help Functions::            Подпрограммы, используемые средствами
+                                справки Emacs.
 @end menu
 
 @node Documentation Basics
-@section Documentation Basics
+@section Основы Документации
 @cindex documentation conventions
 @cindex writing a documentation string
 @cindex string, writing a doc string
 
-  A documentation string is written using the Lisp syntax for strings,
-with double-quote characters surrounding the text.  It is, in fact, an
-actual Lisp string.  When the string appears in the proper place in a
-function or variable definition, it serves as the function's or
-variable's documentation.
+  Строка документации записывается с использованием синтаксиса Lisp для
+строк с символами двойных кавычек, окружающими текст.  Фактически, это
+настоящая строка Lisp.  Когда строка появляется в нужном месте в определении
+функции или переменной, она служит документацией для функции или переменной.
 
 @cindex @code{function-documentation} property
-  In a function definition (a @code{lambda} or @code{defun} form), the
-documentation string is specified after the argument list, and is
-normally stored directly in the function object.  @xref{Function
-Documentation}.  You can also put function documentation in the
-@code{function-documentation} property of a function name
+  В определении функции (форма @code{lambda} или @code{defun}) строка
+документации указывается после списка аргументов и обычно сохраняется
+непосредственно в объекте функции.  @xref{Function Documentation}.  Также
+можно поместить документацию по функциям в свойство
+@code{function-documentation} имени функции
 (@pxref{Accessing Documentation}).
 
 @cindex @code{variable-documentation} property
-  In a variable definition (a @code{defvar} form), the documentation
-string is specified after the initial value.  @xref{Defining
-Variables}.  The string is stored in the variable's
-@code{variable-documentation} property.
+  В определении переменной (форма @code{defvar}) строка документации
+указывается после начального значения.  @xref{Defining Variables}.  Строка
+хранится в свойстве переменной @code{variable-documentation}.
 
 @cindex @file{DOC} (documentation) file
-  Sometimes, Emacs does not keep documentation strings in memory.
-There are two such circumstances.  Firstly, to save memory, the
-documentation for preloaded functions and variables (including
-primitives) is kept in a file named @file{DOC}, in the directory
-specified by @code{doc-directory} (@pxref{Accessing Documentation}).
-Secondly, when a function or variable is loaded from a byte-compiled
-file, Emacs avoids loading its documentation string (@pxref{Docs and
-Compilation}).  In both cases, Emacs looks up the documentation string
-from the file only when needed, such as when the user calls @kbd{C-h
-f} (@code{describe-function}) for a function.
+  Иногда Emacs не хранит строки документации в памяти.  Таких обстоятельств
+два.  Во-первых, для экономии памяти документация для предварительно
+загруженных функций и переменных (включая примитивы) хранится в файле с
+именем @file{DOC} в каталоге, заданном параметром @code{doc-directory}
+(@pxref{Accessing Documentation}).  Во-вторых, когда функция или переменная
+загружается из файла с байт компиляцией, Emacs избегает загрузки строки
+документации (@pxref{Docs and Compilation}).  В обоих случаях Emacs ищет
+строку документации из файла только при необходимости, например, когда
+пользователь вызывает @kbd{C-h f} (@code{describe-function}) для функции.
 
-  Documentation strings can contain special @dfn{key substitution
-sequences}, referring to key bindings which are looked up only when
-the user views the documentation.  This allows the help commands to
-display the correct keys even if a user rearranges the default key
-bindings.  @xref{Keys in Documentation}.
+  Строки документации могут содержать специальные
+@dfn{замены ключевых последовательностей}, относящийся к привязкам ключей,
+которые просматриваются только тогда, когда пользователь просматривает
+документацию.  Это позволяет командам справки отображать правильные ключи,
+даже если пользователь изменяет привязки ключей по умолчанию.
+@xref{Keys in Documentation}.
 
-  In the documentation string of an autoloaded command
-(@pxref{Autoload}), these key-substitution sequences have an
-additional special effect: they cause @kbd{C-h f} on the command to
-trigger autoloading.  (This is needed for correctly setting up the
-hyperlinks in the @file{*Help*} buffer.)
+  В строке документации автоматически загружаемой команды (@pxref{Autoload})
+эти последовательности подстановки ключей имеют дополнительный специальный
+эффект: они заставляют @kbd{C-h f} в команде запускать автозагрузку.  (Это
+необходимо для правильной настройки гиперссылок в буфере @file{*Help*}.)
 
 @node Accessing Documentation
-@section Access to Documentation Strings
+@section Доступ к Строкам Документации
 @cindex accessing documentation strings
 
 @defun documentation-property symbol property &optional verbatim
-This function returns the documentation string recorded in
-@var{symbol}'s property list under property @var{property}.  It is
-most often used to look up the documentation strings of variables, for
-which @var{property} is @code{variable-documentation}.  However, it
-can also be used to look up other kinds of documentation, such as for
-customization groups (but for function documentation, use the
-@code{documentation} function, below).
+Эта функция возвращает строку документации, записанную в списке свойств
+@var{symbol} под свойством @var{property}.  Чаще всего используется для
+поиска строк документации с переменными, для которых @var{property} равно
+@code{variable-documentation}.  Однако его также можно использовать для
+поиска других видов документации, например, для групп настройки (но для
+документации по функциям используйте функцию @code{documentation} ниже).
 
-If the property value refers to a documentation string stored in the
-@file{DOC} file or a byte-compiled file, this function looks up that
-string and returns it.
+Если значение свойства относится к строке документации, хранящейся в файле
+@file{DOC} или в байтовом скомпилированном файле, эта функция ищет эту
+строку и возвращает ее.
 
-If the property value isn't @code{nil}, isn't a string, and doesn't
-refer to text in a file, then it is evaluated as a Lisp expression to
-obtain a string.
+Если значение свойства не-@code{nil}, не является строкой и не ссылается на
+текст в файле, то оно оценивается как выражение Lisp для получения строки.
 
-Finally, this function passes the string through
-@code{substitute-command-keys} to substitute key bindings (@pxref{Keys
-in Documentation}).  It skips this step if @var{verbatim} is
-non-@code{nil}.
+Наконец, эта функция передает строку через @code{substitute-command-keys}
+для замены привязки ключей (@pxref{Keys in Documentation}).  Этот шаг
+пропускается, если @var{verbatim} равно не-@code{nil}.
 
 @smallexample
 @group
 (documentation-property 'command-line-processed
    'variable-documentation)
-     @result{} "Non-nil once command line has been processed"
+     @result{} "не-nil после обработки командной строки"
 @end group
 @group
 (symbol-plist 'command-line-processed)
@@ -127,60 +123,58 @@ non-@code{nil}.
 @end group
 @group
 (documentation-property 'emacs 'group-documentation)
-     @result{} "Customization of the One True Editor."
+     @result{} "Настройка One True Editor."
 @end group
 @end smallexample
 @end defun
 
 @defun documentation function &optional verbatim
-This function returns the documentation string of @var{function}.  It
-handles macros, named keyboard macros, and special forms, as well as
-ordinary functions.
+Эта функция возвращает строку документации @var{function}.  Обрабатывает
+макросы, именованные макросы клавиатуры и специальные формы, а также обычные
+функции.
 
-If @var{function} is a symbol, this function first looks for the
-@code{function-documentation} property of that symbol; if that has a
-non-@code{nil} value, the documentation comes from that value (if the
-value is not a string, it is evaluated).
+Если @var{function} является символом, эта функция сначала ищет свойство
+@code{function-documentation} этого символа; если это имеет значение
+не-@code{nil}, документация исходит из этого значения (если значение не
+является строкой, оно оценивается).
 
-If @var{function} is not a symbol, or if it has no
-@code{function-documentation} property, then @code{documentation}
-extracts the documentation string from the actual function definition,
-reading it from a file if called for.
+Если @var{function} не является символом или у него нет свойства
+@code{function-documentation}, тогда @code{documentation} извлекает строку
+документации из фактического определения функции, считывая ее из файла, если
+это необходимо.
 
-Finally, unless @var{verbatim} is non-@code{nil}, this function calls
-@code{substitute-command-keys}.  The result is the documentation
-string to return.
+Наконец, если @var{verbatim} не не-@code{nil}, эта функция вызывает
+@code{substitute-command-keys}.  Результат - строка документации, которую
+нужно вернуть.
 
-The @code{documentation} function signals a @code{void-function} error
-if @var{function} has no function definition.  However, it is OK if
-the function definition has no documentation string.  In that case,
-@code{documentation} returns @code{nil}.
+Функция @code{documentation} сигнализирует об ошибке @code{void-function},
+если @var{function} не имеет определения функции.  Однако это нормально,
+если в определении функции нет строки документации.  В этом случае
+@code{documentation} возвращает @code{nil}.
 @end defun
 
 @defun face-documentation face
-This function returns the documentation string of @var{face} as a
-face.
+Эта функция возвращает строку документации @var{face} как вид.
 @end defun
 
-Here is an example of using the two functions, @code{documentation} and
-@code{documentation-property}, to display the documentation strings for
-several symbols in a @file{*Help*} buffer.
+Вот пример использования двух функций, @code{documentation} и
+@code{documentation-property}, для отображения строк документации для
+нескольких символов в буфере @file{*Help*}.
 
 @anchor{describe-symbols example}
 @smallexample
 @group
 (defun describe-symbols (pattern)
-  "Describe the Emacs Lisp symbols matching PATTERN.
-All symbols that have PATTERN in their name are described
-in the *Help* buffer."
-  (interactive "sDescribe symbols matching: ")
+  "Опишите символы Emacs Lisp, соответствующие PATTERN.
+Все символы, в названии которых есть PATTERN, описываются в буфере *Help*."
+  (interactive "sОпишите соответствие символов: ")
   (let ((describe-func
          (function
           (lambda (s)
 @end group
 @group
-            ;; @r{Print description of symbol.}
-            (if (fboundp s)             ; @r{It is a function.}
+            ;; @r{Распечатать описание символа.}
+            (if (fboundp s)             ; @r{Это функция.}
                 (princ
                  (format "%s\t%s\n%s\n\n" s
                    (if (commandp s)
@@ -197,7 +191,7 @@ in the *Help* buffer."
                    (or (documentation s)
                        "not documented"))))
 
-            (if (boundp s)              ; @r{It is a variable.}
+            (if (boundp s)              ; @r{Это переменная.}
 @end group
 @group
                 (princ
@@ -213,7 +207,7 @@ in the *Help* buffer."
 @end group
 
 @group
-    ;; @r{Build a list of symbols that match pattern.}
+    ;; @r{Составьте список символов, соответствующих шаблону.}
     (mapatoms (function
                (lambda (sym)
                  (if (string-match pattern (symbol-name sym))
@@ -221,15 +215,15 @@ in the *Help* buffer."
 @end group
 
 @group
-    ;; @r{Display the data.}
+    ;; @r{Отобразите данные.}
     (help-setup-xref (list 'describe-symbols pattern) (interactive-p))
     (with-help-window (help-buffer)
       (mapcar describe-func (sort sym-list 'string<)))))
 @end group
 @end smallexample
 
-  The @code{describe-symbols} function works like @code{apropos},
-but provides more information.
+  Функция @code{describe-symbols} работает так же, как @code{apropos}, но
+предоставляет больше информации.
 
 @smallexample
 @group
@@ -239,175 +233,169 @@ but provides more information.
 goal-column     Option
 Semipermanent goal column for vertical motion, as set by @dots{}
 @end group
-@c Do not blithely break or fill these lines.
-@c That makes them incorrect.
+@c Не разрывайте и не заполняйте эти строки беспечно.
+@c Это делает их неправильными.
 
 @group
-minibuffer-temporary-goal-position      Variable
-not documented
+minibuffer-temporary-goal-position      Переменная
+не задокументировано
 @end group
 
 @group
 set-goal-column Keys: C-x C-n
-Set the current horizontal position as a goal for C-n and C-p.
+Установить текущее положение по горизонтали как цель для C-n и C-p.
 @end group
-@c DO NOT put a blank line here!  That is factually inaccurate!
+@c НЕ ставить здесь пустую строку! Это фактически неточно!
 @group
-Those commands will move to this position in the line moved to
-rather than trying to keep the same horizontal position.
-With a non-nil argument ARG, clears out the goal column
-so that C-n and C-p resume vertical motion.
-The goal column is stored in the variable ‘goal-column’.
+Эти команды переместятся в это положение в перемещенной строке, вместо того,
+чтобы пытаться сохранить то же положение по горизонтали. С аргументом не-nil
+ARG очищает столбец цели, так что C-n и C-p возобновляет вертикальное
+движение.  Столбец цели хранится в переменной ‘goal-column’.
 
 (fn ARG)
 @end group
 
 @group
-temporary-goal-column   Variable
-Current goal column for vertical motion.
-It is the column where point was at the start of the current run
-of vertical motion commands.
+temporary-goal-column   Переменная
+Столбец текущей цели для вертикального движения.  Это столбец, в котором
+точка была в начале текущего выполнения команд вертикального перемещения.
 
-When moving by visual lines via the function ‘line-move-visual’, it is a cons
-cell (COL . HSCROLL), where COL is the x-position, in pixels,
-divided by the default column width, and HSCROLL is the number of
-columns by which window is scrolled from left margin.
+При перемещении по визуальным линиям с помощью функции ‘line-move-visual’
+это cons-ячейка (COL . HSCROLL), где COL - координата x в пикселях, деленная
+на ширину столбца по умолчанию, а HSCROLL - количество столбцов, на которые
+окно прокручивается от левого края.
 
-When the ‘track-eol’ feature is doing its job, the value is
-‘most-positive-fixnum’.
+Когда функция ‘track-eol’ выполняет свою работу, значение равно
+‘most-positive-fixnum’..
 ---------- Buffer: *Help* ----------
 @end group
 @end smallexample
 
 @anchor{Definition of Snarf-documentation}
 @defun Snarf-documentation filename
-This function is used when building Emacs, just before the runnable
-Emacs is dumped.  It finds the positions of the documentation strings
-stored in the file @var{filename}, and records those positions into
-memory in the function definitions and variable property lists.
-@xref{Building Emacs}.
+Эта функция используется при сборке Emacs непосредственно перед сбросом
+работающего Emacs.  Находит позиции строк документации, хранящихся в файле
+@var{filename}, и записывает эти позиции в память в определениях функций и
+списках свойств переменных.  @xref{Building Emacs}.
 
-Emacs reads the file @var{filename} from the @file{emacs/etc} directory.
-When the dumped Emacs is later executed, the same file will be looked
-for in the directory @code{doc-directory}.  Usually @var{filename} is
-@code{"DOC"}.
+Emacs читает файл @var{filename} из каталога @file{emacs/etc}.  Когда позже
+будет запущен выгруженный Emacs, этот же файл будет искать в каталоге
+@code{doc-directory}.  Обычно @var{filename} - это @code{"DOC"}.
 @end defun
 
 @defvar doc-directory
-This variable holds the name of the directory which should contain the
-file @code{"DOC"} that contains documentation strings for
-built-in and preloaded functions and variables.
+Эта переменная содержит имя каталога, в котором должен находиться файл
+@code{"DOC"}, содержащий строки документации для встроенных и предварительно
+загруженных функций и переменных.
 
-In most cases, this is the same as @code{data-directory}.  They may be
-different when you run Emacs from the directory where you built it,
-without actually installing it.  @xref{Definition of data-directory}.
+В большинстве случаев это то же самое, что и @code{data-directory}.  Могут
+отличаться, когда запускается Emacs из каталога, в котором его создали, без
+фактической установки.  @xref{Definition of data-directory}.
 @end defvar
 
 @node Keys in Documentation
-@section Substituting Key Bindings in Documentation
+@section Подстановка Привязок Клавиш в Документации
 @cindex documentation, keys in
 @cindex keys in documentation strings
 @cindex substituting keys in documentation
 @cindex key substitution sequence
 
-  When documentation strings refer to key sequences, they should use the
-current, actual key bindings.  They can do so using certain special text
-sequences described below.  Accessing documentation strings in the usual
-way substitutes current key binding information for these special
-sequences.  This works by calling @code{substitute-command-keys}.  You
-can also call that function yourself.
+  Когда строки документации относятся к последовательностям ключей, они
+должны использовать текущие фактические привязки ключей.  Могут сделать это
+с помощью определенных специальных текстовых последовательностей, описанных
+ниже.  При доступе к строкам документации обычным способом эти специальные
+последовательности заменяются текущей информацией о привязке ключей.  Это
+работает путем вызова @code{substitute-command-keys}.  Также можно вызвать
+эту функцию самостоятельно.
 
-  Here is a list of the special sequences and what they mean:
+  Вот список специальных последовательностей и их значение:
 
 @table @code
 @item \[@var{command}]
-stands for a key sequence that will invoke @var{command}, or @samp{M-x
-@var{command}} if @var{command} has no key bindings.
+означает последовательность ключей, которая будет вызывать @var{command}
+или @samp{M-x @var{command}} если @var{command} не имеет привязки ключей.
 
 @item \@{@var{mapvar}@}
-stands for a summary of the keymap which is the value of the variable
-@var{mapvar}.  The summary is made using @code{describe-bindings}.
+обозначает сводку ключевой карты, которая является значением переменной
+@var{mapvar}.  Сводка сделана с использованием @code{describe-bindings}.
 
 @item \<@var{mapvar}>
-stands for no text itself.  It is used only for a side effect: it
-specifies @var{mapvar}'s value as the keymap for any following
-@samp{\[@var{command}]} sequences in this documentation string.
+означает отсутствие текста.  Используется только для побочного эффекта:
+указывает значение @var{mapvar} в качестве таблицы ключей для любых
+следующих последовательностей @samp{обр[@var{command}]} в этой строке
+документации.
 
 @item `
-(grave accent) stands for a left quote.
-This generates a left single quotation mark, an apostrophe, or a grave
-accent depending on the value of @code{text-quoting-style}.
-@xref{Text Quoting Style}.
+(серьезное ударение) означает левую цитату.  Это создает левую одинарную
+кавычку, апостроф или серьезное ударение в зависимости от значения
+@code{text-quoting-style}.  @xref{Text Quoting Style}.
 
 @item '
-(apostrophe) stands for a right quote.
-This generates a right single quotation mark or an apostrophe
-depending on the value of @code{text-quoting-style}.
+(апостроф) означает правильную цитату.  Это создает правую одинарную кавычку
+или апостроф в зависимости от значения @code{text-quoting-style}.
 
 @item \=
-quotes the following character and is discarded; thus, @samp{\=`} puts
-@samp{`} into the output, @samp{\=\[} puts @samp{\[} into the output,
-and @samp{\=\=} puts @samp{\=} into the output.
+заключает в кавычки следующий символ и отбрасывается; таким образом,
+@samp{\=`} помещает @samp{`} в вывод, @samp{\=\[} помещает @samp{\[} в
+вывод, а @samp{\=\=} помещает @samp{\=} в вывод.
 @end table
 
-@strong{Please note:} Each @samp{\} must be doubled when written in a
-string in Emacs Lisp.
+@strong{Пожалуйста, обратить внимание:} Каждый @samp{\} должен быть удвоен
+при записи в строку в Emacs Lisp.
 
 @defopt text-quoting-style
 @cindex curved quotes
 @cindex curly quotes
-The value of this variable is a symbol that specifies the style Emacs
-should use for single quotes in the wording of help and messages.  If
-the variable's value is @code{curve}, the style is @t{‘like this’}
-with curved single quotes.  If the value is @code{straight}, the style
-is @t{'like this'} with straight apostrophes.  If the value is
-@code{grave}, quotes are not translated and the style is @t{`like
-this'} with grave accent and apostrophe, the standard style before
-Emacs version 25.  The default value @code{nil} acts like @code{curve}
-if curved single quotes seem to be displayable, and like @code{grave}
-otherwise.
+Значение этой переменной - это символ, который определяет стиль, который
+Emacs должен использовать для одинарных кавычек в формулировках справки и
+сообщений.  Если значение переменной - @code{curve}, стиль - @t{‘like this’}
+с изогнутыми одинарными кавычками.  Если значение равно @code{straight},
+используется стиль @t{'like this'} с прямыми апострофами.  Если значение -
+@code{grave}, кавычки не переводятся, а стиль - @t{`like this'} с серьезным
+ударением и апострофом, стандартный стиль до версии Emacs 25.  Значение по
+умолчанию @code{nil} действует как @code{curve}, если изогнутые одинарные
+кавычки кажутся отображаемыми, и как @code{grave} в противном случае.
 
-This option is useful on platforms that have problems with curved
-quotes.  You can customize it freely according to your personal
-preference.
+Эта опция полезна на платформах, у которых есть проблемы с изогнутыми
+кавычками.  Можно свободно настроить в соответствии с личными
+предпочтениями.
 @end defopt
 
 @defun substitute-command-keys string
-This function scans @var{string} for the above special sequences and
-replaces them by what they stand for, returning the result as a string.
-This permits display of documentation that refers accurately to the
-user's own customized key bindings.
+Эта функция сканирует @var{string} на наличие указанных выше специальных
+последовательностей и заменяет их тем, что они обозначают, возвращая
+результат в виде строки.  Это позволяет отображать документацию, которая
+точно относится к привязкам ключей, настроенным пользователем.
 
 @cindex advertised binding
-If a command has multiple bindings, this function normally uses the
-first one it finds.  You can specify one particular key binding by
-assigning an @code{:advertised-binding} symbol property to the
-command, like this:
+Если команда имеет несколько привязок, эта функция обычно использует первую
+найденную.  Можно указать одну конкретную привязку ключей, присвоив команде
+свойство символа @code{:advertised-binding}, например:
 
 @smallexample
 (put 'undo :advertised-binding [?\C-/])
 @end smallexample
 
 @noindent
-The @code{:advertised-binding} property also affects the binding shown
-in menu items (@pxref{Menu Bar}).  The property is ignored if it
-specifies a key binding that the command does not actually have.
+Свойство @code{:advertised-binding} также влияет на привязку, отображаемую в
+пунктах меню (@pxref{Menu Bar}).  Свойство игнорируется, если оно указывает
+привязку ключей, которой фактически нет у команды.
 @end defun
 
-  Here are examples of the special sequences:
+  Вот примеры специальных последовательностей:
 
 @smallexample
 @group
 (substitute-command-keys
-   "To abort recursive edit, type `\\[abort-recursive-edit]'.")
-@result{} "To abort recursive edit, type ‘C-]’."
+   "Чтобы прервать рекурсивное редактирование, введите `\\[abort-recursive-edit]'.")
+@result{} "Чтобы прервать рекурсивное редактирование, введите ‘C-]’."
 @end group
 
 @group
 (substitute-command-keys
-   "The keys that are defined for the minibuffer here are:
+   "Ключи, которые определены для минибуфера здесь:
   \\@{minibuffer-local-must-match-map@}")
-@result{} "The keys that are defined for the minibuffer here are:
+@result{} "Ключи, которые определены для минибуфера здесь:
 @end group
 
 ?               minibuffer-completion-help
@@ -420,82 +408,82 @@ C-g             abort-recursive-edit
 
 @group
 (substitute-command-keys
-   "To abort a recursive edit from the minibuffer, type \
+   "Чтобы отменить рекурсивное редактирование из минибуфера, введите \
 `\\<minibuffer-local-must-match-map>\\[abort-recursive-edit]'.")
-@result{} "To abort a recursive edit from the minibuffer, type ‘C-g’."
+@result{} "Чтобы отменить рекурсивное редактирование из минибуфера, введите ‘C-g’."
 @end group
 @end smallexample
 
-  There are other special conventions for the text in documentation
-strings---for instance, you can refer to functions, variables, and
-sections of this manual.  @xref{Documentation Tips}, for details.
+  Существуют и другие специальные соглашения для текста в строках
+документации - например, можно ссылаться на функции, переменные и разделы
+этого руководства.  @xref{Documentation Tips}, для деталей.
 
 @node Text Quoting Style
-@section Text Quoting Style
+@section Text Стиль Цитирования
 
-  Typically, grave accents and apostrophes are treated specially in
-documentation strings and diagnostic messages, and translate to matching
-single quotation marks (also called ``curved quotes'').  For example,
-the documentation string @t{"Alias for `foo'."} and the function call
-@code{(message "Alias for `foo'.")} both translate to @t{"Alias for
-‘foo’."}.  Less commonly, Emacs displays grave accents and apostrophes
-as themselves, or as apostrophes only (e.g., @t{"Alias for 'foo'."}).
-Documentation strings and message formats should be written so that
-they display well with any of these styles.  For example, the
-documentation string @t{"Alias for 'foo'."} is probably not what you
-want, as it can display as @t{"Alias for ’foo’."}, an unusual style in
-English.
+  Обычно серьезные акценты и апострофы обрабатываются специально в строках
+документации и диагностических сообщениях и переводятся в соответствующие
+одинарные кавычки (также называемые ``curved quotes'').  Например, строка
+документации @t{"Псевдоним для `foo'."} и вызов функции
+@code{(message "Псевдоним для `foo'.")} преобразуются в
+@t{"Псевдоним для ‘foo’."}.  Реже Emacs отображает серьезные акценты и
+апострофы как сами по себе, или только как апострофы (например,
+@t{"Псевдоним для 'foo'."}).  Строки документации и форматы сообщений должны
+быть написаны так, чтобы они хорошо отображались с любым из этих стилей.
+Например, строка документации @t{"Псевдоним для 'foo'."}, вероятно, не то,
+что нужно, поскольку она может отображаться как @t{"Псевдоним для ’foo’."},
+необычный стиль на английском языке.
 
-  Sometimes you may need to display a grave accent or apostrophe
-without translation, regardless of text quoting style.  In a
-documentation string, you can do this with escapes.  For example, in
-the documentation string @t{"\\=`(a ,(sin 0)) ==> (a 0.0)"} the grave
-accent is intended to denote Lisp code, so it is escaped and displays
-as itself regardless of quoting style.  In a call to @code{message} or
-@code{error}, you can avoid translation by using a format @t{"%s"}
-with an argument that is a call to @code{format}.  For example,
+  Иногда может потребоваться использовать серьезное ударение или апостроф
+без перевода, независимо от стиля цитирования текста.  В строке документации
+можно сделать это с помощью escape-символов.  Например, в строке
+документации @t{"\\=`(a ,(sin 0)) ==> (a 0.0)"} серьезный акцент
+предназначен для обозначения кода Lisp, поэтому он экранирован и
+отображается как сам, независимо от стиля цитирования.  При вызове
+@code{message} или @code{error} можно избежать перевода, используя формат
+@t{"%s"} с аргументом, который является вызовом @code{format}.  Например,
 @code{(message "%s" (format "`(a ,(sin %S)) ==> (a %S)" x (sin x)))}
-displays a message that starts with grave accent regardless of text
-quoting style.
+отображает сообщение, которое начинается с серьезного акцента независимо от
+стиля цитирования текста.
 
 @defopt text-quoting-style
 @cindex curved quotes
 @cindex curly quotes
-The value of this user option is a symbol that specifies the style
-Emacs should use for single quotes in the wording of help and
-messages.  If the option's value is @code{curve}, the style is
-@t{‘like this’} with curved single quotes.  If the value is
-@code{straight}, the style is @t{'like this'} with straight
-apostrophes.  If the value is @code{grave}, quotes are not translated
-and the style is @t{`like this'} with grave accent and apostrophe, the
-standard style before Emacs version 25.  The default value @code{nil}
-acts like @code{curve} if curved single quotes seem to be displayable,
-and like @code{grave} otherwise.
+Значение этой пользовательской опции - это символ, который указывает стиль,
+который Emacs должен использовать для одинарных кавычек в формулировках
+справки и сообщений.  Если значение параметра - @code{curve}, стиль -
+@t{‘like this’} с изогнутыми одинарными кавычками.  Если значение -
+@code{straight}, стиль - @t{'like this'} с прямыми апострофами.  Если
+значение равно @code{grave}, кавычки не переводятся, а стиль -
+@t{`like this'} с серьезным ударением и апострофом, стандартный стиль до
+версии Emacs 25.  Значение по умолчанию @code{nil} действует как
+@code{curve}, если изогнутые одинарные кавычки кажутся отображаемыми, и как
+@code{grave} в противном случае.
 
-This option is useful on platforms that have problems with curved
-quotes.  You can customize it freely according to your personal
-preference.
+Эта опция полезна на платформах, у которых есть проблемы с изогнутыми
+кавычками.  Можно свободно настроить в соответствии с личными
+предпочтениями.
 @end defopt
 
 @node Describing Characters
-@section Describing Characters for Help Messages
+@section Описание Символов для Справочных Сообщений
 @cindex describe characters and events
 
-  These functions convert events, key sequences, or characters to
-textual descriptions.  These descriptions are useful for including
-arbitrary text characters or key sequences in messages, because they
-convert non-printing and whitespace characters to sequences of printing
-characters.  The description of a non-whitespace printing character is
-the character itself.
+  Эти функции преобразуют события, последовательности ключей или символы в
+текстовые описания.  Эти описания полезны для включения в сообщения
+произвольных текстовых символов или последовательностей ключей, поскольку
+они преобразуют непечатаемые символы и символы пробелов в последовательности
+печатаемых символов.  Описание печатного символа без пробелов - это сам
+символ. 
 
 @defun key-description sequence &optional prefix
 @cindex Emacs event standard notation
-This function returns a string containing the Emacs standard notation
-for the input events in @var{sequence}.  If @var{prefix} is
-non-@code{nil}, it is a sequence of input events leading up to
-@var{sequence} and is included in the return value.  Both arguments
-may be strings, vectors or lists.  @xref{Input Events}, for more
-information about valid events.
+Эта функция возвращает строку, содержащую стандартную нотацию Emacs для
+событий ввода в @var{sequence}.  Если @var{prefix} равен не-@code{nil}, это
+последовательность входных событий, ведущих к @var{sequence}, и включается в
+возвращаемое значение.  Оба аргумента могут быть строками, векторами или
+списками.  @xref{Input Events}, для получения дополнительной информации о
+действующих событиях.
 
 @smallexample
 @group
@@ -508,7 +496,7 @@ information about valid events.
 @end group
 @end smallexample
 
-  See also the examples for @code{single-key-description}, below.
+  Смотреть также примеры для @code{single-key-description} ниже.
 @end defun
 
 @defun single-key-description event &optional no-angles
@@ -516,19 +504,18 @@ information about valid events.
 @cindex character printing
 @cindex control character printing
 @cindex meta character printing
-This function returns a string describing @var{event} in the standard
-Emacs notation for keyboard input.  A normal printing character
-appears as itself, but a control character turns into a string
-starting with @samp{C-}, a meta character turns into a string starting
-with @samp{M-}, and space, tab, etc., appear as @samp{SPC},
-@samp{TAB}, etc.  A function key symbol appears inside angle brackets
-@samp{<@dots{}>}.  An event that is a list appears as the name of the
-symbol in the @sc{car} of the list, inside angle brackets.
+Эта функция возвращает строку, описывающую @var{event} в стандартной нотации
+Emacs для ввода с клавиатуры.  Обычный печатный символ отображается сам по
+себе, но управляющий символ превращается в строку, начинающуюся с @samp{C-},
+метасимвол превращается в строку, начинающуюся с @samp{M-}, пробел,
+табуляция и так далее, отображаются как @samp{SPC}, @samp{TAB} и так далее.
+Функциональная клавиша внутри угловых скобок появляется символ
+@samp{<@dots{}>}.  Событие, представляющее собой список, отображается как
+имя символа в @sc{car} списка внутри угловых скобок.
 
-If the optional argument @var{no-angles} is non-@code{nil}, the angle
-brackets around function keys and event symbols are omitted; this is
-for compatibility with old versions of Emacs which didn't use the
-brackets.
+Если необязательный аргумент @var{no-angles} - не-@code{nil}, угловые скобки
+вокруг функциональных клавиш и символов событий опускаются; это сделано для
+совместимости со старыми версиями Emacs, в которых скобки не использовались.
 
 @smallexample
 @group
@@ -555,16 +542,15 @@ brackets.
 @end defun
 
 @defun text-char-description character
-This function returns a string describing @var{character} in the
-standard Emacs notation for characters that can appear in
-text---similar to @code{single-key-description}, except that the
-argument must be a valid character code that passes a
-@code{characterp} test (@pxref{Character Codes}).  The function
-produces descriptions of control characters with a leading caret
-(which is how Emacs usually displays control characters in buffers).
-Characters with modifier bits will cause this function to signal an
-error (@acronym{ASCII} characters with the Control modifier are an
-exception, they are represented as control characters).
+Эта функция возвращает строку, описывающую @var{character} в стандартной
+нотации Emacs для символов, которые могут появляться в тексте --- аналогично
+@code{single-key-description}, за исключением того, что аргумент должен быть
+допустимым кодом символа, который проходит проверку @code{characterp}
+(@pxref{Character Codes}).  Функция создает описания управляющих символов с
+начальным знаком вставки (именно так Emacs обычно отображает управляющие
+символы в буферах).  Символы с битами модификатора заставят эту функцию
+сигнализировать об ошибке (символы @acronym{ASCII} с модификатором Control
+являются исключением, они представлены как управляющие символы).
 
 @smallexample
 @group
@@ -579,64 +565,63 @@ exception, they are represented as control characters).
 @end defun
 
 @deffn Command read-kbd-macro string &optional need-vector
-This function is used mainly for operating on keyboard macros, but it
-can also be used as a rough inverse for @code{key-description}.  You
-call it with a string containing key descriptions, separated by spaces;
-it returns a string or vector containing the corresponding events.
-(This may or may not be a single valid key sequence, depending on what
-events you use; @pxref{Key Sequences}.)  If @var{need-vector} is
-non-@code{nil}, the return value is always a vector.
+Эта функция используется в основном для работы с макросами клавиатуры, но ее
+также можно использовать как грубую инверсию для @code{key-description}.
+Вызывается со строкой, содержащей описания ключей, разделенные пробелами;
+возвращает строку или вектор, содержащий соответствующие события.  (Это
+может быть или не быть единственной допустимой последовательностью ключей, в
+зависимости от того, какие события используются; @pxref{Key Sequences}.)
+Если @var{need-vector} - не-@code{nil}, возвращаемое значение всегда
+является вектором.
 @end deffn
 
 @node Help Functions
-@section Help Functions
+@section Функции Помощи
 @cindex help functions
 
-  Emacs provides a variety of built-in help functions, all accessible to
-the user as subcommands of the prefix @kbd{C-h}.  For more information
-about them, see @ref{Help, , Help, emacs, The GNU Emacs Manual}.  Here
-we describe some program-level interfaces to the same information.
+  Emacs предоставляет множество встроенных функций справки, все из которых доступны пользователю как подкоманды с префиксом @kbd{C-h}.  Для получения дополнительной информации о них, смотреть
+@ref{Help, , Help, emacs, The GNU Emacs Manual}.  Здесь описываются
+некоторые интерфейсы программного уровня к той же информации.
 
 @deffn Command apropos pattern &optional do-all
-This function finds all meaningful symbols whose names contain a
-match for the apropos pattern @var{pattern}.  An apropos pattern is
-either a word to match, a space-separated list of words of which at
-least two must match, or a regular expression (if any special regular
-expression characters occur).  A symbol is meaningful if it has a
-definition as a function, variable, or face, or has properties.
+Эта функция находит все значимые символы, имена которых совпадают с шаблоном
+apropos @var{pattern}.  Шаблон apropos - это либо слово для сопоставления,
+список слов, разделенных пробелами, из которых не менее двух должны
+совпадать, либо регулярное выражение (если встречаются какие-либо
+специальные символы регулярного выражения).  Символ имеет значение, если он
+имеет определение как функция, переменная или грань или имеет свойства.
 
-The function returns a list of elements that look like this:
+Функция возвращает список элементов, которые выглядят так:
 
 @example
 (@var{symbol} @var{score} @var{function-doc} @var{variable-doc}
  @var{plist-doc} @var{widget-doc} @var{face-doc} @var{group-doc})
 @end example
 
-Here, @var{score} is an integer measure of how important the symbol
-seems to be as a match.  Each of the remaining elements is a
-documentation string, or @code{nil}, for @var{symbol} as a function,
-variable, etc.
+Здесь @var{score} - это целочисленная мера того, насколько важным символ
+кажется совпадением.  Каждый из оставшихся элементов представляет собой
+строку документации или @code{nil} для @var{symbol} как функции, переменной
+и так далее.
 
-It also displays the symbols in a buffer named @file{*Apropos*}, each
-with a one-line description taken from the beginning of its
-documentation string.
+Также отображает символы в буфере с именем @file{*Apropos*}, каждый с
+однострочным описанием, взятым из начала его строки документации.
 
-If @var{do-all} is non-@code{nil}, or if the user option
-@code{apropos-do-all} is non-@code{nil}, then @code{apropos} also
-shows key bindings for the functions that are found; it also shows
-@emph{all} interned symbols, not just meaningful ones (and it lists
-them in the return value as well).
+Если @var{do-all} - не-@code{nil} или пользовательская опция
+@code{apropos-do-all} - не-@code{nil}, то @code{apropos} также показывает
+привязки ключей для найденных функций; также показывает интернированные
+символы @emph{all}, а не только значимые (и он также перечисляет их в
+возвращаемом значении).
 @end deffn
 
 @defvar help-map
-The value of this variable is a local keymap for characters following the
-Help key, @kbd{C-h}.
+Значение этой переменной - это локальная карта для символов, следующих за
+ключём справки @kbd{C-h}.
 @end defvar
 
 @deffn {Prefix Command} help-command
-This symbol is not a function; its function definition cell holds the
-keymap known as @code{help-map}.  It is defined in @file{help.el} as
-follows:
+Этот символ не является функцией; его ячейка определения функции содержит
+ключевую карту, известную как @code{help-map}.  Определяется в
+@file{help.el} следующим образом:
 
 @smallexample
 @group
@@ -647,151 +632,149 @@ follows:
 @end deffn
 
 @defopt help-char
-The value of this variable is the help character---the character that
-Emacs recognizes as meaning Help.  By default, its value is 8, which
-stands for @kbd{C-h}.  When Emacs reads this character, if
-@code{help-form} is a non-@code{nil} Lisp expression, it evaluates that
-expression, and displays the result in a window if it is a string.
+Значением этой переменной является символ справки - символ, который Emacs
+распознает как означающий справку.  По умолчанию его значение равно 8, что
+означает @kbd{C-h}.  Когда Emacs читает этот символ, если @code{help-form}
+является выражением Lisp оцениваемый в не-@code{nil}, он вычисляет это
+выражение и отображает результат в окне, если это строка.
 
-Usually the value of @code{help-form} is @code{nil}.  Then the
-help character has no special meaning at the level of command input, and
-it becomes part of a key sequence in the normal way.  The standard key
-binding of @kbd{C-h} is a prefix key for several general-purpose help
-features.
+Обычно значение @code{help-form} равно @code{nil}.  Тогда символ справки не
+имеет особого значения на уровне ввода команды и становится частью
+последовательности ключей обычным образом.  Стандартная привязка ключей
+@kbd{C-h} - это префиксный ключ для нескольких функций справки общего
+назначения.
 
-The help character is special after prefix keys, too.  If it has no
-binding as a subcommand of the prefix key, it runs
-@code{describe-prefix-bindings}, which displays a list of all the
-subcommands of the prefix key.
+Символ справки также является специальным после префиксных ключей.  Если у
+него нет привязки в качестве подкоманды префиксного ключа, он запускает
+@code{describe-prefix-bindings}, который отображает список всех подкоманд
+префиксного ключа.
 @end defopt
 
 @defopt help-event-list
-The value of this variable is a list of event types that serve as
-alternative help characters.  These events are handled just like the
-event specified by @code{help-char}.
+Значение этой переменной представляет собой список типов событий, которые
+служат альтернативными символами справки.  Эти события обрабатываются так
+же, как событие, указанное в @code{help-char}.
 @end defopt
 
 @defvar help-form
-If this variable is non-@code{nil}, its value is a form to evaluate
-whenever the character @code{help-char} is read.  If evaluating the form
-produces a string, that string is displayed.
+Если эта переменная - не-@code{nil}, ее значение - это форма для оценки при
+чтении символа @code{help-char}.  Если при вычислении формы получается
+строка, эта строка отображается.
 
-A command that calls @code{read-event}, @code{read-char-choice}, or
-@code{read-char} probably should bind @code{help-form} to a
-non-@code{nil} expression while it does input.  (The time when you
-should not do this is when @kbd{C-h} has some other meaning.)
-Evaluating this expression should result in a string that explains
-what the input is for and how to enter it properly.
+Команда, вызывающая @code{read-event}, @code{read-char-choice} или
+@code{read-char}, вероятно, должна связать @code{help-form} с выражением
+не-@code{nil} во время ввода.  (Не следует этого делать, когда @kbd{C-h}
+имеет другое значение.)  В результате вычисления этого выражения должна
+получиться строка, объясняющая, для чего предназначен ввод и как его
+правильно ввести.
 
-Entry to the minibuffer binds this variable to the value of
+Запись в минибуфер связывает эту переменную со значением
 @code{minibuffer-help-form} (@pxref{Definition of minibuffer-help-form}).
 @end defvar
 
 @defvar prefix-help-command
-This variable holds a function to print help for a prefix key.  The
-function is called when the user types a prefix key followed by the help
-character, and the help character has no binding after that prefix.  The
-variable's default value is @code{describe-prefix-bindings}.
+Эта переменная содержит функцию для вывода справки по префиксному ключу.
+Функция вызывается, когда пользователь вводит префиксную клавишу, за которой
+следует символ справки, а символ справки не имеет привязки после этого
+префикса.  Значение переменной по умолчанию @code{describe-prefix-bindings}.
 @end defvar
 
 @deffn Command describe-prefix-bindings
-This function calls @code{describe-bindings} to display a list of all
-the subcommands of the prefix key of the most recent key sequence.  The
-prefix described consists of all but the last event of that key
-sequence.  (The last event is, presumably, the help character.)
+Эта функция вызывает @code{describe-bindings} для отображения списка всех
+подкоманд префиксного ключа самой последней последовательности клавиш.
+Описанный префикс состоит из всего, кроме последнего события этой
+последовательности ключей.  (Последнее событие - предположительно
+вспомогательный персонаж.)
 @end deffn
 
-  The following two functions are meant for modes that want to provide
-help without relinquishing control, such as the electric modes.
-Their names begin with @samp{Helper} to distinguish them from the
-ordinary help functions.
+  Следующие две функции предназначены для режимов, в которых требуется
+помощь без отказа от управления, например для электрических режимов.  Их
+имена начинаются с @samp{Helper}, чтобы отличать их от обычных функций
+помощи.
 
 @deffn Command Helper-describe-bindings
-This command pops up a window displaying a help buffer containing a
-listing of all of the key bindings from both the local and global keymaps.
-It works by calling @code{describe-bindings}.
+Эта команда открывает окно с буфером справки, содержащим список всех
+привязок ключей как из локальной, так и из глобальной карты ключей.
+Работает, вызывая @code{describe-bindings}.
 @end deffn
 
 @deffn Command Helper-help
-This command provides help for the current mode.  It prompts the user
-in the minibuffer with the message @samp{Help (Type ? for further
-options)}, and then provides assistance in finding out what the key
-bindings are, and what the mode is intended for.  It returns @code{nil}.
+Эта команда предоставляет справку для текущего режима.  Запрашивает
+пользователя в минибуфере с сообщением
+@samp{Help (Type ? for further options)}, а затем оказывает помощь в
+выяснении того, какие привязки ключей и для чего предназначен режим.
+Возвращает @code{nil}.
 
 @vindex Helper-help-map
-This can be customized by changing the map @code{Helper-help-map}.
+Это можно настроить, изменив карту @code{Helper-help-map}.
 @end deffn
 
 @defvar data-directory
 @anchor{Definition of data-directory}
-This variable holds the name of the directory in which Emacs finds
-certain documentation and text files that come with Emacs.
+Эта переменная содержит имя каталога, в котором Emacs находит определенную
+документацию и текстовые файлы, поставляемые с Emacs.
 @end defvar
 
 @defun help-buffer
-This function returns the name of the help buffer, which is normally
-@file{*Help*}; if such a buffer does not exist, it is first created.
+Эта функция возвращает имя буфера помощи, обычно @file{*Help*}; если такой
+буфер не существует, он сначала создается.
 @end defun
 
 @vindex help-window-select
 @defmac with-help-window buffer-or-name body@dots{}
-This macro evaluates @var{body} like @code{with-output-to-temp-buffer}
-(@pxref{Temporary Displays}), inserting any output produced by its
-forms into a buffer specified by @var{buffer-or-name}, which can be a
-buffer or the name of a buffer.  (Frequently, @var{buffer-or-name} is
-the value returned by the function @code{help-buffer}.)  This macro
-puts the specified buffer into Help mode and displays a message
-telling the user how to quit and scroll the help window.  It selects
-the help window if the current value of the user option
-@code{help-window-select} has been set accordingly.  It returns the
-last value in @var{body}.
+Этот макрос оценивает @var{body} как @code{with-output-to-temp-buffer}
+(@pxref{Temporary Displays}), вставляя любой вывод, созданный его формами, в
+буфер, указанный @var{buffer-or-name}, который может быть буфером или именем
+буфера.  (Часто @var{buffer-or-name} - это значение, возвращаемое функцией
+@code{help-buffer}.)  Этот макрос переводит указанный буфер в режим справки
+и отображает сообщение, сообщающее пользователю, как выйти и прокрутить окно
+справки.  Выбирает окно справки, если текущее значение пользовательской
+опции @code{help-window-select} было установлено соответствующим образом.
+Возвращает последнее значение в @var{body}.
 @end defmac
 
 @defun help-setup-xref item interactive-p
-This function updates the cross reference data in the @file{*Help*}
-buffer, which is used to regenerate the help information when the user
-clicks on the @samp{Back} or @samp{Forward} buttons.  Most commands
-that use the @file{*Help*} buffer should invoke this function before
-clearing the buffer.  The @var{item} argument should have the form
-@code{(@var{function} . @var{args})}, where @var{function} is a function
-to call, with argument list @var{args}, to regenerate the help buffer.
-The @var{interactive-p} argument is non-@code{nil} if the calling
-command was invoked interactively; in that case, the stack of items
-for the @file{*Help*} buffer's @samp{Back} buttons is cleared.
+Эта функция обновляет данные перекрестных ссылок в буфере @file{*Help*},
+который используется для восстановления справочной информации, когда
+пользователь нажимает кнопки @samp{Back} или @samp{Forward}.  Большинство
+команд, использующих буфер @file{*Help*}, должны вызывать эту функцию перед
+очисткой буфера.  Аргумент @var{item} должен иметь вид
+@code{(@var{function} . @var{args})}, где @var{function} - функция, которую
+нужно вызвать со списком аргументов @var{args} для восстановления буфера
+справки.  Аргумент @var{interactive-p} - не-@code{nil}, если вызывающая
+команда вызывалась в интерактивном режиме; в этом случае очищается стопка
+элементов для кнопок @samp{Back} буфера @file{*Help*}.
 @end defun
 
-@xref{describe-symbols example}, for an example of using
-@code{help-buffer}, @code{with-help-window}, and
-@code{help-setup-xref}.
+@xref{describe-symbols example}, для примера использования
+@code{help-buffer}, @code{with-help-window}, и @code{help-setup-xref}.
 
 @defmac make-help-screen fname help-line help-text help-map
-This macro defines a help command named @var{fname} that acts like a
-prefix key that shows a list of the subcommands it offers.
+Этот макрос определяет команду справки с именем @var{fname}, которая
+действует как префиксный ключ, отображающий список предлагаемых подкоманд.
 
-When invoked, @var{fname} displays @var{help-text} in a window, then
-reads and executes a key sequence according to @var{help-map}.  The
-string @var{help-text} should describe the bindings available in
-@var{help-map}.
+При вызове @var{fname} отображает @var{help-text} в окне, затем читает и
+выполняет последовательность ключей в соответствии с @var{help-map}.  Строка
+@var{help-text} должна описывать привязки, доступные в @var{help-map}.
 
-The command @var{fname} is defined to handle a few events itself, by
-scrolling the display of @var{help-text}.  When @var{fname} reads one of
-those special events, it does the scrolling and then reads another
-event.  When it reads an event that is not one of those few, and which
-has a binding in @var{help-map}, it executes that key's binding and
-then returns.
+Команда @var{fname} определена для обработки нескольких событий сама путем
+прокрутки отображения @var{help-text}.  Когда @var{fname} читает одно из
+этих особых событий, выполняется прокрутка, а затем читается другое событие.
+Когда читается событие, которое не входит в число этих немногих и имеет
+привязку в @var{help-map}, выполняется привязка этого ключа и затем
+возвращается.
 
-The argument @var{help-line} should be a single-line summary of the
-alternatives in @var{help-map}.  In the current version of Emacs, this
-argument is used only if you set the option @code{three-step-help} to
-@code{t}.
+Аргумент @var{help-line} должен быть однострочным резюме альтернатив в
+@var{help-map}.  В текущей версии Emacs этот аргумент используется, только
+если установить для параметра @code{three-step-help} значение @code{t}.
 
-This macro is used in the command @code{help-for-help} which is the
-binding of @kbd{C-h C-h}.
+Этот макрос используется в команде @code{help-for-help}, которая является
+привязкой @kbd{C-h C-h}.
 @end defmac
 
 @defopt three-step-help
-If this variable is non-@code{nil}, commands defined with
-@code{make-help-screen} display their @var{help-line} strings in the
-echo area at first, and display the longer @var{help-text} strings only
-if the user types the help character again.
+Если эта переменная - не-@code{nil}, команды, определенные с помощью
+@code{make-help-screen}, сначала отображают свои строки @var{help-line} в
+эхо-области и отображают более длинные строки @var{help-text} только в том
+случае, если пользователь снова набирает символ справки.
 @end defopt
