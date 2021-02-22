@@ -1698,352 +1698,354 @@ $ ls -li fo*
 @deffn Command rename-file filename newname &optional ok-if-already-exists
 Команда переименовывает файл @var{filename} в @var{newname}.
 
-If @var{filename} has additional names aside from @var{filename}, it
-continues to have those names.  In fact, adding the name @var{newname}
-with @code{add-name-to-file} and then deleting @var{filename} has the
-same effect as renaming, aside from momentary intermediate states and
-treatment of errors, directories and symbolic links.
+Если @var{filename} имеет дополнительные имена, помимо @var{filename},
+присваиваются и эти имена.  Фактически, добавление имени @var{newname} с
+@code{add-name-to-file} и последующее удаление @var{filename} имеет тот же
+эффект, что и переименование, за исключением мгновенных промежуточных
+состояний и обработки ошибок, каталогов и символических ссылок.
 
-This command does not follow symbolic links.  If @var{filename} is a
-symbolic link, this command renames the symbolic link, not the file it
-points to.  If @var{newname} is a symbolic link, its directory entry
-is replaced, not the directory entry it points to.
+Эта команда не переходит по символическим ссылкам.  Если @var{filename}
+является символической ссылкой, эта команда переименовывает символическую
+ссылку, а не файл, на который она указывает.  Если @var{newname} является
+символической ссылкой, заменяется ее запись в каталоге, а не запись в
+каталоге, на которую она указывает.
 
-This command does nothing if @var{filename} and @var{newname} are the
-same directory entry, i.e., if they refer to the same parent directory
-and give the same name within that directory.  Otherwise, if
-@var{filename} and @var{newname} name the same file, this command does
-nothing on POSIX-conforming systems, and removes @var{filename} on
-some non-POSIX systems.
+Эта команда ничего не делает, если @var{filename} и @var{newname} являются
+одной и той же записью каталога, то есть если они ссылаются на один и тот же
+родительский каталог и дают одно и то же имя в этом каталоге.  В противном
+случае, если @var{filename} и @var{newname} называют один и тот же файл,
+эта команда ничего не делает в POSIX-совместимых системах и удаляет
+@var{filename} в некоторых системах, отличных от POSIX.
 
-If @var{newname} exists, then it must be an empty directory if
-@var{oldname} is a directory and a non-directory otherwise.
+Если @var{newname} существует, тогда это должен быть пустой каталог, если
+@var{oldname} - каталог, и не каталог в противном случае.
 @end deffn
 
 @deffn Command copy-file oldname newname &optional ok-if-already-exists time preserve-uid-gid preserve-extended-attributes
-This command copies the file @var{oldname} to @var{newname}.  An
-error is signaled if @var{oldname} is not a regular file.  If @var{newname}
-names a directory, it copies @var{oldname} into that directory,
-preserving its final name component.
-@c FIXME: See Bug#27986 for how the previous sentence might change.
+Команда копирует файл @var{oldname} в @var{newname}.  Выдается сообщение
+об ошибке, если @var{oldname} не является обычным файлом.  Если
+@var{newname} называет каталог, копируется @var{oldname} в этот каталог,
+сохраняя его окончательный компонент имени.
+@c FIXME: Смотреть Bug#27986, чтобы узнать, как может измениться предыдущее предложение.
 
-This function follows symbolic links, except that it does not follow a
-dangling symbolic link to create @var{newname}.
+Функция следует по символическим ссылкам, за исключением того, что не
+следует по висящей символической ссылке для создания @var{newname}.
 
-If @var{time} is не-@code{nil}, then this function gives the new file
-the same last-modified time that the old one has.  (This works on only
-some operating systems.)  If setting the time gets an error,
-@code{copy-file} signals a @code{file-date-error} error.  In an
-interactive call, a prefix argument specifies a не-@code{nil} value
-for @var{time}.
+Если @var{time} равен не-@code{nil}, то функция дает новому файлу то же
+время последнего изменения, что и старому.  (Это работает только в некоторых
+операционных системах.)  Если при установке времени возникает ошибка,
+@code{copy-file} сигнализирует об ошибке @code{file-date-error}.  В
+интерактивном вызове префиксный аргумент указывает значение не-@code{nil}
+для @var{time}.
 
-If argument @var{preserve-uid-gid} is @code{nil}, we let the operating
-system decide the user and group ownership of the new file (this is
-usually set to the user running Emacs).  If @var{preserve-uid-gid} is
-не-@code{nil}, we attempt to copy the user and group ownership of the
-file.  This works only on some operating systems, and only if you have
-the correct permissions to do so.
+Если аргумент @var{preserve-uid-gid} равен @code{nil}, позволяется
+операционной системе определять пользователя и группу, владеющую новым
+файлом (обычно это пользователь, запускающий Emacs).  Если
+@var{preserve-uid-gid} равен не-@code{nil}, проводится попытка скопировать
+пользователя и группу, владеющую файлом.  Это работает только в некоторых
+операционных системах и только в том случае, если есть соответствующие
+разрешения.
 
-If the optional argument @var{preserve-permissions} is не-@code{nil},
-this function copies the file modes (or ``permissions'') of
-@var{oldname} to @var{newname}, as well as the Access Control List and
-SELinux context (if any).  @xref{Information about Files}.
+Если необязательный аргумент @var{preserve-permissions} - не-@code{nil}, эта
+функция копирует режимы файла (или ``разрешения'') @var{oldname} в
+@var{newname}, а также контекст Access Control List и SELinux (если есть).  @xref{Information about Files}.
 
-Otherwise, the file modes of @var{newname} are left unchanged if it is
-an existing file, and set to those of @var{oldname}, masked by the
-default file permissions (see @code{set-default-file-modes} below), if
-@var{newname} is to be newly created.  The Access Control List or
-SELinux context are not copied over in either case.
+В противном случае режимы файла @var{newname} остаются неизменными, если это
+уже существующий файл, и устанавливаются на режимы @var{oldname},
+замаскированные правами доступа к файлу по умолчанию.  (смотреть
+@code{set-default-file-modes} ниже), если @var{newname} нужно создать
+заново.  Контекст Access Control List или SELinux не копируется ни в одном
+случае.
 @end deffn
 
 @deffn Command make-symbolic-link target linkname &optional ok-if-already-exists
 @pindex ln
 @kindex file-already-exists
-This command makes a symbolic link to @var{target}, named
-@var{linkname}.  This is like the shell command @samp{ln -s
-@var{target} @var{linkname}}.  The @var{target} argument
-is treated only as a string; it need not name an existing file.
-If @var{ok-if-already-exists} is an integer, indicating interactive
-use, then leading @samp{~} is expanded and leading @samp{/:} is
-stripped in the @var{target} string.
+Команда создает символическую ссылку на @var{target} с именем
+@var{linkname}.  Это похоже на команду оболочки @samp{ln -s @var{target}
+@var{linkname}}.  Аргумент @var{target} обрабатывается только как строка;
+ему не нужно называть существующий файл.  Если @var{ok-if-already-exists} -
+целое число, указывающее на интерактивное использование, то ведущий @samp{~}
+раскрывается, а ведущий @samp{/:} удаляется из строки @var{target}.
 
-If @var{target} is a relative file name, the resulting symbolic link
-is interpreted relative to the directory containing the symbolic link.
-@xref{Relative File Names}.
+Если @var{target} - относительное имя файла, результирующая символическая
+ссылка интерпретируется относительно каталога, содержащего символическую
+ссылку.  @xref{Relative File Names}.
 
-If both @var{target} and @var{linkname} have remote file name syntax,
-and if both remote identifications are equal, the symbolic link points
-to the local file name part of @var{target}.
+Если и @var{target}, и @var{linkname} имеют синтаксис удаленного имени файла
+и если оба удаленных идентификатора равны, символическая ссылка указывает на
+часть имени локального файла @var{target}.
 
-This function is not available on systems that don't support symbolic
-links.
+Эта функция недоступна в системах, которые не поддерживают символические
+ссылки.
 @end deffn
 
 @cindex trash
 @vindex delete-by-moving-to-trash
 @deffn Command delete-file filename &optional trash
 @pindex rm
-This command deletes the file @var{filename}.  If the file has
-multiple names, it continues to exist under the other names.  If
-@var{filename} is a symbolic link, @code{delete-file} deletes only the
-symbolic link and not its target.
+Команда удаляет файл @var{filename}.  Если файл имеет несколько имен, он
+продолжает существовать под другими именами.  Если @var{filename} является
+символической ссылкой, @code{delete-file} удаляет только символическую
+ссылку, но не ее цель.
 
-A suitable kind of @code{file-error} error is signaled if the file
-does not exist, or is not deletable.  (On GNU and other POSIX-like
-systems, a file is deletable if its directory is writable.)
+Соответствующий тип ошибки @code{file-error} выдается, если файл не
+существует или не удаляется.  (В GNU и других системах, подобных POSIX, файл
+можно удалить, если его каталог доступен для записи.)
 
-If the optional argument @var{trash} is не-@code{nil} and the
-variable @code{delete-by-moving-to-trash} is не-@code{nil}, this
-command moves the file into the system Trash instead of deleting it.
-@xref{Misc File Ops,,Miscellaneous File Operations, emacs, The GNU
-Emacs Manual}.  When called interactively, @var{trash} is @code{t} if
-no prefix argument is given, and @code{nil} otherwise.
+Если необязательный аргумент @var{trash} - не-@code{nil}, а переменная
+@code{delete-by-moving-to-trash} - не-@code{nil}, эта команда перемещает
+файл в системную корзину, а не удаляет его.  @xref{Misc File Ops,,Miscellaneous File Operations, emacs, The GNU Emacs Manual}.  При интерактивном вызове
+@var{trash} становится @code{t}, если аргумент префикса не указан, и
+@code{nil} в противном случае.
 
-See also @code{delete-directory} in @ref{Create/Delete Dirs}.
+Смотреть также @code{delete-directory} в @ref{Create/Delete Dirs}.
 @end deffn
 
 @cindex file permissions, setting
 @cindex permissions, file
 @cindex file modes, setting
 @deffn Command set-file-modes filename mode
-This function sets the @dfn{file mode} (or @dfn{permissions}) of
-@var{filename} to @var{mode}.  This function follows symbolic links.
+Функция устанавливает @dfn{файловые режимы} (или @dfn{разрешения})
+@var{filename} в @var{mode}.  Эта функция следует по символическим ссылкам.
 
-If called non-interactively, @var{mode} must be an integer.  Only the
-lowest 12 bits of the integer are used; on most systems, only the
-lowest 9 bits are meaningful.  You can use the Lisp construct for
-octal numbers to enter @var{mode}.  For example,
+Если вызывается не интерактивно, @var{mode} должно быть целым числом.
+Используются только младшие 12 бит целого числа; в большинстве систем
+значимы только младшие 9 бит.  Можно использовать конструкцию Lisp для
+восьмеричных чисел, чтобы ввести @var{mode}.  Например,
 
 @example
 (set-file-modes #o644)
 @end example
 
 @noindent
-specifies that the file should be readable and writable for its owner,
-readable for group members, and readable for all other users.
-@xref{File permissions,,, coreutils, The @sc{gnu} @code{Coreutils}
-Manual}, for a description of mode bit specifications.
+указывает, что файл должен быть доступен для чтения и записи его владельцe,
+для чтения членам группы и для чтения всем остальным пользователям.
+@xref{File permissions,,, coreutils, @sc{gnu} @code{Coreutils} Manual}, для
+описания спецификаций битов режима.
 
-Interactively, @var{mode} is read from the minibuffer using
-@code{read-file-modes} (see below), which lets the user type in either
-an integer or a string representing the permissions symbolically.
+В интерактивном режиме @var{mode} считывается из минибуфера с помощью
+@code{read-file-modes} (смотреть ниже), что позволяет пользователю вводить
+либо целое число, либо строку, символически представляющую разрешения.
 
-@xref{File Attributes}, for the function @code{file-modes}, which
-returns the permissions of a file.
+@xref{File Attributes} для функции @code{file-modes}, которая возвращает
+права доступа к файлу.
 @end deffn
 
 @defun set-default-file-modes mode
 @cindex umask
-This function sets the default permissions for new files created by
-Emacs and its subprocesses.  Every file created with Emacs initially
-has these permissions, or a subset of them (@code{write-region} will
-not grant execute permissions even if the default file permissions
-allow execution).  On GNU and other POSIX-like systems, the default
-permissions are given by the bitwise complement of the @samp{umask}
-value, i.e.@: each bit that is set in the argument @var{mode} will be
-@emph{reset} in the default permissions with which Emacs creates
-files.
+Функция устанавливает разрешения по умолчанию для новых файлов, созданных
+Emacs и его подпроцессами.  Каждый файл, созданный с помощью Emacs,
+изначально имеет эти разрешения или их подмножество (@code{write-region} не
+будет предоставлять разрешения на выполнение, даже если разрешения для
+файлов по умолчанию разрешают выполнение).  В GNU и других системах,
+подобных POSIX, разрешения по умолчанию задаются побитовым дополнением
+значения @samp{umask}, то есть @:, каждый бит, установленный в аргументе
+@var{mode}, будет @emph{перезагружать} в разрешениях по умолчанию, с
+которыми Emacs создает файлы.
 
-The argument @var{mode} should be an integer which specifies the
-permissions, similar to @code{set-file-modes} above.  Only the lowest
-9 bits are meaningful.
+Аргумент @var{mode} должен быть целым числом, указывающим разрешения,
+аналогично @code{set-file-modes} выше.  Имеют значение только самые младшие
+9 бит.
 
-The default file permissions have no effect when you save a modified
-version of an existing file; saving a file preserves its existing
-permissions.
+Разрешения файла по умолчанию не действуют, когда сохраняется измененная
+версия существующего файла; при сохранении файла сохраняются его
+существующие разрешения.
 @end defun
 
 @defmac with-file-modes mode body@dots{}
-This macro evaluates the @var{body} forms with the default
-permissions for new files temporarily set to @var{modes} (whose value
-is as for @code{set-file-modes} above).  When finished, it restores
-the original default file permissions, and returns the value of the
-last form in @var{body}.
+Этот макрос оценивает формы @var{body} с разрешениями по умолчанию для новых
+файлов, временно установленными в @var{modes} (значение которого такое же,
+как для @code{set-file-modes} выше).  По завершении восстанавливаются
+исходные права доступа к файлам по умолчанию и возвращается значение
+последней формы в @var{body}.
 
-This is useful for creating private files, for example.
+Это полезно, например, для создания личных файлов.
 @end defmac
 
 @defun default-file-modes
-This function returns the default file permissions, as an integer.
+Функция возвращает права доступа к файлу по умолчанию в виде целого числа.
 @end defun
 
 @defun read-file-modes &optional prompt base-file
-This function reads a set of file mode bits from the minibuffer.  The
-first optional argument @var{prompt} specifies a non-default prompt.
-Second second optional argument @var{base-file} is the name of a file
-on whose permissions to base the mode bits that this function returns,
-if what the user types specifies mode bits relative to permissions of
-an existing file.
+Функция считывает набор битов режима файла из минибуфера.  Первый
+необязательный аргумент @var{prompt} указывает приглашение не по умолчанию.
+Второй необязательный аргумент @var{base-file} - это имя файла, на основе
+разрешений которого будут базироваться биты режима, возвращаемые этой
+функцией, если то, что вводит пользователь, определяет биты режима
+относительно разрешений существующего файла.
 
-If user input represents an octal number, this function returns that
-number.  If it is a complete symbolic specification of mode bits, as
-in @code{"u=rwx"}, the function converts it to the equivalent numeric
-value using @code{file-modes-symbolic-to-number} and returns the
-result.  If the specification is relative, as in @code{"o+g"}, then
-the permissions on which the specification is based are taken from the
-mode bits of @var{base-file}.  If @var{base-file} is omitted or
-@code{nil}, the function uses @code{0} as the base mode bits.  The
-complete and relative specifications can be combined, as in
-@code{"u+r,g+rx,o+r,g-w"}.  @xref{File permissions,,, coreutils, The
-@sc{gnu} @code{Coreutils} Manual}, for a description of file mode
-specifications.
+Если пользовательский ввод представляет собой восьмеричное число, эта
+функция возвращает это число.  Если это полная символьная спецификация битов
+режима, как в @code{"u=rwx"}, функция преобразует его в эквивалентное
+числовое значение с помощью @code{file-modes-symbolic-to-number} и
+возвращает результат.  Если спецификация является относительной, как в
+@code{"o+g"}, то разрешения, на которых основана спецификация, берутся из
+битов режима @var{base-file}.  Если @var{base-file} опущен или @code{nil},
+функция использует @code{0} в качестве битов базового режима.  Полные и
+относительные спецификации можно объединить, как @code{"u+r,g+rx,o+r,g-w"}.
+@xref{File permissions,,, coreutils, The @sc{gnu} @code{Coreutils} Manual},
+для описания спецификаций файлового режима.
 @end defun
 
 @defun file-modes-symbolic-to-number modes &optional base-modes
-This function converts a symbolic file mode specification in
-@var{modes} into the equivalent integer.  If the symbolic
-specification is based on an existing file, that file's mode bits are
-taken from the optional argument @var{base-modes}; if that argument is
-omitted or @code{nil}, it defaults to 0, i.e., no access rights at
-all.
+Функция преобразует спецификацию символьного режима файла в @var{modes} в
+эквивалентное целое число.  Если символическая спецификация основана на
+существующем файле, биты режима этого файла берутся из необязательного
+аргумента @var{base-modes}; если этот аргумент опущен или @code{nil}, по
+умолчанию он равен 0, то есть вообще никаких прав доступа.
 @end defun
 
 @defun set-file-times filename &optional time
-This function sets the access and modification times of @var{filename}
-to @var{time}.  The return value is @code{t} if the times are successfully
-set, otherwise it is @code{nil}.  @var{time} defaults to the current
-time and must be a time value (@pxref{Time of Day}).
+Функция устанавливает время доступа и модификации @var{filename} в
+@var{time}.  Возвращаемое значение - @code{t}, если время успешно
+установлено, в противном случае - @code{nil}.  @var{time} по умолчанию
+использует текущее время и должно быть значением времени
+(@pxref{Time of Day}).
 @end defun
 
 @defun set-file-extended-attributes filename attribute-alist
-This function sets the Emacs-recognized extended file attributes for
-@code{filename}.  The second argument @var{attribute-alist} should be
-an alist of the same form returned by @code{file-extended-attributes}.
-The return value is @code{t} if the attributes are successfully set,
-otherwise it is @code{nil}.
-@xref{Extended Attributes}.
+Функция устанавливает атрибуты расширенного файла, распознаваемые Emacs, для
+@code{filename}.  Второй аргумент @var{attribute-alist} должен быть списком
+той же формы, возвращаемой @code{file-extended-attributes}.  Возвращаемое
+значение - @code{t}, если атрибуты установлены успешно, в противном случае -
+@code{nil}.  @xref{Extended Attributes}.
 @end defun
 
 @defun set-file-selinux-context filename context
-This function sets the SELinux security context for @var{filename} to
-@var{context}.  The @var{context} argument should be a list
-@code{(@var{user} @var{role} @var{type} @var{range})}, where each
-element is a string.  @xref{Extended Attributes}.
+Функция устанавливает контекст безопасности SELinux для @var{filename} в
+@var{context}.  Аргумент @var{context} должен быть списком
+@code{(@var{user} @var{role} @var{type} @var{range})}, где каждый элемент
+является строкой.  @xref{Extended Attributes}.
 
-The function returns @code{t} if it succeeds in setting the SELinux
-context of @var{filename}.  It returns @code{nil} if the context was
-not set (e.g., if SELinux is disabled, or if Emacs was compiled
-without SELinux support).
+Функция возвращает @code{t}, если ей удается установить контекст SELinux для
+@var{filename}.  Возвращает @code{nil}, если контекст не был установлен
+(например, если SELinux отключен или Emacs был скомпилирован без поддержки
+SELinux).
 @end defun
 
 @defun set-file-acl filename acl
-This function sets the Access Control List for @var{filename} to
-@var{acl}.  The @var{acl} argument should have the same form returned
-by the function @code{file-acl}.  @xref{Extended Attributes}.
+Функция устанавливает для списка контроля доступа @var{filename} значение
+@var{acl}.  Аргумент @var{acl} должен иметь ту же форму, которую возвращает
+функция @code{file-acl}.  @xref{Extended Attributes}.
 
-The function returns @code{t} if it successfully sets the ACL of
-@var{filename}, @code{nil} otherwise.
+Функция возвращает @code{t}, если она успешно устанавливает ACL для
+@var{filename}, @code{nil}, в противном случае.
 @end defun
 
 @node Files and Storage
-@section Files and Secondary Storage
+@section Файлы и Вторичное Хранилище
 @cindex secondary storage
 
-After Emacs changes a file, there are two reasons the changes might
-not survive later failures of power or media, both having to do with
-efficiency.  First, the operating system might alias written data with
-data already stored elsewhere on secondary storage until one file or
-the other is later modified; this will lose both files if the only
-copy on secondary storage is lost due to media failure.  Second, the
-operating system might not write data to secondary storage
-immediately, which will lose the data if power is lost.
+После того, как Emacs изменяет файл, есть две причины, по которым изменения
+могут не сохраниться после сбоев питания или носителя, и обе связаны с
+эффективностью.  Во-первых, операционная система может связать записанные
+данные с данными, уже хранящимися в другом месте на вторичном хранилище, до
+тех пор, пока один или другой файл не будет позже изменен; это приведет к
+потере обоих файлов, если единственная копия на вторичном хранилище будет
+потеряна из-за сбоя носителя.  Во-вторых, операционная система может не
+сразу записывать данные во вторичное хранилище, что приведет к потере данных
+при отключении питания.
 
 @findex write-region
-Although both sorts of failures can largely be avoided by a suitably
-configured file system, such systems are typically more expensive or
-less efficient.  In more-typical systems, to survive media failure you
-can copy the file to a different device, and to survive a power
-failure you can use the @code{write-region} function with the
-@code{write-region-inhibit-fsync} variable set to @code{nil}.
+Хотя обоих видов сбоев можно в значительной степени избежать с помощью
+правильно настроенной файловой системы, такие системы обычно более дороги
+или менее эффективны.  В более типичных системах, чтобы пережить сбой
+носителя, можно скопировать файл на другое устройство, а чтобы перенести
+сбой питания, можно использовать функцию @code{write-region} с переменной
+@code{write-region-inhibit-fsync}, установленной в @code{nil}.
 @xref{Writing to Files}.
 
 @node File Names
-@section File Names
+@section Имена Файла
 @cindex file names
 
-  Files are generally referred to by their names, in Emacs as elsewhere.
-File names in Emacs are represented as strings.  The functions that
-operate on a file all expect a file name argument.
+  В Emacs, как и везде, файлы обычно называются своими именами.  Имена
+файлов в Emacs представлены в виде строк.  Все функции, которые работают с
+файлом, ожидают аргумента имени файла.
 
-  In addition to operating on files themselves, Emacs Lisp programs
-often need to operate on file names; i.e., to take them apart and to use
-part of a name to construct related file names.  This section describes
-how to manipulate file names.
+  Помимо работы с самими файлами, программам Emacs Lisp часто необходимо
+работать с именами файлов; то есть разобрать их и использовать часть имени
+для построения связанных имен файлов.  В этом разделе описывается, как
+управлять именами файлов.
 
-  The functions in this section do not actually access files, so they
-can operate on file names that do not refer to an existing file or
-directory.
+  Функции в этом разделе фактически не обращаются к файлам, поэтому они
+могут работать с именами файлов, которые не относятся к существующему файлу
+или каталогу.
 
 @findex cygwin-convert-file-name-from-windows
 @findex cygwin-convert-file-name-to-windows
 @cindex MS-Windows file-name syntax
 @cindex converting file names from/to MS-Windows syntax
-  On MS-DOS and MS-Windows, these functions (like the function that
-actually operate on files) accept MS-DOS or MS-Windows file-name syntax,
-where backslashes separate the components, as well as POSIX syntax; but
-they always return POSIX syntax.  This enables Lisp programs to specify
-file names in POSIX syntax and work properly on all systems without
-change.@footnote{In MS-Windows versions of Emacs compiled for the Cygwin
-environment, you can use the functions
-@code{cygwin-convert-file-name-to-windows} and
-@code{cygwin-convert-file-name-from-windows} to convert between the
-two file-name syntaxes.}
+  В MS-DOS и MS-Windows эти функции (как и функции, которые фактически
+работают с файлами) принимают синтаксис имени файла MS-DOS или MS-Windows,
+где обратная косая черта разделяет компоненты, а также синтаксис POSIX; но
+они всегда возвращают синтаксис POSIX.  Это позволяет программам на Lisp
+указывать имена файлов в синтаксисе POSIX и правильно работать во всех
+системах без изменений.@footnote{В версиях Emacs для MS-Windows,
+скомпилированных для среды Cygwin, можно использовать функции
+@code{cygwin-convert-file-name-to-windows} и
+@code{cygwin-convert-file-name-from-windows} для преобразования между двумя
+синтаксисами имен файлов.}
 
 @menu
-* File Name Components::  The directory part of a file name, and the rest.
-* Relative File Names::   Some file names are relative to a current directory.
-* Directory Names::       A directory's name as a directory
-                            is different from its name as a file.
-* File Name Expansion::   Converting relative file names to absolute ones.
-* Unique File Names::     Generating names for temporary files.
-* File Name Completion::  Finding the completions for a given file name.
-* Standard File Names::   If your package uses a fixed file name,
-                            how to handle various operating systems simply.
+* File Name Components::  Директория, часть имени файла, а все остальное.
+* Relative File Names::   Некоторые имена файлов относятся к текущему каталогу.
+* Directory Names::       Имя каталога как каталога отличается от его имени
+                             как файла.
+* File Name Expansion::   Преобразование относительных имен файлов в
+                             абсолютные.
+* Unique File Names::     Генерация имен для временных файлов.
+* File Name Completion::  Нахождение дополнений для заданного имени файла.
+* Standard File Names::   Если пакет использует фиксированное имя файла, как
+                             легко работать с различными операционными
+                             системами.
 @end menu
 
 @node File Name Components
-@subsection File Name Components
+@subsection Компоненты Имени Файла
 @cindex directory part (of file name)
 @cindex nondirectory part (of file name)
 @cindex version number (in file name)
 
-  The operating system groups files into directories.  To specify a
-file, you must specify the directory and the file's name within that
-directory.  Therefore, Emacs considers a file name as having two main
-parts: the @dfn{directory name} part, and the @dfn{nondirectory} part
-(or @dfn{file name within the directory}).  Either part may be empty.
-Concatenating these two parts reproduces the original file name.
+  Операционная система группирует файлы в каталоги.  Чтобы указать файл,
+потребуется указать каталог и имя файла в этом каталоге.  Следовательно,
+Emacs считает, что имя файла состоит из двух основных частей: части
+@dfn{имя директории} и части @dfn{без директории} (или
+@dfn{имя файла в каталоге}).  Любая часть может быть пустой.  Объединение
+этих двух частей воспроизводит исходное имя файла.
 
-  On most systems, the directory part is everything up to and including
-the last slash (backslash is also allowed in input on MS-DOS or
-MS-Windows); the nondirectory part is the rest.
+  В большинстве систем часть каталога - это все, вплоть до последней косой
+черты (обратная косая черта также разрешена при вводе в MS-DOS или
+MS-Windows); часть без директории - остальное.
 
-  For some purposes, the nondirectory part is further subdivided into
-the name proper and the @dfn{version number}.  On most systems, only
-backup files have version numbers in their names.
+  Для некоторых целей часть без директории далее подразделяется на
+собственное имя и @dfn{номер версии}.  В большинстве систем только файлы
+резервных копий имеют номера версий в своих именах.
 
 @defun file-name-directory filename
-This function returns the directory part of @var{filename}, as a
-directory name (@pxref{Directory Names}), or @code{nil} if
-@var{filename} does not include a directory part.
+Функция возвращает часть каталога @var{filename} как имя каталога
+(@pxref{Directory Names}) или @code{nil}, если @var{filename} не включает
+часть каталога.
 
-On GNU and other POSIX-like systems, a string returned by this function always
-ends in a slash.  On MS-DOS it can also end in a colon.
+В GNU и других системах, подобных POSIX, строка, возвращаемая этой функцией,
+всегда заканчивается косой чертой.  В MS-DOS он также может заканчиваться
+двоеточием.
 
 @example
 @group
-(file-name-directory "lewis/foo")  ; @r{GNU example}
+(file-name-directory "lewis/foo")  ; @r{пример GNU}
      @result{} "lewis/"
 @end group
 @group
-(file-name-directory "foo")        ; @r{GNU example}
+(file-name-directory "foo")        ; @r{пример GNU}
      @result{} nil
 @end group
 @end example
 @end defun
 
 @defun file-name-nondirectory filename
-This function returns the nondirectory part of @var{filename}.
+Функция возвращает имя @var{filename} без директории.
 
 @example
 @group
@@ -2062,12 +2064,12 @@ This function returns the nondirectory part of @var{filename}.
 @end defun
 
 @defun file-name-sans-versions filename &optional keep-backup-version
-This function returns @var{filename} with any file version numbers,
-backup version numbers, or trailing tildes discarded.
+Функция возвращает @var{filename} с отброшенными номерами версий файлов,
+номерами версий резервных копий или завершающими тильдами.
 
-If @var{keep-backup-version} is не-@code{nil}, then true file version
-numbers understood as such by the file system are discarded from the
-return value, but backup version numbers are kept.
+Если @var{keep-backup-version} равен не-@code{nil}, то истинные номера
+версий файлов, которые понимает файловая система как таковые, исключаются из
+возвращаемого значения, но номера версий резервных копий сохраняются.
 
 @example
 @group
@@ -2086,28 +2088,27 @@ return value, but backup version numbers are kept.
 @end defun
 
 @defun file-name-extension filename &optional period
-This function returns @var{filename}'s final extension, if any,
-after applying @code{file-name-sans-versions} to remove any
-version/backup part.  The extension, in a file name, is the part that
-follows the last @samp{.} in the last name component (minus any
-version/backup part).
+Функция возвращает окончательное расширение @var{filename}, если оно есть,
+после применения @code{file-name-sans-versions} для удаления любой части
+версии/резервной копии.  Расширение в имени файла - это часть, которая
+следует за последней @samp{.} в компоненте не директории (за вычетом любой
+части версии/резервной копии).
 
-This function returns @code{nil} for extensionless file names such as
-@file{foo}.  It returns @code{""} for null extensions, as in
-@file{foo.}.  If the last component of a file name begins with a
-@samp{.}, that @samp{.}  doesn't count as the beginning of an
-extension.  Thus, @file{.emacs}'s extension is @code{nil}, not
-@samp{.emacs}.
+Функция возвращает @code{nil} для имен файлов без расширений, таких как
+@file{foo}.  Она возвращает @code{""} для нулевых расширений, как в
+@file{foo.}.  Если последний компонент имени файла начинается с @samp{.},
+этот @samp{.} не считается началом расширения.  Таким образом, расширение
+@file{.emacs}'s - это @code{nil}, а не @samp{.emacs}.
 
-If @var{period} is не-@code{nil}, then the returned value includes
-the period that delimits the extension, and if @var{filename} has no
-extension, the value is @code{""}.
+Если @var{period} - не-@code{nil}, то возвращаемое значение включает
+пропуски, ограничивающие расширение, а если @var{filename} не имеет
+расширения, значение - @code{""}.
 @end defun
 
 @defun file-name-sans-extension filename
-This function returns @var{filename} minus its extension, if any.  The
-version/backup part, if present, is only removed if the file has an
-extension.  For example,
+Функция возвращает @var{filename} минус его расширение, если оно есть.
+Часть версии/резервной копии, если она присутствует, удаляется только в том
+случае, если файл имеет расширение.  Например,
 
 @example
 (file-name-sans-extension "foo.lose.c")
@@ -2124,43 +2125,41 @@ extension.  For example,
      @result{} "~/foo.~3~"
 @end example
 
-Note that the @samp{.~3~} in the two last examples is the backup part,
-not an extension.
+Обратить внимание, что @samp{.~3~} в двух последних примерах является
+резервной частью, а не расширением.
 @end defun
 
 @defun file-name-base &optional filename
-This function is the composition of @code{file-name-sans-extension}
-and @code{file-name-nondirectory}.  For example,
+Функция представляет собой композицию @code{file-name-sans-extension} и
+@code{file-name-nondirectory}.  Например,
 
 @example
 (file-name-base "/my/home/foo.c")
     @result{} "foo"
 @end example
 
-The @var{filename} argument defaults to @code{buffer-file-name}.
+По умолчанию аргумент @var{filename} равен @code{buffer-file-name}.
 @end defun
 
 @node Relative File Names
-@subsection Absolute and Relative File Names
+@subsection Абсолютные и Относительные Имена Файлов
 @cindex absolute file name
 @cindex relative file name
 
-  All the directories in the file system form a tree starting at the
-root directory.  A file name can specify all the directory names
-starting from the root of the tree; then it is called an
-@dfn{absolute} file name.  Or it can specify the position of the file
-in the tree relative to a default directory; then it is called a
-@dfn{relative} file name.  On GNU and other POSIX-like systems,
-after any leading @samp{~} has been expanded, an absolute file name
-starts with a @samp{/}
-(@pxref{abbreviate-file-name}), and a relative one does not.  On
-MS-DOS and MS-Windows, an absolute file name starts with a slash or a
-backslash, or with a drive specification @samp{@var{x}:/}, where
-@var{x} is the @dfn{drive letter}.
+  Все каталоги в файловой системе образуют дерево, начинающееся с корневого
+каталога.  Имя файла может указывать все имена каталогов, начиная с корня
+дерева; тогда это называется @dfn{абсолютным} именем файла.  Или может
+указываться положение файла в дереве относительно каталога по умолчанию;
+тогда это называется @dfn{относительным} именем файла.  В GNU и других
+POSIX-подобных системах после расширения любого ведущего @samp{~} абсолютное
+имя файла начинается с @samp{/} (@pxref{abbreviate-file-name}), а
+относительное - нет.  В MS-DOS и MS-Windows абсолютное имя файла начинается
+с косой черты или обратной косой черты либо со спецификации диска
+@samp{@var{x}:/}, где @var{x} - это @dfn{имя диска}.
 
 @defun file-name-absolute-p filename
-This function returns @code{t} if file @var{filename} is an absolute
-file name or begins with @samp{~}, @code{nil} otherwise.
+Функция возвращает @code{t}, если @var{filename} является абсолютным именем
+файла, или начинается с @samp{~}, в противном случае - @code{nil}.
 
 @example
 @group
@@ -2178,24 +2177,23 @@ file name or begins with @samp{~}, @code{nil} otherwise.
 @end example
 @end defun
 
-  Given a possibly relative file name, you can expand any
-leading @samp{~} and convert the result to an
-absolute name using @code{expand-file-name} (@pxref{File Name
-Expansion}).  This function converts absolute file names to relative
-names:
+  Учитывая возможное относительное имя файла, можно расширить любой
+начальный @samp{~} и преобразовать результат в абсолютное имя с помощью
+@code{expand-file-name} (@pxref{File Name Expansion}).  Эта функция
+преобразует абсолютные имена файлов в относительные:
 
 @defun file-relative-name filename &optional directory
-This function tries to return a relative name that is equivalent to
-@var{filename}, assuming the result will be interpreted relative to
-@var{directory} (an absolute directory name or directory file name).
-If @var{directory} is omitted or @code{nil}, it defaults to the
-current buffer's default directory.
+Функция пытается вернуть относительное имя, эквивалентное @var{filename},
+при условии, что результат будет интерпретироваться относительно
+@var{directory} (абсолютное имя каталога или имя файла каталога).  Если
+@var{directory} не указан или @code{nil}, по умолчанию используется каталог
+текущего буфера по умолчанию.
 
-On some operating systems, an absolute file name begins with a device
-name.  On such systems, @var{filename} has no relative equivalent based
-on @var{directory} if they start with two different device names.  In
-this case, @code{file-relative-name} returns @var{filename} in absolute
-form.
+В некоторых операционных системах абсолютное имя файла начинается с имени
+устройства.  В таких системах @var{filename} не имеет эквивалента
+относительного каталогаа @var{directory}, если начинается с двух разных
+имен устройств.  В этом случае @code{file-relative-name} возвращает
+@var{filename} в абсолютной форме.
 
 @example
 (file-relative-name "/foo/bar" "/foo/")
@@ -2206,38 +2204,35 @@ form.
 @end defun
 
 @node Directory Names
-@subsection Directory Names
+@subsection Имена Директории
 @cindex directory name
 @cindex directory file name
 @cindex file name of directory
 
-  A @dfn{directory name} is a string that must name a directory if it
-names any file at all.  A directory is actually a kind of file, and it
-has a file name (called the @dfn{directory file name}, which is
-related to the directory name but is typically not identical.  (This
-is not quite the same as the usual POSIX terminology.)  These two
-names for the same entity are related by a syntactic transformation.
-On GNU and other POSIX-like systems, this is simple: to obtain a
-directory name, append a @samp{/} to a directory file name that does
-not already end in @samp{/}.  On MS-DOS the relationship is more
-complicated.
+  @dfn{Имя директории} - это строка, которая должна называть каталог, если
+так вообще называется какой-либо файл.  Каталог на самом деле является
+своего рода файлом, и у него есть имя файла (называемое
+@dfn{имя файла директории}, которое связано с именем каталога, но обычно не
+идентично (это не совсем то же самое, что обычная терминология POSIX).  Эти
+два имени для одного и того же объекта связаны синтаксическим
+преобразованием.  В GNU и других системах, подобных POSIX, это просто: чтобы
+получить имя каталога, добавьте @samp{/} к имени файла каталога, который еще
+не заканчивается на @samp{/}.  В MS-DOS отношения сложнее.
 
-  The difference between a directory name and a directory file name is
-subtle but crucial.  When an Emacs variable or function argument is
-described as being a directory name, a directory file name is not
-acceptable.  When @code{file-name-directory} returns a string, that is
-always a directory name.
+  Разница между именем каталога и именем файла каталога тонкая, но важная.
+Когда переменная Emacs или аргумент функции описываются как имя каталога,
+имя файла каталога неприемлемо.  Когда @code{file-name-directory} возвращает
+строку, это всегда имя каталога.
 
-  The following two functions convert between directory names and
-directory file names.  They do nothing special with environment
-variable substitutions such as @samp{$HOME}, and the constructs
-@samp{~}, @samp{.} and @samp{..}.
+  Следующие две функции преобразуют имена каталогов в имена файлов
+каталогов.  Они не делают ничего особенного с заменами переменных окружения,
+таких как @samp{$HOME} и конструкции @samp{~}, @samp{.} и @samp{..}.
 
 @defun file-name-as-directory filename
-This function returns a string representing @var{filename} in a form
-that the operating system will interpret as the name of a directory (a
-directory name).  On most systems, this means appending a slash to the
-string (if it does not already end in one).
+Функция возвращает строку, представляющую @var{filename} в форме, которую
+операционная система будет интерпретировать как имя каталога (имя каталога).
+В большинстве систем это означает добавление косой черты к строке (если она
+еще не оканчивается на нее).
 
 @example
 @group
@@ -2248,18 +2243,18 @@ string (if it does not already end in one).
 @end defun
 
 @defun directory-name-p filename
-This function returns не-@code{nil} if @var{filename} ends with a
-directory separator character.  This is the forward slash @samp{/} on
-GNU and other POSIX-like systems; MS-Windows and MS-DOS recognize both
-the forward slash and the backslash @samp{\} as directory separators.
+Функция возвращает не-@code{nil}, если @var{filename} заканчивается символом
+разделителя каталогов.  Это косая черта @samp{/} в GNU и других системах,
+подобных POSIX; MS-Windows и MS-DOS распознают как косую черту, так и
+обратную косую черту @samp{\} как разделители каталогов.
 @end defun
 
 @defun directory-file-name dirname
-This function returns a string representing @var{dirname} in a form
-that the operating system will interpret as the name of a file (a
-directory file name).  On most systems, this means removing the final
-directory separators from the string, unless the string consists
-entirely of directory separators.
+Функция возвращает строку, представляющую @var{dirname} в форме, которую
+операционная система будет интерпретировать как имя файла (имя файла
+каталога).  В большинстве систем это означает удаление последних
+разделителей каталогов из строки, если только строка не состоит полностью из
+разделителей каталогов.
 
 @example
 @group
@@ -2269,20 +2264,20 @@ entirely of directory separators.
 @end example
 @end defun
 
-  Given a directory name, you can combine it with a relative file name
-using @code{concat}:
+  Учитывая имя каталога, можно объединить его с относительным именем файла,
+используя @code{concat}:
 
 @example
 (concat @var{dirname} @var{relfile})
 @end example
 
 @noindent
-Be sure to verify that the file name is relative before doing that.
-If you use an absolute file name, the results could be syntactically
-invalid or refer to the wrong file.
+Прежде чем делать это, убедиться, что имя файла является относительным.
+Если используется абсолютное имя файла, результаты могут быть синтаксически
+недопустимыми или относиться к неправильному файлу.
 
-  If you want to use a directory file name in making such a
-combination, you must first convert it to a directory name using
+  Если требуется использовать имя файла каталога при создании такой
+комбинации, нужно сначала преобразовать его в имя каталога с помощью
 @code{file-name-as-directory}:
 
 @example
@@ -2290,72 +2285,69 @@ combination, you must first convert it to a directory name using
 @end example
 
 @noindent
-Don't try concatenating a slash by hand, as in
+Не пытаться соединить косую черту вручную, как в
 
 @example
-;;; @r{Wrong!}
+;;; @r{Неправильно!}
 (concat @var{dirfile} "/" @var{relfile})
 @end example
 
 @noindent
-because this is not portable.  Always use
+потому что это не переносимо.  Всегда использовать
 @code{file-name-as-directory}.
 
-  To avoid the issues mentioned above, or if the @var{dirname} value
-might be @code{nil} (for example, from an element of @code{load-path}),
-use:
+  Чтобы избежать проблем, упомянутых выше, или если значение @var{dirname}
+может быть @code{nil} (например, из элемента @code{load-path}),
+использовать:
 
 @example
 (expand-file-name @var{relfile} @var{dirname})
 @end example
 
-However, @code{expand-file-name} expands leading @samp{~} in
-@var{relfile}, which may not be what you want.  @xref{File Name
-Expansion}.
+Однако @code{expand-file-name} расширяет ведущие @samp {~} в @var{relfile},
+что может быть не тем, что требуется.  @xref{File Name Expansion}.
 
-  To convert a directory name to its abbreviation, use this
-function:
+  Чтобы преобразовать имя каталога в его аббревиатуру, использовать
+  эту функцию:
 
 @cindex file name abbreviations
 @cindex abbreviated file names
 @vindex directory-abbrev-alist
 @defun abbreviate-file-name filename
 @anchor{abbreviate-file-name}
-This function returns an abbreviated form of @var{filename}.  It
-applies the abbreviations specified in @code{directory-abbrev-alist}
-(@pxref{File Aliases,,File Aliases, emacs, The GNU Emacs Manual}),
-then substitutes @samp{~} for the user's home directory if the
-argument names a file in the home directory or one of its
-subdirectories.  If the home directory is a root directory, it is not
-replaced with @samp{~}, because this does not make the result shorter
-on many systems.
+Функция возвращает сокращенную форму @var{filename}.  Применяет сокращения,
+указанные в @code{directory-abbrev-alist}
+(@pxref{File Aliases,,File Aliases, emacs, The GNU Emacs Manual}), затем
+заменяет @samp{~} на домашний каталог пользователя, если аргумент называет
+файл в домашнем каталоге или одном из его подкаталогов.  Если домашний
+каталог является корневым, он не заменяется на @samp{~}, потому что это не
+делает результат короче во многих системах.
 
-You can use this function for directory names and for file names,
-because it recognizes abbreviations even as part of the name.
+Можно использовать эту функцию для имен каталогов и для имен файлов, потому
+что она распознает сокращения даже как часть имени.
 @end defun
 
 @node File Name Expansion
-@subsection Functions that Expand Filenames
+@subsection Функции, Расширяющие Имена Файлов
 @cindex expansion of file names
 
-  @dfn{Expanding} a file name means converting a relative file name to
-an absolute one.  Since this is done relative to a default directory,
-you must specify the default directory as well as the file name
-to be expanded.  It also involves expanding abbreviations like
+  @dfn{Расширенное} имя файла означает преобразование относительного имени
+файла в абсолютное.  Поскольку это делается относительно каталога по
+умолчанию, потребуется указать каталог по умолчанию, а также имя файла,
+который нужно раскрыть.  Это также включает расширение сокращений, таких как
 @file{~/}
 @ifnottex
 (@pxref{abbreviate-file-name}),
 @end ifnottex
-and eliminating redundancies like @file{./} and @file{@var{name}/../}.
+и устранение избыточности, такой как @file{./} и @file{@var{name}/../}.
 
 @defun expand-file-name filename &optional directory
-This function converts @var{filename} to an absolute file name.  If
-@var{directory} is supplied, it is the default directory to start with
-if @var{filename} is relative and does not start with @samp{~}.
-(The value of @var{directory} should
-itself be an absolute directory name or directory file name; it may
-start with @samp{~}.)  Otherwise, the current buffer's value of
-@code{default-directory} is used.  For example:
+Функция преобразует @var{filename} в абсолютное имя файла.  Если задан
+аргумент @var{directory}, это начальный каталог по умолчанию, если
+@var{filename} является относительным и не начинается с @samp{~}.  (Значение
+@var{directory} само должно быть абсолютным именем каталога или именем файла
+каталога; оно может начинаться с @samp{~}.)  В противном случае используется
+текущее значение буфера @code{default-directory}.  Например:
 
 @example
 @group
@@ -2372,18 +2364,17 @@ start with @samp{~}.)  Otherwise, the current buffer's value of
 @end group
 @end example
 
-If the part of @var{filename} before the first slash is
-@samp{~}, it expands to the value of the @env{HOME} environment
-variable (usually your home directory).  If the part before the first
-slash is @samp{~@var{user}} and if @var{user} is a valid login name,
-it expands to @var{user}'s home directory.
-If you do not want this expansion for a relative @var{filename} that
-might begin with a literal @samp{~}, you can use @code{(concat
-(file-name-as-directory directory) filename)} instead of
-@code{(expand-file-name filename directory)}.
+Если часть @var{filename} перед первой косой чертой - @samp{~}, она
+расширяется до значения переменной среды @env{HOME} (обычно это ваш домашний
+каталог).  Если перед первой косой чертой стоит @samp{~@var{user}} и если
+@var{user} - допустимое имя для входа, оно расширяется до домашнего каталога
+@var{user}.  Если не требуется это расширение для относительного имени
+@var{filename}, которое может начинаться с символа @samp {~}, можно
+использовать @code{(concat (file-name-as-directory directory) filename)}
+вместо @code{(expand-file-name filename directory)}.
 
-Filenames containing @samp{.} or @samp{..} are simplified to their
-canonical form:
+Имена файлов, содержащие @samp{.} или @samp{..}, упрощены до их канонической
+формы:
 
 @example
 @group
@@ -2392,7 +2383,7 @@ canonical form:
 @end group
 @end example
 
-In some cases, a leading @samp{..} component can remain in the output:
+В некоторых случаях ведущий компонент @samp{..} может оставаться на выходе:
 
 @example
 @group
@@ -2402,11 +2393,11 @@ In some cases, a leading @samp{..} component can remain in the output:
 @end example
 
 @noindent
-This is for the sake of filesystems that have the concept of a
-superroot above the root directory @file{/}.  On other filesystems,
-@file{/../} is interpreted exactly the same as @file{/}.
+Это сделано для файловых систем, которые имеют концепцию суперкорня над
+корневым каталогом @file{/}.  В других файловых системах @file{/../}
+интерпретируется точно так же, как @file{/}.
 
-Expanding @file{.} or the empty string returns the default directory:
+Расширение @file{.} или пустой строки возвращает каталог по умолчанию:
 
 @example
 @group
@@ -2417,8 +2408,9 @@ Expanding @file{.} or the empty string returns the default directory:
 @end group
 @end example
 
-Note that @code{expand-file-name} does @emph{not} expand environment
-variables; only @code{substitute-in-file-name} does that:
+Обратить внимание, что @code{expand-file-name} действительно @emph{не}
+расширяет переменные среды; только @code{substitute-in-file-name} делает
+это:
 
 @example
 @group
