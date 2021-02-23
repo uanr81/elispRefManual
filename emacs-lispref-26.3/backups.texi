@@ -4,94 +4,105 @@
 @c Inc.
 @c See the file elisp.texi for copying conditions.
 @node Backups and Auto-Saving
-@chapter Backups and Auto-Saving
+@chapter Резервные Копии и Автосохранение
 @cindex backups and auto-saving
 
-  Backup files and auto-save files are two methods by which Emacs tries
-to protect the user from the consequences of crashes or of the user's
-own errors.  Auto-saving preserves the text from earlier in the current
-editing session; backup files preserve file contents prior to the
-current session.
+  Файлы резервного копирования и файлы автосохранения - это два метода, с
+помощью которых Emacs пытается защитить пользователя от последствий сбоев
+или собственных ошибок пользователя.  Автосохранение сохраняет текст,
+сделанный ранее в текущем сеансе редактирования; файлы резервных копий
+сохраняют содержимое файла до текущего сеанса.
 
 @menu
-* Backup Files::   How backup files are made; how their names are chosen.
-* Auto-Saving::    How auto-save files are made; how their names are chosen.
-* Reverting::      @code{revert-buffer}, and how to customize what it does.
+* Backup Files::   Как создаются резервные копии файлов; как выбираются
+                       их имена.
+* Auto-Saving::    Как создаются файлы автосохранения; как выбираются
+                       их имена.
+* Reverting::      @code{revert-buffer}, и как настроить то, что оно делает.
 @end menu
 
 @node Backup Files
-@section Backup Files
+@section Резервные Файлы
 @cindex backup file
 
-  A @dfn{backup file} is a copy of the old contents of a file you are
-editing.  Emacs makes a backup file the first time you save a buffer
-into its visited file.  Thus, normally, the backup file contains the
-contents of the file as it was before the current editing session.
-The contents of the backup file normally remain unchanged once it
-exists.
+  @dfn{Резервный файл} - это копия старого содержимого файла, который
+редактируется.  Emacs создает файл резервной копии, когда в первый раз
+сохраняется буфер в посещенный файл.  Таким образом, обычно файл резервной
+копии содержит содержимое файла, которое было до текущего сеанса
+редактирования.  Содержимое файла резервной копии обычно остается неизменным
+после того, как он создан.
 
-  Backups are usually made by renaming the visited file to a new name.
-Optionally, you can specify that backup files should be made by copying
-the visited file.  This choice makes a difference for files with
-multiple names; it also can affect whether the edited file remains owned
-by the original owner or becomes owned by the user editing it.
+  Резервное копирование обычно выполняется путем переименования посещенного
+файла в новое имя.  При желании можно указать, что файлы резервных копий
+должны создаваться путем копирования посещенного файла.  Этот выбор имеет
+значение для файлов с несколькими именами; это также может повлиять на то,
+останется ли отредактированный файл принадлежащим первоначальному владельцу
+или станет владельцем редактирующего его пользователя.
 
-  By default, Emacs makes a single backup file for each file edited.
-You can alternatively request numbered backups; then each new backup
-file gets a new name.  You can delete old numbered backups when you
-don't want them any more, or Emacs can delete them automatically.
+  По умолчанию Emacs создает отдельный файл резервной копии для каждого
+редактируемого файла.  Также можно запросить нумерованные резервные копии;
+тогда каждый новый файл резервной копии получает новое имя.  Можно удалить
+старые пронумерованные резервные копии, если они больше не нужны, или Emacs
+может удалить их автоматически.
 
-  For performance, the operating system may not write the backup
-file's contents to secondary storage immediately, or may alias the
-backup data with the original until one or the other is later
-modified.  @xref{Files and Storage}.
+  Для повышения производительности операционная система может не записывать
+содержимое файла резервной копии во вторичное хранилище сразу или может
+связывать данные резервной копии с оригиналом до тех пор, пока одно или
+другое не будет изменено позже.  @xref{Files and Storage}.
 
 @menu
-* Making Backups::     How Emacs makes backup files, and when.
-* Rename or Copy::     Two alternatives: renaming the old file or copying it.
-* Numbered Backups::   Keeping multiple backups for each source file.
-* Backup Names::       How backup file names are computed; customization.
+* Making Backups::     Как Emacs создает резервные копии файлов и когда.
+* Rename or Copy::     Две альтернативы: переименование старого файла или
+                          его копирование.
+* Numbered Backups::   Хранение нескольких резервных копий для
+                          каждого исходного файла.
+* Backup Names::       Как вычисляются имена файлов резервных копий;
+                          настройка.
 @end menu
 
 @node Making Backups
-@subsection Making Backup Files
+@subsection Создание Резервных Файлов
 @cindex making backup files
 
 @defun backup-buffer
-  This function makes a backup of the file visited by the current
-buffer, if appropriate.  It is called by @code{save-buffer} before
-saving the buffer the first time.
+  Функция при необходимости делает резервную копию файла, который посещает
+текущий буфер.  Вызывается @code{save-buffer} перед первым сохранением
+буфера.
 
-If a backup was made by renaming, the return value is a cons cell of
-the form (@var{modes} @var{extra-alist} @var{backupname}), where
-@var{modes} are the mode bits of the original file, as returned by
-@code{file-modes} (@pxref{Testing Accessibility}), @var{extra-alist}
-is an alist describing the original file's extended attributes, as
-returned by @code{file-extended-attributes} (@pxref{Extended
-Attributes}), and @var{backupname} is the name of the backup.
+Если резервная копия была сделана путем переименования, возвращаемое
+значение - это cons-ячейка вида
+(@var{modes} @var{extra-alist} @var{backupname}), где @var{mode} - биты
+режима исходного файла, а возвращаемый @code{file-modes}
+(@pxref{Testing Accessibility}), @var{extra-alist} - это список, описывающий
+расширенные атрибуты исходного файла, как @code{file-extended-attributes}
+(@pxref{Extended Attributes}), и @var{backupname} возвращает имя резервной
+копии.
 
-In all other cases (i.e., if a backup was made by copying or if no
-backup was made), this function returns @code{nil}.
+Во всех остальных случаях (то есть если резервная копия была сделана путем
+копирования или если резервная копия не была сделана), функция возвращает
+@code{nil}.
 @end defun
 
 @defvar buffer-backed-up
-  This buffer-local variable says whether this buffer's file has
-been backed up on account of this buffer.  If it is non-@code{nil},
-the backup file has been written.  Otherwise, the file should be backed
-up when it is next saved (if backups are enabled).  This is a
-permanent local; @code{kill-all-local-variables} does not alter@tie{}it.
+  Эта локальная в буфере переменная сообщает, было ли выполнено резервное
+копирование файла этого буфера с учетом этого буфера.  Если это
+не-@code{nil}, файл резервной копии был записан.  В противном случае при
+следующем сохранении файла следует создать резервную копию (если резервное
+копирование включено).  Это постоянная локальная переменная;
+@code{kill-all-local-variables} не изменяет @tie{}.
 @end defvar
 
 @defopt make-backup-files
-This variable determines whether or not to make backup files.  If it
-is non-@code{nil}, then Emacs creates a backup of each file when it is
-saved for the first time---provided that @code{backup-inhibited}
-is @code{nil} (see below).
+Эта переменная определяет, нужно ли создавать резервные копии файлов.  Если
+это не-@code{nil}, то Emacs создает резервную копию каждого файла при его
+первом сохранении - при условии, что @code{backup-inhibited} равен
+@code{nil} (смотреть ниже).
 
-The following example shows how to change the @code{make-backup-files}
-variable only in the Rmail buffers and not elsewhere.  Setting it
-@code{nil} stops Emacs from making backups of these files, which may
-save disk space.  (You would put this code in your init file.)
+В следующем примере показано, как изменить переменную
+@code{make-backup-files} только в буферах Rmail, а не где-либо еще.
+Установка @code{nil} останавливает Emacs от создания резервных копий этих
+файлов, что может сэкономить место на диске.  (Потребуется поместить этот
+код в свой файл инициализации.)
 
 @smallexample
 @group
@@ -102,220 +113,227 @@ save disk space.  (You would put this code in your init file.)
 @end defopt
 
 @defvar backup-enable-predicate
-This variable's value is a function to be called on certain occasions to
-decide whether a file should have backup files.  The function receives
-one argument, an absolute file name to consider.  If the function returns
-@code{nil}, backups are disabled for that file.  Otherwise, the other
-variables in this section say whether and how to make backups.
+Значение этой переменной - это функция, которая вызывается в определенных
+случаях, чтобы решить, должен ли файл иметь файлы резервных копий.  Функция
+получает один аргумент - абсолютное имя файла для рассмотрения.  Если
+функция возвращает @code{nil}, резервное копирование для этого файла
+отключено.  В противном случае другие переменные в этом разделе говорят,
+нужно ли и как делать резервные копии.
 
 @findex normal-backup-enable-predicate
-The default value is @code{normal-backup-enable-predicate}, which checks
-for files in @code{temporary-file-directory} and
+Значение по умолчанию - @code{normal-backup-enable-predicate}, которое
+проверяет файлы в @code{temporary-file-directory} и
 @code{small-temporary-file-directory}.
 @end defvar
 
 @defvar backup-inhibited
-If this variable is non-@code{nil}, backups are inhibited.  It records
-the result of testing @code{backup-enable-predicate} on the visited file
-name.  It can also coherently be used by other mechanisms that inhibit
-backups based on which file is visited.  For example, VC sets this
-variable non-@code{nil} to prevent making backups for files managed
-with a version control system.
+Если эта переменная - не-@code{nil}, резервное копирование запрещено.
+Записывает результат тестирования @code{backup-enable-predicate} по имени
+посещенного файла.  Её также могут согласованно использовать другие
+механизмы, запрещающие резервное копирование в зависимости от того, какой
+файл посещается.  Например, VC устанавливает эту переменную в не-@code{nil}
+для предотвращения резервного копирования файлов, управляемых системой
+контроля версий.
 
-This is a permanent local, so that changing the major mode does not lose
-its value.  Major modes should not set this variable---they should set
-@code{make-backup-files} instead.
+Это постоянный локальный режим, поэтому изменение основного режима не теряет
+своего значения.  Основные режимы не должны устанавливать эту переменную -
+вместо этого они должны устанавливать @code{make-backup-files}.
 @end defvar
 
 @defopt backup-directory-alist
-This variable's value is an alist of filename patterns and backup
-directories.  Each element looks like
+Значение этой переменной представляет собой список шаблонов имен файлов и
+каталогов резервных копий.  Каждый элемент выглядит как
 @smallexample
 (@var{regexp} . @var{directory})
 @end smallexample
 
 @noindent
-Backups of files with names matching @var{regexp} will be made in
-@var{directory}.  @var{directory} may be relative or absolute.  If it is
-absolute, so that all matching files are backed up into the same
-directory, the file names in this directory will be the full name of the
-file backed up with all directory separators changed to @samp{!} to
-prevent clashes.  This will not work correctly if your filesystem
-truncates the resulting name.
+Резервные копии файлов с именами, соответствующими @var{regexp}, будут
+производиться в @var{directory}.  @var{directory} может быть относительным
+или абсолютным значением.  Если это абсолютное значение, так что все
+совпадающие файлы копируются в один и тот же каталог, имена файлов в этом
+каталоге будут полным именем файла, для которого создана резервная копия,
+со всеми разделителями каталогов, измененными на @samp{!} для предотвращения
+конфликтов.  Это не будет работать правильно, если ваша файловая система
+усекает полученное имя.
 
-For the common case of all backups going into one directory, the alist
-should contain a single element pairing @samp{"."} with the appropriate
-directory.
+В общем случае, когда все резервные копии идут в один каталог, список должен
+содержать единственную пару элементов @samp{"."} с соответствующим
+каталогом.
 
-If this variable is @code{nil} (the default), or it fails to match a
-filename, the backup is made in the original file's directory.
+Если эта переменная - @code{nil} (по умолчанию) или имя файла не совпадает,
+резервная копия создается в каталоге исходного файла.
 
-On MS-DOS filesystems without long names this variable is always
-ignored.
+В файловых системах MS-DOS без длинных имен эта переменная всегда
+игнорируется.
 @end defopt
 
 @defopt make-backup-file-name-function
-This variable's value is a function to use for making backup file names.
-The function @code{make-backup-file-name} calls it.
-@xref{Backup Names,, Naming Backup Files}.
+Значение этой переменной - это функция, которая используется для создания
+имен файлов резервных копий.  Её вызывает функция
+@code{make-backup-file-name}.  @xref{Backup Names,, Naming Backup Files}.
 
-This could be buffer-local to do something special for specific
-files.  If you change it, you may need to change
-@code{backup-file-name-p} and @code{file-name-sans-versions} too.
+Это может быть локальный буфер, чтобы делать что-то особенное для
+определенных файлов.  Если его изменить, может потребоваться также изменить
+@code{backup-file-name-p} и @code{file-name-sans-versions}.
 @end defopt
 
 
 @node Rename or Copy
-@subsection Backup by Renaming or by Copying?
+@subsection Резервное Копирование Путем Переименования или Копирование?
 @cindex backup files, rename or copy
 
-  There are two ways that Emacs can make a backup file:
+  Emacs может сделать файл резервной копии двумя способами.:
 
 @itemize @bullet
 @item
-Emacs can rename the original file so that it becomes a backup file, and
-then write the buffer being saved into a new file.  After this
-procedure, any other names (i.e., hard links) of the original file now
-refer to the backup file.  The new file is owned by the user doing the
-editing, and its group is the default for new files written by the user
-in that directory.
+Emacs может переименовать исходный файл, чтобы он стал файлом резервной
+копии, а затем записать сохраняемый буфер в новый файл.  После этой
+процедуры любые другие имена (то есть жесткие ссылки) исходного файла теперь
+относятся к файлу резервной копии.  Новый файл принадлежит пользователю,
+выполняющему редактирование, и его группа по умолчанию используется для
+новых файлов, записанных пользователем в этом каталоге.
 
 @item
-Emacs can copy the original file into a backup file, and then overwrite
-the original file with new contents.  After this procedure, any other
-names (i.e., hard links) of the original file continue to refer to the
-current (updated) version of the file.  The file's owner and group will
-be unchanged.
+Emacs может скопировать исходный файл в файл резервной копии, а затем
+перезаписать исходный файл новым содержимым.  После этой процедуры любые
+другие имена (то есть жесткие ссылки) исходного файла продолжают ссылаться
+на текущую (обновленную) версию файла. Владелец и группа файла не изменятся.
 @end itemize
 
-  The first method, renaming, is the default.
+  По умолчанию используется первый метод - переименование.
 
-  The variable @code{backup-by-copying}, if non-@code{nil}, says to use
-the second method, which is to copy the original file and overwrite it
-with the new buffer contents.  The variable @code{file-precious-flag},
-if non-@code{nil}, also has this effect (as a sideline of its main
-significance).  @xref{Saving Buffers}.
+  Переменная @code{backup-by-copying}, если не-@code{nil}, говорит об
+использовании второго метода, который заключается в копировании исходного
+файла и перезаписи его новым содержимым буфера.  Переменная
+@code{file-precious-flag}, если не-@code{nil}, также имеет этот эффект (как
+побочный эффект от ее основного значения).  @xref{Saving Buffers}.
 
 @defopt backup-by-copying
-If this variable is non-@code{nil}, Emacs always makes backup files by
-copying.  The default is @code{nil}.
+Если эта переменная - не-@code{nil}, Emacs всегда создает резервные копии
+файлов путем копирования.  По умолчанию @code{nil}.
 @end defopt
 
-  The following three variables, when non-@code{nil}, cause the second
-method to be used in certain special cases.  They have no effect on the
-treatment of files that don't fall into the special cases.
+  Следующие три переменные, когда не-@code{nil}, вызывают использование
+второго метода в определенных особых случаях.  Они не влияют на обработку
+файлов, не относящихся к особым случаям.
 
 @defopt backup-by-copying-when-linked
-If this variable is non-@code{nil}, Emacs makes backups by copying for
-files with multiple names (hard links).  The default is @code{nil}.
+Если эта переменная - не-@code{nil}, Emacs создает резервные копии, копируя
+файлы с несколькими именами (жесткие ссылки).  По умолчанию @code{nil}.
 
-This variable is significant only if @code{backup-by-copying} is
-@code{nil}, since copying is always used when that variable is
-non-@code{nil}.
+Эта переменная имеет значение, только если @code{backup-by-copying} -
+@code{nil}, поскольку всегда используется копирование, если эта переменная -
+не-@code{nil}.
 @end defopt
 
 @defopt backup-by-copying-when-mismatch
-If this variable is non-@code{nil} (the default), Emacs makes backups
-by copying in cases where renaming would change either the owner or
-the group of the file.
+Если эта переменная - не-@code{nil} (по умолчанию), Emacs создает резервные
+копии путем копирования в тех случаях, когда переименование изменило бы
+владельца или группу файла.
 
-The value has no effect when renaming would not alter the owner or
-group of the file; that is, for files which are owned by the user and
-whose group matches the default for a new file created there by the
-user.
+Значение не влияет, если переименование не изменит владельца или группу
+файла; то есть для файлов, которые принадлежат пользователю и чья группа
+совпадает со значением по умолчанию для нового файла, созданного там
+пользователем.
 
-This variable is significant only if @code{backup-by-copying} is
-@code{nil}, since copying is always used when that variable is
-non-@code{nil}.
+Переменная имеет значение, только если @code{backup-by-copying} -
+@code{nil}, поскольку всегда используется копирование, если эта переменная -
+не-@code{nil}.
 @end defopt
 
 @defopt backup-by-copying-when-privileged-mismatch
-This variable, if non-@code{nil}, specifies the same behavior as
-@code{backup-by-copying-when-mismatch}, but only for certain user-id
-values: namely, those less than or equal to a certain number.  You set
-this variable to that number.
+Переменная, если не-@code{nil}, задает то же поведение, что и
+@code{backup-by-copying-when-mismatch}, но только для определенных значений
+идентификатора пользователя: а именно, тех, которые меньше или равны
+определенному числу.  Устанавливается эта переменная в это число.
 
-Thus, if you set @code{backup-by-copying-when-privileged-mismatch}
-to 0, backup by copying is done for the superuser only,
-when necessary to prevent a change in the owner of the file.
+Таким образом, если установить
+@code{backup-by-copying-when-privileged-mismatch} равным 0, резервное
+копирование будет выполняться только для суперпользователя, когда это
+необходимо для предотвращения смены владельца файла.
 
-The default is 200.
+По умолчанию 200.
 @end defopt
 
 @node Numbered Backups
-@subsection Making and Deleting Numbered Backup Files
+@subsection Создание и Удаление Пронумерованных Файлов Резервных Копий
 @cindex numbered backups
 
-  If a file's name is @file{foo}, the names of its numbered backup
-versions are @file{foo.~@var{v}~}, for various integers @var{v}, like
-this: @file{foo.~1~}, @file{foo.~2~}, @file{foo.~3~}, @dots{},
-@file{foo.~259~}, and so on.
+  Если имя файла - @file{foo}, то имена его пронумерованных версий резервной
+копии - @file{foo.~@var{v}~}, для различных целых чисел @var{v}, например:
+@file{foo.~1~}, @file{foo.~2~}, @file{foo.~3~}, @dots{}, @file{foo.~259~} и
+так далее.
 
 @defopt version-control
-This variable controls whether to make a single non-numbered backup
-file or multiple numbered backups.
+Эта переменная определяет, следует ли создавать один ненумерованный файл
+резервной копии или несколько нумерованных резервных копий.
 
 @table @asis
 @item @code{nil}
-Make numbered backups if the visited file already has numbered backups;
-otherwise, do not.  This is the default.
+Сделайте пронумерованные резервные копии, если посещенный файл уже имеет
+пронумерованные резервные копии; в противном случае - нет.  Это значение по
+умолчанию.
 
 @item @code{never}
-Do not make numbered backups.
+Не делайть нумерованные резервные копии.
 
 @item @var{anything else}
-Make numbered backups.
+Сделать пронумерованные резервные копии.
 @end table
 @end defopt
 
-  The use of numbered backups ultimately leads to a large number of
-backup versions, which must then be deleted.  Emacs can do this
-automatically or it can ask the user whether to delete them.
+  Использование нумерованных резервных копий в конечном итоге приводит к
+появлению большого количества версий резервных копий, которые затем
+необходимо удалить.  Emacs может сделать это автоматически или может
+спросить пользователя, удалить ли их.
 
 @defopt kept-new-versions
-The value of this variable is the number of newest versions to keep
-when a new numbered backup is made.  The newly made backup is included
-in the count.  The default value is@tie{}2.
+Значение этой переменной - это количество последних версий, которые
+необходимо сохранить при создании новой пронумерованной резервной копии.
+Вновь созданная резервная копия включается в подсчет. Значение по умолчанию
+- @tie{}2.
 @end defopt
 
 @defopt kept-old-versions
-The value of this variable is the number of oldest versions to keep
-when a new numbered backup is made.  The default value is@tie{}2.
+Значение этой переменной - количество самых старых версий, которые
+необходимо сохранить при создании новой пронумерованной резервной копии.
+Значение по умолчанию - @tie{}2.
 @end defopt
 
-  If there are backups numbered 1, 2, 3, 5, and 7, and both of these
-variables have the value 2, then the backups numbered 1 and 2 are kept
-as old versions and those numbered 5 and 7 are kept as new versions;
-backup version 3 is excess.  The function @code{find-backup-file-name}
-(@pxref{Backup Names}) is responsible for determining which backup
-versions to delete, but does not delete them itself.
+  Если есть резервные копии с номером 1, 2, 3, 5 и 7, и обе эти переменные
+имеют значение 2, то резервные копии с номерами 1 и 2 сохраняются как старые
+версии, а те, что имеют номера 5 и 7, как новые версии; резервная версия 3
+избыточна.  Функция @code{find-backup-file-name} (@pxref{Backup Names})
+отвечает за определение удаляемых версий резервных копий, но не удаляет их
+сама.
 
 @defopt delete-old-versions
-If this variable is @code{t}, then saving a file deletes excess
-backup versions silently.  If it is @code{nil}, that means
-to ask for confirmation before deleting excess backups.
-Otherwise, they are not deleted at all.
+Если эта переменная - @code{t}, то при сохранении файла лишние версии
+резервной копии автоматически удаляются.  Если @code{nil}, это означает, что
+перед удалением лишних резервных копий нужно запрашивать подтверждение.  В
+противном случае они вообще не удаляются.
 @end defopt
 
 @defopt dired-kept-versions
-This variable specifies how many of the newest backup versions to keep
-in the Dired command @kbd{.} (@code{dired-clean-directory}).  That's the
-same thing @code{kept-new-versions} specifies when you make a new backup
-file.  The default is@tie{}2.
+Эта переменная указывает, сколько новейших версий резервных копий следует
+хранить в команде Dired @kbd{.} (@code{dired-clean-directory}).  Это то же
+самое, что @code{kept-new-versions} указывает при создании нового файла
+резервной копии.  По умолчанию - @tie{}2.
 @end defopt
 
 @node Backup Names
-@subsection Naming Backup Files
+@subsection Именование Файлов Резервных Копий
 @cindex naming backup files
 
-  The functions in this section are documented mainly because you can
-customize the naming conventions for backup files by redefining them.
-If you change one, you probably need to change the rest.
+  Функции в этом разделе документированы главным образом потому, что можно
+настроить соглашения об именах для файлов резервных копий, переопределив их.
+Если изменить одно, вероятно, придется изменить остальное.
 
 @defun backup-file-name-p filename
-This function returns a non-@code{nil} value if @var{filename} is a
-possible name for a backup file.  It just checks the name, not whether
-a file with the name @var{filename} exists.
+Функция возвращает значение не-@code{nil}, если @var{filename} - возможное
+имя для файла резервной копии.  Просто проверяет имя, а не существование
+файла с именем @var{filename}.
 
 @smallexample
 @group
@@ -328,46 +346,46 @@ a file with the name @var{filename} exists.
 @end group
 @end smallexample
 
-The standard definition of this function is as follows:
+Стандартное определение этой функции следующее:
 
 @smallexample
 @group
 (defun backup-file-name-p (file)
-  "Return non-nil if FILE is a backup file \
-name (numeric or not)..."
+  "Возвращает ненулевое значение, если FILE является файлом резервной копии \
+имя (числовое или нет)..."
   (string-match "~\\'" file))
 @end group
 @end smallexample
 
 @noindent
-Thus, the function returns a non-@code{nil} value if the file name ends
-with a @samp{~}.  (We use a backslash to split the documentation
-string's first line into two lines in the text, but produce just one
-line in the string itself.)
+Таким образом, функция возвращает значение не-@code{nil}, если имя файла
+заканчивается на @samp{~}.  (Используется обратная косая черта, чтобы
+разделить первую строку строки документации на две строки в тексте, но
+создаеётся только одна строка в самой строке.)
 
-This simple expression is placed in a separate function to make it easy
-to redefine for customization.
+Это простое выражение помещено в отдельную функцию, чтобы его было легко
+переопределить для настройки.
 @end defun
 
 @defun make-backup-file-name filename
-This function returns a string that is the name to use for a
-non-numbered backup file for file @var{filename}.  On Unix, this is just
-@var{filename} with a tilde appended.
+Эта функция возвращает строку, которая представляет собой имя, которое
+следует использовать для ненумерованного файла резервной копии для файла
+@var{filename}.  В Unix это просто @var{filename} с добавленной тильдой.
 
-The standard definition of this function, on most operating systems, is
-as follows:
+Стандартное определение этой функции в большинстве операционных систем
+выглядит следующим образом:
 
 @smallexample
 @group
 (defun make-backup-file-name (file)
-  "Create the non-numeric backup file name for FILE..."
+  "Создать нечисловое имя файла резервной копии для FILE..."
   (concat file "~"))
 @end group
 @end smallexample
 
-You can change the backup-file naming convention by redefining this
-function.  The following example redefines @code{make-backup-file-name}
-to prepend a @samp{.} in addition to appending a tilde:
+Можно изменить соглашение об именах файлов резервных копий, переопределив
+эту функцию.  В следующем примере @code{make-backup-file-name}
+переопределяется для добавления @samp{.} в дополнение к добавлению тильды:
 
 @smallexample
 @group
@@ -383,28 +401,29 @@ to prepend a @samp{.} in addition to appending a tilde:
 @end group
 @end smallexample
 
-Some parts of Emacs, including some Dired commands, assume that backup
-file names end with @samp{~}.  If you do not follow that convention, it
-will not cause serious problems, but these commands may give
-less-than-desirable results.
+Некоторые части Emacs, включая некоторые команды Dired, предполагают, что
+имена файлов резервных копий заканчиваются на @samp{~}.  Если не следовать
+этому соглашению, это не вызовет серьезных проблем, но эти команды могут
+дать менее желаемые результаты.
 @end defun
 
 @defun find-backup-file-name filename
-This function computes the file name for a new backup file for
-@var{filename}.  It may also propose certain existing backup files for
-deletion.  @code{find-backup-file-name} returns a list whose @sc{car} is
-the name for the new backup file and whose @sc{cdr} is a list of backup
-files whose deletion is proposed.  The value can also be @code{nil},
-which means not to make a backup.
+Функция вычисляет имя файла нового файла резервной копии для @var{filename}.
+Также может предлагать некоторые существующие файлы резервных копий для
+удаления.  @code{find-backup-file-name} возвращает список, в котором
+@sc{car} - имя нового файла резервной копии, а @sc{cdr} - список файлов
+резервных копий, удаление которых предлагается.  Значение также может быть
+@code{nil}, что означает не делать резервную копию.
 
-Two variables, @code{kept-old-versions} and @code{kept-new-versions},
-determine which backup versions should be kept.  This function keeps
-those versions by excluding them from the @sc{cdr} of the value.
+Две переменные, @code{kept-old-versions} и @code{kept-new-versions},
+определяют, какие версии резервной копии следует сохранить.  Эта функция
+сохраняет эти версии, исключая их из @sc{cdr} значения.
 @xref{Numbered Backups}.
 
-In this example, the value says that @file{~rms/foo.~5~} is the name
-to use for the new backup file, and @file{~rms/foo.~3~} is an excess
-version that the caller should consider deleting now.
+В этом примере значение говорит, что @file{~rms/foo.~5~} - это имя, которое
+следует использовать для нового файла резервной копии, а @file{~rms/foo.~3~}
+- это избыточная версия, которую вызывающему абоненту следует удалить
+сейчас.
 
 @smallexample
 @group
@@ -416,30 +435,30 @@ version that the caller should consider deleting now.
 
 @c Emacs 19 feature
 @defun file-newest-backup filename
-This function returns the name of the most recent backup file for
-@var{filename}, or @code{nil} if that file has no backup files.
+Эта функция возвращает имя самого последнего файла резервной копии для
+@var{filename} или @code{nil}, если в этом файле нет файлов резервной копии.
 
-Some file comparison commands use this function so that they can
-automatically compare a file with its most recent backup.
+Некоторые команды сравнения файлов используют эту функцию для
+автоматического сравнения файла с его последней резервной копией.
 @end defun
 
 @node Auto-Saving
-@section Auto-Saving
-@c @cindex auto-saving   Lots of symbols starting with auto-save here.
+@section Автосохранение
+@c @cindex auto-saving  Здесь много символов, начинающихся с автосохранения.
 
-  Emacs periodically saves all files that you are visiting; this is
-called @dfn{auto-saving}.  Auto-saving prevents you from losing more
-than a limited amount of work if the system crashes.  By default,
-auto-saves happen every 300 keystrokes, or after around 30 seconds of
-idle time.  @xref{Auto Save, Auto Save, Auto-Saving: Protection Against
-Disasters, emacs, The GNU Emacs Manual}, for information on auto-save
-for users.  Here we describe the functions used to implement auto-saving
-and the variables that control them.
+  Emacs периодически сохраняет все файлы, которые посещаются; это называется
+@dfn{автосохранение}.  Автосохранение предотвращает потерю более чем
+ограниченного объема работы в случае сбоя системы.  По умолчанию
+автосохранение происходит каждые 300 нажатий клавиш или примерно через 30
+секунд простоя.  @xref{Auto Save, Auto Save, Auto-Saving: Protection Against Disasters, emacs, The GNU Emacs Manual},
+для информации об автосохранении для пользователей.  Здесь описываются
+функции, используемые для автоматического сохранения, и переменные, которые
+ими управляют.
 
 @defvar buffer-auto-save-file-name
-This buffer-local variable is the name of the file used for
-auto-saving the current buffer.  It is @code{nil} if the buffer
-should not be auto-saved.
+Локальная переменная буфера - это имя файла, используемого для
+автосохранения текущего буфера.  @code{nil}, если буфер не должен
+сохраняться автоматически.
 
 @example
 @group
@@ -450,22 +469,23 @@ buffer-auto-save-file-name
 @end defvar
 
 @deffn Command auto-save-mode arg
-This is the mode command for Auto Save mode, a buffer-local minor
-mode.  When Auto Save mode is enabled, auto-saving is enabled in the
-buffer.  The calling convention is the same as for other minor mode
-commands (@pxref{Minor Mode Conventions}).
+Команда режима для режима автосохранения, второстепенного режима локального
+буфера.  Когда включен режим автосохранения, в буфере включается
+автосохранение.  Соглашение о вызовах такое же, как и для других команд
+второстепенного режима (@pxref{Minor Mode Conventions}).
 
-Unlike most minor modes, there is no @code{auto-save-mode} variable.
-Auto Save mode is enabled if @code{buffer-auto-save-file-name} is
-non-@code{nil} and @code{buffer-saved-size} (see below) is non-zero.
+В отличие от большинства второстепенных режимов, здесь нет переменной
+@code{auto-save-mode}.  Режим автосохранения включается, если
+@code{buffer-auto-save-file-name} установленно в не-@code{nil} и
+@code{buffer-saved-size} (смотреть ниже) не не-@code{nil}.
 @end deffn
 
 @defun auto-save-file-name-p filename
-This function returns a non-@code{nil} value if @var{filename} is a
-string that could be the name of an auto-save file.  It assumes
-the usual naming convention for auto-save files: a name that
-begins and ends with hash marks (@samp{#}) is a possible auto-save file
-name.  The argument @var{filename} should not contain a directory part.
+Aункция возвращает значение не-@code{nil}, если @var{filename} - это строка,
+которая может быть именем файла автосохранения.  Предполагает обычное
+соглашение об именах для файлов автосохранения: имя, которое начинается и
+заканчивается хеш-метками (@samp{#}), является возможным именем файла
+автосохранения.  Аргумент @var{filename} не должен содержать часть каталога.
 
 @example
 @group
@@ -482,28 +502,28 @@ name.  The argument @var{filename} should not contain a directory part.
 @end group
 @end example
 
-The standard definition of this function is as follows:
+Стандартное определение этой функции следующее:
 
 @example
 @group
 (defun auto-save-file-name-p (filename)
-  "Return non-nil if FILENAME can be yielded by..."
+  "Вернуть не-nil, если FILENAME можно получить с помощью..."
   (string-match "^#.*#$" filename))
 @end group
 @end example
 
-This function exists so that you can customize it if you wish to
-change the naming convention for auto-save files.  If you redefine it,
-be sure to redefine the function @code{make-auto-save-file-name}
-correspondingly.
+Функция существует для того, чтобы иметь возможность настроить ее, если
+потребуется изменить соглашение об именах для файлов с автоматическим
+сохранением.  Если его переопределить, обязательно переопределяется функция
+@code{make-auto-save-file-name} соответственно.
 @end defun
 
 @defun make-auto-save-file-name
-This function returns the file name to use for auto-saving the current
-buffer.  This is just the file name with hash marks (@samp{#}) prepended
-and appended to it.  This function does not look at the variable
-@code{auto-save-visited-file-name} (described below); callers of this
-function should check that variable first.
+Функция возвращает имя файла, которое будет использоваться для
+автоматического сохранения текущего буфера.  Это просто имя файла с
+добавленными к нему хэш-метками (@samp{#}).  Эта функция не смотрит на
+переменную @code{auto-save-visited-file-name} (описанную ниже); вызывающие
+эту функцию должны сначала проверить эту переменную.
 
 @example
 @group
@@ -512,14 +532,13 @@ function should check that variable first.
 @end group
 @end example
 
-Here is a simplified version of the standard definition of this
-function:
+Вот упрощенная версия стандартного определения этой функции:
 
 @example
 @group
 (defun make-auto-save-file-name ()
-  "Return file name to use for auto-saves \
-of current buffer.."
+  "Вернуть имя файла для автосохранения \
+текущего буфера.."
   (if buffer-file-name
 @end group
 @group
@@ -533,277 +552,278 @@ of current buffer.."
 @end group
 @end example
 
-This exists as a separate function so that you can redefine it to
-customize the naming convention for auto-save files.  Be sure to
-change @code{auto-save-file-name-p} in a corresponding way.
+Это существует как отдельная функция, поэтому можно переопределить ее, чтобы
+настроить соглашение об именах для файлов с автоматическим сохранением.
+Обязательно изменяется @code{auto-save-file-name-p} соответствующим образом.
 @end defun
 
 @defopt auto-save-visited-file-name
-If this variable is non-@code{nil}, Emacs auto-saves buffers in
-the files they are visiting.  That is, the auto-save is done in the same
-file that you are editing.  Normally, this variable is @code{nil}, so
-auto-save files have distinct names that are created by
+Если эта переменная - не-@code{nil}, Emacs автоматически сохраняет буферы в
+файлах, которые они посещают.  То есть автосохранение выполняется в том же
+файле, который редактируется.  Обычно это переменная @code{nil}, поэтому
+файлы автосохранения имеют разные имена, создаваемые
 @code{make-auto-save-file-name}.
 
-When you change the value of this variable, the new value does not take
-effect in an existing buffer until the next time auto-save mode is
-reenabled in it.  If auto-save mode is already enabled, auto-saves
-continue to go in the same file name until @code{auto-save-mode} is
-called again.
+Когда изменяется значение этой переменной, новое значение не вступает в силу
+в существующем буфере до тех пор, пока в нем не будет снова включен режим
+автосохранения.  Если режим автосохранения уже включен, автосохранение будет
+продолжаться с тем же именем файла до тех пор, пока @code{auto-save-mode} не
+будет вызван снова.
 
-Note that setting this variable to a non-@code{nil} value does not
-change the fact that auto-saving is different from saving the buffer;
-e.g., the hooks described in @ref{Saving Buffers} are @emph{not} run
-when a buffer is auto-saved.
+Обратить внимание, что установка этой переменной в значение не-@code{nil} не
+меняет того факта, что автосохранение отличается от сохранения буфера;
+например, ловушки, описанные в @ref{Saving Buffers}, @emph{не} запускаются,
+когда буфер автоматически сохраняется.
 @end defopt
 
 @defun recent-auto-save-p
-This function returns @code{t} if the current buffer has been
-auto-saved since the last time it was read in or saved.
+Функция возвращает @code{t}, если текущий буфер был автоматически сохранен
+с момента последнего чтения или сохранения.
 @end defun
 
 @defun set-buffer-auto-saved
-This function marks the current buffer as auto-saved.  The buffer will
-not be auto-saved again until the buffer text is changed again.  The
-function returns @code{nil}.
+Функция отмечает текущий буфер как автоматически сохраненный.  Буфер не
+будет автоматически сохранен снова, пока текст буфера не будет снова
+изменен.  Функция возвращает @code{nil}.
 @end defun
 
 @defopt auto-save-interval
-The value of this variable specifies how often to do auto-saving, in
-terms of number of input events.  Each time this many additional input
-events are read, Emacs does auto-saving for all buffers in which that is
-enabled.  Setting this to zero disables autosaving based on the
-number of characters typed.
+Значение этой переменной указывает, как часто должно выполняться
+автосохранение с точки зрения количества входных событий.  Каждый раз, когда
+считывается такое количество дополнительных входных событий, Emacs выполняет
+автосохранение для всех буферов, в которых это разрешено.  Установка этого
+значения в ноль отключает автосохранение в зависимости от количества
+набранных символов.
 @end defopt
 
 @defopt auto-save-timeout
-The value of this variable is the number of seconds of idle time that
-should cause auto-saving.  Each time the user pauses for this long,
-Emacs does auto-saving for all buffers in which that is enabled.  (If
-the current buffer is large, the specified timeout is multiplied by a
-factor that increases as the size increases; for a million-byte
-buffer, the factor is almost 4.)
+Значение этой переменной - количество секунд простоя, которое должно
+вызывать автосохранение.  Каждый раз, когда пользователь делает такую
+долгую паузу, Emacs автоматически сохраняет все буферы, в которых это
+разрешено.  (Если текущий буфер большой, указанный тайм-аут умножается на
+коэффициент, который увеличивается с увеличением размера; для буфера
+размером в миллион байт этот коэффициент равен почти 4.)
 
-If the value is zero or @code{nil}, then auto-saving is not done as a
-result of idleness, only after a certain number of input events as
-specified by @code{auto-save-interval}.
+Если значение равно нулю или @code{nil}, то автосохранение не выполняется в
+результате простоя, только после определенного количества событий ввода, как
+указано @code{auto-save-interval}.
 @end defopt
 
 @defvar auto-save-hook
-This normal hook is run whenever an auto-save is about to happen.
+Этот обычный обработчик запускается всякий раз, когда должно произойти
+автосохранение.
 @end defvar
 
 @defopt auto-save-default
-If this variable is non-@code{nil}, buffers that are visiting files
-have auto-saving enabled by default.  Otherwise, they do not.
+Если эта переменная - не-@code{nil}, для буферов, обращающихся к файлам, по
+умолчанию включено автосохранение.  В противном случае - нет.
 @end defopt
 
 @deffn Command do-auto-save &optional no-message current-only
-This function auto-saves all buffers that need to be auto-saved.  It
-saves all buffers for which auto-saving is enabled and that have been
-changed since the previous auto-save.
+Функция автоматически сохраняет все буферы, которые необходимо автоматически
+сохранить.  Сохраняет все буферы, для которых включено автосохранение и
+которые были изменены с момента предыдущего автосохранения.
 
-If any buffers are auto-saved, @code{do-auto-save} normally displays a
-message saying @samp{Auto-saving...} in the echo area while
-auto-saving is going on.  However, if @var{no-message} is
-non-@code{nil}, the message is inhibited.
+Если какие-либо буферы автоматически сохраняются, @code{do-auto-save} обычно
+отображает сообщение @samp{Auto-saving...} в эхо-области, пока происходит
+автосохранение.  Однако, если @var{no-message} равен не-@code{nil},
+сообщение запрещается.
 
-If @var{current-only} is non-@code{nil}, only the current buffer
-is auto-saved.
+Если @var{current-only} равен не-@code{nil}, автоматически сохраняется
+только текущий буфер.
 @end deffn
 
 @defun delete-auto-save-file-if-necessary &optional force
-This function deletes the current buffer's auto-save file if
-@code{delete-auto-save-files} is non-@code{nil}.  It is called every
-time a buffer is saved.
+Функция удаляет файл автосохранения текущего буфера, если
+@code{delete-auto-save-files} равен не-@code{nil}.  Вызывается каждый раз
+при сохранении буфера.
 
-Unless @var{force} is non-@code{nil}, this function only deletes the
-file if it was written by the current Emacs session since the last
-true save.
+Если @var{force} не не-@code{nil}, эта функция удаляет файл только в том
+случае, если он был записан текущим сеансом Emacs с момента последнего
+истинного сохранения.
 @end defun
 
 @defopt delete-auto-save-files
-This variable is used by the function
-@code{delete-auto-save-file-if-necessary}.  If it is non-@code{nil},
-Emacs deletes auto-save files when a true save is done (in the visited
-file).  This saves disk space and unclutters your directory.
+Переменная используется функцией @code{delete-auto-save-file-if-necessary}.
+Если это не-@code{nil}, Emacs удаляет файлы автосохранения, когда
+выполняется истинное сохранение (в посещенном файле).  Это экономит место на
+диске и убирает загроможденный каталог.
 @end defopt
 
 @defun rename-auto-save-file
-This function adjusts the current buffer's auto-save file name if the
-visited file name has changed.  It also renames an existing auto-save
-file, if it was made in the current Emacs session.  If the visited
-file name has not changed, this function does nothing.
+Функция регулирует имя файла автосохранения текущего буфера, если имя
+посещенного файла изменилось.  Также переименовывает существующий файл
+автосохранения, если он был создан в текущем сеансе Emacs.  Если имя
+посещенного файла не изменилось, эта функция ничего не делает.
 @end defun
 
 @defvar buffer-saved-size
-The value of this buffer-local variable is the length of the current
-buffer, when it was last read in, saved, or auto-saved.  This is
-used to detect a substantial decrease in size, and turn off auto-saving
-in response.
+Значение этой локальной переменной в буфере - это длина текущего буфера,
+когда он был в последний раз считан, сохранен или автоматически сохранен.
+Это используется для обнаружения значительного уменьшения размера и
+отключения автоматического сохранения в ответ.
 
-If it is @minus{}1, that means auto-saving is temporarily shut off in
-this buffer due to a substantial decrease in size.  Explicitly saving
-the buffer stores a positive value in this variable, thus reenabling
-auto-saving.  Turning auto-save mode off or on also updates this
-variable, so that the substantial decrease in size is forgotten.
+Если это @minus{}1, это означает, что автосохранение в этом буфере временно
+отключено из-за значительного уменьшения размера.  При явном сохранении
+буфера в этой переменной сохраняется положительное значение, таким образом
+активируя автосохранение.  Выключение или включение режима автосохранения
+также обновляет эту переменную, так что о значительном уменьшении размера
+можно забыть.
 
-If it is @minus{}2, that means this buffer should disregard changes in
-buffer size; in particular, it should not shut off auto-saving
-temporarily due to changes in buffer size.
+Если это @minus{}2, означает, что буфер не должен учитывать изменения в
+размере буфера; в частности, не должен временно отключать автосохранение
+из-за изменений в размере буфера.
 @end defvar
 
 @defvar auto-save-list-file-name
-This variable (if non-@code{nil}) specifies a file for recording the
-names of all the auto-save files.  Each time Emacs does auto-saving, it
-writes two lines into this file for each buffer that has auto-saving
-enabled.  The first line gives the name of the visited file (it's empty
-if the buffer has none), and the second gives the name of the auto-save
-file.
+Переменная (если не-@code{nil}) определяет файл для записи имен всех файлов
+автосохранения.  Каждый раз, когда Emacs выполняет автосохранение, он
+записывает в этот файл две строки для каждого буфера, для которого включено
+автосохранение.  В первой строке дается имя посещенного файла (оно пусто,
+если в буфере его нет), а во второй - имя файла автосохранения.
 
-When Emacs exits normally, it deletes this file; if Emacs crashes, you
-can look in the file to find all the auto-save files that might contain
-work that was otherwise lost.  The @code{recover-session} command uses
-this file to find them.
+Когда Emacs завершает работу в обычном режиме, он удаляет этот файл; если
+Emacs дает сбой, можно заглянуть в файл, чтобы найти все файлы
+автосохранения, которые могут содержать работу, которая в противном случае
+была потеряна.  Команда @code{recover-session} использует этот файл для их
+поиска.
 
-The default name for this file specifies your home directory and starts
-with @samp{.saves-}.  It also contains the Emacs process @acronym{ID} and the
-host name.
+Имя по умолчанию для этого файла указывает ваш домашний каталог и начинается
+с @samp{.saves-}.  Также содержит процесс Emacs @acronym{ID} и имя хоста.
 @end defvar
 
 @defopt auto-save-list-file-prefix
-After Emacs reads your init file, it initializes
-@code{auto-save-list-file-name} (if you have not already set it
-non-@code{nil}) based on this prefix, adding the host name and process
-ID@.  If you set this to @code{nil} in your init file, then Emacs does
-not initialize @code{auto-save-list-file-name}.
+После того, как Emacs прочитает ваш файл инициализации, он инициализирует
+@code{auto-save-list-file-name} (если еще не установлено в не-@code{nil}) на
+основе этого префикса, добавляя имя хоста и идентификатор процесса @.  Если
+установить значение @code{nil} в файле инициализации, Emacs не
+инициализирует @code{auto-save-list-file-name}.
 @end defopt
 
 @node Reverting
-@section Reverting
+@section Возврат
 @cindex reverting buffers
 
-  If you have made extensive changes to a file and then change your mind
-about them, you can get rid of them by reading in the previous version
-of the file with the @code{revert-buffer} command.  @xref{Reverting, ,
-Reverting a Buffer, emacs, The GNU Emacs Manual}.
+  Если внести значительные изменения в файл, а затем передумать, можно
+избавиться от них, прочитав предыдущую версию файла с помощью команды
+@code{revert-buffer}.
+@xref{Reverting, , Reverting a Buffer, emacs, The GNU Emacs Manual}.
 
 @deffn Command revert-buffer &optional ignore-auto noconfirm preserve-modes
-This command replaces the buffer text with the text of the visited
-file on disk.  This action undoes all changes since the file was visited
-or saved.
+Команда заменяет текст буфера текстом посещенного файла на диске.  Это
+действие отменяет все изменения с момента посещения или сохранения файла.
 
-By default, if the latest auto-save file is more recent than the visited
-file, and the argument @var{ignore-auto} is @code{nil},
-@code{revert-buffer} asks the user whether to use that auto-save
-instead.  When you invoke this command interactively, @var{ignore-auto}
-is @code{t} if there is no numeric prefix argument; thus, the
-interactive default is not to check the auto-save file.
+По умолчанию, если последний файл автосохранения является более новым, чем
+посещенный файл, а аргумент @var{ignore-auto} - @code{nil},
+@code{revert-buffer} спрашивает пользователя, использовать ли вместо него
+это автосохранение.  Когда вызвать эту команду в интерактивном режиме,
+@var{ignore-auto} будет @code{t}, если нет аргумента числового префикса;
+таким образом, интерактивная настройка по умолчанию не проверяет файл
+автосохранения.
 
-Normally, @code{revert-buffer} asks for confirmation before it changes
-the buffer; but if the argument @var{noconfirm} is non-@code{nil},
-@code{revert-buffer} does not ask for confirmation.
+Обычно @code{revert-buffer} запрашивает подтверждение перед изменением
+буфера; но если аргумент @var{noconfirm} равен не-@code{nil},
+@code{revert-buffer} не запрашивает подтверждения.
 
-Normally, this command reinitializes the buffer's major and minor modes
-using @code{normal-mode}.  But if @var{preserve-modes} is
-non-@code{nil}, the modes remain unchanged.
+Обычно эта команда повторно инициализирует основной и вспомогательный режимы
+буфера, используя @code{normal-mode}.  Но если @var{preserve-modes} равен
+не-@code{nil}, режимы не меняются.
 
-Reverting tries to preserve marker positions in the buffer by using the
-replacement feature of @code{insert-file-contents}.  If the buffer
-contents and the file contents are identical before the revert
-operation, reverting preserves all the markers.  If they are not
-identical, reverting does change the buffer; in that case, it preserves
-the markers in the unchanged text (if any) at the beginning and end of
-the buffer.  Preserving any additional markers would be problematical.
+При возврате выполняется попытка сохранить позиции маркеров в буфере с
+помощью функции замены @code{insert-file-contents}.  Если содержимое буфера
+и содержимое файла идентичны до операции возврата, при возврате сохраняются
+все маркеры.  Если они не идентичны, возврат действительно изменяет буфер; в
+этом случае он сохраняет маркеры в неизмененном тексте (если есть) в начале
+и конце буфера.  Сохранить любые дополнительные маркеры будет проблематично.
 @end deffn
 
 @defvar revert-buffer-in-progress-p
-@code{revert-buffer} binds this variable to a non-@code{nil} value
-while it is working.
+@code{revert-buffer} связывает эту переменную со значением не-@code{nil},
+пока она работает.
 @end defvar
 
-You can customize how @code{revert-buffer} does its work by setting
-the variables described in the rest of this section.
+Можно настроить, как @code{revert-buffer} будет выполнять свою работу,
+установив переменные, описанные в оставшейся части этого раздела.
 
 @defopt revert-without-query
-This variable holds a list of files that should be reverted without
-query.  The value is a list of regular expressions.  If the visited file
-name matches one of these regular expressions, and the file has changed
-on disk but the buffer is not modified, then @code{revert-buffer}
-reverts the file without asking the user for confirmation.
+Эта переменная содержит список файлов, которые следует восстановить без
+запроса.  Значение - это список регулярных выражений.  Если имя посещенного
+файла совпадает с одним из этих регулярных выражений, и файл был изменен на
+диске, но буфер не изменен, то @code{revert-buffer} возвращает файл, не
+запрашивая подтверждения у пользователя.
 @end defopt
 
-  Some major modes customize @code{revert-buffer} by making
-buffer-local bindings for these variables:
+  Некоторые основные режимы настраивают @code{revert-buffer}, создавая
+локальные привязки к буферу для этих переменных:
 
 @defvar revert-buffer-function
 @anchor{Definition of revert-buffer-function}
-The value of this variable is the function to use to revert this
-buffer.  It should be a function with two optional
-arguments to do the work of reverting.  The two optional arguments,
-@var{ignore-auto} and @var{noconfirm}, are the arguments that
-@code{revert-buffer} received.
+Значение этой переменной - это функция, которая используется для
+восстановления этого буфера.  Это должна быть функция с двумя
+необязательными аргументами, выполняющая работу по возврату.  Два
+необязательных аргумента @var{ignore-auto} и @var{noconfirm} - это
+аргументы, полученные @code{revert-buffer}.
 
-Modes such as Dired mode, in which the text being edited does not
-consist of a file's contents but can be regenerated in some other
-fashion, can give this variable a buffer-local value that is a special
-function to regenerate the contents.
+Такие режимы, как режим Dired, в котором редактируемый текст не состоит из
+содержимого файла, а может быть регенерирован каким-либо другим способом,
+могут дать этой переменной локальное в буфере значение, которое является
+специальной функцией для восстановления содержимого.
 @end defvar
 
 @defvar revert-buffer-insert-file-contents-function
-The value of this variable specifies the function to use to
-insert the updated contents when reverting this buffer.  The function
-receives two arguments: first the file name to use; second, @code{t} if
-the user has asked to read the auto-save file.
+Значение этой переменной указывает функцию, которая будет использоваться для
+вставки обновленного содержимого при возврате этого буфера.  Функция
+получает два аргумента: первый - имя используемого файла; второе - @code{t},
+если пользователь попросил прочитать файл автосохранения.
 
-The reason for a mode to change this variable instead of
-@code{revert-buffer-function} is to avoid duplicating or replacing the
-rest of what @code{revert-buffer} does: asking for confirmation,
-clearing the undo list, deciding the proper major mode, and running the
-hooks listed below.
+Причина, по которой режим изменяет эту переменную вместо
+@code{revert-buffer-function}, заключается в том, чтобы избежать
+дублирования или замены остальной части того, что делает
+@code{revert-buffer}: запрос подтверждения, очистка списка отмены, выбор
+правильного основного режима и запуск перехватчиков, перечисленных ниже.
 @end defvar
 
 @defvar before-revert-hook
-This normal hook is run by the default @code{revert-buffer-function}
-before inserting the modified contents.  A custom @code{revert-buffer-function}
-may or may not run this hook.
+Этот нормальный обработчик запускается @code{revert-buffer-function} по
+умолчанию перед вставкой измененного содержимого.  Пользовательский
+@code{revert-buffer-function} может или не может запускать эту ловушку.
 @end defvar
 
 @defvar after-revert-hook
-This normal hook is run by the default @code{revert-buffer-function}
-after inserting the modified contents.  A custom @code{revert-buffer-function}
-may or may not run this hook.
+Эта обычная ловушка запускается @code{revert-buffer-function} по умолчанию
+после вставки измененного содержимого.  Пользовательская
+@code{revert-buffer-function} может или не может запускать эту ловушку.
 @end defvar
 
-Emacs can revert buffers automatically.  It does that by default for
-buffers visiting files.  The following describes how to add support
-for auto-reverting new types of buffers.
+Emacs может автоматически восстанавливать буферы.  Он делает это по
+умолчанию для буферов, посещающих файлы.  Ниже описано, как добавить
+поддержку автоматического возврата новых типов буферов.
 
-First, such buffers must have a suitable @code{revert-buffer-function}
-and @code{buffer-stale-function} defined.
+Во-первых, для таких буферов должны быть определены подходящие
+@code{revert-buffer-function} и @code{buffer-stale-function}.
 
 @defvar buffer-stale-function
-The value of this variable specifies a function to call to check
-whether a buffer needs reverting.  The default value only handles
-buffers that are visiting files, by checking their modification time.
-Buffers that are not visiting files require a custom function of one
-optional argument @var{noconfirm}.  The function should return
-non-@code{nil} if the buffer should be reverted.  The buffer is
-current when this function is called.
+Значение этой переменной указывает функцию, которую нужно вызвать, чтобы
+проверить, требуется ли возврат буфера.  Значение по умолчанию обрабатывает
+только буферы, которые обращаются к файлам, проверяя время их изменения.
+Для буферов, которые не обращаются к файлам, требуется настраиваемая функция
+одного необязательного аргумента @var{noconfirm}.  Функция должна вернуть
+не-@code{nil}, если буфер должен быть восстановлен.  Буфер является текущим
+при вызове этой функции.
 
-While this function is mainly intended for use in auto-reverting, it
-could be used for other purposes as well.  For instance, if
-auto-reverting is not enabled, it could be used to warn the user that
-the buffer needs reverting.  The idea behind the @var{noconfirm}
-argument is that it should be @code{t} if the buffer is going to be
-reverted without asking the user and @code{nil} if the function is
-just going to be used to warn the user that the buffer is out of date.
-In particular, for use in auto-reverting, @var{noconfirm} is @code{t}.
-If the function is only going to be used for auto-reverting, you can
-ignore the @var{noconfirm} argument.
+Хотя эта функция в основном предназначена для использования при
+автоматическом возврате, ее также можно использовать для других целей.
+Например, если автоматический возврат не включен, её можно использовать,
+чтобы предупредить пользователя о необходимости возврата к буферу.  Идея
+аргумента @var{noconfirm} состоит в том, что он должен быть @code{t}, если
+буфер будет возвращен без запроса пользователя, и @code{nil}, если функция
+будет использоваться только для предупреждения пользователя о том, что буфер
+устарел.  В частности, для использования при автоматическом возврате
+@var{noconfirm} - это @code{t}.  Если функция будет использоваться только
+для автоматического возврата, можно игнорировать аргумент @var{noconfirm}.
 
-If you just want to automatically auto-revert every
-@code{auto-revert-interval} seconds (like the Buffer Menu), use:
+Если просто нужно автоматически возвращаться каждые
+@code{auto-revert-interval} секунд (как в меню буфера), использовать:
 
 @example
 (setq-local buffer-stale-function
@@ -811,44 +831,46 @@ If you just want to automatically auto-revert every
 @end example
 
 @noindent
-in the buffer's mode function.
+в функции режима буфера.
 
-The special return value @samp{fast} tells the caller that the need
-for reverting was not checked, but that reverting the buffer is fast.
-It also tells Auto Revert not to print any revert messages, even if
-@code{auto-revert-verbose} is non-@code{nil}.  This is important, as
-getting revert messages every @code{auto-revert-interval} seconds can
-be very annoying.  The information provided by this return value could
-also be useful if the function is consulted for purposes other than
-auto-reverting.
+Специальное возвращаемое значение @samp{fast} сообщает вызывающему, что
+необходимость возврата не проверялась, но что возврат буфера выполняется
+быстро.  Оно также сообщает Auto Revert не печатать никаких сообщений
+возврата, даже если @code{auto-revert-verbose} равен не-@code{nil}.  Это
+важно, так как получение сообщений об отмене каждые
+@code{auto-revert-interval} секунды может быть очень раздражающим.
+Информация, предоставленная этим возвращаемым значением, также может быть
+полезна, если функция используется для целей, отличных от автоматического
+возврата.
 @end defvar
 
-Once the buffer has a suitable @code{revert-buffer-function} and
-@code{buffer-stale-function}, several problems usually remain.
+Если в буфере есть подходящие @code{revert-buffer-function} и
+@code{buffer-stale-function}, обычно остается несколько проблем.
 
-The buffer will only auto-revert if it is marked unmodified.  Hence,
-you will have to make sure that various functions mark the buffer
-modified if and only if either the buffer contains information that
-might be lost by reverting, or there is reason to believe that the user
-might be inconvenienced by auto-reverting, because he is actively
-working on the buffer.  The user can always override this by manually
-adjusting the modified status of the buffer.  To support this, calling
-the @code{revert-buffer-function} on a buffer that is marked
-unmodified should always keep the buffer marked unmodified.
+Буфер будет автоматически возвращаться, только если он помечен как
+неизмененный.  Следовательно, нужно будет убедиться, что различные функции
+помечают буфер измененным тогда и только тогда, когда либо буфер содержит
+информацию, которая может быть потеряна при возврате, либо есть основания
+полагать, что пользователю может быть неудобен автоматический возврат,
+потому что он активно работает над буфером.  Пользователь всегда может
+отменить это, вручную настроив измененный статус буфера.  Чтобы поддерживать
+это, вызов @code{revert-buffer-function} для буфера, помеченного как
+неизмененный, всегда должен сохранять буфер, помеченный как неизмененный.
 
-It is important to assure that point does not continuously jump around
-as a consequence of auto-reverting.  Of course, moving point might be
-inevitable if the buffer radically changes.
+Важно убедиться, что точка не будет постоянно прыгать из-за автоматического
+возврата.  Конечно, перемещение точки может быть неизбежно, если буфер
+радикально изменится.
 
-You should make sure that the @code{revert-buffer-function} does not
-print messages that unnecessarily duplicate Auto Revert's own messages,
-displayed if @code{auto-revert-verbose} is @code{t}, and effectively
-override a @code{nil} value for @code{auto-revert-verbose}.  Hence,
-adapting a mode for auto-reverting often involves getting rid of such
-messages.  This is especially important for buffers that automatically
-revert every @code{auto-revert-interval} seconds.
+Потребуется убедиться, что @code{revert-buffer-function} не печатает
+сообщения, которые без необходимости дублируют собственные сообщения
+Auto Revert, отображаемые, если @code{auto-revert-verbose} имеет значение
+@code{t}, и эффективно заменяют значение @code{nil} для
+@code{auto-revert-verbose}.  Следовательно, адаптация режима автоматического
+возврата часто включает в себя избавление от таких сообщений.  Это особенно
+важно для буферов, которые автоматически возвращаются каждые
+@code{auto-revert-interval} секунд.
 
-If the new auto-reverting is part of Emacs, you should mention it
-in the documentation string of @code{global-auto-revert-non-file-buffers}.
+Если новый автоматический возврат является частью Emacs, нужно упомянуть это
+в строке документации @code{global-auto-revert-non-file-buffers}.
 
-Similarly, you should document the additions in the Emacs manual.
+Точно так же потребуется задокументировать дополнения в руководстве Emacs.
