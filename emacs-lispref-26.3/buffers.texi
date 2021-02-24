@@ -4,99 +4,100 @@
 @c Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Buffers
-@chapter Buffers
+@chapter Буферы
 @cindex buffer
 
-  A @dfn{buffer} is a Lisp object containing text to be edited.  Buffers
-are used to hold the contents of files that are being visited; there may
-also be buffers that are not visiting files.  While several buffers may
-exist at one time, only one buffer is designated the @dfn{current
-buffer} at any time.  Most editing commands act on the contents of the
-current buffer.  Each buffer, including the current buffer, may or may
-not be displayed in any windows.
+  @dfn{Буфер} - объект Lisp, содержащий текст для редактирования.  Буферы
+используются для хранения содержимого посещаемых файлов; также могут быть
+буферы, которые не обращаются к файлам.  Хотя одновременно может
+существовать несколько буферов, только один буфер обозначается как
+@dfn{текущий буфер} в любой момент.  Большинство команд редактирования
+воздействуют на содержимое текущего буфера.  Каждый буфер, включая текущий
+буфер, может отображаться или не отображаться в любых окнах.
 
 @menu
-* Buffer Basics::       What is a buffer?
-* Current Buffer::      Designating a buffer as current
-                          so that primitives will access its contents.
-* Buffer Names::        Accessing and changing buffer names.
-* Buffer File Name::    The buffer file name indicates which file is visited.
-* Buffer Modification:: A buffer is @dfn{modified} if it needs to be saved.
-* Modification Time::   Determining whether the visited file was changed
-                         behind Emacs's back.
-* Read Only Buffers::   Modifying text is not allowed in a read-only buffer.
-* Buffer List::         How to look at all the existing buffers.
-* Creating Buffers::    Functions that create buffers.
-* Killing Buffers::     Buffers exist until explicitly killed.
-* Indirect Buffers::    An indirect buffer shares text with some other buffer.
-* Swapping Text::       Swapping text between two buffers.
-* Buffer Gap::          The gap in the buffer.
+* Buffer Basics::       Что такое буфер?
+* Current Buffer::      Назначение буфера текущим, чтобы примитивы имели
+                           доступ к его содержимому.
+* Buffer Names::        Доступ и изменение имен буферов.
+* Buffer File Name::    Имя файла буфера указывает, какой файл посещается.
+* Buffer Modification:: Буфер - @dfn{модифицированный}, если его нужно
+                           сохранить.
+* Modification Time::   Определение того, был ли изменен посещенный файл
+                           за спиной Emacs.
+* Read Only Buffers::   Изменение текста в буфере только для чтения
+                           запрещено.
+* Buffer List::         Как посмотреть все существующие буферы.
+* Creating Buffers::    Функции, создающие буферы.
+* Killing Buffers::     Буферы существуют до тех пор, пока явно не убиты.
+* Indirect Buffers::    Косвенный буфер разделяет текст с другим буфером.
+* Swapping Text::       Обмен текста между двумя буферами.
+* Buffer Gap::          Разрыв в буфере.
 @end menu
 
 @node Buffer Basics
-@section Buffer Basics
+@section Буфер Основы
 
 @ifnottex
-  A @dfn{buffer} is a Lisp object containing text to be edited.  Buffers
-are used to hold the contents of files that are being visited; there may
-also be buffers that are not visiting files.  Although several buffers
-normally exist, only one buffer is designated the @dfn{current
-buffer} at any time.  Most editing commands act on the contents of the
-current buffer.  Each buffer, including the current buffer, may or may
-not be displayed in any windows.
+  @dfn{Буфер} - объект Lisp, содержащий текст для редактирования.  Буферы
+используются для хранения содержимого посещаемых файлов; также могут быть
+буферы, которые не обращаются к файлам.  Хотя обычно существует несколько
+буферов, только один буфер обозначается как @dfn{текущий буфер} в любое
+время.  Большинство команд редактирования воздействуют на содержимое
+текущего буфера.  Каждый буфер, включая текущий буфер, может отображаться
+или не отображаться в любых окнах.
 @end ifnottex
 
-  Buffers in Emacs editing are objects that have distinct names and hold
-text that can be edited.  Buffers appear to Lisp programs as a special
-data type.  You can think of the contents of a buffer as a string that
-you can extend; insertions and deletions may occur in any part of the
-buffer.  @xref{Text}.
+  Буферы при редактировании Emacs - это объекты, которые имеют разные имена
+и содержат текст, который можно редактировать.  Для программ Lisp буферы
+представляют собой особый тип данных.  Можно думать о содержимом буфера как
+о строке, которую можно расширить; вставки и удаления могут происходить в
+любой части буфера.  @xref{Text}.
 
-  A Lisp buffer object contains numerous pieces of information.  Some of
-this information is directly accessible to the programmer through
-variables, while other information is accessible only through
-special-purpose functions.  For example, the visited file name is
-directly accessible through a variable, while the value of point is
-accessible only through a primitive function.
+  Объект-буфер Lisp содержит большое количество информации.  Часть этой
+информации напрямую доступна программисту через переменные, в то время как
+другая информация доступна только через специальные функции.  Например, имя
+посещенного файла доступно напрямую через переменную, а значение точки
+доступно только через примитивную функцию.
 
-  Buffer-specific information that is directly accessible is stored in
-@dfn{buffer-local} variable bindings, which are variable values that are
-effective only in a particular buffer.  This feature allows each buffer
-to override the values of certain variables.  Most major modes override
-variables such as @code{fill-column} or @code{comment-column} in this
-way.  For more information about buffer-local variables and functions
-related to them, see @ref{Buffer-Local Variables}.
+  Информация о конкретном буфере, доступная напрямую, хранится в привязках
+переменных @dfn{локального буфера}, которые представляют собой значения
+переменных, действующие только в определенном буфере.  Эта функция позволяет
+каждому буферу переопределять значения определенных переменных.  Таким
+образом, большинство основных режимов переопределяют такие переменные, как
+@code{fill-column} или @code{comment-column}.  Дополнительные сведения о
+локальных переменных буфера и связанных с ними функциях, смотреть
+@ref{Buffer-Local Variables}.
 
-  For functions and variables related to visiting files in buffers, see
-@ref{Visiting Files} and @ref{Saving Buffers}.  For functions and
-variables related to the display of buffers in windows, see
+  Для функций и переменных, связанных с посещением файлов в буферах,
+смотреть @ref{Visiting Files} и @ref{Saving Buffers}.  Для функций и
+переменных, связанных с отображением буферов в окнах, смотреть
 @ref{Buffers and Windows}.
 
 @defun bufferp object
-This function returns @code{t} if @var{object} is a buffer,
-@code{nil} otherwise.
+Функция возвращает @code{t}, если @var{object} - буфер, и @code{nil} в
+противном случае.
 @end defun
 
 @node Current Buffer
-@section The Current Buffer
+@section The Текущий Буфер
 @cindex selecting a buffer
 @cindex changing to another buffer
 @cindex current buffer
 
-  There are, in general, many buffers in an Emacs session.  At any
-time, one of them is designated the @dfn{current buffer}---the buffer
-in which most editing takes place.  Most of the primitives for
-examining or changing text operate implicitly on the current buffer
-(@pxref{Text}).
+  В общем, в сеансе Emacs есть много буферов. В любой момент один из них
+обозначается как @dfn{текущий буфер} - буфер, в котором происходит большая
+часть редактирования.  Большинство примитивов для проверки или изменения
+текста неявно работают с текущим буфером (@pxref{Text}).
 
-  Normally, the buffer displayed in the selected window is the current
-buffer, but this is not always so: a Lisp program can temporarily
-designate any buffer as current in order to operate on its contents,
-without changing what is displayed on the screen.  The most basic
-function for designating a current buffer is @code{set-buffer}.
+  Обычно буфер, отображаемый в выбранном окне, является текущим буфером, но
+это не всегда так: программа Lisp может временно назначить любой буфер
+текущим, чтобы работать с его содержимым, не изменяя то, что отображается на
+экране.  Самая основная функция для обозначения текущего буфера -
+@code{set-buffer}.
 
 @defun current-buffer
-This function returns the current buffer.
+Эта функция возвращает текущий буфер.
 
 @example
 @group
@@ -107,40 +108,39 @@ This function returns the current buffer.
 @end defun
 
 @defun set-buffer buffer-or-name
-This function makes @var{buffer-or-name} the current buffer.
-@var{buffer-or-name} must be an existing buffer or the name of an
-existing buffer.  The return value is the buffer made current.
+Aункция делает @var{buffer-or-name} текущим буфером.  @var{buffer-or-name}
+должен быть существующим буфером или именем существующего буфера.
+Возвращаемое значение - текущий буфер.
 
-This function does not display the buffer in any window, so the user
-cannot necessarily see the buffer.  But Lisp programs will now operate
-on it.
+Функция не отображает буфер ни в каком окне, поэтому пользователь не
+обязательно может видеть буфер.  Но теперь программы на Lisp будут работать
+с ним.
 @end defun
 
-  When an editing command returns to the editor command loop, Emacs
-automatically calls @code{set-buffer} on the buffer shown in the
-selected window.  This is to prevent confusion: it ensures that the
-buffer that the cursor is in, when Emacs reads a command, is the
-buffer to which that command applies (@pxref{Command Loop}).  Thus,
-you should not use @code{set-buffer} to switch visibly to a different
-buffer; for that, use the functions described in @ref{Switching
-Buffers}.
+  Когда команда редактирования возвращается в цикл команд редактора, Emacs
+автоматически вызывает @code{set-buffer} для буфера, показанного в выбранном
+окне.  Это сделано для предотвращения путаницы: это гарантирует, что буфер,
+в котором находится курсор, когда Emacs читает команду, является буфером, к
+которому эта команда применяет (@pxref{Command Loop}).  Таким образом, не
+требуется использовать @code{set-buffer} для явного переключения на другой
+буфер; для этого воспользоваться функциями, описанными в
+@ref{Switching Buffers}.
 
-  When writing a Lisp function, do @emph{not} rely on this behavior of
-the command loop to restore the current buffer after an operation.
-Editing commands can also be called as Lisp functions by other
-programs, not just from the command loop; it is convenient for the
-caller if the subroutine does not change which buffer is current
-(unless, of course, that is the subroutine's purpose).
+  При написании функции на Lisp @emph{не} полагаются на восстановления
+текущего буфера после операции командным циклом.  Команды редактирования
+также могут вызываться как функции Lisp другими программами, а не только из
+цикла команд; для вызывающей стороны удобно, если подпрограмма не меняет
+текущий буфер (если, конечно, это не является целью подпрограммы).
 
-  To operate temporarily on another buffer, put the @code{set-buffer}
-within a @code{save-current-buffer} form.  Here, as an example, is a
-simplified version of the command @code{append-to-buffer}:
+  Чтобы временно работать с другим буфером, поместить @code{set-buffer} в
+форму @code{save-current-buffer}.  Вот, например, упрощенная версия команды
+@code{append-to-buffer}:
 
 @example
 @group
 (defun append-to-buffer (buffer start end)
-  "Append the text of the region to BUFFER."
-  (interactive "BAppend to buffer: \nr")
+  "Добавьте текст региона в BUFFER."
+  (interactive "BДобавить в буфер: \nr")
   (let ((oldbuf (current-buffer)))
     (save-current-buffer
       (set-buffer (get-buffer-create buffer))
@@ -149,41 +149,41 @@ simplified version of the command @code{append-to-buffer}:
 @end example
 
 @noindent
-Here, we bind a local variable to record the current buffer, and then
-@code{save-current-buffer} arranges to make it current again later.
-Next, @code{set-buffer} makes the specified buffer current, and
-@code{insert-buffer-substring} copies the string from the original
-buffer to the specified (and now current) buffer.
+Здесь привязывается локальная переменная для записи текущего буфера, а затем
+@code{save-current-buffer} упорядочивает, чтобы сделать его снова текущим
+позже.  Затем @code{set-buffer} делает указанный буфер текущим, а
+@code{insert-buffer-substring} копирует строку из исходного буфера в
+указанный (а теперь и текущий) буфер.
 
-  Alternatively, we can use the @code{with-current-buffer} macro:
+  В качестве альтернативы можно использовать макрос
+@code{with-current-buffer}:
 
 @example
 @group
 (defun append-to-buffer (buffer start end)
-  "Append the text of the region to BUFFER."
-  (interactive "BAppend to buffer: \nr")
+  "Добавляем текст региона в BUFFER."
+  (interactive "BДобавить в буфер: \nr")
   (let ((oldbuf (current-buffer)))
     (with-current-buffer (get-buffer-create buffer)
       (insert-buffer-substring oldbuf start end))))
 @end group
 @end example
 
-  In either case, if the buffer appended to happens to be displayed in
-some window, the next redisplay will show how its text has changed.
-If it is not displayed in any window, you will not see the change
-immediately on the screen.  The command causes the buffer to become
-current temporarily, but does not cause it to be displayed.
+  В любом случае, если добавленный буфер отображается в каком-либо окне,
+следующее повторное отображение покажет, как изменился его текст.  Если он
+не отображается ни в одном окне, увидеть изменения сразу на экране.  Команда
+заставляет буфер временно становиться текущим, но не отображает его.
 
-  If you make local bindings (with @code{let} or function arguments)
-for a variable that may also have buffer-local bindings, make sure
-that the same buffer is current at the beginning and at the end of the
-local binding's scope.  Otherwise you might bind it in one buffer and
-unbind it in another!
+  Если выполнить локальные привязки (с @code{let} или аргументами функции)
+для переменной, которая также может иметь привязки к локальному буферу,
+убедиться, что тот же буфер является текущим в начале и в конце области
+локальной привязки.  В противном случае можно связать его в одном буфере и
+отвязать в другом!
 
-  Do not rely on using @code{set-buffer} to change the current buffer
-back, because that won't do the job if a quit happens while the wrong
-buffer is current.  For instance, in the previous example, it would
-have been wrong to do this:
+  Не полагаться на использование @code{set-buffer} для обратного изменения
+текущего буфера, потому что это не сработает, если выход произойдет, когда
+текущий буфер неверный.  Например, в предыдущем примере это было бы
+неправильно:
 
 @example
 @group
@@ -195,81 +195,80 @@ have been wrong to do this:
 @end example
 
 @noindent
-Using @code{save-current-buffer} or @code{with-current-buffer}, as we
-did, correctly handles quitting, errors, and @code{throw}, as well as
-ordinary evaluation.
+Использование @code{save-current-buffer} или @code{with-current-buffer}, как
+и здеся, корректно обрабатывает выход, ошибки и @code{throw}, а также
+обычную оценку.
 
 @defspec save-current-buffer body@dots{}
-The @code{save-current-buffer} special form saves the identity of the
-current buffer, evaluates the @var{body} forms, and finally restores
-that buffer as current.  The return value is the value of the last
-form in @var{body}.  The current buffer is restored even in case of an
-abnormal exit via @code{throw} or error (@pxref{Nonlocal Exits}).
+Специальная форма @code{save-current-buffer} сохраняет идентификатор
+текущего буфера, оценивает формы @var{body} и, наконец, восстанавливает этот
+буфер как текущий.  Возвращаемое значение - это значение последней формы в
+теле @var{body}.  Текущий буфер восстанавливается даже при аварийном выходе
+через @code{throw} или ошибку (@pxref{Nonlocal Exits}).
 
-If the buffer that used to be current has been killed by the time of
-exit from @code{save-current-buffer}, then it is not made current again,
-of course.  Instead, whichever buffer was current just before exit
-remains current.
+Если буфер, который раньше был текущим, был уничтожен к моменту выхода из
+@code{save-current-buffer}, то, конечно, он не станет снова текущим.  Вместо
+этого, тот буфер, который был текущим непосредственно перед выходом,
+остается текущим.
 @end defspec
 
 @defmac with-current-buffer buffer-or-name body@dots{}
-The @code{with-current-buffer} macro saves the identity of the current
-buffer, makes @var{buffer-or-name} current, evaluates the @var{body}
-forms, and finally restores the current buffer.  @var{buffer-or-name}
-must specify an existing buffer or the name of an existing buffer.
+Макрос @code{with-current-buffer} сохраняет идентификатор текущего буфера,
+делает @var{buffer-or-name} текущим, оценивает формы @var{body} и, наконец,
+восстанавливает текущий буфер.  @var{buffer-or-name} должен указывать
+существующий буфер или имя существующего буфера.
 
-The return value is the value of the last form in @var{body}.  The
-current buffer is restored even in case of an abnormal exit via
-@code{throw} or error (@pxref{Nonlocal Exits}).
+Возвращаемое значение - это значение последней формы в @var{body}.  Текущий
+буфер восстанавливается даже в случае аварийного выхода через @code{throw}
+или ошибку (@pxref{Nonlocal Exits}).
 @end defmac
 
 @defmac with-temp-buffer body@dots{}
 @anchor{Definition of with-temp-buffer}
-The @code{with-temp-buffer} macro evaluates the @var{body} forms
-with a temporary buffer as the current buffer.  It saves the identity of
-the current buffer, creates a temporary buffer and makes it current,
-evaluates the @var{body} forms, and finally restores the previous
-current buffer while killing the temporary buffer.  By default, undo
-information (@pxref{Undo}) is not recorded in the buffer created by
-this macro (but @var{body} can enable that, if needed).
+Макрос @code{with-temp-buffer} оценивает формы @var{body} с временным
+буфером в качестве текущего буфера.  Cохраняет идентификатор текущего
+буфера, создает временный буфер и делает его текущим, оценивает формы
+@var{body} и, наконец, восстанавливает предыдущий текущий буфер, уничтожая
+временный буфер.  По умолчанию информация об отмене (@pxref{Undo}) не
+записывается в буфер, созданный этим макросом (но @var{body} может включить
+это при необходимости).
 
-The return value is the value of the last form in @var{body}.  You can
-return the contents of the temporary buffer by using
-@code{(buffer-string)} as the last form.
+Возвращаемое значение - это значение последней формы в @var{body}.  Можно
+вернуть содержимое временного буфера, используя @code{(buffer-string)} в
+качестве последней формы.
 
-The current buffer is restored even in case of an abnormal exit via
-@code{throw} or error (@pxref{Nonlocal Exits}).
+Текущий буфер восстанавливается даже в случае аварийного выхода через
+@code{throw} или ошибки (@pxref{Nonlocal Exits}).
 
-See also @code{with-temp-file} in @ref{Definition of with-temp-file,,
-Writing to Files}.
+Смотреть также @code{with-temp-file} в
+@ref{Definition of with-temp-file,,Writing to Files}.
 @end defmac
 
 @node Buffer Names
-@section Buffer Names
+@section Имена Буферов
 @cindex buffer names
 
-  Each buffer has a unique name, which is a string.  Many of the
-functions that work on buffers accept either a buffer or a buffer name
-as an argument.  Any argument called @var{buffer-or-name} is of this
-sort, and an error is signaled if it is neither a string nor a buffer.
-Any argument called @var{buffer} must be an actual buffer
-object, not a name.
+  У каждого буфера есть уникальное имя, которое представляет собой строку.
+Многие функции, работающие с буферами, принимают в качестве аргумента либо
+буфер, либо имя буфера.  Любой аргумент с именем @var{buffer-or-name}
+относится к этому типу, и выдается сигнал об ошибке, если он не является ни
+строкой, ни буфером.  Любой аргумент с именем @var{buffer} должен быть
+фактическим буферным объектом, а не именем.
 
 @cindex hidden buffers
 @cindex buffers without undo information
-  Buffers that are ephemeral and generally uninteresting to the user
-have names starting with a space, so that the @code{list-buffers} and
-@code{buffer-menu} commands don't mention them (but if such a buffer
-visits a file, it @strong{is} mentioned).  A name starting with
-space also initially disables recording undo information; see
-@ref{Undo}.
+  Эфемерные буферы, которые обычно не интересны пользователю, имеют имена,
+начинающиеся с пробела, поэтому команды @code{list-buffers} и
+@code{buffer-menu} не упоминают их (но если такой буфер посещает файл, он
+упоминает @strong{это}).  Имя, начинающееся с пробела, также изначально
+отключает запись информации об отмене; смотреть @ref{Undo}.
 
 @defun buffer-name &optional buffer
-This function returns the name of @var{buffer} as a string.
-@var{buffer} defaults to the current buffer.
+Функция возвращает имя @var{buffer} в виде строки.  @var{buffer} по
+умолчанию использует текущий буфер.
 
-If @code{buffer-name} returns @code{nil}, it means that @var{buffer}
-has been killed.  @xref{Killing Buffers}.
+Если @code{buffer-name} возвращает @code{nil}, это означает, что
+@var{buffer} убит.  @xref{Killing Buffers}.
 
 @example
 @group
@@ -297,25 +296,25 @@ foo
 @end defun
 
 @deffn Command rename-buffer newname &optional unique
-This function renames the current buffer to @var{newname}.  An error
-is signaled if @var{newname} is not a string.
+Функция переименовывает текущий буфер в @var{newname}.  Выдается сообщение
+об ошибке, если @var{newname} не является строкой.
 
 @c Emacs 19 feature
-Ordinarily, @code{rename-buffer} signals an error if @var{newname} is
-already in use.  However, if @var{unique} is non-@code{nil}, it modifies
-@var{newname} to make a name that is not in use.  Interactively, you can
-make @var{unique} non-@code{nil} with a numeric prefix argument.
-(This is how the command @code{rename-uniquely} is implemented.)
+Обычно @code{rename-buffer} сигнализирует об ошибке, если @var{newname} уже
+используется.  Однако, если @var{unique} равен не-@code{nil}, он изменяет
+@var{newname}, чтобы получить имя, которое не используется.  В интерактивном
+режиме можно сделать @var{unique} не-@code{nil} с числовым префиксом
+аргумента.  (Так реализована команда @code{rename-uniquely}.)
 
-This function returns the name actually given to the buffer.
+Эта функция возвращает имя, фактически присвоенное буферу.
 @end deffn
 
 @defun get-buffer buffer-or-name
-This function returns the buffer specified by @var{buffer-or-name}.
-If @var{buffer-or-name} is a string and there is no buffer with that
-name, the value is @code{nil}.  If @var{buffer-or-name} is a buffer, it
-is returned as given; that is not very useful, so the argument is usually
-a name.  For example:
+Функция возвращает буфер, указанный в @var{buffer-or-name}.  Если
+@var{buffer-or-name} является строкой и буфера с таким именем не существует,
+используется значение @code{nil}.  Если @var{buffer-or-name} является
+буфером, он возвращается как заданный; это не очень полезно, поэтому
+аргументом обычно является имя.  Например:
 
 @example
 @group
@@ -332,23 +331,23 @@ a name.  For example:
 @end group
 @end example
 
-See also the function @code{get-buffer-create} in @ref{Creating Buffers}.
+Смотреть также функцию @code{get-buffer-create} в @ref{Creating Buffers}.
 @end defun
 
 @c Emacs 19 feature
 @defun generate-new-buffer-name starting-name &optional ignore
-This function returns a name that would be unique for a new buffer---but
-does not create the buffer.  It starts with @var{starting-name}, and
-produces a name not currently in use for any buffer by appending a
-number inside of @samp{<@dots{}>}.  It starts at 2 and keeps
-incrementing the number until it is not the name of an existing buffer.
+Функция возвращает имя, которое будет уникальным для нового буфера, но не
+создает буфер.  Начинается с @var{starting-name} и производит имя,
+которое в настоящее время не используется ни для одного буфера, путем
+добавления числа внутри @samp{<@dots{}>}.  Начинается с 2 и продолжает
+увеличивать число, пока оно не перестанет быть именем существующего буфера.
 
-If the optional second argument @var{ignore} is non-@code{nil}, it
-should be a string, a potential buffer name.  It means to consider
-that potential buffer acceptable, if it is tried, even it is the name
-of an existing buffer (which would normally be rejected).  Thus, if
-buffers named @samp{foo}, @samp{foo<2>}, @samp{foo<3>} and
-@samp{foo<4>} exist,
+Если необязательный второй аргумент @var{ignore} - не-@code{nil}, это должна
+быть строка, потенциальное имя буфера.  Это означает, что потенциально
+буфер считается приемлемым, если его создать, даже если это имя
+существующего буфера (который обычно будет отклонено).  Таким образом, если
+буферы с именем @samp{foo}, @samp{foo<2>}, @samp{foo<3>} и @samp{foo<4>}
+существуют,
 
 @example
 (generate-new-buffer-name "foo")
@@ -359,28 +358,27 @@ buffers named @samp{foo}, @samp{foo<2>}, @samp{foo<3>} and
      @result{} "foo<5>"
 @end example
 
-See the related function @code{generate-new-buffer} in @ref{Creating
-Buffers}.
+Смотреть соответствующую функцию @code{generate-new-buffer} в
+@ref{Creating Buffers}.
 @end defun
 
 @node Buffer File Name
-@section Buffer File Name
+@section Имя Файла Буфера
 @cindex visited file
 @cindex buffer file name
 @cindex file name of buffer
 
-  The @dfn{buffer file name} is the name of the file that is visited in
-that buffer.  When a buffer is not visiting a file, its buffer file name
-is @code{nil}.  Most of the time, the buffer name is the same as the
-nondirectory part of the buffer file name, but the buffer file name and
-the buffer name are distinct and can be set independently.
-@xref{Visiting Files}.
+  @dfn{Имя файла буфера} - это имя файла, который просматривается в этом
+буфере.  Когда буфер не обращается к файлу, его имя файла буфера -
+@code{nil}.  В большинстве случаев имя буфера совпадает с не относящейся к
+части имени каталога файла буфера, но имя файла буфера и имя буфера
+различны и могут быть установлены независимо.  @xref{Visiting Files}.
 
 @defun buffer-file-name &optional buffer
-This function returns the absolute file name of the file that
-@var{buffer} is visiting.  If @var{buffer} is not visiting any file,
-@code{buffer-file-name} returns @code{nil}.  If @var{buffer} is not
-supplied, it defaults to the current buffer.
+Функция возвращает абсолютное имя файла, который посещает @var{buffer}.
+Если @var{buffer} не обращается ни к одному файлу, @code{buffer-file-name}
+возвращает @code{nil}.  Если @var{buffer} не указан, по умолчанию
+используется текущий буфер.
 
 @example
 @group
@@ -391,10 +389,9 @@ supplied, it defaults to the current buffer.
 @end defun
 
 @defvar buffer-file-name
-This buffer-local variable contains the name of the file being visited
-in the current buffer, or @code{nil} if it is not visiting a file.  It
-is a permanent local variable, unaffected by
-@code{kill-all-local-variables}.
+Локальная в буфере переменная содержит имя файла, посещаемого в текущем
+буфере, или @code{nil}, если нет обращения к файлу.  Это постоянная
+локальная переменная, на которую @code{kill-all-local-variables} не влияет.
 
 @example
 @group
@@ -403,45 +400,44 @@ buffer-file-name
 @end group
 @end example
 
-It is risky to change this variable's value without doing various other
-things.  Normally it is better to use @code{set-visited-file-name} (see
-below); some of the things done there, such as changing the buffer name,
-are not strictly necessary, but others are essential to avoid confusing
-Emacs.
+Рискованно изменять значение этой переменной, не выполняя других действий.
+Обычно лучше использовать @code{set-visited-file-name} (смотреть ниже);
+некоторые из вещей, которые там выполняются, например, изменение имени
+буфера, не являются строго необходимыми, но другие необходимы, чтобы не
+сбивать Emacs с толку.
 @end defvar
 
 @defvar buffer-file-truename
-This buffer-local variable holds the abbreviated truename of the file
-visited in the current buffer, or @code{nil} if no file is visited.
-It is a permanent local, unaffected by
-@code{kill-all-local-variables}.  @xref{Truenames}, and
+Локальная переменная буфера содержит сокращенное истинное имя файла,
+посещенного в текущем буфере, или @code{nil}, если файл не был посещен.  Это
+постоянный локальный объект, на который не влияет
+@code{kill-all-local-variables}.  @xref{Truenames} и
 @ref{abbreviate-file-name}.
 @end defvar
 
 @defvar buffer-file-number
-This buffer-local variable holds the file number and directory device
-number of the file visited in the current buffer, or @code{nil} if no
-file or a nonexistent file is visited.  It is a permanent local,
-unaffected by @code{kill-all-local-variables}.
+Локальная переменная буфера содержит номер файла и номер устройства
+каталога для файла, посещаемого в текущем буфере, или @code{nil}, если не
+посещается ни один файл или файл несуществует.  Это постоянный локальный
+объект, на который не влияет @code{kill-all-local-variables}.
 
-The value is normally a list of the form @code{(@var{filenum}
-@var{devnum})}.  This pair of numbers uniquely identifies the file among
-all files accessible on the system.  See the function
-@code{file-attributes}, in @ref{File Attributes}, for more information
-about them.
+Значение обычно представляет собой список вида
+@code{(@var{filenum} @var{devnum})}.  Эта пара чисел однозначно
+идентифицирует файл среди всех файлов, доступных в системе.  Смотреть
+функцию @code{file-attributes} в @ref{File Attributes} для получения
+дополнительной информации о них.
 
-If @code{buffer-file-name} is the name of a symbolic link, then both
-numbers refer to the recursive target.
+Если @code{buffer-file-name} - это имя символической ссылки, то оба числа
+относятся к рекурсивной цели.
 @end defvar
 
 @defun get-file-buffer filename
-This function returns the buffer visiting file @var{filename}.  If
-there is no such buffer, it returns @code{nil}.  The argument
-@var{filename}, which must be a string, is expanded (@pxref{File Name
-Expansion}), then compared against the visited file names of all live
-buffers.  Note that the buffer's @code{buffer-file-name} must match
-the expansion of @var{filename} exactly.  This function will not
-recognize other names for the same file.
+Функция возвращает буфер посещения файла @var{filename}.  Если такого буфера
+нет, возвращается @code{nil}.  Аргумент @var{filename}, который должен быть
+строкой, раскрывается в (@pxref{File Name Expansion}), а затем сравнивается
+с именами посещенных файлов всех активных буферов.  Обратить внимание, что
+@code{buffer-file-name} буфера должен точно соответствовать расширению
+@var{filename}.  Эта функция не распознает другие имена для того же файла.
 
 @example
 @group
@@ -450,102 +446,98 @@ recognize other names for the same file.
 @end group
 @end example
 
-In unusual circumstances, there can be more than one buffer visiting
-the same file name.  In such cases, this function returns the first
-such buffer in the buffer list.
+В необычных обстоятельствах одно и то же имя файла может посещать несколько
+буферов.  В таких случаях эта функция возвращает первый такой буфер в списке
+буферов.
 @end defun
 
 @defun find-buffer-visiting filename &optional predicate
-This is like @code{get-file-buffer}, except that it can return any
-buffer visiting the file @emph{possibly under a different name}.  That
-is, the buffer's @code{buffer-file-name} does not need to match the
-expansion of @var{filename} exactly, it only needs to refer to the
-same file.  If @var{predicate} is non-@code{nil}, it should be a
-function of one argument, a buffer visiting @var{filename}.  The
-buffer is only considered a suitable return value if @var{predicate}
-returns non-@code{nil}.  If it can not find a suitable buffer to
-return, @code{find-buffer-visiting} returns @code{nil}.
+Это похоже на @code{get-file-buffer}, за исключением того, что может
+возвращать любой буфер, обращающийся к файлу
+@emph{возможно под другим именем}.  То есть @code{buffer-file-name} буфера
+не обязательно должно точно соответствовать расширению @var{filename}, ему
+нужно только ссылаться на тот же файл.  Если @var{predicate} равен
+не-@code{nil}, это должно быть функцией одного аргумента - буфера,
+обращающегося к @var{filename}.  Буфер считается подходящим возвращаемым
+значением, только если @var{predicate} возвращает не-@code{nil}.  Если не
+удается найти подходящий буфер для возврата, @code{find-buffer-visiting}
+возвращает @code{nil}.
 @end defun
 
 @deffn Command set-visited-file-name filename &optional no-query along-with-file
-If @var{filename} is a non-empty string, this function changes the
-name of the file visited in the current buffer to @var{filename}.  (If the
-buffer had no visited file, this gives it one.)  The @emph{next time}
-the buffer is saved it will go in the newly-specified file.
+Если @var{filename} - непустая строка, эта функция изменяет имя файла,
+посещаемого в текущем буфере, на @var{filename}.  (Если в буфере не было
+посещенного файла, он его получает.)  @emph{В следующий раз} сохранения
+буфера, будет помещен в новый указанный файл.
 
-This command marks the buffer as modified, since it does not (as far
-as Emacs knows) match the contents of @var{filename}, even if it
-matched the former visited file.  It also renames the buffer to
-correspond to the new file name, unless the new name is already in
-use.
+Команда помечает буфер как измененный, так как он (насколько известно Emacs)
+не соответствует содержимому @var{filename}, даже если соответствует
+предыдущему посещенному файлу.  Также переименовывает буфер в соответствии с
+новым именем файла, если новое имя уже не используется.
 
-If @var{filename} is @code{nil} or the empty string, that stands for
-``no visited file''.  In this case, @code{set-visited-file-name} marks
-the buffer as having no visited file, without changing the buffer's
-modified flag.
+Если @var{filename} - это @code{nil} или пустая строка, это обозначает
+``нет посещенного файла''.  В этом случае @code{set-visited-file-name}
+помечает буфер как не имеющий посещенного файла, не изменяя флаг изменения
+буфера.
 
-Normally, this function asks the user for confirmation if there
-already is a buffer visiting @var{filename}.  If @var{no-query} is
-non-@code{nil}, that prevents asking this question.  If there already
-is a buffer visiting @var{filename}, and the user confirms or
-@var{no-query} is non-@code{nil}, this function makes the new
-buffer name unique by appending a number inside of @samp{<@dots{}>} to
-@var{filename}.
+Обычно эта функция запрашивает у пользователя подтверждение, существует ли
+уже буфер, обращающийся к @var{filename}.  Если @var{no-query} равно
+не-@code{nil}, это не позволяет задать этот вопрос.  Если уже есть буфер,
+посещающий @var{filename}, и пользователь подтверждает, что @var{no-query} -
+не-@code{nil}, эта функция делает новое имя буфера уникальным, добавляя
+число внутри @samp{<@dots{}>} к @var{filename}.
 
-If @var{along-with-file} is non-@code{nil}, that means to assume that
-the former visited file has been renamed to @var{filename}.  In this
-case, the command does not change the buffer's modified flag, nor the
-buffer's recorded last file modification time as reported by
-@code{visited-file-modtime} (@pxref{Modification Time}).  If
-@var{along-with-file} is @code{nil}, this function clears the recorded
-last file modification time, after which @code{visited-file-modtime}
-returns zero.
+Если @var{along-with-file} равен не-@code{nil}, это означает, что предыдущий
+посещенный файл был переименован в @var{filename}.  В этом случае команда не
+изменяет ни флаг изменения буфера, ни время последней модификации файла,
+записанное в буфере, как сообщает @code{visited-file-modtime}
+(@pxref{Modification Time}).  Если @var{along-with-file} равен @code{nil},
+эта функция очищает записанное время последней модификации файла, после чего
+@code{visited-file-modtime} возвращает nil.
 
-When the function @code{set-visited-file-name} is called
-interactively, it prompts for @var{filename} in the minibuffer.
+Когда функция @code{set-visited-file-name} вызывается в интерактивном
+режиме, запрашивает @var{filename} в минибуфере.
 @end deffn
 
 @defvar list-buffers-directory
-This buffer-local variable specifies a string to display in a buffer
-listing where the visited file name would go, for buffers that don't
-have a visited file name.  Dired buffers use this variable.
+Эта локальная для буфера переменная определяет строку, отображаемую в списке
+буферов, куда будет помещено имя посещенного файла для буферов, у которых
+нет имени посещенного файла.  Буферы Dired используют эту переменную.
 @end defvar
 
 @node Buffer Modification
-@section Buffer Modification
+@section Модификация Буфера
 @cindex buffer modification
 @cindex modification flag (of buffer)
 
-  Emacs keeps a flag called the @dfn{modified flag} for each buffer, to
-record whether you have changed the text of the buffer.  This flag is
-set to @code{t} whenever you alter the contents of the buffer, and
-cleared to @code{nil} when you save it.  Thus, the flag shows whether
-there are unsaved changes.  The flag value is normally shown in the mode
-line (@pxref{Mode Line Variables}), and controls saving (@pxref{Saving
-Buffers}) and auto-saving (@pxref{Auto-Saving}).
+  Emacs хранит флаг @dfn{флаг модификации} для каждого буфера, чтобы
+записывать, изменился ли текст буфера.  Этот флаг устанавливается в @code{t}
+всякий раз, когда изменяется содержимое буфера, и сбрасывается в @code{nil}
+при его сохранении.  Таким образом, флаг показывает, есть ли несохраненные
+изменения.  Значение флага обычно отображается в строке режима
+(@pxref{Mode Line Variables}) и управляет сохранением
+(@pxref{Saving Buffers}) и автосохранением (@pxref{Auto-Saving}).
 
-  Some Lisp programs set the flag explicitly.  For example, the function
-@code{set-visited-file-name} sets the flag to @code{t}, because the text
-does not match the newly-visited file, even if it is unchanged from the
-file formerly visited.
+  Некоторые программы Lisp устанавливают этот флаг явно.  Например, функция
+@code{set-visited-file-name} устанавливает флаг в @code{t}, потому что
+текст не соответствует вновь посещенному файлу, даже если он не изменился
+по сравнению с файлом, который ранее посещался.
 
-  The functions that modify the contents of buffers are described in
-@ref{Text}.
+  Функции, изменяющие содержимое буферов, описаны в @ref{Text}.
 
 @defun buffer-modified-p &optional buffer
-This function returns @code{t} if the buffer @var{buffer} has been modified
-since it was last read in from a file or saved, or @code{nil}
-otherwise.  If @var{buffer} is not supplied, the current buffer
-is tested.
+Функция возвращает @code{t}, если буфер @var{buffer} был изменен с момента
+последнего считывания из файла или сохранения, или @code{nil} в противном
+случае.  Если @var{buffer} не указан, проверяется текущий буфер.
 @end defun
 
 @defun set-buffer-modified-p flag
-This function marks the current buffer as modified if @var{flag} is
-non-@code{nil}, or as unmodified if the flag is @code{nil}.
+Функция отмечает текущий буфер как измененный, если @var{flag} равен
+не-@code{nil}, или как немодифицированный, если флаг @code{nil}.
 
-Another effect of calling this function is to cause unconditional
-redisplay of the mode line for the current buffer.  In fact, the
-function @code{force-mode-line-update} works by doing this:
+Другой эффект вызова этой функции - вызвать безусловное повторное
+отображение строки режима для текущего буфера.  Фактически, функция
+@code{force-mode-line-update} работает следующим образом:
 
 @example
 @group
@@ -555,270 +547,269 @@ function @code{force-mode-line-update} works by doing this:
 @end defun
 
 @defun restore-buffer-modified-p flag
-Like @code{set-buffer-modified-p}, but does not force redisplay
-of mode lines.
+Подобно @code{set-buffer-modified-p}, но не вызывает повторного отображения
+строк режима.
 @end defun
 
 @deffn Command not-modified &optional arg
-This command marks the current buffer as unmodified, and not needing
-to be saved.  If @var{arg} is non-@code{nil}, it marks the buffer as
-modified, so that it will be saved at the next suitable occasion.
-Interactively, @var{arg} is the prefix argument.
+Команда помечает текущий буфер как немодифицированный и не требующий
+сохранения.  Если @var{arg} равен не-@code{nil}, помечает буфер как
+измененный, чтобы он был сохранен при следующем подходящем случае.  В
+интерактивном режиме @var{arg} - это префиксный аргумент.
 
-Don't use this function in programs, since it prints a message in the
-echo area; use @code{set-buffer-modified-p} (above) instead.
+Не использовать эту функцию в программах, поскольку печатает сообщение в
+эхо-области; использовать вместо неё @code{set-buffer-modified-p}
+(смотреть выше).
 @end deffn
 
 @defun buffer-modified-tick &optional buffer
-This function returns @var{buffer}'s modification-count.  This is a
-counter that increments every time the buffer is modified.  If
-@var{buffer} is @code{nil} (or omitted), the current buffer is used.
-The counter can wrap around occasionally.
+Функция возвращает количество модификаций @var{buffer}.  Это счетчик,
+который увеличивается каждый раз при изменении буфера.  Если @var{buffer}
+равен @code{nil} (или опущен), используется текущий буфер.  Счетчик может
+время от времени обнулятся.
 @end defun
 
 @defun buffer-chars-modified-tick &optional buffer
-This function returns @var{buffer}'s character-change modification-count.
-Changes to text properties leave this counter unchanged; however, each
-time text is inserted or removed from the buffer, the counter is reset
-to the value that would be returned by @code{buffer-modified-tick}.
-By comparing the values returned by two @code{buffer-chars-modified-tick}
-calls, you can tell whether a character change occurred in that buffer
-in between the calls.  If @var{buffer} is @code{nil} (or omitted), the
-current buffer is used.
+Функция возвращает количество модификаций при изменении символа
+@var{buffer}.  При изменении свойств текста этот счетчик остается
+неизменным; однако каждый раз, когда текст вставляется или удаляется из
+буфера, счетчик сбрасывается до значения, которое было бы возвращено
+@code{buffer-modified-tick}.  Сравнивая значения, возвращаемые двумя
+вызовами @code{buffer-chars-modified-tick}, можно определить, произошло ли
+изменение символа в этом буфере между вызовами.  Если @var{buffer} имеет
+значение @code{nil} (или опущено), используется текущий буфер.
 @end defun
 
-Sometimes there's a need for modifying buffer in a way that doesn't
-really change its text, like if only its text properties are changed.
-If your program needs to modify a buffer without triggering any hooks
-and features that react to buffer modifications, use the
-@code{with-silent-modifications} macro.
+Иногда возникает необходимость изменить буфер таким образом, чтобы на самом
+деле его текст не изменялся, например, если изменяются только его свойства
+текста.  Если программе необходимо изменить буфер без запуска каких-либо
+перехватчиков и функций, которые реагируют на изменения буфера,
+использовать макрос @code{with-silent-modifications}.
 
 @defmac with-silent-modifications body@dots{}
-Execute @var{body} pretending it does not modify the buffer.  This
-includes checking whether the buffer's file is locked (@pxref{File
-Locks}), running buffer modification hooks (@pxref{Change Hooks}),
-etc.  Note that if @var{body} actually modifies the buffer text, its
-undo data may become corrupted.
+Выполнить @var{body}, делая вид, что не изменяется буфер.  Это включает в
+себя проверку того, заблокирован ли файл буфера (@pxref{File Locks}),
+выполнение обработчиков изменения буфера (@pxref{Change Hooks}) и так далее.
+Обратить внимание, что если @var{body} действительно изменяет текст буфера,
+его данные отмены могут быть повреждены.
 @end defmac
 
 @node Modification Time
-@section Buffer Modification Time
+@section Время Модификации Буфера
 @cindex comparing file modification time
 @cindex modification time of buffer
 
-  Suppose that you visit a file and make changes in its buffer, and
-meanwhile the file itself is changed on disk.  At this point, saving the
-buffer would overwrite the changes in the file.  Occasionally this may
-be what you want, but usually it would lose valuable information.  Emacs
-therefore checks the file's modification time using the functions
-described below before saving the file.  (@xref{File Attributes},
-for how to examine a file's modification time.)
+  Предположить, посещается файл и вносятся изменения в его буфер, а при этом
+сам файл изменяется на диске.  На этом этапе сохранение буфера перезапишет
+изменения в файле.  Иногда это может быть то, что нужно, но обычно это
+приводит к потере ценной информации.  Поэтому Emacs проверяет время
+модификации файла, используя функции, описанные ниже, перед сохранением
+файла.  (@xref{File Attributes}, как проверить время изменения файла.)
 
 @defun verify-visited-file-modtime &optional buffer
-This function compares what @var{buffer} (by default, the
-current-buffer) has recorded for the modification time of its visited
-file against the actual modification time of the file as recorded by the
-operating system.  The two should be the same unless some other process
-has written the file since Emacs visited or saved it.
+Функция сравнивает то, что @var{buffer} (по умолчанию, текущий-буфер)
+записал для времени модификации посещенного файла, с фактическим временем
+модификации файла, записанным операционной системой.  Должны быть
+одинаковыми, если какой-либо другой процесс не записал файл с тех пор, как
+Emacs посетил или сохранил его.
 
-The function returns @code{t} if the last actual modification time and
-Emacs's recorded modification time are the same, @code{nil} otherwise.
-It also returns @code{t} if the buffer has no recorded last
-modification time, that is if @code{visited-file-modtime} would return
-zero.
+Функция возвращает @code{t}, если фактическое время последней модификации и
+записанное время модификации Emacs совпадают, в противном случае -
+@code{nil}.  Также возвращает @code{t}, если в буфере не записано время
+последней модификации, то есть если @code{visited-file-modtime} вернет nil.
 
-It always returns @code{t} for buffers that are not visiting a file,
-even if @code{visited-file-modtime} returns a non-zero value.  For
-instance, it always returns @code{t} for dired buffers.  It returns
-@code{t} for buffers that are visiting a file that does not exist and
-never existed, but @code{nil} for file-visiting buffers whose file has
-been deleted.
+Всегда возвращает @code{t} для буферов, которые не обращаются к файлу, даже
+если @code{visited-file-modtime} возвращает ненулевое значение.  Например,
+всегда возвращает @code{t} для dired буферов.  Возвращает @code{t} для
+буферов, обращающихся к файлу, который не существует и никогда не
+существовал, но @code{nil} для буферов обращения к файлам, файл которых был
+удален.
 @end defun
 
 @defun clear-visited-file-modtime
-This function clears out the record of the last modification time of
-the file being visited by the current buffer.  As a result, the next
-attempt to save this buffer will not complain of a discrepancy in
-file modification times.
+Функция очищает запись о времени последней модификации файла, который
+посещает текущий буфер.  В результате следующая попытка сохранить этот буфер
+не будет жаловаться на несоответствие во времени модификации файла.
 
-This function is called in @code{set-visited-file-name} and other
-exceptional places where the usual test to avoid overwriting a changed
-file should not be done.
+Функция вызывается в @code{set-visited-file-name} и других исключительных
+местах, где не следует выполнять обычный тест, чтобы избежать перезаписи
+измененного файла.
 @end defun
 
 @defun visited-file-modtime
-This function returns the current buffer's recorded last file
-modification time, as a list of the form @code{(@var{high} @var{low}
-@var{microsec} @var{picosec})}.  (This is the same format that
-@code{file-attributes} uses to return time values; @pxref{File
-Attributes}.)
+Функция возвращает время последней модификации файла, записанное в текущем
+буфере, в виде списка вида
+@code{(@var{high} @var{low} @var{microsec} @var{picosec})}.  (Это тот же
+формат, который @code{file-attributes} использует для возврата значений
+времени; @pxref{File Attributes}.)
 
-If the buffer has no recorded last modification time, this function
-returns zero.  This case occurs, for instance, if the buffer is not
-visiting a file or if the time has been explicitly cleared by
-@code{clear-visited-file-modtime}.  Note, however, that
-@code{visited-file-modtime} returns a list for some non-file buffers
-too.  For instance, in a Dired buffer listing a directory, it returns
-the last modification time of that directory, as recorded by Dired.
+Если в буфере не записано время последней модификации, эта функция
+возвращает nil.  Этот случай возникает, например, если буфер не обращается к
+файлу или если время было явно очищено @code{clear-visited-file-modtime}.
+Однако обратить внимание, что @code{visited-file-modtime} также возвращает
+список для некоторых нефайловых буферов.  Например, в буфере Dired, в
+котором указан каталог, возвращает время последней модификации этого
+каталога, записанное Dired.
 
-If the buffer is visiting a file that doesn't exist, this function
-returns @minus{}1.
+Если буфер обращается к несуществующему файлу, эта функция возвращает
+@minus{}1.
 @end defun
 
 @defun set-visited-file-modtime &optional time
-This function updates the buffer's record of the last modification time
-of the visited file, to the value specified by @var{time} if @var{time}
-is not @code{nil}, and otherwise to the last modification time of the
-visited file.
+Функция обновляет запись буфера о времени последней модификации посещенного
+файла до значения, указанного @var{time}, если @var{time} не является
+@code{nil}, и в противном случае до времени последнего изменения посещенного
+файла.
 
-If @var{time} is neither @code{nil} nor an integer flag returned
-by @code{visited-file-modtime}, it should have the form
-@code{(@var{high} @var{low} @var{microsec} @var{picosec})},
-the format used by @code{current-time} (@pxref{Time of Day}).
+Если @var{time} не является ни @code{nil}, ни целочисленным флагом,
+возвращаемым @code{visited-file-modtime}, должен иметь форму
+@code{(@var{high} @var{low} @var{microsec} @var{picosec})}, формат,
+используемый @code{current-time} (@pxref{Time of Day}).
 
-This function is useful if the buffer was not read from the file
-normally, or if the file itself has been changed for some known benign
-reason.
+Функция полезна, если буфер не читался из файла в обычном режиме или если
+сам файл был изменен по известной неопасной причине.
 @end defun
 
 @defun ask-user-about-supersession-threat filename
-This function is used to ask a user how to proceed after an attempt to
-modify a buffer visiting file @var{filename} when the file is newer
-than the buffer text.  Emacs detects this because the modification
-time of the file on disk is newer than the last save-time and its contents
-have changed.
-This means some other program has probably altered the file.
+Функция используется, чтобы спросить пользователя, как действовать после
+попытки изменить буфер, обращающийся к файлу @var{filename}, когда файл
+новее, чем текст буфера.  Emacs обнаруживает это, потому что время
+модификации файла на диске новее, чем время последнего сохранения, и его
+содержимое изменилось.
+Это означает, что какая-то другая программа, вероятно, изменила файл.
 
 @kindex file-supersession
-Depending on the user's answer, the function may return normally, in
-which case the modification of the buffer proceeds, or it may signal a
-@code{file-supersession} error with data @code{(@var{filename})}, in which
-case the proposed buffer modification is not allowed.
+В зависимости от ответа пользователя функция может нормально возвращаться, и
+в этом случае модификация буфера продолжается, или она может сигнализировать
+об ошибке @code{file-supersession} с данными @code{(@var{filename})}, и в
+этом случае предлагаемая модификация буфера не разрешена.
 
-This function is called automatically by Emacs on the proper
-occasions.  It exists so you can customize Emacs by redefining it.
-See the file @file{userlock.el} for the standard definition.
+Функция автоматически вызывается Emacs в определенных случаях.  Вызывается,
+поэтому можно настроить Emacs, переопределив её.  Стандартное определение
+смотреть ы файле @file{userlock.el}.
 
-See also the file locking mechanism in @ref{File Locks}.
+Смотреть также механизм блокировки файлов в @ref{File Locks}.
 @end defun
 
 @node Read Only Buffers
-@section Read-Only Buffers
+@section Буферы Только для Чтения
 @cindex read-only buffer
 @cindex buffer, read-only
 
-  If a buffer is @dfn{read-only}, then you cannot change its contents,
-although you may change your view of the contents by scrolling and
-narrowing.
+  Если буфер @dfn{только чтение}, то вы не выйдет изменить его содержимое,
+хотя можно изменить вид содержимого, прокручивая и сужая.
 
-  Read-only buffers are used in two kinds of situations:
+  Буферы только для чтения используются в двух ситуациях.:
 
 @itemize @bullet
 @item
-A buffer visiting a write-protected file is normally read-only.
+Буфер, обращающийся к защищенному от записи файлу, обычно доступен только
+для чтения.
 
-Here, the purpose is to inform the user that editing the buffer with the
-aim of saving it in the file may be futile or undesirable.  The user who
-wants to change the buffer text despite this can do so after clearing
-the read-only flag with @kbd{C-x C-q}.
+Здесь цель состоит в том, чтобы сообщить пользователю, что редактирование
+буфера с целью сохранения его в файле может быть бесполезным или
+нежелательным.  Пользователь, который хочет изменить текст буфера, несмотря
+на это, может сделать это после сброса флага только для чтения с помощью
+@kbd{C-x C-q}.
 
 @item
-Modes such as Dired and Rmail make buffers read-only when altering the
-contents with the usual editing commands would probably be a mistake.
+Такие режимы, как Dired и Rmail, делают буферы доступными только для чтения,
+когда изменение содержимого с помощью обычных команд редактирования,
+вероятно, будет ошибкой.
 
-The special commands of these modes bind @code{buffer-read-only} to
-@code{nil} (with @code{let}) or bind @code{inhibit-read-only} to
-@code{t} around the places where they themselves change the text.
+Специальные команды этих режимов связывают @code{buffer-read-only} с
+@code{nil} (с @code{let}) или связывают @code{inhibit-read-only} с @code{t}
+вокруг тех мест, где они сами меняют текст.
 @end itemize
 
 @defvar buffer-read-only
-This buffer-local variable specifies whether the buffer is read-only.
-The buffer is read-only if this variable is non-@code{nil}.  However,
-characters that have the @code{inhibit-read-only} text property can
-still be modified.  @xref{Special Properties, inhibit-read-only}.
+Эта локальная для буфера переменная определяет, доступен ли буфер только для
+чтения.  Буфер доступен только для чтения, если эта переменная -
+не-@code{nil}.  Однако символы с текстовым свойством
+@code{inhibit-read-only} все еще можно изменять.
+@xref{Special Properties, inhibit-read-only}.
 @end defvar
 
 @defvar inhibit-read-only
-If this variable is non-@code{nil}, then read-only buffers and,
-depending on the actual value, some or all read-only characters may be
-modified.  Read-only characters in a buffer are those that have a
-non-@code{nil} @code{read-only} text property.  @xref{Special
-Properties}, for more information about text properties.
+Если эта переменная - не-@code{nil}, то буферы только для чтения и, в
+зависимости от фактического значения, могут быть изменены некоторые или все
+символы только для чтения.  Доступные только для чтения символы в буфере -
+это те, которые имеют текстовое свойство не-@code{nil} @code{read-only}.
+@xref{Special Properties}, для получения дополнительной информации о
+свойствах текста.
 
-If @code{inhibit-read-only} is @code{t}, all @code{read-only} character
-properties have no effect.  If @code{inhibit-read-only} is a list, then
-@code{read-only} character properties have no effect if they are members
-of the list (comparison is done with @code{eq}).
+Если @code{inhibit-read-only} равен @code{t}, все свойства символа
+@code{read-only} не действуют.  Если @code{inhibit-read-only} - это список,
+то свойства символов @code{read-only} не действуют, если они являются
+членами списка (сравнение выполняется с @code{eq}).
 @end defvar
 
 @deffn Command read-only-mode &optional arg
-This is the mode command for Read Only minor mode, a buffer-local
-minor mode.  When the mode is enabled, @code{buffer-read-only} is
-non-@code{nil} in the buffer; when disabled, @code{buffer-read-only}
-is @code{nil} in the buffer.  The calling convention is the same as
-for other minor mode commands (@pxref{Minor Mode Conventions}).
+Команда режима для второстепенного режима только для чтения, второстепенного
+режима локального буфера. Когда режим включен, @code{buffer-read-only} - это
+не-@code{nil} в буфере; когда отключено, @code{buffer-read-only} будет
+@code{nil} в буфере.  Соглашение о вызовах такое же, как и для других команд
+второстепенного режима (@pxref{Minor Mode Conventions}).
 
-This minor mode mainly serves as a wrapper for
-@code{buffer-read-only}; unlike most minor modes, there is no separate
-@code{read-only-mode} variable.  Even when Read Only mode is disabled,
-characters with non-@code{nil} @code{read-only} text properties remain
-read-only.  To temporarily ignore all read-only states, bind
-@code{inhibit-read-only}, as described above.
+Этот второстепенный режим в основном служит оболочкой для
+@code{buffer-read-only}; в отличие от большинства второстепенных режимов
+здесь нет отдельной переменной @code{read-only-mode}.  Даже когда режим
+только для чтения отключен, символы с текстовыми свойствами не-@code{nil}
+@code{read-only} остаются доступными только для чтения.  Чтобы временно
+игнорировать все состояния только для чтения, привязать
+@code{inhibit-read-only}, как описано выше.
 
-When enabling Read Only mode, this mode command also enables View mode
-if the option @code{view-read-only} is non-@code{nil}.  @xref{Misc
-Buffer,,Miscellaneous Buffer Operations, emacs, The GNU Emacs Manual}.
-When disabling Read Only mode, it disables View mode if View mode was
-enabled.
+При включении режима «Только чтение» эта команда режима также включает
+режим просмотра, если параметр @code{view-read-only} равен не-@code{nil}.
+@xref{Misc Buffer,,Miscellaneous Buffer Operations, emacs, The GNU Emacs Manual}.
+При отключении режима «Только чтение» отключает режим просмотра, если режим
+просмотра был включен.
 @end deffn
 
 @defun barf-if-buffer-read-only &optional position
-This function signals a @code{buffer-read-only} error if the current
-buffer is read-only.  If the text at @var{position} (which defaults to
-point) has the @code{inhibit-read-only} text property set, the error
-will not be raised.
+Функция сигнализирует об ошибке @code{buffer-read-only}, если текущий буфер
+доступен только для чтения.  Если для текста в @var{position} (который по
+умолчанию указывает на точку) установлено свойство текста
+@code{inhibit-read-only}, ошибка не возникает.
 
-@xref{Using Interactive}, for another way to signal an error if the
-current buffer is read-only.
+@xref{Using Interactive}, для другого способа сообщить об ошибке, если
+текущий буфер доступен только для чтения.
 @end defun
 
 @node Buffer List
-@section The Buffer List
+@section Список Буферов
 @cindex buffer list
 @cindex listing all buffers
 
-  The @dfn{buffer list} is a list of all live buffers.  The order of the
-buffers in this list is based primarily on how recently each buffer has
-been displayed in a window.  Several functions, notably
-@code{other-buffer}, use this ordering.  A buffer list displayed for the
-user also follows this order.
+  @dfn{Список буферов} - это список всех живых буферов.  Порядок буферов в
+этом списке в первую очередь зависит от того, как давно каждый буфер
+отображался в окне.  Некоторые функции, в частности @code{other-buffer},
+используют этот порядок.  Список буферов, отображаемый для пользователя,
+также следует в этом порядке.
 
-  Creating a buffer adds it to the end of the buffer list, and killing
-a buffer removes it from that list.  A buffer moves to the front of
-this list whenever it is chosen for display in a window
-(@pxref{Switching Buffers}) or a window displaying it is selected
+  Создание буфера добавляет его в конец списка буферов, а уничтожение буфера
+удаляет его из этого списка.  Буфер перемещается в начало этого списка
+всякий раз, когда он выбирается для отображения в окне
+(@pxref{Switching Buffers}) или окно, отображающее его, выбирается
 (@pxref{Selecting Windows}).  A buffer moves to the end of the list
-when it is buried (see @code{bury-buffer}, below).  There are no
-functions available to the Lisp programmer which directly manipulate
-the buffer list.
+when it is buried (смотреть @code{bury-buffer}, ниже).  Программисту на
+Lisp не доступны функции, которые напрямую управляют списком буферов.
 
-  In addition to the fundamental buffer list just described, Emacs
-maintains a local buffer list for each frame, in which the buffers that
-have been displayed (or had their windows selected) in that frame come
-first.  (This order is recorded in the frame's @code{buffer-list} frame
-parameter; see @ref{Buffer Parameters}.)  Buffers never displayed in
-that frame come afterward, ordered according to the fundamental buffer
-list.
+  В дополнение к только что описанному основному списку буферов Emacs
+поддерживает список локальных буферов для каждого кадра, которые были
+отображены (или были выбраны их окна) в этом кадре, идут первыми.  (Этот
+порядок записывается в параметре кадра @code{buffer-list} кадра; смотреть
+@ref{Buffer Parameters}.)  Буферы, никогда не отображаемые в этом кадре,
+поступают позже, упорядоченные в соответствии с основным списком буферов.
 
 @defun buffer-list &optional frame
-This function returns the buffer list, including all buffers, even those
-whose names begin with a space.  The elements are actual buffers, not
-their names.
+Функция возвращает список буферов, включая все буферы, даже те, чьи имена
+начинаются с пробела.  Элементы - это фактические буферы, а не их имена.
 
-If @var{frame} is a frame, this returns @var{frame}'s local buffer list.
-If @var{frame} is @code{nil} or omitted, the fundamental buffer list is
-used: the buffers appear in order of most recent display or selection,
-regardless of which frames they were displayed on.
+Если @var{frame} является фреймом, возвращается список локальных буферов
+@var{frame}.  Если @var{frame} равен @code{nil} или опущен, используется
+основной список буферов: буферы появляются в порядке последнего отображения
+или выбора, независимо от того, в каких кадрах они были отображены.
 
 @example
 @group
@@ -829,8 +820,8 @@ regardless of which frames they were displayed on.
 @end group
 
 @group
-;; @r{Note that the name of the minibuffer}
-;;   @r{begins with a space!}
+;; @r{Обратите внимание, что имя минибуфера}
+;;   @r{ начинается с пробела!}
 (mapcar (function buffer-name) (buffer-list))
     @result{} ("buffers.texi" " *Minibuf-1*"
         "buffer.c" "*Help*" "TAGS")
@@ -838,10 +829,10 @@ regardless of which frames they were displayed on.
 @end example
 @end defun
 
-  The list returned by @code{buffer-list} is constructed specifically;
-it is not an internal Emacs data structure, and modifying it has no
-effect on the order of buffers.  If you want to change the order of
-buffers in the fundamental buffer list, here is an easy way:
+  Список, возвращаемый @code{buffer-list}, создается специально; это не
+внутренняя структура данных Emacs, и ее изменение не влияет на порядок
+буферов.  Если требуется изменить порядок буферов в основном списке буферов,
+вот простой способ:
 
 @example
 (defun reorder-buffer-list (new-list)
@@ -850,127 +841,125 @@ buffers in the fundamental buffer list, here is an easy way:
     (setq new-list (cdr new-list))))
 @end example
 
-  With this method, you can specify any order for the list, but there is
-no danger of losing a buffer or adding something that is not a valid
-live buffer.
+  С помощью этого метода можно указать любой порядок для списка, но нет
+опасности потерять буфер или добавить что-то, что не является допустимым
+оперативным буфером.
 
-  To change the order or value of a specific frame's buffer list, set
-that frame's @code{buffer-list} parameter with
+  Чтобы изменить порядок или значение в списке буферов определенного кадра,
+установить для параметра @code{buffer-list} этого кадра значение
 @code{modify-frame-parameters} (@pxref{Parameter Access}).
 
 @defun other-buffer &optional buffer visible-ok frame
-This function returns the first buffer in the buffer list other than
-@var{buffer}.  Usually, this is the buffer appearing in the most
-recently selected window (in frame @var{frame} or else the selected
-frame, @pxref{Input Focus}), aside from @var{buffer}.  Buffers whose
-names start with a space are not considered at all.
+Функция возвращает первый буфер в списке буферов, кроме @var{buffer}.
+Обычно это буфер, появляющийся в последнем выбранном окне (в кадре
+@var{frame} или в выбранном кадре, @pxref{Input Focus}), помимо
+@var{buffer}.  Буферы, имена которых начинаются с пробела, вообще не
+рассматриваются.
 
-If @var{buffer} is not supplied (or if it is not a live buffer), then
-@code{other-buffer} returns the first buffer in the selected frame's
-local buffer list.  (If @var{frame} is non-@code{nil}, it returns the
-first buffer in @var{frame}'s local buffer list instead.)
+Если @var{buffer} не указан (или если это не активный буфер), то
+@code{other-buffer} возвращает первый буфер в списке локальных буферов
+выбранного фрейма.  (Если @var{frame} равен не-@code{nil}, вместо этого
+возвращается первый буфер в списке локальных буферов @var{frame}.)
 
-If @var{frame} has a non-@code{nil} @code{buffer-predicate} parameter,
-then @code{other-buffer} uses that predicate to decide which buffers to
-consider.  It calls the predicate once for each buffer, and if the value
-is @code{nil}, that buffer is ignored.  @xref{Buffer Parameters}.
+Если @var{frame} имеет параметр не-@code{nil} @code{buffer-predicate}, то
+@code{other-buffer} использует этот предикат, чтобы решить, какие буферы
+рассматривать.  Вызывает предикат один раз для каждого буфера, и если
+значение равно @code{nil}, этот буфер игнорируется.
+@xref{Buffer Parameters}.
 
 @c Emacs 19 feature
-If @var{visible-ok} is @code{nil}, @code{other-buffer} avoids returning
-a buffer visible in any window on any visible frame, except as a last
-resort.  If @var{visible-ok} is non-@code{nil}, then it does not matter
-whether a buffer is displayed somewhere or not.
+Если @var{visible-ok} равен @code{nil}, @code{other-buffer} избегает
+возврата буфера, видимого в любом окне на любом видимом фрейме, кроме как в
+крайнем случае.  Если @var{visible-ok} равен не-@code{nil}, то не имеет
+значения, отображается где-то буфер или нет.
 
-If no suitable buffer exists, the buffer @file{*scratch*} is returned
-(and created, if necessary).
+Если подходящего буфера не существует, возвращается буфер @file{*scratch*}
+(и создается, если необходимо).
 @end defun
 
 @defun last-buffer &optional buffer visible-ok frame
-This function returns the last buffer in @var{frame}'s buffer list other
-than @var{buffer}.  If @var{frame} is omitted or @code{nil}, it uses the
-selected frame's buffer list.
+Функция возвращает последний буфер в списке буферов @var{frame}, отличный от
+@var{buffer}.  Если @var{frame} не указан или @code{nil}, использует список
+буферов выбранного фрейма.
 
-The argument @var{visible-ok} is handled as with @code{other-buffer},
-see above.  If no suitable buffer can be found, the buffer
-@file{*scratch*} is returned.
+Аргумент @var{visible-ok} обрабатывается так же, как и @code{other-buffer},
+смотреть выше.  Если подходящий буфер не может быть найден, возвращается
+буфер @file{*scratch*}.
 @end defun
 
 @deffn Command bury-buffer &optional buffer-or-name
-This command puts @var{buffer-or-name} at the end of the buffer list,
-without changing the order of any of the other buffers on the list.
-This buffer therefore becomes the least desirable candidate for
-@code{other-buffer} to return.  The argument can be either a buffer
-itself or the name of one.
+Команда помещает @var{buffer-or-name} в конец списка буферов, не меняя
+порядок других буферов в списке.  Таким образом, этот буфер становится
+наименее желательным кандидатом для возврата @code{other-buffer}.
+Аргументом может быть либо сам буфер, либо его имя.
 
-This function operates on each frame's @code{buffer-list} parameter as
-well as the fundamental buffer list; therefore, the buffer that you bury
-will come last in the value of @code{(buffer-list @var{frame})} and in
-the value of @code{(buffer-list)}.  In addition, it also puts the buffer
-at the end of the list of buffers of the selected window (@pxref{Window
-History}) provided it is shown in that window.
+Функция работает с параметром @code{buffer-list} каждого кадра, а также с
+основным списком буферов; таким образом, буфер, который поместите, будет
+последним по значению @code{(buffer-list @var{frame})} и значению
+@code{(buffer-list)}.  Кроме того, также помещает буфер в конец списка
+буферов выбранного окна (@pxref{Window History}), если он отображается в
+этом окне.
 
-If @var{buffer-or-name} is @code{nil} or omitted, this means to bury the
-current buffer.  In addition, if the current buffer is displayed in the
-selected window, this makes sure that the window is either deleted or
-another buffer is shown in it.  More precisely, if the selected window
-is dedicated (@pxref{Dedicated Windows}) and there are other windows on
-its frame, the window is deleted.  If it is the only window on its frame
-and that frame is not the only frame on its terminal, the frame is
-dismissed by calling the function specified by
-@code{frame-auto-hide-function} (@pxref{Quitting Windows}).  Otherwise,
-it calls @code{switch-to-prev-buffer} (@pxref{Window History}) to show
-another buffer in that window.  If @var{buffer-or-name} is displayed in
-some other window, it remains displayed there.
+Если @var{buffer-or-name} равен @code{nil} или опущен, это означает, что
+текущий буфер скрывается.  Кроме того, если текущий буфер отображается в
+выбранном окне, это гарантирует, что окно либо удалено, либо в нем
+отображается другой буфер.  Точнее, если выбранное окно предназначено для
+(@pxref{Dedicated Windows}) и в его фрейме есть другие окна, окно удаляется.
+Если это единственное окно в его фрейме, и этот фрейм не единственный фрейм
+в его терминале, фрейм отклоняется путем вызова функции, указанной в
+@code{frame-auto-hide-function} (@pxref{Quitting Windows}).  В противном
+случае вызывается @code{switch-to-prev-buffer} (@pxref{Window History}),
+чтобы показать другой буфер в этом окне.  Если @var{buffer-or-name}
+отображается в каком-либо другом окне, он остается там.
 
-To replace a buffer in all the windows that display it, use
+Чтобы заменить буфер во всех окнах, в которых он отображается, использовать
 @code{replace-buffer-in-windows}, @xref{Buffers and Windows}.
 @end deffn
 
 @deffn Command unbury-buffer
-This command switches to the last buffer in the local buffer list of
-the selected frame.  More precisely, it calls the function
-@code{switch-to-buffer} (@pxref{Switching Buffers}), to display the
-buffer returned by @code{last-buffer} (see above), in the selected
-window.
+Команда переключает на последний буфер в списке локальных буферов выбранного
+кадра.  Точнее, он вызывает функцию @code{switch-to-buffer}
+(@pxref{Switching Buffers}), чтобы отобразить буфер, возвращаемый
+@code{last-buffer} (смотреть выше), в выбранном окне.
 @end deffn
 
 @defvar buffer-list-update-hook
-This is a normal hook run whenever the buffer list changes.  Functions
-(implicitly) running this hook are @code{get-buffer-create}
+Это нормальный запуск ловушки при изменении списка буферов.  Функции
+(неявно), запускающие эту ловушку: @code{get-buffer-create}
 (@pxref{Creating Buffers}), @code{rename-buffer} (@pxref{Buffer Names}),
-@code{kill-buffer} (@pxref{Killing Buffers}), @code{bury-buffer} (see
-above) and @code{select-window} (@pxref{Selecting Windows}).
+@code{kill-buffer} (@pxref{Killing Buffers}), @code{bury-buffer} (смотреть
+выше) и @code{select-window} (@pxref{Selecting Windows}).
 
-Functions run by this hook should avoid calling @code{select-window}
-with a nil @var{norecord} argument or @code{with-temp-buffer} since
-either may lead to infinite recursion.
+Функции, выполняемые этим перехватчиком, должны избегать вызова
+@code{select-window} с аргументом nil @var{norecord} или
+@code{with-temp-buffer}, поскольку любой из них может привести к
+бесконечной рекурсии.
 @end defvar
 
 @node Creating Buffers
-@section Creating Buffers
+@section Создание Буферов
 @cindex creating buffers
 @cindex buffers, creating
 
-  This section describes the two primitives for creating buffers.
-@code{get-buffer-create} creates a buffer if it finds no existing buffer
-with the specified name; @code{generate-new-buffer} always creates a new
-buffer and gives it a unique name.
+  В этом разделе описаны два примитива для создания буферов.
+@code{get-buffer-create} создает буфер, если не находит существующего буфера
+с указанным именем; @code{generate-new-buffer} всегда создает новый буфер и
+дает ему уникальное имя.
 
-  Other functions you can use to create buffers include
-@code{with-output-to-temp-buffer} (@pxref{Temporary Displays}) and
-@code{create-file-buffer} (@pxref{Visiting Files}).  Starting a
-subprocess can also create a buffer (@pxref{Processes}).
+  Другие функции, которые можно использовать для создания буферов, включают
+@code{with-output-to-temp-buffer} (@pxref{Temporary Displays}) и
+@code{create-file-buffer} (@pxref{Visiting Files}).  Запуск подпроцесса
+также может создать буфер (@pxref{Processes}).
 
 @defun get-buffer-create buffer-or-name
-This function returns a buffer named @var{buffer-or-name}.  The buffer
-returned does not become the current buffer---this function does not
-change which buffer is current.
+Функция возвращает буфер с именем @var{buffer-or-name}.  Возвращенный буфер
+не становится текущим - эта функция не меняет текущий буфер.
 
-@var{buffer-or-name} must be either a string or an existing buffer.  If
-it is a string and a live buffer with that name already exists,
-@code{get-buffer-create} returns that buffer.  If no such buffer exists,
-it creates a new buffer.  If @var{buffer-or-name} is a buffer instead of
-a string, it is returned as given, even if it is dead.
+@var{buffer-or-name} должен быть либо строкой, либо существующим буфером.
+Если это строка и активный буфер с таким именем уже существует,
+@code{get-buffer-create} возвращает этот буфер.  Если такого буфера не
+существует, создается новый буфер.  Если @var{buffer-or-name} - это буфер, а
+не строка, он возвращается как заданный, даже если он убит.
 
 @example
 @group
@@ -979,22 +968,21 @@ a string, it is returned as given, even if it is dead.
 @end group
 @end example
 
-The major mode for a newly created buffer is set to Fundamental mode.
-(The default value of the variable @code{major-mode} is handled at a higher
-level; see @ref{Auto Major Mode}.)  If the name begins with a space, the
-buffer initially disables undo information recording (@pxref{Undo}).
+Основной режим для вновь созданного буфера установлен на Основной режим.
+(Значение по умолчанию переменной @code{major-mode} обрабатывается на более
+высоком уровне; смотреть @ref{Auto Major Mode}.)  Если имя начинается с
+пробела, буфер изначально запрещает отмену записи информации (@pxref{Undo}).
 @end defun
 
 @defun generate-new-buffer name
-This function returns a newly created, empty buffer, but does not make
-it current.  The name of the buffer is generated by passing @var{name}
-to the function @code{generate-new-buffer-name} (@pxref{Buffer
-Names}).  Thus, if there is no buffer named @var{name}, then that is
-the name of the new buffer; if that name is in use, a suffix of the
-form @samp{<@var{n}>}, where @var{n} is an integer, is appended to
-@var{name}.
+Aункция возвращает вновь созданный пустой буфер, но не делает его текущим.
+Имя буфера генерируется путем передачи @var{name} функции
+@code{generate-new-buffer-name} (@pxref{Buffer Names}).  Таким образом, если
+нет буфера с именем @var{name}, то это имя нового буфера; если это имя
+используется, суффикс вида @samp{<@var{n}>}, где @var{n} - целое число,
+добавляется к @var{name}.
 
-An error is signaled if @var{name} is not a string.
+Выдается сообщение об ошибке, если @var{name} не является строкой.
 
 @example
 @group
@@ -1011,71 +999,72 @@ An error is signaled if @var{name} is not a string.
 @end group
 @end example
 
-The major mode for the new buffer is set to Fundamental mode.  The default
-value of the variable @code{major-mode} is handled at a higher level.
-@xref{Auto Major Mode}.
+Основной режим для нового буфера установлен на Основной режим.  Значение по
+умолчанию переменной @code{major-mode} обрабатывается на более высоком
+уровне.  @xref{Auto Major Mode}.
 @end defun
 
 @node Killing Buffers
-@section Killing Buffers
+@section Уничтоженные Буферы
 @cindex killing buffers
 @cindex buffers, killing
 
-  @dfn{Killing a buffer} makes its name unknown to Emacs and makes the
-memory space it occupied available for other use.
+  @dfn{Уничтоженние буфера} делает его имя неизвестным Emacs и занимаемое
+пространство памяти доступным для других целей.
 
-  The buffer object for the buffer that has been killed remains in
-existence as long as anything refers to it, but it is specially marked
-so that you cannot make it current or display it.  Killed buffers retain
-their identity, however; if you kill two distinct buffers, they remain
-distinct according to @code{eq} although both are dead.
+  Буферный объект для буфера, который был уничтожен, остается существующим,
+пока что-либо ссылается на него, но он специально помечен, чтобы не сделать
+его текущим или отобразить его.  Однако убитые буферы сохраняют свою
+идентичность; если уничтожаются два разных буфера, они останутся разными
+согласно @code{eq}, хотя оба убиты.
 
-  If you kill a buffer that is current or displayed in a window, Emacs
-automatically selects or displays some other buffer instead.  This
-means that killing a buffer can change the current buffer.  Therefore,
-when you kill a buffer, you should also take the precautions
-associated with changing the current buffer (unless you happen to know
-that the buffer being killed isn't current).  @xref{Current Buffer}.
+  Если уничтожается текущий или отображаемый в окне буфер, Emacs
+автоматически выбирает или отображает вместо него какой-нибудь другой буфер.
+Это означает, что уничтожение буфера может изменить текущий буфер.
+Следовательно, когда уничтожается буфер, также потребуется принять меры
+предосторожности, связанные с изменением текущего буфера (если только не
+знаеть, что уничтожаемый буфер не является текущим).  @xref{Current Buffer}.
 
-  If you kill a buffer that is the base buffer of one or more indirect
+  Если уничтожается буфер, который является базовым буфером одного или
+нескольких косвенных
 @iftex
-buffers,
+буферов,
 @end iftex
 @ifnottex
-buffers (@pxref{Indirect Buffers}),
+косвенные буферы (@pxref{Indirect Buffers}),
 @end ifnottex
-the indirect buffers are automatically killed as well.
+также автоматически уничтожаются.
 
 @cindex live buffer
-  The @code{buffer-name} of a buffer is @code{nil} if, and only if,
-the buffer is killed.  A buffer that has not been killed is called a
-@dfn{live} buffer.  To test whether a buffer is live or killed, use
-the function @code{buffer-live-p} (see below).
+  @code{buffer-name} буфера имеет значение @code{nil} тогда и только тогда,
+когда буфер уничтожен.  Буфер, который не был уничтожен, называется буфером
+@dfn{живым}.  Чтобы проверить, активен ли буфер или убит, использовать
+функцию @code{buffer-live-p} (смотреть ниже).
 
 @deffn Command kill-buffer &optional buffer-or-name
-This function kills the buffer @var{buffer-or-name}, freeing all its
-memory for other uses or to be returned to the operating system.  If
-@var{buffer-or-name} is @code{nil} or omitted, it kills the current
-buffer.
+Функция уничтожает буфер @var{buffer-or-name}, освобождая всю его память для
+других целей или для возврата в операционную систему.  Если
+@var{buffer-or-name} равен @code{nil} или опущен, текущий буфер
+уничтожается.
 
-Any processes that have this buffer as the @code{process-buffer} are
-sent the @code{SIGHUP} (hangup) signal, which normally causes them
-to terminate.  @xref{Signals to Processes}.
+Любые процессы, которые имеют этот буфер как @code{process-buffer},
+отправляют сигнал @code{SIGHUP} (зависание), который обычно приводит к их
+завершению.  @xref{Signals to Processes}.
 
-If the buffer is visiting a file and contains unsaved changes,
-@code{kill-buffer} asks the user to confirm before the buffer is killed.
-It does this even if not called interactively.  To prevent the request
-for confirmation, clear the modified flag before calling
-@code{kill-buffer}.  @xref{Buffer Modification}.
+Если буфер обращается к файлу и содержит несохраненные изменения,
+@code{kill-buffer} просит пользователя подтвердить, прежде чем буфер будет
+уничтожен.  Делается это, даже если не вызывается в интерактивном режиме.
+Чтобы предотвратить запрос подтверждения, снимается измененный флаг перед
+вызовом @code{kill-buffer}.  @xref{Buffer Modification}.
 
-This function calls @code{replace-buffer-in-windows} for cleaning up
-all windows currently displaying the buffer to be killed.
+Функция вызывает @code{replace-buffer-in-windows} для очистки всех окон, в
+настоящее время отображающих убиваемый буфер.
 
-Killing a buffer that is already dead has no effect.
+Удаление уже уничтоженного буфера не имеет никакого эффекта.
 
-This function returns @code{t} if it actually killed the buffer.  It
-returns @code{nil} if the user refuses to confirm or if
-@var{buffer-or-name} was already dead.
+Функция возвращает @code{t}, если она действительно уничтожила буфер.
+Возвращает @code{nil}, если пользователь отказывается подтвердить или
+@var{buffer-or-name} если буфер уже уничтожен.
 
 @smallexample
 (kill-buffer "foo.unchanged")
@@ -1091,186 +1080,182 @@ Buffer foo.changed modified; kill anyway? (yes or no) @kbd{yes}
 @end deffn
 
 @defvar kill-buffer-query-functions
-Before confirming unsaved changes, @code{kill-buffer} calls the functions
-in the list @code{kill-buffer-query-functions}, in order of appearance,
-with no arguments.  The buffer being killed is the current buffer when
-they are called.  The idea of this feature is that these functions will
-ask for confirmation from the user.  If any of them returns @code{nil},
-@code{kill-buffer} spares the buffer's life.
+Перед подтверждением несохраненных изменений @code{kill-buffer} вызывает
+функции из списка @code{kill-buffer-query-functions} в порядке появления без
+аргументов.  Уничтожаемый буфер - это текущий буфер при их вызове.  Идея
+этой функции заключается в том, что эти функции будут запрашивать
+подтверждение у пользователя.  Если любое из них возвращает @code{nil},
+@code{kill-buffer} сохраняет существование буфера.
 @end defvar
 
 @defvar kill-buffer-hook
-This is a normal hook run by @code{kill-buffer} after asking all the
-questions it is going to ask, just before actually killing the buffer.
-The buffer to be killed is current when the hook functions run.
-@xref{Hooks}.  This variable is a permanent local, so its local binding
-is not cleared by changing major modes.
+Это обычная ловушка, которую @code{kill-buffer} запускает после того, как
+задает все вопросы, которые собирался задать, непосредственно перед тем, как
+фактически уничтожить буфер.  Буфер, который должен быть уничтожен, является
+текущим, когда выполняются функции ловушки.  @xref{Hooks}.  Эта переменная
+является постоянной локальной, поэтому ее локальная привязка не очищается
+при изменении основных режимов.
 @end defvar
 
 @defopt buffer-offer-save
-This variable, if non-@code{nil} in a particular buffer, tells
-@code{save-buffers-kill-emacs} to offer to save that buffer, just as
-it offers to save file-visiting buffers.  If @code{save-some-buffers}
-is called with the second optional argument set to @code{t}, it will
-also offer to save the buffer.  Lastly, if this variable is set to the
-symbol @code{always}, both @code{save-buffers-kill-emacs} and
-@code{save-some-buffers} will always offer to save.  @xref{Definition
-of save-some-buffers}.  The variable @code{buffer-offer-save}
-automatically becomes buffer-local when set for any reason.
-@xref{Buffer-Local Variables}.
+Переменная, если не-@code{nil} в определенном буфере, сообщает
+@code{save-buffers-kill-emacs} предложить сохранить этот буфер, так же, как
+она предлагает сохранять буферы обращения к файлам.  Если
+@code{save-some-buffers} вызывается со вторым необязательным аргументом,
+установленным в @code{t}, также предложит сохранить буфер.  Наконец, если
+эта переменная установлена в символ @code{always}, и
+@code{save-buffers-kill-emacs}, и @code{save-some-buffers} всегда будут
+предлагать сохранить буфер.  @xref{Definition of save-some-buffers}.
+Переменная @code{buffer-offer-save} автоматически становится локальной для
+буфера при установке по любой причине.  @xref{Buffer-Local Variables}.
 @end defopt
 
 @defvar buffer-save-without-query
-This variable, if non-@code{nil} in a particular buffer, tells
-@code{save-buffers-kill-emacs} and @code{save-some-buffers} to save
-this buffer (if it's modified) without asking the user.  The variable
-automatically becomes buffer-local when set for any reason.
+Эта переменная, если не-@code{nil} в определенном буфере, сообщает
+@code{save-buffers-kill-emacs} и @code{save-some-buffers} сохранить этот
+буфер (если он изменен), не спрашивая пользователя.  Переменная
+автоматически становится локальной для буфера при установке по любой
+причине.
 @end defvar
 
 @defun buffer-live-p object
-This function returns @code{t} if @var{object} is a live buffer (a
-buffer which has not been killed), @code{nil} otherwise.
+Функция возвращает @code{t}, если @var{object} является активным буфером
+(буфер, который не был уничтожен), в противном случае - @code{nil}.
 @end defun
 
 @node Indirect Buffers
-@section Indirect Buffers
+@section Косвенные Буферы
 @cindex indirect buffers
 @cindex base buffer
 
-  An @dfn{indirect buffer} shares the text of some other buffer, which
-is called the @dfn{base buffer} of the indirect buffer.  In some ways it
-is the analogue, for buffers, of a symbolic link among files.  The base
-buffer may not itself be an indirect buffer.
+  @dfn{Косвенный буфер} использует текст какого-то другого буфера, который
+называется @dfn{базовый буфер} косвенного буфера.  В некотором смысле для
+буферов это аналог символической ссылки между файлами.  Базовый буфер сам по
+себе не может быть косвенным буфером.
 
-  The text of the indirect buffer is always identical to the text of its
-base buffer; changes made by editing either one are visible immediately
-in the other.  This includes the text properties as well as the characters
-themselves.
+  Текст косвенного буфера всегда идентичен тексту его базового буфера;
+изменения, внесенные путем редактирования одного из них, сразу видны в
+другом.  Сюда входят свойства текста, а также сами символы.
 
-  In all other respects, the indirect buffer and its base buffer are
-completely separate.  They have different names, independent values of
-point, independent narrowing, independent markers and overlays (though
-inserting or deleting text in either buffer relocates the markers and
-overlays for both), independent major modes, and independent
-buffer-local variable bindings.
+  Во всем остальном косвенный буфер и его базовый буфер полностью разделены.
+У них разные имена, независимые значения точки, независимое сужение,
+независимые маркеры и наложения (хотя вставка или удаление текста в любом
+буфере перемещает маркеры и наложения для обоих), независимые основные
+режимы и независимые привязки переменных локальной буфера.
 
-  An indirect buffer cannot visit a file, but its base buffer can.  If
-you try to save the indirect buffer, that actually saves the base
-buffer.
+  Косвенный буфер не может посещать файл, но его базовый буфер может.  Если
+попытаться сохранить косвенный буфер, фактически сохранится базовый буфер.
 
-  Killing an indirect buffer has no effect on its base buffer.  Killing
-the base buffer effectively kills the indirect buffer in that it cannot
-ever again be the current buffer.
+  Удаление косвенного буфера не влияет на его базовый буфер.  Удаление
+базового буфера эффективно уничтожает косвенный буфер, поскольку он больше
+не может быть как таковым.
 
 @deffn Command make-indirect-buffer base-buffer name &optional clone
-This creates and returns an indirect buffer named @var{name} whose
-base buffer is @var{base-buffer}.  The argument @var{base-buffer} may
-be a live buffer or the name (a string) of an existing buffer.  If
-@var{name} is the name of an existing buffer, an error is signaled.
+Создает и возвращает косвенный буфер с именем @var{name}, базовым буфером
+которого является @var{base-buffer}.  Аргумент @var{base-buffer} может быть
+активным буфером или именем (строкой) существующего буфера.  Если @var{name}
+- имя существующего буфера, сигнализируется ошибка.
 
-If @var{clone} is non-@code{nil}, then the indirect buffer originally
-shares the state of @var{base-buffer} such as major mode, minor
-modes, buffer local variables and so on.  If @var{clone} is omitted
-or @code{nil} the indirect buffer's state is set to the default state
-for new buffers.
+Если @var{clone} равен не-@code{nil}, то косвенный буфер изначально
+разделяет состояние @var{base-buffer}, такое как основной режим,
+второстепенные режимы, локальные переменные буфера и так далее.  Если
+@var{clone} опущен или @code{nil}, состояние косвенного буфера
+устанавливается в состояние по умолчанию для новых буферов.
 
-If @var{base-buffer} is an indirect buffer, its base buffer is used as
-the base for the new buffer.  If, in addition, @var{clone} is
-non-@code{nil}, the initial state is copied from the actual base
-buffer, not from @var{base-buffer}.
+Если @var{base-buffer} является косвенным буфером, его базовый буфер
+используется как основа для нового буфера.  Если дополнительно @var{clone}
+установлено в не-@code{nil}, начальное состояние копируется из фактического
+базового буфера, а не из @var{base-buffer}.
 @end deffn
 
 @deffn Command clone-indirect-buffer newname display-flag &optional norecord
-This function creates and returns a new indirect buffer that shares
-the current buffer's base buffer and copies the rest of the current
-buffer's attributes.  (If the current buffer is not indirect, it is
-used as the base buffer.)
+Функция создает и возвращает новый косвенный буфер, который разделяет
+базовый буфер текущего буфера и копирует остальные атрибуты текущего буфера.
+(Если текущий буфер не является косвенным, он используется как базовый
+буфер.)
 
-If @var{display-flag} is non-@code{nil}, as it always is in
-interactive calls, that means to display the new buffer by calling
-@code{pop-to-buffer}.  If @var{norecord} is non-@code{nil}, that means
-not to put the new buffer to the front of the buffer list.
+Если @var{display-flag} равен не-@code{nil}, как всегда в интерактивных
+вызовах, это означает отображение нового буфера путем вызова
+@code{pop-to-buffer}.  Если @var{norecord} равно не-@code{nil}, это
+означает, что новый буфер не следует помещать в начало списка буферов.
 @end deffn
 
 @defun buffer-base-buffer &optional buffer
-This function returns the base buffer of @var{buffer}, which defaults
-to the current buffer.  If @var{buffer} is not indirect, the value is
-@code{nil}.  Otherwise, the value is another buffer, which is never an
-indirect buffer.
+Функция возвращает базовый буфер @var{buffer}, который по умолчанию равен
+текущему буферу.  Если @var{buffer} не является косвенным, значение равно
+@code{nil}.  В противном случае значение - это другой буфер, который никогда
+не является косвенным буфером.
 @end defun
 
 @node Swapping Text
-@section Swapping Text Between Two Buffers
+@section Обмен Текста Между Двумя Буферами
 @cindex swap text between buffers
 @cindex virtual buffers
 
-  Specialized modes sometimes need to let the user access from the
-same buffer several vastly different types of text.  For example, you
-may need to display a summary of the buffer text, in addition to
-letting the user access the text itself.
+  В специализированных режимах иногда требуется предоставить пользователю
+доступ из одного буфера к нескольким совершенно различным типам текста.
+Например, может потребоваться отобразить сводку текста буфера в дополнение к
+разрешению пользователю доступа к самому тексту.
 
-  This could be implemented with multiple buffers (kept in sync when
-the user edits the text), or with narrowing (@pxref{Narrowing}).  But
-these alternatives might sometimes become tedious or prohibitively
-expensive, especially if each type of text requires expensive
-buffer-global operations in order to provide correct display and
-editing commands.
+  Это может быть реализовано с использованием нескольких буферов
+(синхронизированных, когда пользователь редактирует текст) или сужения
+(@pxref{Narrowing}).  Но эти альтернативы могут иногда становиться
+утомительными или чрезмерно дорогими, особенно если каждый тип текста
+требует дорогостоящих глобальных операций с буфером, чтобы обеспечить
+правильные команды отображения и редактирования.
 
-  Emacs provides another facility for such modes: you can quickly swap
-buffer text between two buffers with @code{buffer-swap-text}.  This
-function is very fast because it doesn't move any text, it only
-changes the internal data structures of the buffer object to point to
-a different chunk of text.  Using it, you can pretend that a group of
-two or more buffers are actually a single virtual buffer that holds
-the contents of all the individual buffers together.
+  Emacs предоставляет еще одну возможность для таких режимов: можно быстро
+переставлять текст буфера между двумя буферами с помощью
+@code{buffer-swap-text}.  Эта функция очень быстрая, потому что она не
+перемещает текст, она только изменяет внутренние структуры данных объекта
+буфера, чтобы указать на другой фрагмент текста.  Используя её, можно
+представить, что группа из двух или более буферов на самом деле является
+одним виртуальным буфером, который хранит вместе содержимое всех отдельных
+буферов.
 
 @defun buffer-swap-text buffer
-This function swaps the text of the current buffer and that of its
-argument @var{buffer}.  It signals an error if one of the two buffers
-is an indirect buffer (@pxref{Indirect Buffers}) or is a base buffer
-of an indirect buffer.
+Функция меняет местами текст текущего буфера и его аргумента @var{buffer}.
+Сигнализирует об ошибке, если один из двух буферов является косвенным
+буфером (@pxref{Indirect Buffers}) или базовым буфером косвенного буфера.
 
-All the buffer properties that are related to the buffer text are
-swapped as well: the positions of point and mark, all the markers, the
-overlays, the text properties, the undo list, the value of the
-@code{enable-multibyte-characters} flag (@pxref{Text Representations,
-enable-multibyte-characters}), etc.
+Все свойства буфера, относящиеся к тексту буфера, также меняются местами:
+позиции точки и метки, все маркеры, наложения, свойства текста, список
+отмены, значение флага @code{enable-multibyte-characters}
+(@pxref{Text Representations, enable-multibyte-characters}) и так далее.
 
-@strong{Warning:} If this function is called from within a
-@code{save-excursion} form, the current buffer will be set to
-@var{buffer} upon leaving the form, since the marker used by
-@code{save-excursion} to save the position and buffer will be swapped
-as well.
+@strong{Предупреждение:} Если функция вызывается из формы
+@code{save-excursion}, текущий буфер будет установлен в @var{buffer} после
+выхода из формы, поскольку маркер, используемый @code{save-excursion} для
+сохранения позиции и буфера, также поменяется местами.
 @end defun
 
-  If you use @code{buffer-swap-text} on a file-visiting buffer, you
-should set up a hook to save the buffer's original text rather than
-what it was swapped with.  @code{write-region-annotate-functions}
-works for this purpose.  You should probably set
-@code{buffer-saved-size} to @minus{}2 in the buffer, so that changes
-in the text it is swapped with will not interfere with auto-saving.
+  Если используется @code{buffer-swap-text} в буфере обращения к файлам,
+потребуется настроить ловушку для сохранения исходного текста буфера, а не
+того, с чем он был заменен.  @code{write-region-annotate-functions} подходит
+для этой цели.  Вероятно, следует установить @code{buffer-saved-size} в
+@minus{}2 в буфере, чтобы изменения в тексте, которым он заменяется, не
+мешали автосохранению.
 
 @node Buffer Gap
-@section The Buffer Gap
+@section Разрыв Буфера
 @cindex buffer gap
 
-  Emacs buffers are implemented using an invisible @dfn{gap} to make
-insertion and deletion faster.  Insertion works by filling in part of
-the gap, and deletion adds to the gap.  Of course, this means that the
-gap must first be moved to the locus of the insertion or deletion.
-Emacs moves the gap only when you try to insert or delete.  This is why
-your first editing command in one part of a large buffer, after
-previously editing in another far-away part, sometimes involves a
-noticeable delay.
+  Буферы Emacs реализованы с использованием невидимого @dfn{разрыва}, чтобы
+ускорить вставку и удаление.  При вставке разрыв заполняется частично, а
+при удалении разрыв увеличивается.  Конечно, это означает, что сначала нужно
+переместить разрыв в место вставки или удаления.  Emacs перемещает разрыв
+только тогда, когда пытаеться вставить или удалить.  Вот почему первая
+команда редактирования в одной части большого буфера после предварительного
+редактирования в другой удаленной части иногда вызывает заметную задержку.
 
-  This mechanism works invisibly, and Lisp code should never be affected
-by the gap's current location, but these functions are available for
-getting information about the gap status.
+  Этот механизм работает незаметно, и код Lisp никогда не должен зависеть от
+текущего местоположения разрыва, но эти функции доступны для получения
+информации о состоянии пробела.
 
 @defun gap-position
-This function returns the current gap position in the current buffer.
+Функция возвращает текущую позицию разрыва в текущем буфере.
 @end defun
 
 @defun gap-size
-This function returns the current gap size of the current buffer.
+Функция возвращает текущий размер разрыва в текущем буфере.
 @end defun
