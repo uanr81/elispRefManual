@@ -362,77 +362,78 @@ Emacs запущен в X, каждое из его графических X-о�
 
 @cindex window in direction
 @defun window-in-direction direction &optional window ignore sign wrap mini
-This function returns the nearest live window in direction
-@var{direction} as seen from the position of @code{window-point} in
-window @var{window}.  The argument @var{direction} must be one of
-@code{above}, @code{below}, @code{left} or @code{right}.  The optional
-argument @var{window} must denote a live window and defaults to the
-selected one.
+Функция возвращает ближайшее окно реального времени в направлении
+@var{direction}, если смотреть с позиции @code{window-point} в окне
+@var{window}.  Аргумент @var{direction} должен быть одним из @code{above},
+@code{below}, @code{left} или @code{right}.  Необязательный аргумент
+@var{window} должен обозначать активное окно и по умолчанию использовать
+выбранное.
 
-This function does not return a window whose @code{no-other-window}
-parameter is не-@code{nil} (@pxref{Window Parameters}).  If the nearest
-window's @code{no-other-window} parameter is не-@code{nil}, this
-function tries to find another window in the indicated direction whose
-@code{no-other-window} parameter is @code{nil}.  If the optional
-argument @var{ignore} is не-@code{nil}, a window may be returned even
-if its @code{no-other-window} parameter is не-@code{nil}.
+Функция не возвращает окно, если параметр @code{no-other-window} которого
+равен не-@code{nil} (@pxref{Window Parameters}).  Если параметр
+@code{no-other-window} ближайшего окна равен не-@code{nil}, эта функция
+пытается найти другое окно в указанном направлении, параметр
+@code{no-other-window} которого равен @code{nil}.  Если необязательный
+аргумент @var{ignore} - не-@code{nil}, окно может быть возвращено, даже если
+его параметр @code{no-other-window} - не-@code{nil}.
 
-If the optional argument @var{sign} is a negative number, it means to
-use the right or bottom edge of @var{window} as reference position
-instead of @code{window-point}.  If @var{sign} is a positive number, it
-means to use the left or top edge of @var{window} as reference position.
+Если необязательный аргумент @var{sign} - отрицательное число, это означает
+использование правого или нижнего края @var{window} в качестве ссылочной
+позиции вместо @code{window-point}.  Если @var{sign} является положительным
+числом, то это значит использовать левый или верхний край @var{window} в
+качестве опорной позиции.
 
-If the optional argument @var{wrap} is не-@code{nil}, this means to
-wrap @var{direction} around frame borders.  For example, if @var{window}
-is at the top of the frame and @var{direction} is @code{above}, then
-this function usually returns the frame's minibuffer window if it's
-active and a window at the bottom of the frame otherwise.
+Если необязательный аргумент @var{wrap} - не-@code{nil}, это означает, что
+@var{direction} нужно обернуть вокруг границ фрейма.  Например, если
+@var{window} находится вверху фрейма, а @var{direction} - @code{above}, то
+функция обычно возвращает окно минибуфера фрейма, если оно активно, и
+окно внизу фрейма в противном случае.
 
-If the optional argument @var{mini} is @code{nil}, this means to return
-the minibuffer window if and only if it is currently active.  If
-@var{mini} is не-@code{nil}, this function may return the minibuffer
-window even when it's not active.  However, if @var{wrap} is
-не-@code{nil}, it always acts as if @var{mini} were @code{nil}.
+Если необязательный аргумент @var{mini} - @code{nil}, это означает, что окно
+минибуфера должно возвращаться тогда и только тогда, когда оно активно в
+данный момент.  Если @var{mini} равен не-@code{nil}, эта функция может
+вернуть окно минибуфера, даже если оно не активно. Однако, если @var{wrap}
+равен не-@code{nil}, всегда действует так, как если бы @var{mini} было
+установлено в @code{nil}.
 
-If it doesn't find a suitable window, this function returns
-@code{nil}.
+Если подходящего окна не найдено, функция возвращает @code{nil}.
 
-Don't use this function to check whether there is @emph{no} window in
-@var{direction}.  Calling @code{window-at-side-p} described above is a
-much more efficient way to do that.
+Не использовать эту функцию для проверки наличия окна @emph{не} в
+@var{direction}.  Вызов @code{window-at-side-p}, описанный выше, - гораздо
+более эффективный способ сделать это.
 @end defun
 
 The following function allows the entire window tree of a frame to be
 retrieved:
 
 @defun window-tree &optional frame
-This function returns a list representing the window tree for frame
-@var{frame}.  If @var{frame} is omitted or @code{nil}, it defaults to
-the selected frame.
+Функция возвращает список, представляющий дерево окон для фрейми
+@var{frame}.  Если @var{frame} опущен или @code{nil}, по умолчанию
+используется выбранный фрейм.
 
-The return value is a list of the form @code{(@var{root} @var{mini})},
-where @var{root} represents the window tree of the frame's root
-window, and @var{mini} is the frame's minibuffer window.
+Возвращаемое значение - это список вида @code{(@var{root} @var{mini})}, где
+@var{root} представляет дерево окон корневого окна фрейма, а @var{mini} -
+окно минибуфера фрейма.
 
-If the root window is live, @var{root} is that window itself.
-Otherwise, @var{root} is a list @code{(@var{dir} @var{edges} @var{w1}
-@var{w2} ...)} where @var{dir} is @code{nil} for a horizontal
-combination and @code{t} for a vertical combination, @var{edges} gives
-the size and position of the combination, and the remaining elements
-are the child windows.  Each child window may again be a window object
-(for a live window) or a list with the same format as above (for an
-internal window).  The @var{edges} element is a list @code{(@var{left}
-@var{top} @var{right} @var{bottom})}, similar to the value returned by
-@code{window-edges} (@pxref{Coordinates and Windows}).
+Если корневое окно активно, @var{root} - это само окно.  В противном случае
+@var{root} - список @code{(@var{dir} @var{edges} @var{w1} @var{w2} ...)},
+где @var{dir} - это @code{nil} для горизонтальной комбинации, а @code{t} -
+для вертикальной комбинации, @var{edges} дает размер и положение комбинации,
+а остальные элементы являются дочерними окнами.  Каждое дочернее окно может
+снова быть объектом окна (для активного окна) или списком с тем же форматом,
+что и выше (для внутреннего окна).  Элемент @var{edges} - это список
+@code{(@var{left} @var{top} @var{right} @var{bottom})}, аналогичный
+значению, возвращаемому @code{window-edges}
+(@pxref{Coordinates and Windows}).
 @end defun
 
 
 @node Window Sizes
-@section Window Sizes
+@section Размеры Окон
 @cindex window size
 @cindex size of window
 
-  The following schematic shows the structure of a live window:
+  На следующей схеме показана структура активного окна:
 
 @smallexample
 @group
@@ -456,118 +457,114 @@ Height |  |  |  |                       |  |  |  |  | Height
 @cindex window body
 @cindex text area of a window
 @cindex body of a window
-  At the center of the window is the @dfn{text area}, or @dfn{body},
-where the buffer text is displayed.  The text area can be surrounded by
-a series of optional areas.  On the left and right, from innermost to
-outermost, these are the left and right fringes, denoted by LF and RF
-(@pxref{Fringes}); the left and right margins, denoted by LM and RM in
-the schematic (@pxref{Display Margins}); the left or right vertical
-scroll bar, only one of which is present at any time, denoted by LS and
-RS (@pxref{Scroll Bars}); and the right divider, denoted by RD
-(@pxref{Window Dividers}).  At the top of the window is the header line
-(@pxref{Header Lines}).  At the bottom of the window are the horizontal
-scroll bar (@pxref{Scroll Bars}); the mode line (@pxref{Mode Line
-Format}); and the bottom divider (@pxref{Window Dividers}).
+  В центре окна находится @dfn{text area} или @dfn{body}, где отображается
+текст буфера.  Текстовая область может быть окружена рядом дополнительных
+областей.  Слева и справа, от самого внутреннего до самого внешнего, это
+левая и правая полосы, обозначенные LF и RF (@pxref{Fringes}); левое и
+правое поля, обозначенные LM и RM на схеме (@pxref{Display Margins});
+левая или правая вертикальная полоса прокрутки, только одна из которых
+присутствует в любой момент, обозначается LS и RS (@pxref{Scroll Bars}); и
+правый разделитель, обозначенный RD (@pxref{Window Dividers}).  Вверху окна
+находится строка заголовка (@pxref{Header Lines}).  Внизу окна расположены
+горизонтальная полоса прокрутки (@pxref{Scroll Bars}); строка режима
+(@pxref{Mode Line Format}); и нижний делитель (@pxref{Window Dividers}).
 
-  Emacs provides miscellaneous functions for finding the height and
-width of a window.  The return value of many of these functions can be
-specified either in units of pixels or in units of lines and columns.
-On a graphical display, the latter actually correspond to the height and
-width of a default character specified by the frame's default font
-as returned by @code{frame-char-height} and @code{frame-char-width}
-(@pxref{Frame Font}).  Thus, if a window is displaying text with a
-different font or size, the reported line height and column width for
-that window may differ from the actual number of text lines or columns
-displayed within it.
+  Emacs предоставляет разные функции для определения высоты и ширины окна.
+Возвращаемое значение многих из этих функций может быть указано либо в
+пикселях, либо в единицах строк и столбцов.  На графическом дисплее
+последний фактически соответствует высоте и ширине символа по умолчанию,
+заданного шрифтом по умолчанию фрейма, возвращаемым @code{frame-char-height}
+и @code{frame-char-width} (@pxref{Frame Font}).  Таким образом, если окно
+отображает текст с другим шрифтом или размером, сообщаемая высота строки и
+ширина столбца для этого окна могут отличаться от фактического количества
+текстовых строк или столбцов, отображаемых в нем.
 
 @cindex window height
 @cindex height of a window
 @cindex total height of a window
-  The @dfn{total height} of a window is the number of lines comprising
-the window's body, the header line, the horizontal scroll bar, the mode
-line and the bottom divider (if any).
+  @dfn{total height} окна - это количество строк, составляющих тело окна,
+строку заголовка, горизонтальную полосу прокрутки, строку режима и нижний
+разделитель (если есть).
 
 @defun window-total-height &optional window round
-This function returns the total height, in lines, of the window
-@var{window}.  If @var{window} is omitted or @code{nil}, it defaults to
-the selected window.  If @var{window} is an internal window, the return
-value is the total height occupied by its descendant windows.
+Функция возвращает общую высоту в строках окна @var{window}.  Если
+@var{window} опущен или @code{nil}, по умолчанию используется выбранное
+окно.  Если @var{window} - внутреннее окно, возвращаемое значение - это
+общая высота, занимаемая его дочерними окнами.
 
-  If a window's pixel height is not an integral multiple of its frame's
-default character height, the number of lines occupied by the window is
-rounded internally.  This is done in a way such that, if the window is a
-parent window, the sum of the total heights of all its child windows
-internally equals the total height of their parent.  This means that
-although two windows have the same pixel height, their internal total
-heights may differ by one line.  This means also, that if window is
-vertically combined and has a next sibling, the topmost row of that
-sibling can be calculated as the sum of this window's topmost row and
-total height (@pxref{Coordinates and Windows})
+  Если высота в пикселях окна не является целым числом, кратным высоте
+символа его фрейма по умолчанию, количество строк, занимаемых окном,
+округляется внутри.  Это делается таким образом, что, если окно является
+родительским окном, сумма общих высот всех его дочерних окон внутренне равна
+общей высоте их родительского окна.  Это означает, что хотя два окна имеют
+одинаковую высоту в пикселях, их внутренняя общая высота может отличаться на
+одну строку.  Это также означает, что если окно объединено по вертикали и
+имеет следующего брата, самая верхняя строка этого брата может быть
+вычислена как сумма самой верхней строки этого окна и общей высоты
+(@pxref{Coordinates and Windows})
 
-  If the optional argument @var{round} is @code{ceiling}, this
-function returns the smallest integer larger than @var{window}'s pixel
-height divided by the character height of its frame; if it is
-@code{floor}, it returns the largest integer smaller than said value;
-with any other @var{round} it returns the internal value of
-@var{windows}'s total height.
+  Если необязательный аргумент @var{round} равен @code{ceiling}, эта функция
+возвращает наименьшее целое число, превышающее высоту пикселя @var{window},
+деленное на высоту символа его фрейма; если это @code{floor}, возвращается
+наибольшее целое число, меньшее указанного значения; с любым другим
+@var{round} возвращается внутреннее значение общей высоты @var{windows}.
 @end defun
 
 @cindex window width
 @cindex width of a window
 @cindex total width of a window
-The @dfn{total width} of a window is the number of lines comprising the
-window's body, its margins, fringes, scroll bars and a right divider (if
-any).
+@dfn{total width} окна - это количество строк, составляющих тело окна, его
+поля, полосы, полосы прокрутки и правый разделитель (если есть).
 
 @defun window-total-width &optional window round
-This function returns the total width, in columns, of the window
-@var{window}.  If @var{window} is omitted or @code{nil}, it defaults to
-the selected window.  If @var{window} is internal, the return value is
-the total width occupied by its descendant windows.
+Функция возвращает общую ширину окна @var{window} в столбцах.  Если
+@var{window} опущен или @code{nil}, по умолчанию используется выбранное
+окно.  Если @var{window} является внутренним, возвращаемое значение - это
+общая ширина, занимаемая его дочерними окнами.
 
-  If a window's pixel width is not an integral multiple of its frame's
-character width, the number of lines occupied by the window is rounded
-internally.  This is done in a way such that, if the window is a parent
-window, the sum of the total widths of all its children internally
-equals the total width of their parent.  This means that although two
-windows have the same pixel width, their internal total widths may
-differ by one column.  This means also, that if this window is
-horizontally combined and has a next sibling, the leftmost column of
-that sibling can be calculated as the sum of this window's leftmost
-column and total width (@pxref{Coordinates and Windows}).  The optional
-argument @var{round} behaves as it does for @code{window-total-height}.
+  Если ширина окна в пикселях не является целым числом кратным ширине его
+фрейма, количество строк, занимаемых окном, внутри округляется.  Это
+делается так, что, если окно является родительским окном, сумма общей ширины
+всех его дочерних элементов внутри равна общей ширине их родительского окна.
+Это означает, что хотя два окна имеют одинаковую ширину в пикселях, их
+внутренняя общая ширина может отличаться на один столбец.  Это также
+означает, что если это окно объединено по горизонтали и имеет следующего
+брата, крайний левый столбец этого родственного элемента может быть
+вычислен как сумма самого левого столбца этого окна и общей ширины
+(@pxref{Coordinates and Windows}).  Необязательный аргумент @var{round}
+ведет себя так же, как и для @code{window-total-height}.
 @end defun
 
 @defun window-total-size &optional window horizontal round
-This function returns either the total height in lines or the total
-width in columns of the window @var{window}.  If @var{horizontal} is
-omitted or @code{nil}, this is equivalent to calling
-@code{window-total-height} for @var{window}; otherwise it is equivalent
-to calling @code{window-total-width} for @var{window}.  The optional
-argument @var{round} behaves as it does for @code{window-total-height}.
+Функция возвращает либо общую высоту в строках, либо общую ширину в столбцах
+окна @var{window}.  Если @var{horizontal} опущен или @code{nil}, это
+эквивалентно вызову @code{window-total-height} для @var{window}; в противном
+случае это эквивалентно вызову @code{window-total-width} для @var{window}.
+Необязательный аргумент @var{round} действует так же, как и для
+@code{window-total-height}.
 @end defun
 
-The following two functions can be used to return the total size of a
-window in units of pixels.
+Следующие две функции могут использоваться для возврата общего размера окна
+в пикселях.
 
 @cindex window pixel height
 @cindex pixel height of a window
 @cindex total pixel height of a window
 
 @defun window-pixel-height &optional window
-This function returns the total height of window @var{window} in pixels.
-@var{window} must be a valid window and defaults to the selected one.
+Функция возвращает общую высоту окна @var{window} в пикселях.  @var{window}
+должен быть допустимым окном и по умолчанию выбран выбранным.
 
-The return value includes mode and header line, a horizontal scroll bar
-and a bottom divider, if any.  If @var{window} is an internal window,
-its pixel height is the pixel height of the screen areas spanned by its
-children.
+Возвращаемое значение включает режим и строку заголовка, горизонтальную
+полосу прокрутки и нижний разделитель, если таковой имеется.  Если
+@var{window} является внутренним окном, его высота в пикселях - это высота в
+пикселях областей экрана, охватываемых его дочерними элементами.
 @end defun
 
 @defun window-pixel-height-before-size-change &optional Lisp_Object &optional window
-This function returns the height of window @var{window} in pixels at the
-time @code{window-size-change-functions} was run for the last time on
-@var{window}'s frame (@pxref{Window Hooks}).
+Функция возвращает высоту окна @var{window} в пикселях на момент последнего
+запуска @code{window-size-change-functions} на фрейме @var{window}
+(@pxref{Window Hooks}).
 @end defun
 
 @cindex window pixel width
@@ -575,547 +572,547 @@ time @code{window-size-change-functions} was run for the last time on
 @cindex total pixel width of a window
 
 @defun window-pixel-width &optional window
-This function returns the width of window @var{window} in pixels.
-@var{window} must be a valid window and defaults to the selected one.
+Функция возвращает ширину окна @var{window} в пикселях.  @var{window} должен
+быть допустимым окном и по умолчанию выбран выбранным.
 
-The return value includes the fringes and margins of @var{window} as
-well as any vertical dividers or scroll bars belonging to @var{window}.
-If @var{window} is an internal window, its pixel width is the width of
-the screen areas spanned by its children.
+Возвращаемое значение включает границы и поля @var{window}, а также любые
+вертикальные разделители или полосы прокрутки, принадлежащие @var{window}.
+Если @var{window} является внутренним окном, его ширина в пикселях - это
+ширина областей экрана, охватываемых его дочерними элементами.
 @end defun
 
 @defun window-pixel-width-before-size-change &optional Lisp_Object &optional window
-This function returns the width of window @var{window} in pixels at the
-time @code{window-size-change-functions} was run for the last time on
-@var{window}'s frame (@pxref{Window Hooks}).
+Функция возвращает ширину окна @var{window} в пикселях на момент последнего
+запуска @code{window-size-change-functions} на фрейме @var{window}
+(@pxref{Window Hooks}).
 @end defun
 
 @cindex full-width window
 @cindex full-height window
-  The following functions can be used to determine whether a given
-window has any adjacent windows.
+  Следующие функции могут использоваться, чтобы определить, есть ли в данном
+окне какие-либо смежные окна.
 
 @defun window-full-height-p &optional window
-This function returns не-@code{nil} if @var{window} has no other window
-above or below it in its frame.  More precisely, this means that the
-total height of @var{window} equals the total height of the root window
-on that frame.  The minibuffer window does not count in this regard.  If
-@var{window} is omitted or @code{nil}, it defaults to the selected
-window.
+Функция возвращает не-@code{nil}, если @var{window} не имеет другого окна
+выше или ниже в своем фрейме.  Точнее, это означает, что общая высота
+@var{window} равна общей высоте корневого окна в этом фрейме.  Окно
+минибуфера в этом отношении не учитывается.  Если @var{window} опущено или
+@code{nil}, по умолчанию используется выбранное окно.
 @end defun
 
 @defun window-full-width-p &optional window
-This function returns не-@code{nil} if @var{window} has no other
-window to the left or right in its frame, i.e., its total width equals
-that of the root window on that frame.  If @var{window} is omitted or
-@code{nil}, it defaults to the selected window.
+Функция возвращает не-@code{nil}, если @var{window} не имеет другого окна
+слева или справа в его фрейме, то есть его общая ширина равна ширине
+корневого окна в этом фрейме.  Если @var{window} опущен или @code{nil}, по
+умолчанию используется выбранное окно.
 @end defun
 
 @cindex window body height
 @cindex body height of a window
-The @dfn{body height} of a window is the height of its text area, which
-does not include a mode or header line, a horizontal scroll bar, or a
-bottom divider.
+@dfn{body height} окна - это высота его текстовой области, которая не
+включает режим или строку заголовка, горизонтальную полосу прокрутки или
+нижний разделитель.
 
 @defun window-body-height &optional window pixelwise
-This function returns the height, in lines, of the body of window
-@var{window}.  If @var{window} is omitted or @code{nil}, it defaults to
-the selected window; otherwise it must be a live window.
+Функция возвращает высоту в строках тела окна @var{window}.  Если
+@var{window} опущен или @code{nil}, по умолчанию используется выбранное
+окно; в противном случае это должно быть активное окно.
 
-If the optional argument @var{pixelwise} is не-@code{nil}, this
-function returns the body height of @var{window} counted in pixels.
+Если необязательный аргумент @var{pixelwise} - не-@code{nil}, функция
+возвращает высоту тела @var{window} в пикселях.
 
-If @var{pixelwise} is @code{nil}, the return value is rounded down to
-the nearest integer, if necessary.  This means that if a line at the
-bottom of the text area is only partially visible, that line is not
-counted.  It also means that the height of a window's body can never
-exceed its total height as returned by @code{window-total-height}.
+Если @var{pixelwise} равен @code{nil}, возвращаемое значение при
+необходимости округляется до ближайшего целого числа.  Это означает, что
+если строка в нижней части текстовой области видна только частично, эта
+строка не учитывается.  Это также означает, что высота тела окна никогда не
+может превышать его общую высоту, возвращаемую @code{window-total-height}.
 @end defun
 
 @cindex window body width
 @cindex body width of a window
-The @dfn{body width} of a window is the width of its text area, which
-does not include the scroll bar, fringes, margins or a right divider.
-Note that when one or both fringes are removed (by setting their width
-to zero), the display engine reserves two character cells, one on each
-side of the window, for displaying the continuation and truncation
-glyphs, which leaves 2 columns less for text display.  (The function
-@code{window-max-chars-per-line}, described below, takes this
-peculiarity into account.)
+@dfn{body width} окна - это ширина его текстовой области, которая не
+включает полосу прокрутки, края, поля или правый разделитель.  Обратить
+внимание, что при удалении одной или обеих полос (путем установки их ширины
+на ноль) механизм отображения резервирует две символьные ячейки, по одной с
+каждой стороны окна, для отображения глифов продолжения и усечения, что
+оставляет на 2 столбца меньше для отображения текста.  (Функция
+@code{window-max-chars-per-line}, описанная ниже, учитывает эту
+особенность.)
 
 @defun window-body-width &optional window pixelwise
-This function returns the width, in columns, of the body of window
-@var{window}.  If @var{window} is omitted or @code{nil}, it defaults to
-the selected window; otherwise it must be a live window.
+Функция возвращает ширину в столбцах тела окна @var{window}.  Если
+@var{window} опущен или @code{nil}, по умолчанию используется выбранное
+окно; в противном случае это должно быть живое окно.
 
-If the optional argument @var{pixelwise} is не-@code{nil}, this
-function returns the body width of @var{window} in units of pixels.
+Если необязательный аргумент @var{pixelwise} - не-@code{nil}, функция
+возвращает ширину тела @var{window} в пикселях.
 
-If @var{pixelwise} is @code{nil}, the return value is rounded down to
-the nearest integer, if necessary.  This means that if a column on the
-right of the text area is only partially visible, that column is not
-counted.  It also means that the width of a window's body can never
-exceed its total width as returned by @code{window-total-width}.
+Если @var{pixelwise} равен @code{nil}, возвращаемое значение при
+необходимости округляется до ближайшего целого числа.  Это означает, что
+если столбец справа от текстовой области виден только частично, этот столбец
+не учитывается.  Это также означает, что ширина тела окна никогда не может
+превышать его общую ширину, возвращаемую @code{window-total-width}.
 @end defun
 
 @cindex window body size
 @cindex body size of a window
 @defun window-body-size &optional window horizontal pixelwise
-This function returns the body height or body width of @var{window}.  If
-@var{horizontal} is omitted or @code{nil}, it is equivalent to calling
-@code{window-body-height} for @var{window}; otherwise it is equivalent
-to calling @code{window-body-width}.  In either case, the optional
-argument @var{pixelwise} is passed to the function called.
+Функция возвращает высоту или ширину тела @var{window}.  Если
+@var{horizontal} опущен или @code{nil}, это эквивалентно вызову
+@code{window-body-height} для @var{window}; в противном случае это
+эквивалентно вызову @code{window-body-width}.  В любом случае необязательный
+аргумент @var{pixelwise} передается вызываемой функции.
 @end defun
 
-For compatibility with previous versions of Emacs,
-@code{window-height} is an alias for @code{window-total-height}, and
-@code{window-width} is an alias for @code{window-body-width}.  These
-aliases are considered obsolete and will be removed in the future.
+Для совместимости с предыдущими версиями Emacs @code{window-height} - это
+псевдоним для @code{window-total-height}, а @code{window-width} - это
+псевдоним для @code{window-body-width}.  Эти псевдонимы считаются
+устаревшими и будут удалены в будущем.
 
-   The pixel heights of a window's mode and header line can be retrieved
-with the functions given below.  Their return value is usually accurate
-unless the window has not been displayed before: In that case, the
-return value is based on an estimate of the font used for the window's
-frame.
+   Высота в пикселях режима окна и строки заголовка может быть получена с
+помощью функций, приведенных ниже.  Их возвращаемое значение обычно является
+точным, если окно не отображалось раньше: в этом случае возвращаемое
+значение основывается на оценке шрифта, используемого для рамки окна.
 
 @defun window-mode-line-height &optional window
-This function returns the height in pixels of @var{window}'s mode line.
-@var{window} must be a live window and defaults to the selected one.  If
-@var{window} has no mode line, the return value is zero.
+Функция возвращает высоту в пикселях строки режима @var{window}.
+@var{window} должно быть активным окном и по умолчанию быть выбранным.  Если
+@var{window} не имеет строки режима, возвращаемое значение равно нулю.
 @end defun
 
 @defun window-header-line-height &optional window
-This function returns the height in pixels of @var{window}'s header
-line.  @var{window} must be a live window and defaults to the selected
-one.  If @var{window} has no header line, the return value is zero.
+Функция возвращает высоту в пикселях строки заголовка @var{window}.
+@var{window} должно быть активным окном и по умолчанию быть выбранным.  Если
+@var{window} не имеет строки заголовка, возвращаемое значение равно нулю.
 @end defun
 
-Functions for retrieving the height and/or width of window dividers
-(@pxref{Window Dividers}), fringes (@pxref{Fringes}), scroll bars
-(@pxref{Scroll Bars}), and display margins (@pxref{Display Margins}) are
-described in the corresponding sections.
+Функции для получения высоты и/или ширины разделителей окон
+(@pxref{Window Dividers}), полос (@pxref{Fringes}), полос прокрутки
+(@pxref{Scroll Bars}) и полей отображения (@pxref{Display Margins}) описаны
+в соответствующих разделах.
 
-If your Lisp program needs to make layout decisions, you will find the
-following function useful:
+Если программа Lisp должна принимать решения по компоновке, пригодится
+следующая функция:
 
 @defun window-max-chars-per-line &optional window face
-This function returns the number of characters displayed in the
-specified face @var{face} in the specified window @var{window} (which
-must be a live window).  If @var{face} was remapped (@pxref{Face
-Remapping}), the information is returned for the remapped face.  If
-omitted or @code{nil}, @var{face} defaults to the default face, and
-@var{window} defaults to the selected window.
+Функция возвращает количество символов, отображаемых в границах
+@var{face} в указанном окне @var{window} (которое должно быть активным
+окном).  Если @var{face} было переназначено (@pxref{Face Remapping}),
+информация возвращается для переназначенного вида отображения.  Если опущено
+или @code{nil}, @var{face} по умолчанию принимает вид отображения по
+умолчанию, а @var{window} по умолчанию используется для выбранного окна.
 
-Unlike @code{window-body-width}, this function accounts for the actual
-size of @var{face}'s font, instead of working in units of the canonical
-character width of @var{window}'s frame (@pxref{Frame Font}).  It also
-accounts for space used by the continuation glyph, if @var{window} lacks
-one or both of its fringes.
+В отличие от @code{window-body-width}, эта функция учитывает фактический
+размер шрифта @var{face} вместо того, чтобы работать в единицах канонической
+ширины символа границ @var{window} (@pxref{Frame Font}).  Также учитывается
+пространство, используемое глифом продолжения, если @var{window} не имеет
+одной или обеих сторон.
 @end defun
 
 @cindex fixed-size window
 @vindex window-min-height
 @vindex window-min-width
-  Commands that change the size of windows (@pxref{Resizing Windows}),
-or split them (@pxref{Splitting Windows}), obey the variables
-@code{window-min-height} and @code{window-min-width}, which specify the
-smallest allowable window height and width.  They also obey the variable
-@code{window-size-fixed}, with which a window can be @dfn{fixed} in
-size (@pxref{Preserving Window Sizes}).
+  Команды, которые изменяют размер окон (@pxref{Resizing Windows}) или
+разделяют их на (@pxref{Splitting Windows}), подчиняются переменным
+@code{window-min-height} и @code{window-min-width}, которые определяют
+минимально допустимую высоту и ширину окна.  Они также подчиняются
+переменной @code{window-size-fixed}, с помощью которой окно может быть
+@dfn{фиксированного} размера (@pxref{Preserving Window Sizes}).
 
 @defopt window-min-height
-This option specifies the minimum total height, in lines, of any window.
-Its value has to accommodate at least one text line as well as a mode
-and header line, a horizontal scroll bar and a bottom divider, if
-present.
+Этот параметр определяет минимальную общую высоту в строках любого окна.
+Его значение должно включать по крайней мере одну текстовую строку, а также
+строку режима и заголовка, горизонтальную полосу прокрутки и нижний
+разделитель, если таковой имеется.
 @end defopt
 
 @defopt window-min-width
-This option specifies the minimum total width, in columns, of any
-window.  Its value has to accommodate two text columns as well as
-margins, fringes, a scroll bar and a right divider, if present.
+Этот параметр определяет минимальную общую ширину в столбцах любого окна.
+Его значение должно включать два текстовых столбца, а также поля, полосы,
+полосу прокрутки и правый разделитель, если таковой имеется.
 @end defopt
 
-The following function tells how small a specific window can get taking
-into account the sizes of its areas and the values of
-@code{window-min-height}, @code{window-min-width} and
-@code{window-size-fixed} (@pxref{Preserving Window Sizes}).
+Следующая функция сообщает, насколько маленьким может стать конкретное окно
+с учетом размеров его областей и значений @code{window-min-height},
+@code{window-min-width} и @code{window-size-fixed}
+(@pxref{Preserving Window Sizes}).
 
 @defun window-min-size &optional window horizontal ignore pixelwise
-This function returns the minimum size of @var{window}.  @var{window}
-must be a valid window and defaults to the selected one.  The optional
-argument @var{horizontal} не-@code{nil} means to return the minimum
-number of columns of @var{window}; otherwise return the minimum number
-of @var{window}'s lines.
+Функция возвращает минимальный размер @var{window}.  @var{window} должено
+быть допустимым окном и по умолчанию быть выбранным.  Необязательный
+аргумент @var{horizontal} не-@code{nil} означает возврат минимального
+количества столбцов @var{window}; в противном случае возврать минимального
+количества строк @var{window}.
 
-The return value makes sure that all components of @var{window} remain
-fully visible if @var{window}'s size were actually set to it.  With
-@var{horizontal} @code{nil} it includes the mode and header line, the
-horizontal scroll bar and the bottom divider, if present.  With
-@var{horizontal} не-@code{nil} it includes the margins and fringes, the
-vertical scroll bar and the right divider, if present.
+Возвращаемое значение гарантирует, что все компоненты @var{window} остаются
+полностью видимыми, если размер @var{window} действительно был установлен
+для этого.  @var{horizontal} в @code{nil} включает строку режима и
+заголовка, горизонтальную полосу прокрутки и нижний разделитель, если он
+есть.  @var{horizontal} в не-@code{nil} включает поля и полосы, вертикальную
+полосу прокрутки и правый разделитель, если он есть.
 
-The optional argument @var{ignore}, if не-@code{nil}, means ignore
-restrictions imposed by fixed size windows, @code{window-min-height} or
-@code{window-min-width} settings.  If @var{ignore} equals @code{safe},
-live windows may get as small as @code{window-safe-min-height} lines and
-@code{window-safe-min-width} columns.  If @var{ignore} is a window,
-ignore restrictions for that window only.  Any other не-@code{nil}
-value means ignore all of the above restrictions for all windows.
+Необязательный аргумент @var{ignore}, если не-@code{nil}, означает
+игнорирование ограничений, налагаемых окнами фиксированного размера,
+параметрами @code{window-min-height} или @code{window-min-width}.  Если
+@var{ignore} равно @code{safe}, активные окна могут стать меньше строк
+@code{window-safe-min-height} и столбцов @code{window-safe-min-width}.  Если
+@var{ignore} является окном, игнорируются ограничения только для этого окна.
+Любое другое значение от не-@code{nil} означает игнорирование всех
+вышеперечисленных ограничений для всех окон.
 
-The optional argument @var{pixelwise} не-@code{nil} means to return the
-minimum size of @var{window} counted in pixels.
+Необязательный аргумент @var{pixelwise} не-@code{nil} означает возврат
+минимального размера @var{window} в пикселях.
 @end defun
 
 
 @node Resizing Windows
-@section Resizing Windows
+@section Изменение Размера Окон
 @cindex window resizing
 @cindex resize window
 @cindex changing window size
 @cindex window size, changing
 
-  This section describes functions for resizing a window without
-changing the size of its frame.  Because live windows do not overlap,
-these functions are meaningful only on frames that contain two or more
-windows: resizing a window also changes the size of a neighboring
-window.  If there is just one window on a frame, its size cannot be
-changed except by resizing the frame (@pxref{Frame Size}).
+  В этом разделе описаны функции для изменения размера окна без изменения
+размера его рамки.  Поскольку активные окна не перекрываются, эти функции
+имеют смысл только для фреймов, содержащих два или более окон: изменение
+размера окна также изменяет размер соседнего окна.  Если во фрейме только
+одно окно, его размер нельзя изменить, кроме как путем изменения размера
+фрейма (@pxref{Frame Size}).
 
-  Except where noted, these functions also accept internal windows as
-arguments.  Resizing an internal window causes its child windows to be
-resized to fit the same space.
+  Если не указано иное, эти функции также принимают внутренние окна в
+качестве аргументов.  Изменение размера внутреннего окна приводит к тому,
+что его дочерние окна изменяются, чтобы соответствовать тому же
+пространству.
 
 @defun window-resizable window delta &optional horizontal ignore pixelwise
-This function returns @var{delta} if the size of @var{window} can be
-changed vertically by @var{delta} lines.  If the optional argument
-@var{horizontal} is не-@code{nil}, it instead returns @var{delta} if
-@var{window} can be resized horizontally by @var{delta} columns.  It
-does not actually change the window size.
+Функция возвращает @var{delta}, если размер @var{window} может быть изменен
+по вертикали строками @var{delta}.  Если необязательный аргумент
+@var{horizontal} - не-@code{nil}, вместо этого возвращается @var{delta},
+если @var{window} можно изменять по горизонтали с помощью столбцов
+@var{delta}.  Фактически это не меняет размер окна.
 
-If @var{window} is @code{nil}, it defaults to the selected window.
+Если @var{window} равен @code{nil}, по умолчанию используется выбранное
+окно.
 
-A positive value of @var{delta} means to check whether the window can be
-enlarged by that number of lines or columns; a negative value of
-@var{delta} means to check whether the window can be shrunk by that many
-lines or columns.  If @var{delta} is non-zero, a return value of 0 means
-that the window cannot be resized.
+Положительное значение @var{delta} означает проверку возможности увеличения
+окна на это количество строк или столбцов; отрицательное значение
+@var{delta} означает проверку, можно ли уменьшить окно на такое количество
+строк или столбцов.  Если @var{delta} не равно нулю, возвращаемое значение 0
+означает, что размер окна изменить нельзя.
 
-Normally, the variables @code{window-min-height} and
-@code{window-min-width} specify the smallest allowable window size
-(@pxref{Window Sizes}).  However, if the optional argument @var{ignore}
-is не-@code{nil}, this function ignores @code{window-min-height} and
-@code{window-min-width}, as well as @code{window-size-fixed}.  Instead,
-it considers the minimum-height window to be one consisting of a header
-and a mode line, a horizontal scrollbar and a bottom divider (if any),
-plus a text area one line tall; and a minimum-width window as one
-consisting of fringes, margins, a scroll bar and a right divider (if
-any), plus a text area two columns wide.
+Обычно переменные @code{window-min-height} и @code{window-min-width}
+определяют наименьший допустимый размер окна (@pxref{Window Sizes}).
+Однако, если необязательный аргумент @var{ignore} - не-@code{nil}, эта
+функция игнорирует @code{window-min-height} и @code{window-min-width}, а
+также @code{window-size-fixed}.  Вместо этого считается, что окно
+минимальной высоты состоит из заголовка и строки режима, горизонтальной
+полосы прокрутки и нижнего разделителя (если есть), а также текстовой
+области высотой в одну строку; и окно минимальной ширины, состоящее из
+полос, полей, полосы прокрутки и правого разделителя (если есть), а также
+текстовой области шириной в два столбца.
 
-If the optional argument @var{pixelwise} is не-@code{nil},
-@var{delta} is interpreted as pixels.
+Если необязательный аргумент @var{pixelwise} - не-@code{nil}, @var{delta}
+интерпретируется как пиксели.
 @end defun
 
 @defun window-resize window delta &optional horizontal ignore pixelwise
-This function resizes @var{window} by @var{delta} increments.  If
-@var{horizontal} is @code{nil}, it changes the height by @var{delta}
-lines; otherwise, it changes the width by @var{delta} columns.  A
-positive @var{delta} means to enlarge the window, and a negative
-@var{delta} means to shrink it.
+Функция изменяет размер @var{window} с шагом @var{delta}.  Если
+@var{horizontal} равен @code{nil}, изменяется высота на строки @var{delta};
+в противном случае ширина изменяется на @var{delta} столбцов.  Положительное
+значение @var{delta} означает увеличение окна, а отрицательное значение
+@var{delta} означает его уменьшение.
 
-If @var{window} is @code{nil}, it defaults to the selected window.  If
-the window cannot be resized as demanded, an error is signaled.
+Если @var{window} равно @code{nil}, по умолчанию используется выбранное
+окно.  Если размер окна не может быть изменен в соответствии с требованиями,
+выдается сигнал об ошибке.
 
-The optional argument @var{ignore} has the same meaning as for the
-function @code{window-resizable} above.
+Необязательный аргумент @var{ignore} имеет то же значение, что и для функции
+@code{window-resizable} выше.
 
-If the optional argument @var{pixelwise} is не-@code{nil},
-@var{delta} will be interpreted as pixels.
+Если необязательный аргумент @var{pixelwise} - не-@code{nil}, @var{delta}
+будет интерпретироваться как пиксели.
 
-The choice of which window edges this function alters depends on the
-values of the option @code{window-combination-resize} and the
-combination limits of the involved windows; in some cases, it may alter
-both edges.  @xref{Recombining Windows}.  To resize by moving only the
-bottom or right edge of a window, use the function
+Выбор того, какие края окна изменяются этой функцией, зависит от значений
+параметра @code{window-combination-resize} и пределов комбинации
+задействованных окон; в некоторых случаях это может изменить оба края.
+@xref{Recombining Windows}.  Чтобы изменить размер, перемещая только нижний
+или правый край окна, используется функция
 @code{adjust-window-trailing-edge}.
 @end defun
 
-@c The commands enlarge-window, enlarge-window-horizontally,
-@c shrink-window, and shrink-window-horizontally are documented in the
-@c Emacs manual.  They are not preferred for calling from Lisp.
+@c Команды Увеличить окно, Увеличить окно по горизонтали, сжать окно и
+@c сжать окно по горизонтали задокументированы в руководстве по Emacs.
+@c Это не рекомендуется вызывать из Lisp.
 
 @defun adjust-window-trailing-edge window delta &optional horizontal pixelwise
-This function moves @var{window}'s bottom edge by @var{delta} lines.
-If optional argument @var{horizontal} is не-@code{nil}, it instead
-moves the right edge by @var{delta} columns.  If @var{window} is
-@code{nil}, it defaults to the selected window.
+Функция перемещает нижний край @var{window} на строки @var{delta}.  Если
+необязательный аргумент @var{horizontal} - не-@code{nil}, вместо этого
+перемещается правый край на столбцы @var{delta}.  Если @var{window} равен
+@code{nil}, по умолчанию используется выбранное окно.
 
-If the optional argument @var{pixelwise} is не-@code{nil},
-@var{delta} is interpreted as pixels.
+Если необязательный аргумент @var{pixelwise} - не-@code{nil}, @var{delta}
+интерпретируется как пиксели.
 
-A positive @var{delta} moves the edge downwards or to the right; a
-negative @var{delta} moves it upwards or to the left.  If the edge
-cannot be moved as far as specified by @var{delta}, this function
-moves it as far as possible but does not signal an error.
+Положительное значение @var{delta} перемещает край вниз или вправо;
+отрицательное @var{delta} перемещает его вверх или влево.  Если край не
+может быть перемещен так далеко, как указано @var{delta}, эта функция
+перемещает его как можно дальше, но не сигнализирует об ошибке.
 
-This function tries to resize windows adjacent to the edge that is
-moved.  If this is not possible for some reason (e.g., if that adjacent
-window is fixed-size), it may resize other windows.
+Функция пытается изменить размер окон, прилегающих к перемещаемому краю.
+Если это невозможно по какой-либо причине (например, если это соседнее окно
+имеет фиксированный размер), может изменить размер других окон.
 @end defun
 
 @cindex pixelwise, resizing windows
 @defopt window-resize-pixelwise
-If the value of this option is не-@code{nil}, Emacs resizes windows in
-units of pixels.  This currently affects functions like
+Если значение этой опции - не-@code{nil}, Emacs изменяет размеры окон в
+пикселях.  В настоящее время это влияет на такие функции, как
 @code{split-window} (@pxref{Splitting Windows}), @code{maximize-window},
 @code{minimize-window}, @code{fit-window-to-buffer},
-@code{fit-frame-to-buffer} and
-@code{shrink-window-if-larger-than-buffer} (all listed below).
+@code{fit-frame-to-buffer} и
+@code{shrink-window-if-larger-than-buffer} (все перечисленны ниже).
 
-Note that when a frame's pixel size is not a multiple of its character
-size, at least one window may get resized pixelwise even if this
-option is @code{nil}.  The default value is @code{nil}.
+Обратить внимание, что когда размер кадра в пикселях не кратен размеру его
+символа, по крайней мере одно окно может быть изменено в пикселях, даже
+если эта опция - @code{nil}.  Значение по умолчанию - @code{nil}.
 @end defopt
 
-  The following commands resize windows in more specific ways.  When
-called interactively, they act on the selected window.
+  Следующие команды изменяют размер окон более конкретными способами.  При
+интерактивном вызове они действуют в выбранном окне.
 
 @deffn Command fit-window-to-buffer &optional window max-height min-height max-width min-width preserve-size
-This command adjusts the height or width of @var{window} to fit the text
-in it.  It returns не-@code{nil} if it was able to resize @var{window},
-and @code{nil} otherwise.  If @var{window} is omitted or @code{nil}, it
-defaults to the selected window.  Otherwise, it should be a live window.
+Команда регулирует высоту или ширину @var{window}, чтобы соответствовать
+тексту в нем.  Возвращает не-@code{nil}, если можно было изменить размер
+@var{window}, и в противном случае @code{nil}.  Если @var{window} опущено
+или @code{nil}, по умолчанию используется выбранное окно.  В противном
+случае это должно быть активное окно.
 
-If @var{window} is part of a vertical combination, this function adjusts
-@var{window}'s height.  The new height is calculated from the actual
-height of the accessible portion of its buffer.  The optional argument
-@var{max-height}, if не-@code{nil}, specifies the maximum total height
-that this function can give @var{window}.  The optional argument
-@var{min-height}, if не-@code{nil}, specifies the minimum total height
-that it can give, which overrides the variable @code{window-min-height}.
-Both @var{max-height} and @var{min-height} are specified in lines and
-include mode and header line and a bottom divider, if any.
+Если @var{window} является частью вертикальной комбинации, эта функция
+регулирует высоту @var{window}.  Новая высота рассчитывается исходя из
+фактической высоты доступной части буфера.  Необязательный аргумент
+@var{max-height}, если не-@code{nil}, указывает максимальную общую высоту,
+которую эта функция может дать @var{window}.  Необязательный аргумент
+@var{min-height}, если не-@code{nil}, указывает минимальную общую высоту,
+которую можно дать, которая переопределяет переменную
+@code{window-min-height}.  И @var{max-height}, и @var{min-height} указаны в
+строках и включают режим, строку заголовка и нижний разделитель, если
+таковой имеется.
 
-If @var{window} is part of a horizontal combination and the value of the
-option @code{fit-window-to-buffer-horizontally} (see below) is
-не-@code{nil}, this function adjusts @var{window}'s width.  The new
-width of @var{window} is calculated from the maximum length of its
-buffer's lines that follow the current start position of @var{window}.
-The optional argument @var{max-width} specifies a maximum width and
-defaults to the width of @var{window}'s frame.  The optional argument
-@var{min-width} specifies a minimum width and defaults to
-@code{window-min-width}.  Both @var{max-width} and @var{min-width} are
-specified in columns and include fringes, margins and scrollbars, if
-any.
+Если @var{window} является частью горизонтальной комбинации и значение
+параметра @code{fit-window-to-buffer-horizontally} (смотреть ниже) равно
+не-@code{nil}, функция регулирует ширину @var{window}.  Новая ширина
+@var{window} рассчитывается из максимальной длины строк буфера, следующих за
+текущей начальной позицией @var{window}.  Необязательный аргумент
+@var{max-width} указывает максимальную ширину и по умолчанию равен ширине
+рамки @var{window}.  Необязательный аргумент @var{min-width} указывает
+минимальную ширину, по умолчанию - @code{window-min-width}.  Оба
+@var{max-width} и @var{min-width} указаны в столбцах и включают обрамление,
+поля и полосы прокрутки, если таковые имеются.
 
-The optional argument @var{preserve-size}, if не-@code{nil}, will
-install a parameter to preserve the size of @var{window} during future
-resize operations (@pxref{Preserving Window Sizes}).
+Необязательный аргумент @var{preserve-size}, если не-@code{nil}, установит
+параметр для сохранения размера @var{window} во время будущих операций
+изменения размера (@pxref{Preserving Window Sizes}).
 
-If the option @code{fit-frame-to-buffer} (see below) is не-@code{nil},
-this function will try to resize the frame of @var{window} to fit its
-contents by calling @code{fit-frame-to-buffer} (see below).
+Если опция @code{fit-frame-to-buffer} (смотреть ниже) - не-@code{nil}, эта
+функция попытается изменить размер рамки @var{window}, чтобы соответствовала
+его содержимому, вызывая @code{fit-frame-to-buffer} (смотреть ниже).
 @end deffn
 
 @defopt fit-window-to-buffer-horizontally
-If this is не-@code{nil}, @code{fit-window-to-buffer} can resize
-windows horizontally.  If this is @code{nil} (the default)
-@code{fit-window-to-buffer} never resizes windows horizontally.  If this
-is @code{only}, it can resize windows horizontally only.  Any other
-value means @code{fit-window-to-buffer} can resize windows in both
-dimensions.
+Если не-@code{nil}, @code{fit-window-to-buffer}, может изменять размер
+окон по горизонтали.  Если @code{nil} (по умолчанию),
+@code{fit-window-to-buffer} никогда не изменит размер окон по горизонтали.
+Если @code{only}, может изменять размер окон только по горизонтали.  Любое
+другое значение означает, что @code{fit-window-to-buffer} может изменять
+размер окон в обоих измерениях.
 @end defopt
 
 @defopt fit-frame-to-buffer
-If this option is не-@code{nil}, @code{fit-window-to-buffer} can fit a
-frame to its buffer.  A frame is fit if and only if its root window is a
-live window and this option is не-@code{nil}.  If this is
-@code{horizontally}, frames are fit horizontally only.  If this is
-@code{vertically}, frames are fit vertically only.  Any other
-не-@code{nil} value means frames can be resized in both dimensions.
+Если опция установлена в не-@code{nil}, @code{fit-window-to-buffer}, может
+поместить фрейм в свой буфер.  Фрейм подходит тогда и только тогда, когда
+его корневое окно является активным окном и эта опция - не-@code{nil}.  Еслиэто @code{horizontally}, рамки подходят только по горизонтали.  Если это
+@code{vertically}, рамки подходят только по вертикали.  Любое другое
+значение не-@code{nil} означает, что размер фреймов можно изменять в обоих
+измерениях.
 @end defopt
 
-If you have a frame that displays only one window, you can fit that
-frame to its buffer using the command @code{fit-frame-to-buffer}.
+Если у есть фрейм, который отображает только одно окно, можно поместить этот
+фрейм в его буфер, используя команду @code{fit-frame-to-buffer}.
 
 @deffn Command fit-frame-to-buffer &optional frame max-height min-height max-width min-width only
-This command adjusts the size of @var{frame} to display the contents of
-its buffer exactly.  @var{frame} can be any live frame and defaults to
-the selected one.  Fitting is done only if @var{frame}'s root window is
-live.  The arguments @var{max-height}, @var{min-height}, @var{max-width}
-and @var{min-width} specify bounds on the new total size of
-@var{frame}'s root window.  @var{min-height} and @var{min-width} default
-to the values of @code{window-min-height} and @code{window-min-width}
-respectively.
+Команда регулирует размер @var{frame} для точного отображения содержимого
+буфера.  @var{frame} может быть любым активным фреймом и по умолчанию
+быть выбранным.  Подгонка производится только при активном корневом окне
+@var{frame}.  Аргументы @var{max-height}, @var{min-height}, @var{max-width}
+и @var{min-width} задают границы нового общего размера корневого окна
+@var{frame}.  @var{min-height} и @var{min-width} по умолчанию принимает
+значения @code{window-min-height} и @code{window-min-width} соответственно.
 
-If the optional argument @var{only} is @code{vertically}, this function
-may resize the frame vertically only.  If @var{only} is
-@code{horizontally}, it may resize the frame horizontally only.
+Если необязательный аргумент @var{only} - @code{vertically}, функция может
+изменять размер кадра только по вертикали.  Если @var{only} равен
+@code{horizontally}, можно изменять размер кадра только по горизонтали.
 @end deffn
 
-The behavior of @code{fit-frame-to-buffer} can be controlled with the
-help of the two options listed next.
+Поведение @code{fit-frame-to-buffer} можно контролировать с помощью двух
+опций, перечисленных ниже.
 
 @defopt fit-frame-to-buffer-margins
-This option can be used to specify margins around frames to be fit by
-@code{fit-frame-to-buffer}.  Such margins can be useful to avoid, for
-example, that the resized frame overlaps the taskbar or parts of its
-parent frame.
+Опцию можно использовать для указания полей вокруг фреймов, которые будут
+соответствовать @code{fit-frame-to-buffer}.  Такие поля могут быть полезны,
+чтобы избежать, например, того, что рамка с измененным размером перекрывает
+панель задач или части ее родительской рамки.
 
-It specifies the numbers of pixels to be left free on the left, above,
-the right, and below a frame that shall be fit.  The default specifies
-@code{nil} for each which means to use no margins.  The value specified
-here can be overridden for a specific frame by that frame's
-@code{fit-frame-to-buffer-margins} parameter, if present.
+Определяет количество пикселей, которые должны быть оставлены свободными
+слева, сверху, справа и снизу кадра соответственно.  По умолчанию для
+каждого указывается @code{nil}, что означает отсутствие полей.  Указанное
+здесь значение может быть переопределено для конкретного кадра параметром
+@code{fit-frame-to-buffer-margins} этого кадра, если присутствует.
 @end defopt
 
 @defopt fit-frame-to-buffer-sizes
-This option specifies size boundaries for @code{fit-frame-to-buffer}.
-It specifies the total maximum and minimum lines and maximum and minimum
-columns of the root window of any frame that shall be fit to its buffer.
-If any of these values is не-@code{nil}, it overrides the corresponding
-argument of @code{fit-frame-to-buffer}.
+Опция определяет границы размера для @code{fit-frame-to-buffer}.  Определяет
+общие максимальные и минимальные строки, а также максимальные и минимальные
+столбцы корневого окна любого кадра, которое должно уместиться в его буфере.
+Если любое из этих значений - не-@code{nil}, оно отменяет соответствующий
+аргумент @code{fit-frame-to-buffer}.
 @end defopt
 
 @deffn Command shrink-window-if-larger-than-buffer &optional window
-This command attempts to reduce @var{window}'s height as much as
-possible while still showing its full buffer, but no less than
-@code{window-min-height} lines.  The return value is не-@code{nil} if
-the window was resized, and @code{nil} otherwise.  If @var{window} is
-omitted or @code{nil}, it defaults to the selected window.  Otherwise,
-it should be a live window.
+Команда пытается уменьшить высоту @var{window} насколько это возможно, при
+этом показывая полный буфер, но не меньше, чем строк в
+@code{window-min-height}.  Возвращаемое значение - не-@code{nil}, если
+размер окна был изменен, и @code{nil} в противном случае.  Если @var{window}
+опущено или @code{nil}, по умолчанию используется выбранное окно.  В
+противном случае это должно быть активное окно.
 
-This command does nothing if the window is already too short to
-display all of its buffer, or if any of the buffer is scrolled
-off-screen, or if the window is the only live window in its frame.
+Команда ничего не делает, если окно уже слишком короткое, чтобы отобразить
+весь его буфер, или если какой-либо буфер прокручивается за пределы экрана,
+или если окно является единственным активным окном в своем фрейме.
 
-This command calls @code{fit-window-to-buffer} (see above) to do its
-work.
+Команда вызывает @code{fit-window-to-buffer} (смотреть выше) для выполнения
+своей работы.
 @end deffn
 
 
 @cindex balancing window sizes
 @deffn Command balance-windows &optional window-or-frame
-This function balances windows in a way that gives more space to
-full-width and/or full-height windows.  If @var{window-or-frame}
-specifies a frame, it balances all windows on that frame.  If
-@var{window-or-frame} specifies a window, it balances only that window
-and its siblings (@pxref{Windows and Frames}).
+Функция уравновешивает окна таким образом, чтобы оставлять больше места для
+окон во всю ширину и/или во всю высоту.  Если @var{window-or-frame}
+указывает фрейм, уравновешивает все окна в этом фрейме.  Если
+@var{window-or-frame} указывает окно, балансирует только это окно и его
+братьев и сестер (@pxref{Windows and Frames}).
 @end deffn
 
 @deffn Command balance-windows-area
-This function attempts to give all windows on the selected frame
-approximately the same share of the screen area.  Full-width or
-full-height windows are not given more space than other windows.
+Функция пытается предоставить всем окнам в выбранном фрейме примерно
+одинаковую долю площади экрана.  Окна во всю ширину или в высоту не занимают
+больше места, чем другие окна.
 @end deffn
 
 @cindex maximizing windows
 @deffn Command maximize-window &optional window
-This function attempts to make @var{window} as large as possible, in
-both dimensions, without resizing its frame or deleting other windows.
-If @var{window} is omitted or @code{nil}, it defaults to the selected
-window.
+Функция пытается сделать @var{window} как можно больше в обоих измерениях
+без изменения размера его рамки или удаления других окон.  Если @var{window}
+опущено или @code{nil}, по умолчанию используется выбранное окно.
 @end deffn
 
 @cindex minimizing windows
 @deffn Command minimize-window &optional window
-This function attempts to make @var{window} as small as possible, in
-both dimensions, without deleting it or resizing its frame.  If
-@var{window} is omitted or @code{nil}, it defaults to the selected
-window.
+Функция пытается сделать @var{window} как можно меньше в обоих измерениях,
+не удаляя его и не изменяя размер его рамки.  Если @var{window} опущено или
+@code{nil}, по умолчанию используется выбранное окно.
 @end deffn
 
 
 @node Preserving Window Sizes
-@section Preserving Window Sizes
+@section Сохранение Размеров Окон
 @cindex preserving window sizes
 
-A window can get resized explicitly by using one of the functions from
-the preceding section or implicitly, for example, when resizing an
-adjacent window, when splitting or deleting a window (@pxref{Splitting
-Windows}, @pxref{Deleting Windows}) or when resizing the window's frame
+Размер окна можно изменить явно, используя одну из функций из предыдущего
+раздела, или неявно, например, при изменении размера соседнего окна, при
+разделении или удалении окна (@pxref{Splitting Windows},
+@pxref{Deleting Windows}) или при изменении размера рамки окна
 (@pxref{Frame Size}).
 
-  It is possible to avoid implicit resizing of a specific window when
-there are one or more other resizable windows on the same frame.  For
-this purpose, Emacs must be advised to @dfn{preserve} the size of that
-window.  There are two basic ways to do that.
+  Можно избежать неявного изменения размера конкретного окна, если в том же
+фрейме есть одно или несколько других окон с изменяемым размером.  Для этого
+следует посоветовать Emacs увеличить размер этого окна.  Для этого есть два
+основных способа.
 
 @defvar window-size-fixed
-If this buffer-local variable is не-@code{nil}, the size of any window
-displaying the buffer cannot normally be changed.  Deleting a window or
-changing the frame's size may still change the window's size, if there
-is no choice.
+Если эта локальная переменная буфера - не-@code{nil}, размер любого окна,
+отображающего буфер, обычно не может быть изменен.  Удаление окна или
+изменение размера фрейма может по-прежнему изменять размер окна, если нет
+выбора.
 
-If the value is @code{height}, then only the window's height is fixed;
-if the value is @code{width}, then only the window's width is fixed.
-Any other не-@code{nil} value fixes both the width and the height.
+Если значение равно @code{height}, то фиксируется только высота окна; если
+значение @code{width}, то фиксируется только ширина окна.  Любое другое
+значение не-@code{nil} фиксирует как ширину, так и высоту.
 
-If this variable is @code{nil}, this does not necessarily mean that any
-window showing the buffer can be resized in the desired direction.  To
-determine that, use the function @code{window-resizable}.
+Если эта переменная - @code{nil}, это не обязательно означает, что любое
+окно, показывающее буфер, может быть изменено в желаемом направлении.  Чтобы
+определить это, используйте функцию @code{window-resizable}.
 @xref{Resizing Windows}.
 @end defvar
 
-Often @code{window-size-fixed} is overly aggressive because it inhibits
-any attempt to explicitly resize or split an affected window as well.
-This may even happen after the window has been resized implicitly, for
-example, when deleting an adjacent window or resizing the window's
-frame.  The following function tries hard to never disallow resizing
-such a window explicitly:
+Часто @code{window-size-fixed} слишком агрессивенj, потому что также
+запрещает любые попытки явно изменить размер или разделить затронутое окно.
+Это может произойти даже после неявного изменения размера окна, например,
+при удалении соседнего окна или изменении размера рамки окна.  Следующая
+функция изо всех сил пытается никогда не запрещать явное изменение размера
+такого окна:
 
 @defun window-preserve-size &optional window horizontal preserve
-This function (un-)marks the height of window @var{window} as preserved
-for future resize operations.  @var{window} must be a live window and
-defaults to the selected one.  If the optional argument @var{horizontal}
-is не-@code{nil}, it (un-)marks the width of @var{window} as preserved.
+Функция (отменяет-) отмечает - высоту окна @var{window}, которая
+сохраняется для будущих операций изменения размера.  @var{window} должно
+быть активным окном и по умолчанию выбрано.  Если необязательный аргумент
+@var{horizontal} - не-@code{nil}, (отменяет-) отмечает ширину @var{window}
+как сохраненную.
 
-If the optional argument @var{preserve} is @code{t}, this means to
-preserve the current height/width of @var{window}'s body.  The
-height/width of @var{window} will change only if Emacs has no better
-choice.  Resizing a window whose height/width is preserved by this
-function never throws an error.
+Если необязательный аргумент @var{preserve} - @code{t}, это означает
+сохранение текущей высоты/ширины тела @var{window}.  Высота/ширина
+@var{window} изменится только в том случае, если у Emacs нет лучшего выбора.
+Изменение размера окна, высота/ширина которого сохраняется этой функцией,
+никогда не вызывает ошибки.
 
-If @var{preserve} is @code{nil}, this means to stop preserving the
-height/width of @var{window}, lifting any respective restraint induced
-by a previous call of this function for @var{window}.  Calling
-@code{enlarge-window}, @code{shrink-window} or
-@code{fit-window-to-buffer} with @var{window} as argument may also
-remove the respective restraint.
+Если @var{preserve} равен @code{nil}, это означает прекращение сохранения
+высоты/ширины @var{window}, снятие любых ограничений, наложенных предыдущим
+вызовом этой функции для @var{window}.  Вызов @code{enlarge-window},
+@code{shrink-window} или @code{fit-window-to-buffer} с аргументом
+@var{window} также может удалить соответствующее ограничение.
 @end defun
 
-@code{window-preserve-size} is currently invoked by the following
-functions:
+@code{window-preserve-size} в настоящее время вызывается следующими
+функциями:
 
 @table @code
 @item fit-window-to-buffer
-If the optional argument @var{preserve-size} of that function
-(@pxref{Resizing Windows}) is не-@code{nil}, the size established by
-that function is preserved.
+Если необязательный аргумент @var{preserve-size} этой функции
+(@pxref{Resizing Windows}) равен не-@code{nil}, размер, установленный этой
+функцией, сохраняется.
 
 @item display-buffer
-If the @var{alist} argument of that function (@pxref{Choosing Window})
-contains a @code{preserve-size} entry, the size of the window produced
-by that function is preserved.
+Если аргумент @var{alist} этой функции (@pxref{Choosing Window}) содержит
+запись @code{preserve-size}, размер окна, созданного этой функцией,
+сохраняется.
 @end table
 
-  @code{window-preserve-size} installs a window parameter (@pxref{Window
-Parameters}) called @code{window-preserved-size} which is consulted by the
-window resizing functions.  This parameter will not prevent resizing the
-window when the window shows another buffer than the one when
-@code{window-preserve-size} was invoked or if its size has changed since
-then.
+  @code{window-preserve-size} устанавливает параметр окна
+(@pxref{Window Parameters}) с именем @code{window-preserved-size}, который
+используется функциями изменения размера окна.  Этот параметр не
+препятствует изменению размера окна, когда в окне отображается другой буфер,
+отличный от того, который был при вызове @code{window-preserve-size}, или
+если его размер с тех пор изменился.
 
-The following function can be used to check whether the height of a
-particular window is preserved:
+Следующая функция может использоваться, чтобы проверить, сохраняется ли
+высота конкретного окна:
 
 @defun window-preserved-size &optional window horizontal
-This function returns the preserved height of window @var{window} in
-pixels.  @var{window} must be a live window and defaults to the selected
-one.  If the optional argument @var{horizontal} is не-@code{nil}, it
-returns the preserved width of @var{window}.  It returns @code{nil} if
-the size of @var{window} is not preserved.
+Функция возвращает сохраненную высоту окна @var{window} в пикселях.
+@var{window} должно быть активным окном и по умолчанию быть выбранным.  Если
+необязательный аргумент @var{horizontal} - не-@code{nil}, возвращается
+сохраненная ширина @var{window}.  Возвращается @code{nil}, если размер
+@var{window} не сохраняется.
 @end defun
 
 
