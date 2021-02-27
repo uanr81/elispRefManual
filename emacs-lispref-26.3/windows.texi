@@ -1639,25 +1639,27 @@ Lisp до тех пор, пока на него не исчезнут ссылк
 противном случае были бы слишком малы для такой операции.
 
 @defopt window-combination-resize
-If this variable is @code{nil}, @code{split-window} can only split a
-window (denoted by @var{window}) if @var{window}'s screen area is large
-enough to accommodate both itself and the new window.
+Если эта переменная установлена в @code{nil}, @code{split-window}, то можно
+разделить окно (обозначается @var{window}), только если область экрана
+@var{window} достаточно велика, чтобы вместить как само окно, так и новое
+окно.
 
-If this variable is @code{t}, @code{split-window} tries to resize all
-windows that are part of the same combination as @var{window}, in order
-to accommodate the new window.  In particular, this may allow
-@code{split-window} to succeed even if @var{window} is a fixed-size
-window or too small to ordinarily split.  Furthermore, subsequently
-resizing or deleting @var{window} may resize all other windows in its
-combination.
+Если эта переменная - @code{t}, @code{split-window} пытается изменить размер
+всех окон, которые являются частью той же комбинации, что и @var{window},
+чтобы приспособиться к новому окну.  В частности, это может позволить
+@code{split-window} успешно работать, даже если @var{window} является окном
+фиксированного размера или слишком маленьким для обычного разделения.  Более
+того, последующее изменение размера или удаление @var{window} может изменить
+размер всех других окон в его комбинации.
 
-The default is @code{nil}.  Other values are reserved for future use.  A
-specific split operation may ignore the value of this variable if it is
-affected by a не-@code{nil} value of @code{window-combination-limit}.
+По умолчанию @code{nil}.  Остальные значения зарезервированы для
+использования в будущем.  Конкретная операция разделения может игнорировать
+значение этой переменной, если на нее влияет значение не-@code{nil}
+@code{window-combination-limit}.
 @end defopt
 
-  To illustrate the effect of @code{window-combination-resize}, consider
-the following frame layout.
+  Чтобы проиллюстрировать эффект @code{window-combination-resize},
+рассмотривается следующий макет фрейма.
 
 @smallexample
 @group
@@ -1680,8 +1682,8 @@ the following frame layout.
 @end smallexample
 
 @noindent
-If @code{window-combination-resize} is @code{nil}, splitting window
-@var{W3} leaves the size of @var{W2} unchanged:
+Если @code{window-combination-resize} равен @code{nil}, разделение окна
+@var{W3} оставляет размер @var{W2} неизменным:
 
 @smallexample
 @group
@@ -1704,9 +1706,8 @@ If @code{window-combination-resize} is @code{nil}, splitting window
 @end smallexample
 
 @noindent
-If @code{window-combination-resize} is @code{t}, splitting @var{W3}
-instead leaves all three live windows with approximately the same
-height:
+Если @code{window-combination-resize} равен @code{t}, при разделении
+@var{W3} все три активных окна будут иметь примерно одинаковую высоту:
 
 @smallexample
 @group
@@ -1729,990 +1730,963 @@ height:
 @end smallexample
 
 @noindent
-Deleting any of the live windows @var{W2}, @var{W3} or @var{W4} will
-distribute its space proportionally among the two remaining live
-windows.
+Удаление любого из активных окон @var{W2}, @var{W3} или @var{W4}
+распределяет его пространство пропорционально между двумя оставшимися
+активными окнами.
 
 
 @node Selecting Windows
-@section Selecting Windows
+@section Выбор Окон
 @cindex selecting a window
 
 @defun select-window window &optional norecord
-This function makes @var{window} the selected window and the window
-selected within its frame (@pxref{Basic Windows}), and selects that
-frame.  It also makes @var{window}'s buffer (@pxref{Buffers and
-Windows}) current and sets that buffer's value of @code{point} to the
-value of @code{window-point} (@pxref{Window Point}) in @var{window}.
-@var{window} must be a live window.  The return value is @var{window}.
+Функция делает @var{window} выбранным окном, а окно выбранным в его фрейме
+(@pxref{Basic Windows}) и выбирает этот фрейм.  Это также делает буфер
+@var{window} (@pxref{Buffers and Windows}) текущим и устанавливает значение
+этого буфера @code{point} равным значению @code{window-point}
+(@pxref{Window Point}) в @var{window}.  @var{window} должно быть активным
+окном.  Возвращаемое значение - @var{window}.
 
-By default, this function also moves @var{window}'s buffer to the front
-of the buffer list (@pxref{Buffer List}) and makes @var{window} the most
-recently selected window.  If the optional argument @var{norecord} is
-не-@code{nil}, these additional actions are omitted.
+По умолчанию эта функция также перемещает буфер @var{window} в начало списка
+буферов (@pxref{Buffer List}) и делает @var{window} самым последним
+выбранным окном.  Если необязательный аргумент @var{norecord} -
+не-@code{nil}, эти дополнительные действия не выполняются.
 
-In addition, this function by default also tells the display engine to
-update the display of @var{window} when its frame gets redisplayed the
-next time.  If @var{norecord} is не-@code{nil}, such updates are
-usually not performed.  If, however, @var{norecord} equals the special
-symbol @code{mark-for-redisplay}, the additional actions mentioned above
-are omitted but @var{window} will be nevertheless updated.
+Кроме того, эта функция по умолчанию также сообщает механизму отображения
+обновить отображение @var{window}, когда его фрейм будет повторно отображен
+в следующий раз.  Если @var{norecord} равен не-@code{nil}, такие обновления
+обычно не выполняются.  Если, однако, @var{norecord} равно специальному
+символу @code{mark-for-redisplay}, дополнительные действия, упомянутые выше,
+опускаются, но @var{window}, тем не менее, обновляется.
 
-Note that sometimes selecting a window is not enough to show it, or
-make its frame the top-most frame on display: you may also need to
-raise the frame or make sure input focus is directed to that frame.
+Обратить внимание, что иногда выбора окна недостаточно, чтобы отобразить его
+или сделать его фрейм самым верхним фреймом на дисплее: также может
+потребоваться поднять фрейм или убедиться, что фокус ввода направлен на этот
+фрейм.
 @xref{Input Focus}.
 @end defun
 
 @cindex select window hook
 @cindex running a hook when a window gets selected
-For historical reasons, Emacs does not run a separate hook whenever a
-window gets selected.  Applications and internal routines often
-temporarily select a window to perform a few actions on it.  They do
-that either to simplify coding---because many functions by default
-operate on the selected window when no @var{window} argument is
-specified---or because some functions did not (and still do not) take a
-window as argument and always operate(d) on the selected window instead.
-Running a hook every time a window gets selected for a short time and
-once more when the previously selected window gets restored is not
-useful.
+По историческим причинам Emacs не запускает отдельную ловушку всякий раз,
+когда выбирается окно.  Приложения и внутренние процедуры часто временно
+выбирают окно, чтобы выполнить с ним несколько действий.  Делают это либо
+для упрощения кодирования - потому что многие функции по умолчанию работают
+с выбранным окном, когда не указан аргумент @var{window} - либо потому, что
+некоторые функции не принимают (и до сих пор не принимают) окно в качестве
+аргумента и всегда работают с выбранным окном.  Запуск ловушки каждый раз,
+когда окно выбирается на короткое время и еще раз, когда восстанавливается
+ранее выбранное окно, бесполезно.
 
-  However, when its @var{norecord} argument is @code{nil},
-@code{select-window} updates the buffer list and thus indirectly runs
-the normal hook @code{buffer-list-update-hook} (@pxref{Buffer List}).
-Consequently, that hook provides a reasonable way to run a function
-whenever a window gets selected more ``permanently''.
+  Однако, когда аргумент @var{norecord} - @code{nil}, @code{select-window}
+обновляет список буферов и, таким образом, косвенно запускает обычный
+обработчик @code{buffer-list-update-hook} (@pxref{Buffer List}).
+Следовательно, этот перехватчик обеспечивает разумный способ запуска функции
+всякий раз, когда окно выбирается больше ``нормы''.
 
-  Since @code{buffer-list-update-hook} is also run by functions that are
-not related to window management, it will usually make sense to save the
-value of the selected window somewhere and compare it with the value of
-@code{selected-window} while running that hook.  Also, to avoid false
-positives when using @code{buffer-list-update-hook}, it is good practice
-that every @code{select-window} call supposed to select a window only
-temporarily passes a не-@code{nil} @var{norecord} argument.  If
-possible, the macro @code{with-selected-window} (see below) should be
-used in such cases.
+  Поскольку @code{buffer-list-update-hook} также запускается функциями, не
+имеющими отношения к управлению окнами, обычно имеет смысл сохранить
+где-нибудь значение выбранного окна и сравнить его со значением
+@code{selected-window} при запуске этого перехватчика.  Кроме того, чтобы
+избежать ложных срабатываний при использовании
+@code{buffer-list-update-hook}, рекомендуется, чтобы каждый вызов
+@code{select-window}, предназначенный для выбора окна, только временно
+передавал аргумент не-@code{nil} @var{norecord}.  По возможности в таких
+случаях следует использовать макрос @code{with-selected-window} (смотреть
+ниже).
 
 @cindex most recently selected windows
-  The sequence of calls to @code{select-window} with a не-@code{nil}
-@var{norecord} argument determines an ordering of windows by their
-selection time.  The function @code{get-lru-window} can be used to
-retrieve the least recently selected live window (@pxref{Cyclic Window
-Ordering}).
+  Последовательность вызовов @code{select-window} с аргументом не-@code{nil}
+@var{norecord} определяет порядок окон по времени их выбора.  Функцию
+@code{get-lru-window} можно использовать для извлечения последнего
+выбранного окна реального времени (@pxref{Cyclic Window Ordering}).
 
 @defmac save-selected-window forms@dots{}
-This macro records the selected frame, as well as the selected window
-of each frame, executes @var{forms} in sequence, then restores the
-earlier selected frame and windows.  It also saves and restores the
-current buffer.  It returns the value of the last form in @var{forms}.
+Макрос записывает выбранный фрейм, а также выбранное окно каждого фрейма,
+последовательно выполняет @var{forms}, затем восстанавливает ранее выбранный
+фрейм и окна.  Также сохраняет и восстанавливает текущий буфер. Возвращает
+значение последней формы в @var{forms}.
 
-This macro does not save or restore anything about the sizes,
-arrangement or contents of windows; therefore, if @var{forms} change
-them, the change persists.  If the previously selected window of some
-frame is no longer live at the time of exit from @var{forms}, that
-frame's selected window is left alone.  If the previously selected
-window is no longer live, then whatever window is selected at the end of
-@var{forms} remains selected.  The current buffer is restored if and
-only if it is still live when exiting @var{forms}.
+Макрос ничего не сохраняет и не восстанавливает о размерах, расположении или
+содержимом окон; поэтому, если @var{forms} их изменит, изменение
+сохраняется.  Если ранее выбранное окно какого-либо фрейма больше не
+работает во время выхода из @var{forms}, выбранное окно этого фрейма
+остается в покое.  Если ранее выбранное окно больше не является активным, то
+любое окно, выбранное в конце @var{forms}, остается выбранным.  Текущий
+буфер восстанавливается тогда и только тогда, когда он все еще активен при
+выходе из @var{forms}.
 
-This macro changes neither the ordering of recently selected windows nor
-the buffer list.
+Макрос не изменяет ни порядок недавно выбранных окон, ни список буферов.
 @end defmac
 
 @defmac with-selected-window window forms@dots{}
-This macro selects @var{window}, executes @var{forms} in sequence, then
-restores the previously selected window and current buffer.  The
-ordering of recently selected windows and the buffer list remain
-unchanged unless you deliberately change them within @var{forms}; for
-example, by calling @code{select-window} with argument @var{norecord}
-@code{nil}.  Hence, this macro is the preferred way to temporarily work
-with @var{window} as the selected window without needlessly running
-@code{buffer-list-update-hook}.
+Макрос выбирает @var{window}, последовательно выполняет @var{forms}, затем
+восстанавливает ранее выбранное окно и текущий буфер.  Порядок недавно
+выбранных окон и список буферов остаются неизменными, если намеренно не
+измените их в @var{forms}; например, вызовом @code{select-window} с
+аргументом @var{norecord} @code{nil}.  Следовательно, макрос является
+предпочтительным способом временно работать с @var{window} как с выбранным
+окном без ненужного запуска @code{buffer-list-update-hook}.
 @end defmac
 
 @defun frame-selected-window &optional frame
-This function returns the window on @var{frame} that is selected
-within that frame.  @var{frame} should be a live frame; if omitted or
-@code{nil}, it defaults to the selected frame.
+Функция возвращает окно на @var{frame}, которое выбрано в этом фрейме.
+@var{frame} должен быть активным фреймом; если опущено или @code{nil}, по
+умолчанию используется выбранный фрейм.
 @end defun
 
 @defun set-frame-selected-window frame window &optional norecord
-This function makes @var{window} the window selected within the frame
-@var{frame}.  @var{frame} should be a live frame; if @code{nil}, it
-defaults to the selected frame.  @var{window} should be a live window;
-if @code{nil}, it defaults to the selected window.
+Функция делает @var{window} окном, выбранным в фрейме @var{frame}.
+@var{frame} должен быть активным фреймом; если @code{nil}, по умолчанию
+используется выбранный фрейм.  @var{window} должно быть активным окном; если
+@code{nil}, по умолчанию используется выбранное окно.
 
-If @var{frame} is the selected frame, this makes @var{window} the
-selected window.
+Если @var{frame} - это выбранный фрейм, это делает @var{window} выбранным
+окном.
 
-If the optional argument @var{norecord} is не-@code{nil}, this
-function does not alter the list of most recently selected windows,
-nor the buffer list.
+Если необязательный аргумент @var{norecord} - не-@code{nil}, эта функция не
+изменяет ни список последних выбранных окон, ни список буферов.
 @end defun
 
 @cindex window use time
 @cindex use time of window
 @cindex window order by time of last use
 @defun window-use-time &optional window
-This functions returns the use time of window @var{window}.
-@var{window} must be a live window and defaults to the selected one.
+Функция возвращает время использования окна @var{window}.  @var{window}
+должно быть активным окном и по умолчанию быть выбранным.
 
-The @dfn{use time} of a window is not really a time value, but an
-integer that does increase monotonically with each call of
-@code{select-window} with a @code{nil} @var{norecord} argument.  The
-window with the lowest use time is usually called the least recently
-used window while the window with the highest use time is called the
-most recently used one (@pxref{Cyclic Window Ordering}).
+@dfn{Использованное время} окна на самом деле не является значением времени,
+а целым числом, которое монотонно увеличивается с каждым вызовом
+@code{select-window} с аргументом @code{nil} @var{norecord}.  Окно с
+наименьшим временем использования обычно называется окном с наименьшим
+временем использования, а окно с наибольшим временем использования
+называется самым широко использованным окном
+(@pxref{Cyclic Window Ordering}).
 @end defun
 
 
 @node Cyclic Window Ordering
-@section Cyclic Ordering of Windows
+@section Циклическое Упорядочение Окон
 @cindex cyclic ordering of windows
 @cindex ordering of windows, cyclic
 @cindex window ordering, cyclic
 
-  When you use the command @w{@kbd{C-x o}} (@code{other-window}) to select
-some other window, it moves through live windows in a specific order.
-For any given configuration of windows, this order never varies.  It
-is called the @dfn{cyclic ordering of windows}.
+  Когда используется команда @w{@kbd{C-x o}} (@code{other-window}) для
+выбора другого окна, происходить перемещение пр активным окнам в
+определенном порядке.  Для любой данной конфигурации окон этот порядок
+никогда не меняется.  Порядок называется
+@dfn{циклическое упорядочение окон}.
 
-  The ordering is determined by a depth-first traversal of each frame's
-window tree, retrieving the live windows which are the leaf nodes of the
-tree (@pxref{Windows and Frames}).  If the minibuffer is active, the
-minibuffer window is included too.  The ordering is cyclic, so the last
-window in the sequence is followed by the first one.
+  Порядок определяется обходом в глубину дерева окон каждого фрейма,
+извлекая активные окна, которые являются конечными узлами дерева
+(@pxref{Windows and Frames}).  Если минибуфер активен, окно минибуфера также
+включается.  Порядок циклический, поэтому за последним окном в
+последовательности следует первое.
 
 @defun next-window &optional window minibuf all-frames
 @cindex minibuffer window, and @code{next-window}
-This function returns a live window, the one following @var{window} in
-the cyclic ordering of windows.  @var{window} should be a live window;
-if omitted or @code{nil}, it defaults to the selected window.
+Функция возвращает активное окно, следующее за @var{window} в циклическом
+порядке окон.  @var{window} должно быть активным окном; если опущено или
+@code{nil}, по умолчанию используется выбранное окно.
 
-The optional argument @var{minibuf} specifies whether minibuffer windows
-should be included in the cyclic ordering.  Normally, when @var{minibuf}
-is @code{nil}, a minibuffer window is included only if it is currently
-active; this matches the behavior of @w{@kbd{C-x o}}.  (Note that a
-minibuffer window is active as long as its minibuffer is in use; see
-@ref{Minibuffers}).
+Необязательный аргумент @var{minibuf} указывает, должны ли окна минибуфера
+быть включены в циклический порядок.  Обычно, когда @var{minibuf} равен
+@code{nil}, окно минибуфера включается только в том случае, если оно в
+настоящее время активно; это соответствует поведению @w{@kbd{C-x o}}.
+(Обратить внимание, что окно минибуфера активно, пока используется его
+минибуфер, смотреть @ref{Minibuffers}).
 
-If @var{minibuf} is @code{t}, the cyclic ordering includes all
-minibuffer windows.  If @var{minibuf} is neither @code{t} nor
-@code{nil}, minibuffer windows are not included even if they are active.
+Если @var{minibuf} равен @code{t}, циклическое упорядочение включает все
+окна минибуфера.  Если @var{minibuf} не является ни @code{t}, ни @code{nil},
+окна минибуфера не включаются, даже если они активны.
 
-The optional argument @var{all-frames} specifies which frames to
-consider:
+Необязательный аргумент @var{all-frames} указывает, какие фреймы следует
+учитывать:
 
 @itemize @bullet
 @item @code{nil}
-means to consider windows on @var{window}'s frame.  If the minibuffer
-window is considered (as specified by the @var{minibuf} argument),
-then frames that share the minibuffer window are considered too.
+значит считать окна на фрейме @var{window}.  Если рассматривается окно
+минибуфера (как указано аргументом @var{minibuf}), то учитываются и фреймы,
+совместно использующие окно минибуфера.
 
 @item @code{t}
-means to consider windows on all existing frames.
+означает учитывать окна на всех существующих фреймах.
 
 @item @code{visible}
-means to consider windows on all visible frames.
+означает учитывать окна на всех видимых фреймах.
 
 @item 0
-means to consider windows on all visible or iconified frames.
+означает учитывать окна на всех видимых или иконизированных фреймах.
 
 @item A frame
-means to consider windows on that specific frame.
+означает рассматривать окна в этом конкретном фрейме.
 
 @item Anything else
-means to consider windows on @var{window}'s frame, and no others.
+значит считать окна на фрейме @var{window}, и никакие другие.
 @end itemize
 
-If more than one frame is considered, the cyclic ordering is obtained
-by appending the orderings for those frames, in the same order as the
-list of all live frames (@pxref{Finding All Frames}).
+Если рассматривается более одного фрейма, циклический порядок получается
+добавлением порядка для этих фреймов в том же порядке, что и список всех
+активных фреймов (@pxref{Finding All Frames}).
 @end defun
 
 @defun previous-window &optional window minibuf all-frames
-This function returns a live window, the one preceding @var{window} in
-the cyclic ordering of windows.  The other arguments are handled like
-in @code{next-window}.
+Функция возвращает активное окно, предшествующее @var{window} в циклическом
+порядке окон.  Остальные аргументы обрабатываются как в @code{next-window}.
 @end defun
 
 @deffn Command other-window count &optional all-frames
-This function selects a live window, one @var{count} places from the
-selected window in the cyclic ordering of windows.  If @var{count} is
-a positive number, it skips @var{count} windows forwards; if
-@var{count} is negative, it skips @minus{}@var{count} windows
-backwards; if @var{count} is zero, that simply re-selects the selected
-window.  When called interactively, @var{count} is the numeric prefix
-argument.
+Функция выбирает активное окно, размещает каждых @var{count} окон от
+выбранного окна в циклическом порядке окон.  Если @var{count} -
+положительное число, окна @var{count} пропускаются вперед; если @var{count}
+отрицательно, окна @minus{}@var{count} пропускаются назад; если @var{count}
+равно нулю, это просто повторно выбирает выбранное окно.  При интерактивном
+вызове @var{count} является аргументом числового префикса.
 
-The optional argument @var{all-frames} has the same meaning as in
-@code{next-window}, like a @code{nil} @var{minibuf} argument to
+Необязательный аргумент @var{all-frames} имеет то же значение, что и в
+@code{next-window}, как аргумент @code{nil} @var{minibuf} для
 @code{next-window}.
 
-This function does not select a window that has a не-@code{nil}
-@code{no-other-window} window parameter (@pxref{Window Parameters}),
-provided that @code{ignore-window-parameters} is @code{nil}.
+Функция не выбирает окно, которое имеет параметр окна не-@code{nil}
+@code{no-other-window} (@pxref{Window Parameters}), при условии, что
+@code{ignore-window-parameters} имеет значение @code{nil}.
 
-If the @code{other-window} parameter of the selected window is a
-function, and @code{ignore-window-parameters} is @code{nil}, that
-function will be called with the arguments @var{count} and
-@var{all-frames} instead of the normal operation of this function.
+Если параметр @code{other-window} выбранного окна является функцией, а
+@code{ignore-window-parameters} - @code{nil}, функция будет вызываться с
+аргументами @var{count} и @var{all-frames} вместо нормальной работы этой
+функции.
 @end deffn
 
 @defun walk-windows fun &optional minibuf all-frames
-This function calls the function @var{fun} once for each live window,
-with the window as the argument.
+Функция вызывает функцию @var{fun} один раз для каждого активного окна с
+окном в качестве аргумента.
 
-It follows the cyclic ordering of windows.  The optional arguments
-@var{minibuf} and @var{all-frames} specify the set of windows
-included; these have the same arguments as in @code{next-window}.  If
-@var{all-frames} specifies a frame, the first window walked is the
-first window on that frame (the one returned by
-@code{frame-first-window}), not necessarily the selected window.
+Это следует за циклическим порядком окон.  Необязательные аргументы
+@var{minibuf} и @var{all-frames} определяют набор включаемых окон; они имеют
+те же аргументы, что и в @code{next-window}.  Если @var{all-frames} задает
+фрейм, первое пройденное окно будет первым окном в этом фрейме (возвращенным
+@code{frame-first-window}), не обязательно выбранным окном.
 
-If @var{fun} changes the window configuration by splitting or deleting
-windows, that does not alter the set of windows walked, which is
-determined prior to calling @var{fun} for the first time.
+Если @var{fun} изменяет конфигурацию окна, разделяя или удаляя окна, это не
+меняет набор пройденных окон, который определяется перед вызовом @var{fun} в
+первый раз.
 @end defun
 
 @defun one-window-p &optional no-mini all-frames
-This function returns @code{t} if the selected window is the only live
-window, and @code{nil} otherwise.
+Функция возвращает @code{t}, если выбранное окно является единственным
+активным окном, и @code{nil} в противном случае.
 
-If the minibuffer window is active, it is normally considered (so that
-this function returns @code{nil}).  However, if the optional argument
-@var{no-mini} is не-@code{nil}, the minibuffer window is ignored even
-if active.  The optional argument @var{all-frames} has the same
-meaning as for @code{next-window}.
+Если окно минибуфера активно, оно обычно считается (так что эта функция
+возвращает @code{nil}).  Однако, если необязательный аргумент @var{no-mini}
+равен не-@code{nil}, окно минибуфера игнорируется, даже если оно активно.
+Необязательный аргумент @var{all-frames} имеет то же значение, что и
+@code{next-window}.
 @end defun
 
 @cindex finding windows
-  The following functions return a window which satisfies some
-criterion, without selecting it:
+  Следующие функции возвращают окно, которое удовлетворяет некоторому
+критерию, не выбирая его:
 
 @cindex least recently used window
 @defun get-lru-window &optional all-frames dedicated not-selected
-This function returns a live window which is heuristically the least
-recently used.  The optional argument @var{all-frames} has
-the same meaning as in @code{next-window}.
+Функция возвращает активное окно, которое эвристически использовалось меньше
+всего в последнее время.  Необязательный аргумент @var{all-frames} имеет то
+же значение, что и в @code{next-window}.
 
-If any full-width windows are present, only those windows are
-considered.  A minibuffer window is never a candidate.  A dedicated
-window (@pxref{Dedicated Windows}) is never a candidate unless the
-optional argument @var{dedicated} is не-@code{nil}.  The selected
-window is never returned, unless it is the only candidate.  However, if
-the optional argument @var{not-selected} is не-@code{nil}, this
-function returns @code{nil} in that case.
+Если есть какие-либо окна во всю ширину, учитываются только эти окна.  Окно
+минибуфера никогда не является кандидатом.  Выделенное окно
+(@pxref{Dedicated Windows}) никогда не является кандидатом, если
+необязательный аргумент @var{dedicated} не равен не-@code{nil}.  Выбранное
+окно никогда не возвращается, если только оно не является единственным
+кандидатом.  Однако, если необязательный аргумент @var{not-selected} -
+не-@code{nil}, функция в этом случае возвращает @code{nil}.
 @end defun
 
 @cindex most recently used window
 @defun get-mru-window &optional all-frames dedicated not-selected
-This function is like @code{get-lru-window}, but it returns the most
-recently used window instead.  The meaning of the arguments is the
-same as described for @code{get-lru-window}.
+Функция похожа на @code{get-lru-window}, но вместо этого возвращает
+последнее использованное окно.  Значение аргументов такое же, как описано
+для @code{get-lru-window}.
 @end defun
 
 @cindex largest window
 @defun get-largest-window &optional all-frames dedicated not-selected
-This function returns the window with the largest area (height times
-width).  The optional argument @var{all-frames} specifies the windows to
-search, and has the same meaning as in @code{next-window}.
+Функция возвращает окно с наибольшей площадью (высота умноженная на ширину).
+Необязательный аргумент @var{all-frames} указывает окна для поиска и имеет
+то же значение, что и в @code{next-window}.
 
-A minibuffer window is never a candidate.  A dedicated window
-(@pxref{Dedicated Windows}) is never a candidate unless the optional
-argument @var{dedicated} is не-@code{nil}.  The selected window is not
-a candidate if the optional argument @var{not-selected} is
-не-@code{nil}.  If the optional argument @var{not-selected} is
-не-@code{nil} and the selected window is the only candidate, this
-function returns @code{nil}.
+Окно минибуфера никогда не является кандидатом.  Выделенное окно
+(@pxref{Dedicated Windows}) никогда не является кандидатом, если
+необязательный аргумент @var{dedicated} не равен не-@code{nil}.  Выбранное
+окно не является кандидатом, если необязательный аргумент @var{not-selected}
+- не-@code{nil}.  Если необязательный аргумент @var{not-selected} равен
+не-@code{nil} и выбранное окно является единственным кандидатом, функция
+возвращает @code{nil}.
 
-If there are two candidate windows of the same size, this function
-prefers the one that comes first in the cyclic ordering of windows,
-starting from the selected window.
+Если есть два окна-кандидата одинакового размера, функция предпочитает то,
+которое идет первым в циклическом порядке окон, начиная с выбранного окна.
 @end defun
 
 @cindex window that satisfies a predicate
 @cindex conditional selection of windows
 @defun get-window-with-predicate predicate &optional minibuf all-frames default
-This function calls the function @var{predicate} for each of the
-windows in the cyclic order of windows in turn, passing it the window
-as an argument.  If the predicate returns не-@code{nil} for any
-window, this function stops and returns that window.  If no such
-window is found, the return value is @var{default} (which defaults to
-@code{nil}).
+Функция вызывает функцию @var{predicate} для каждого из окон в циклическом
+порядке окон по очереди, передавая ей окно в качестве аргумента.  Если
+предикат возвращает не-@code{nil} для любого окна, функция останавливается
+и возвращает это окно.  Если такое окно не найдено, возвращается значение
+@var{default} (по умолчанию - @code{nil}).
 
-The optional arguments @var{minibuf} and @var{all-frames} specify the
-windows to search, and have the same meanings as in
-@code{next-window}.
+Необязательные аргументы @var{minibuf} и @var{all-frames} указывают окна для
+поиска и имеют то же значение, что и в @code{next-window}.
 @end defun
 
 
 @node Buffers and Windows
-@section Buffers and Windows
+@section Буферы и Окна
 @cindex examining windows
 @cindex windows, controlling precisely
 @cindex buffers, controlled in windows
 
-  This section describes low-level functions for examining and setting
-the contents of windows.  @xref{Switching Buffers}, for higher-level
-functions for displaying a specific buffer in a window.
+  В этом разделе описаны низкоуровневые функции для проверки и настройки
+содержимого окон.  @xref{Switching Buffers}, для высокоуровневых функций
+отображения определенного буфера в окне.
 
 @defun window-buffer &optional window
-This function returns the buffer that @var{window} is displaying.  If
-@var{window} is omitted or @code{nil} it defaults to the selected
-window.  If @var{window} is an internal window, this function returns
-@code{nil}.
+Функция возвращает буфер, отображаемый @var{window}.  Если @var{window}
+опущен или @code{nil}, по умолчанию используется выбранное окно.  Если
+@var{window} - внутреннее окно, функция возвращает @code{nil}.
 @end defun
 
 @defun set-window-buffer window buffer-or-name &optional keep-margins
-This function makes @var{window} display @var{buffer-or-name}.
-@var{window} should be a live window; if @code{nil}, it defaults to
-the selected window.  @var{buffer-or-name} should be a buffer, or the
-name of an existing buffer.  This function does not change which
-window is selected, nor does it directly change which buffer is
-current (@pxref{Current Buffer}).  Its return value is @code{nil}.
+Функция заставляет @var{window} отображать @var{buffer-or-name}.
+@var{window} должно быть активным окном; если @code{nil}, по умолчанию
+используется выбранное окно.  @var{buffer-or-name} должен быть буфером или
+именем существующего буфера.  Функция не меняет, какое окно выбрано, и не
+меняет напрямую, какой буфер является текущим (@pxref{Current Buffer}).
+Возвращаемое значение - @code{nil}.
 
-If @var{window} is @dfn{strongly dedicated} to a buffer and
-@var{buffer-or-name} does not specify that buffer, this function
-signals an error.  @xref{Dedicated Windows}.
+Если @var{window} - это @dfn{строго предназначеное} для буфера, а
+@var{buffer-or-name} не указывает этот буфер, функция сигнализирует об
+ошибке.  @xref{Dedicated Windows}.
 
-By default, this function resets @var{window}'s position, display
-margins, fringe widths, and scroll bar settings, based on the local
-variables in the specified buffer.  However, if the optional argument
-@var{keep-margins} is не-@code{nil}, it leaves @var{window}'s display
-margins, fringes and scroll bar settings alone.
+По умолчанию функция сбрасывает положение @var{window}, поля отображения,
+ширину границ и настройки полосы прокрутки на основе локальных переменных в
+указанном буфере.  Однако, если необязательный аргумент @var{keep-margins} -
+не-@code{nil}, оставляются только параметры отображения полей, полос и
+полосы прокрутки @var{window}.
 
-When writing an application, you should normally use
-@code{display-buffer} (@pxref{Choosing Window}) or the higher-level
-functions described in @ref{Switching Buffers}, instead of calling
-@code{set-window-buffer} directly.
+При написании приложения обычно требуется использовать @code{display-buffer}
+(@pxref{Choosing Window}) или функции более высокого уровня, описанные в
+@ref{Switching Buffers}, вместо прямого вызова @code{set-window-buffer}.
 
-This runs @code{window-scroll-functions}, followed by
+Запускает @code{window-scroll-functions}, а затем
 @code{window-configuration-change-hook}.  @xref{Window Hooks}.
 @end defun
 
 @defvar buffer-display-count
-This buffer-local variable records the number of times a buffer has been
-displayed in a window.  It is incremented each time
-@code{set-window-buffer} is called for the buffer.
+Локальная для буфера переменная записывает, сколько раз буфер отображался в
+окне.  Увеличивается каждый раз, когда @code{set-window-buffer} вызывается
+для буфера.
 @end defvar
 
 @defvar buffer-display-time
-This buffer-local variable records the time at which a buffer was last
-displayed in a window.  The value is @code{nil} if the buffer has
-never been displayed.  It is updated each time
-@code{set-window-buffer} is called for the buffer, with the value
-returned by @code{current-time} (@pxref{Time of Day}).
+Локальная для буфера переменная записывает время, когда буфер последний раз
+отображался в окне.  Значение @code{nil}, если буфер никогда не отображался.
+Обновляется каждый раз, когда @code{set-window-buffer} вызывается для
+буфера, со значением, возвращаемым @code{current-time}.
+(@pxref{Time of Day}).
 @end defvar
 
 @defun get-buffer-window &optional buffer-or-name all-frames
-This function returns the first window displaying @var{buffer-or-name}
-in the cyclic ordering of windows, starting from the selected window
-(@pxref{Cyclic Window Ordering}).  If no such window exists, the
-return value is @code{nil}.
+Функция возвращает первое окно, отображающее @var{buffer-or-name} в
+циклическом порядке окон, начиная с выбранного окна
+(@pxref{Cyclic Window Ordering}).  Если такого окна нет, возвращаемое
+значение - @code{nil}.
 
-@var{buffer-or-name} should be a buffer or the name of a buffer; if
-omitted or @code{nil}, it defaults to the current buffer.  The
-optional argument @var{all-frames} specifies which windows to
-consider:
+@var{buffer-or-name} должен быть буфером или именем буфера; если опущено или
+@code{nil}, по умолчанию используется текущий буфер.  Необязательный
+аргумент @var{all-frames} указывает, какие окна следует учитывать:
 
 @itemize @bullet
 @item
-@code{t} means consider windows on all existing frames.
+@code{t} означает учитывать окна на всех существующих фреймах.
 @item
-@code{visible} means consider windows on all visible frames.
+@code{visible} означает считать окна на всех видимых фреймах.
 @item
-0 means consider windows on all visible or iconified frames.
+0 означает, что окна учитываются во всех видимых или иконизированных
+фреймах.
 @item
-A frame means consider windows on that frame only.
+frame означает рассматривать окна только в этом фрейме.
 @item
-Any other value means consider windows on the selected frame.
+Любое другое значение означает, что окна будут учитываться в
+выбранном фрейме.
 @end itemize
 
-Note that these meanings differ slightly from those of the
-@var{all-frames} argument to @code{next-window} (@pxref{Cyclic Window
-Ordering}).  This function may be changed in a future version of Emacs
-to eliminate this discrepancy.
+Обратить внимание, что эти значения немного отличаются от значений аргумента
+@var{all-frames} для @code{next-window} (@pxref{Cyclic Window Ordering}).
+Функция может быть изменена в будущей версии Emacs, чтобы устранить это
+несоответствие.
 @end defun
 
 @defun get-buffer-window-list &optional buffer-or-name minibuf all-frames
-This function returns a list of all windows currently displaying
-@var{buffer-or-name}.  @var{buffer-or-name} should be a buffer or the
-name of an existing buffer.  If omitted or @code{nil}, it defaults to
-the current buffer.  If the currently selected window displays
-@var{buffer-or-name}, it will be the first in the list returned by
-this function.
+Функция возвращает список всех окон, в которых в данный момент отображается
+@var{buffer-or-name}.  @var{buffer-or-name} должен быть буфером или именем
+существующего буфера.  Если опущено или @code{nil}, по умолчанию
+используется текущий буфер.  Если в текущем выбранном окне отображается
+@var{buffer-or-name}, оно будет первым в списке, возвращаемом этой функцией.
 
-The arguments @var{minibuf} and @var{all-frames} have the same
-meanings as in the function @code{next-window} (@pxref{Cyclic Window
-Ordering}).  Note that the @var{all-frames} argument does @emph{not}
-behave exactly like in @code{get-buffer-window}.
+Аргументы @var{minibuf} и @var{all-frames} имеют то же значение, что и в
+функции @code{next-window} (@pxref{Cyclic Window Ordering}).  Обратить
+внимание, что аргумент @var{all-frames} ведет себя точно так же, как
+аргумент @code{get-buffer-window}.
 @end defun
 
 @deffn Command replace-buffer-in-windows &optional buffer-or-name
-This command replaces @var{buffer-or-name} with some other buffer, in
-all windows displaying it.  @var{buffer-or-name} should be a buffer, or
-the name of an existing buffer; if omitted or @code{nil}, it defaults to
-the current buffer.
+Команда заменяет @var{buffer-or-name} каким-либо другим буфером во всех
+окнах, отображающих его.  @var{buffer-or-name} должен быть буфером или
+именем существующего буфера; если опущено или @code{nil}, по умолчанию
+используется текущий буфер.
 
-The replacement buffer in each window is chosen via
-@code{switch-to-prev-buffer} (@pxref{Window History}).  Any dedicated
-window displaying @var{buffer-or-name} is deleted if possible
-(@pxref{Dedicated Windows}).  If such a window is the only window on its
-frame and there are other frames on the same terminal, the frame is
-deleted as well.  If the dedicated window is the only window on the only
-frame on its terminal, the buffer is replaced anyway.
+Буфер замены в каждом окне выбирается через @code{switch-to-prev-buffer}
+(@pxref{Window History}).  Любое выделенное окно, отображающее
+@var{buffer-or-name}, по возможности удаляется (@pxref{Dedicated Windows}).
+Если такое окно является единственным окном в своем фрейме и на том же
+терминале есть другие фреймы, фрейм также удаляется.  Если выделенное окно
+является единственным окном в единственном фрейме на своем терминале, буфер
+все равно заменяется.
 @end deffn
 
 
 @node Switching Buffers
-@section Switching to a Buffer in a Window
+@section Переключение на Буфер в Окне
 @cindex switching to a buffer
 
-This section describes high-level functions for switching to a specified
-buffer in some window.  In general, ``switching to a buffer'' means to
-(1) show the buffer in some window, (2) make that window the selected
-window (and its frame the selected frame), and (3) make the buffer the
-current buffer.
+В этом разделе описаны высокоуровневые функции для переключения на указанный
+буфер в некотором окне.  В общем, ``переключение на буфер'' означает (1)
+показать буфер в некотором окне, (2) сделать это окно выбранным окном (а его
+фрейм - выбранным фреймом) и (3) сделать буфер текущим буфером.
 
-  Do @emph{not} use these functions to make a buffer temporarily
-current just so a Lisp program can access or modify it.  They have
-side-effects, such as changing window histories (@pxref{Window
-History}), which will surprise the user if used that way.  If you want
-to make a buffer current to modify it in Lisp, use
-@code{with-current-buffer}, @code{save-current-buffer}, or
-@code{set-buffer}.  @xref{Current Buffer}.
+  @emph{Не} использовать эти функции, чтобы временно сделать буфер текущим
+только для того, чтобы программа на Lisp могла получить к нему доступ или
+изменить.  У них есть побочные эффекты, такие как изменение истории окон
+(@pxref{Window History}), что удивит пользователя, если использовать его
+таким образом.  Если требуется сделать буфер текущим, чтобы изменить его в
+Lisp, использовать @code{with-current-buffer}, @code{save-current-buffer}
+или @code{set-buffer}.  @xref{Current Buffer}.
 
 @deffn Command switch-to-buffer buffer-or-name &optional norecord force-same-window
-This command attempts to display @var{buffer-or-name} in the selected
-window and make it the current buffer.  It is often used interactively
-(as the binding of @kbd{C-x b}), as well as in Lisp programs.  The
-return value is the buffer switched to.
+Команда пытается отобразить @var{buffer-or-name} в выбранном окне и сделать
+его текущим буфером.  Часто используется интерактивно (как привязка
+@kbd{C-x b}), а также в программах Lisp.  Возвращаемое значение - это буфер,
+на который был переключен.
 
-If @var{buffer-or-name} is @code{nil}, it defaults to the buffer
-returned by @code{other-buffer} (@pxref{Buffer List}).  If
-@var{buffer-or-name} is a string that is not the name of any existing
-buffer, this function creates a new buffer with that name; the new
-buffer's major mode is determined by the variable @code{major-mode}
+Если @var{buffer-or-name} установлено @code{nil}, по умолчанию используется
+буфер, возвращаемый @code{other-buffer} (@pxref{Buffer List}).  Если
+@var{buffer-or-name} - строка, которая не является именем какого-либо
+существующего буфера, функция создает новый буфер с этим именем; основной
+режим нового буфера определяется переменной @code{major-mode}
 (@pxref{Major Modes}).
 
-Normally, the specified buffer is put at the front of the buffer
-list---both the global buffer list and the selected frame's buffer
-list (@pxref{Buffer List}).  However, this is not done if the
-optional argument @var{norecord} is не-@code{nil}.
+Обычно указанный буфер помещается в начало списка буферов - как глобального
+списка буферов, так и списка буферов выбранного фрейма
+(@pxref{Buffer List}).  Однако этого не происходит, если необязательный
+аргумент @var{norecord} установлен в не-@code{nil}.
 
-Sometimes, the selected window may not be suitable for displaying the
-buffer.  This happens if the selected window is a minibuffer window, or
-if the selected window is strongly dedicated to its buffer
-(@pxref{Dedicated Windows}).  In such cases, the command normally tries
-to display the buffer in some other window, by invoking
-@code{pop-to-buffer} (see below).
+Иногда выбранное окно может не подходить для отображения буфера.  Это
+происходит, если выбранное окно является окном минибуфера, или если
+выбранное окно строго предназначено для своего буфера
+(@pxref{Dedicated Windows}).  В таких случаях команда обычно пытается
+отобразить буфер в другом окне, вызывая @code{pop-to-buffer} (смотреть
+ниже).
 
-If the optional argument @var{force-same-window} is не-@code{nil} and
-the selected window is not suitable for displaying the buffer, this
-function always signals an error when called non-interactively.  In
-interactive use, if the selected window is a minibuffer window, this
-function will try to use some other window instead.  If the selected
-window is strongly dedicated to its buffer, the option
-@code{switch-to-buffer-in-dedicated-window} described next can be used
-to proceed.
+Если необязательный аргумент @var{force-same-window} - не-@code{nil} и
+выбранное окно не подходит для отображения буфера, функция всегда
+сигнализирует об ошибке при неинтерактивном вызове.  При интерактивном
+использовании, если выбранное окно является окном минибуфера, функция вместо
+этого попытается использовать какое-нибудь другое окно.  Если выбранное окно
+строго предназначено для своего буфера, для продолжения можно использовать
+опцию @code{switch-to-buffer-in-dedicated-window}, описанную далее.
 @end deffn
 
 @defopt switch-to-buffer-in-dedicated-window
-This option, if не-@code{nil}, allows @code{switch-to-buffer} to
-proceed when called interactively and the selected window is strongly
-dedicated to its buffer.
+Опция, если не-@code{nil}, позволяет @code{switch-to-buffer} продолжить
+работу при интерактивном вызове, а выбранное окно строго предназначено для
+своего буфера.
 
-The following values are respected:
+Соблюдаются следующие ценности:
 
 @table @code
 @item nil
-Disallows switching and signals an error as in non-interactive use.
+Запрещает при неинтерактивном использовании переключение и сигнализирует об
+ошибке. 
 
 @item prompt
-Prompts the user whether to allow switching.
+Запрашивает пользователя, разрешить ли переключение.
 
 @item pop
-Invokes @code{pop-to-buffer} to proceed.
+Для продолжения вызывает @code{pop-to-buffer}.
 
 @item t
-Marks the selected window as non-dedicated and proceeds.
+Помечает выбранное окно как незанятое и продолжается.
 @end table
 
-This option does not affect non-interactive calls of
-@code{switch-to-buffer}.
+Эта опция не влияет на неинтерактивные вызовы @code{switch-to-buffer}.
 @end defopt
 
-By default, @code{switch-to-buffer} tries to preserve
-@code{window-point}.  This behavior can be tuned using the following
-option.
+По умолчанию @code{switch-to-buffer} пытается сохранить @code{window-point}.
+Это поведение можно настроить с помощью следующей опции.
 
 @defopt switch-to-buffer-preserve-window-point
-If this variable is @code{nil}, @code{switch-to-buffer} displays the
-buffer specified by @var{buffer-or-name} at the position of that
-buffer's @code{point}.  If this variable is @code{already-displayed}, it
-tries to display the buffer at its previous position in the selected
-window, provided the buffer is currently displayed in some other window
-on any visible or iconified frame.  If this variable is @code{t},
-@code{switch-to-buffer} unconditionally tries to display the buffer at
-its previous position in the selected window.
+Если переменная - @code{nil}, @code{switch-to-buffer}, отображается буфер,
+указанный @var{buffer-or-name}, в позиции этого буфера @code{point}.  Если
+переменная - @code{already-displayed}, проводится попытка отобразить буфер в
+его предыдущей позиции в выбранном окне, при условии, что буфер в настоящее
+время отображается в каком-либо другом окне в любом видимом или
+иконизированном кадре.  Если переменная - @code{t}, @code{switch-to-buffer},
+безоговорочно пытается отобразить буфер в его предыдущей позиции в
+выбранном окне.
 
-This variable is ignored if the buffer is already displayed in the
-selected window or never appeared in it before, or if
-@code{switch-to-buffer} calls @code{pop-to-buffer} to display the
-buffer.
+Переменная игнорируется, если буфер уже отображается в выбранном окне или
+никогда не появлялся в нем раньше, или если @code{switch-to-buffer} вызывает
+@code{pop-to-buffer} для отображения буфера.
 @end defopt
 
-The next two commands are similar to @code{switch-to-buffer}, except for
-the described features.
+Следующие две команды аналогичны @code{switch-to-buffer}, за исключением
+описанных функций.
 
 @deffn Command switch-to-buffer-other-window buffer-or-name &optional norecord
-This function displays the buffer specified by @var{buffer-or-name} in
-some window other than the selected window.  It uses the function
-@code{pop-to-buffer} internally (see below).
+Функция отображает буфер, указанный @var{buffer-or-name}, в каком-то окне,
+отличном от выбранного.  Используется внутренняя функция
+@code{pop-to-buffer} (смотреть ниже).
 
-If the selected window already displays the specified buffer, it
-continues to do so, but another window is nonetheless found to display
-it as well.
+Если в выбранном окне уже отображается указанный буфер, продолжает
+отображаться, но, тем не менее, обнаруживается другое окно, которое также
+отображает его.
 
-The @var{buffer-or-name} and @var{norecord} arguments have the same
-meanings as in @code{switch-to-buffer}.
+Аргументы @var{buffer-or-name} и @var{norecord} имеют то же значение, что и
+аргументы @code{switch-to-buffer}.
 @end deffn
 
 @deffn Command switch-to-buffer-other-frame buffer-or-name &optional norecord
-This function displays the buffer specified by @var{buffer-or-name} in a
-new frame.  It uses the function @code{pop-to-buffer} internally (see
-below).
+Функция отображает буфер, указанный @var{buffer-or-name}, в новом фрейме.
+Используется внутренняя функция @code{pop-to-buffer} (смотреть ниже).
 
-If the specified buffer is already displayed in another window, in any
-frame on the current terminal, this switches to that window instead of
-creating a new frame.  However, the selected window is never used for
-this.
+Если указанный буфер уже отображается в другом окне, в любом фрейме на
+текущем терминале, происходит переключенин на это окно вместо создания
+нового фрейма.  Однако выбранное окно никогда не используется для этого.
 
-The @var{buffer-or-name} and @var{norecord} arguments have the same
-meanings as in @code{switch-to-buffer}.
+Аргументы @var{buffer-or-name} и @var{norecord} имеют то же значение, что и
+аргументы @code{switch-to-buffer}.
 @end deffn
 
-The above commands use the function @code{pop-to-buffer}, which
-flexibly displays a buffer in some window and selects that window for
-editing.  In turn, @code{pop-to-buffer} uses @code{display-buffer} for
-displaying the buffer.  Hence, all the variables affecting
-@code{display-buffer} will affect it as well.  @xref{Choosing Window},
-for the documentation of @code{display-buffer}.
+Вышеупомянутые команды используют функцию @code{pop-to-buffer}, которая
+гибко отображает буфер в каком-либо окне и выбирает это окно для
+редактирования.  В свою очередь @code{pop-to-buffer} использует
+@code{display-buffer} для отображения буфера.  Следовательно, все
+переменные, влияющие на @code{display-buffer}, также будут влиять на него.
+@xref{Choosing Window}, для документации @code{display-buffer}.
 
 @deffn Command pop-to-buffer buffer-or-name &optional action norecord
-This function makes @var{buffer-or-name} the current buffer and
-displays it in some window, preferably not the window currently
-selected.  It then selects the displaying window.  If that window is
-on a different graphical frame, that frame is given input focus if
-possible (@pxref{Input Focus}).
+Функция делает @var{buffer-or-name} текущим буфером и отображает его в
+каком-то окне, желательно не в текущем выбранном окне.  Затем выбирается
+отображаемое окно.  Если это окно находится в другом графическом фрейме,
+этот фрейм получает фокус ввода, если возможно (@pxref{Input Focus}).
 
-If @var{buffer-or-name} is @code{nil}, it defaults to the buffer
-returned by @code{other-buffer} (@pxref{Buffer List}).  If
-@var{buffer-or-name} is a string that is not the name of any existing
-buffer, this function creates a new buffer with that name; the new
-buffer's major mode is determined by the variable @code{major-mode}
-(@pxref{Major Modes}).  In any case, that buffer is made current and
-returned, even when no suitable window was found to display it.
+Если @var{buffer-or-name} равно @code{nil}, по умолчанию используется буфер,
+возвращаемый @code{other-buffer} (@pxref{Buffer List}).  Если
+@var{buffer-or-name} - строка, которая не является именем какого-либо
+существующего буфера, функция создает новый буфер с этим именем; основной
+режим нового буфера определяется переменной @code{major-mode}
+(@pxref{Major Modes}).  В любом случае буфер становится текущим и
+возвращается, даже если не найдено подходящего окна для его отображения.
 
-If @var{action} is не-@code{nil}, it should be a display action to
-pass to @code{display-buffer} (@pxref{Choosing Window}).
-Alternatively, a не-@code{nil}, non-list value means to pop to a
-window other than the selected one---even if the buffer is already
-displayed in the selected window.
+Если @var{action} равен не-@code{nil}, это должно быть действие отображения,
+которое нужно передать в @code{display-buffer} (@pxref{Choosing Window}).
+В качестве альтернативы, не-@code{nil}, значение, не входящее в список,
+означает переход в окно, отличное от выбранного, даже если буфер уже
+отображается в выбранном окне.
 
-Like @code{switch-to-buffer}, this function updates the buffer list
-unless @var{norecord} is не-@code{nil}.
+Как и @code{switch-to-buffer}, эта функция обновляет список буферов, если
+@var{norecord} отлично от не-@code{nil}.
 @end deffn
 
 
 @node Displaying Buffers
-@section Displaying a Buffer in a Suitable Window
+@section Отображение Буфера в Подходящем Окне
 @cindex buffer display
 @cindex displaying a buffer
 
-This section describes lower-level functions Emacs uses to find or
-create a window for displaying a specified buffer.  The common
-workhorse of these functions is @code{display-buffer} which eventually
-handles all incoming requests for buffer display (@pxref{Choosing
-Window}).
+В этом разделе описаны функции нижнего уровня, которые Emacs использует для
+поиска или создания окна для отображения указанного буфера.  Общая рабочая
+лошадка этих функций - @code{display-buffer}, которая в конечном итоге
+обрабатывает все входящие запросы на отображение буфера
+(@pxref{Choosing Window}).
 
-   @code{display-buffer} delegates the task of finding a suitable
-window to so-called action functions (@pxref{Buffer Display Action
-Functions}).  First, @code{display-buffer} compiles a so-called action
-alist---a special association list that action functions can use to
-fine-tune their behavior.  Then it passes that alist on to each action
-function it calls (@pxref{Buffer Display Action Alists}).
+   @code{display-buffer} делегирует задачу поиска подходящего окна так
+называемым функциям действия (@pxref{Buffer Display Action Functions}).
+Во-первых, @code{display-buffer} составляет так называемый список действий -
+специальный список ассоциаций, функции действия которых могут использовать
+для точной настройки своего поведения.  Затем передается этот список каждой
+функции действия, которую вызывает (@pxref{Buffer Display Action Alists}).
 
-   The behavior of @code{display-buffer} is highly customizable.  To
-understand how customizations are used in practice, you may wish to
-study examples illustrating the order of precedence which
-@code{display-buffer} uses to call action functions (@pxref{Precedence
-of Action Functions}).  To avoid conflicts between Lisp programs
-calling @code{display-buffer} and user customizations of its behavior,
-it may make sense to follow a number of guidelines which are sketched
-in the final part of this section (@pxref{The Zen of Buffer Display}).
+   Поведение @code{display-buffer} легко настраивается.  Чтобы понять, как
+настройки используются на практике, можно изучить примеры, иллюстрирующие
+порядок приоритета, который @code{display-buffer} использует для вызова
+функций действий (@pxref{Precedence of Action Functions}).  Чтобы избежать
+конфликтов между программами на Lisp, вызывающими @code{display-buffer}, и
+пользовательскими настройками поведения, может иметь смысл следовать ряду
+рекомендаций, которые набросаны в заключительной части этого раздела
+(@pxref{The Zen of Buffer Display}).
 
 @menu
-* Choosing Window::         How to choose a window for displaying a buffer.
-* Buffer Display Action Functions:: Support functions for buffer display.
-* Buffer Display Action Alists:: Alists for fine-tuning buffer display.
-* Choosing Window Options:: Extra options affecting how buffers are displayed.
-* Precedence of Action Functions:: Examples to explain the precedence of
-                              action functions.
-* The Zen of Buffer Display:: How to avoid that buffers get lost in between
-                              windows.
+* Choosing Window::         Как выбрать окно для отображения буфера.
+* Buffer Display Action Functions:: Функции поддержки для отображения буфера.
+* Buffer Display Action Alists:: Списки для тонкой настройки отображения буфера.
+* Choosing Window Options:: Дополнительные параметры, влияющие на отображение буферов.
+* Precedence of Action Functions:: Примеры, объясняющие приоритет функций действий.
+* The Zen of Buffer Display:: Как избежать потери буферов между окнами.
 @end menu
 
 
 @node Choosing Window
-@subsection Choosing a Window for Displaying a Buffer
+@subsection Выбор Окна для Отображения Буфера
 
-The command @code{display-buffer} flexibly chooses a window for
-display, and displays a specified buffer in that window.  It can be
-called interactively, via the key binding @kbd{C-x 4 C-o}.  It is also
-used as a subroutine by many functions and commands, including
-@code{switch-to-buffer} and @code{pop-to-buffer} (@pxref{Switching
-Buffers}).
+Команда @code{display-buffer} гибко выбирает окно для отображения и
+отображает указанный буфер в этом окне.  Её можно вызвать интерактивно,
+через привязку клавиш @kbd{C-x 4 C-o}.  Также используется в качестве
+подпрограммы многими функциями и командами, включая @code{switch-to-buffer}
+и @code{pop-to-buffer} (@pxref{Switching Buffers}).
 
 @cindex buffer display display action
 @cindex display action
-  This command performs several complex steps to find a window to
-display in.  These steps are described by means of @dfn{display
-actions}, which have the form @code{(@var{functions} . @var{alist})}.
-Here, @var{functions} is either a single function or a list of
-functions, referred to as ``action functions'' (@pxref{Buffer Display
-Action Functions}); and @var{alist} is an association list, referred
-to as ``action alist'' (@pxref{Buffer Display Action Alists}).
-@xref{The Zen of Buffer Display}, for samples of display actions.
+  Команда выполняет несколько сложных шагов, чтобы найти окно для
+отображения.  Эти шаги описываются с помощью @dfn{display actions}, что
+имеет форму @code{(@var{functions} . @var{alist})}.  Здесь @var{functions} -
+это либо отдельная функция, либо список функций, называемых
+``функциями действия'' (@pxref{Buffer Display Action Functions}); и
+@var{alist} - это список ассоциаций, называемый ``списком действий''
+(@pxref{Buffer Display Action Alists}).  @xref{The Zen of Buffer Display},
+для примеров действий отображения.
 
-  An action function accepts two arguments: the buffer to display and
-an action alist.  It attempts to display the buffer in some window,
-picking or creating a window according to its own criteria.  If
-successful, it returns the window; otherwise, it returns @code{nil}.
+  Функция действия принимает два аргумента: отображаемый буфер и список
+действий.  Пытается отобразить буфер в каком-то окне, выбирая или создавая
+окно в соответствии со своими критериями.  В случае успеха возвращается
+окно, в противном случае возвращается @code{nil}.
 
-  @code{display-buffer} works by combining display actions from
-several sources, and calling the action functions in turn, until one
-of them manages to display the buffer and returns a не-@code{nil}
-value.
+  @code{display-buffer} работает, комбинируя действия отображения из
+нескольких источников и вызывая функции действий по очереди, пока одна из
+них не сможет отобразить буфер и не вернет значение не-@code{nil}.
 
 @deffn Command display-buffer buffer-or-name &optional action frame
-This command makes @var{buffer-or-name} appear in some window, without
-selecting the window or making the buffer current.  The argument
-@var{buffer-or-name} must be a buffer or the name of an existing
-buffer.  The return value is the window chosen to display the buffer,
-or @code{nil} if no suitable window was found.
+Команда заставляет @var{buffer-or-name} появляться в каком-либо окне, не
+выбирая окно и не делая буфер текущим.  Аргумент @var{buffer-or-name} должен
+быть буфером или именем существующего буфера.  Возвращаемое значение - это
+окно, выбранное для отображения буфера, или @code{nil}, если подходящего
+окна не найдено.
 
-The optional argument @var{action}, if не-@code{nil}, should normally
-be a display action (described above).  @code{display-buffer} builds a
-list of action functions and an action alist, by consolidating display
-actions from the following sources (in order of their precedence,
-from highest to lowest):
+Необязательный аргумент @var{action}, если не-@code{nil}, обычно должен быть
+действием отображения (описано выше).  @code{display-buffer} создает список
+функций действий и список действий, объединяя действия отображения из
+следующих источников (в порядке их приоритета, от высшего к низшему):
 
 @itemize
 @item
-The variable @code{display-buffer-overriding-action}.
+Переменная @code{display-buffer-overriding-action}.
 
 @item
-The user option @code{display-buffer-alist}.
+Пользовательская опция @code{display-buffer-alist}.
 
 @item
-The @var{action} argument.
+Аргумент @var{action}.
 
 @item
-The user option @code{display-buffer-base-action}.
+Пользовательская опция @code{display-buffer-base-action}.
 
 @item
-The constant @code{display-buffer-fallback-action}.
+Константа @code{display-buffer-fallback-action}.
 @end itemize
 
 @noindent
-In practice this means that @code{display-buffer} builds a list of all
-action functions specified by these display actions.  The first
-element of this list is the first action function specified by
-@code{display-buffer-overriding-action}, if any.  Its last element is
-@code{display-buffer-pop-up-frame}---the last action function
-specified by @code{display-buffer-fallback-action}.  Duplicates are
-not removed from this list---hence one and the same action function
-may be called multiple times during one call of @code{display-buffer}.
+На практике это означает, что @code{display-buffer} формирует список всех
+функций действий, определенных этими действиями отображения.  Первый элемент
+этого списка - первая функция действия, заданная
+@code{display-buffer-overriding-action}, если таковая имеется.  Его
+последний элемент - @code{display-buffer-pop-up-frame} --- последняя функция
+действия, указанная в @code{display-buffer-fallback-action}.  Дубликаты не
+удаляются из этого списка - следовательно, одна и та же функция действия
+может вызываться несколько раз за один вызов @code{display-buffer}.
 
-@code{display-buffer} calls the action functions specified by this
-list in turn, passing the buffer as the first argument and the
-combined action alist as the second argument, until one of the
-functions returns не-@code{nil}.  @xref{Precedence of Action
-Functions}, for examples how display actions specified by different
-sources are processed by @code{display-buffer}.
+@code{display-buffer} по очереди вызывает функции действий, указанные в этом
+списке, передавая буфер в качестве первого аргумента и объединенный список
+действий в качестве второго аргумента, пока одна из функций не вернет
+не-@code{nil}.  @xref{Precedence of Action Functions}, например, как
+отображать действия, указанные из разных источников, обрабатываются
+@code{display-buffer}.
 
-Note that the second argument is always the list of @emph{all} action
-alist entries specified by the sources named above.  Hence, the first
-element of that list is the first action alist entry specified by
-@code{display-buffer-overriding-action}, if any.  Its last element is
-the last alist entry of @code{display-buffer-base-action}, if any (the
-action alist of @code{display-buffer-fallback-action} is empty).
+Обратить внимание, что вторым аргументом всегда является список записей
+списка @emph{всех} действий , заданный указанными выше источниками.
+Следовательно, первый элемент этого списка - первая запись списка действий,
+заданная @code{display-buffer-overriding-action}, если таковая имеется.  Его
+последний элемент - это последняя запись в списке
+@code{display-buffer-base-action}, если таковая имеется (список действий
+@code{display-buffer-fallback-action} пуст).
 
-Note also, that the combined action alist may contain duplicate
-entries and entries for the same key with different values.  As a
-rule, action functions always use the first association of a key they
-find.  Hence, the association an action function uses is not
-necessarily the association provided by the display action that
-specified that action function,
+Также обратить внимание, что объединенный список действий может содержать
+повторяющиеся записи и записи для одного и того же ключа с разными
+значениями.  Как правило, функции действий всегда используют первую
+ассоциацию найденного ими ключа.  Следовательно, ассоциация, которую
+использует функция действия, не обязательно является ассоциацией,
+предоставляемой действием отображения, которое задает эту функцию действия.
 
-The argument @var{action} can also have a не-@code{nil}, non-list
-value.  This has the special meaning that the buffer should be
-displayed in a window other than the selected one, even if the
-selected window is already displaying it.  If called interactively
-with a prefix argument, @var{action} is @code{t}.  Lisp programs
-should always supply a list value.
+Аргумент @var{action} также может иметь значение не-@code{nil}, не входящее  в список.  Это имеет особое значение, буфер должен отображаться в окне,
+отличном от выбранного, даже если выбранное окно уже отображает его.  При
+интерактивном вызове с аргументом префикса @var{action} будет @code{t}.
+Программы Lisp всегда должны предоставлять значение списка.
 
-The optional argument @var{frame}, if не-@code{nil}, specifies which
-frames to check when deciding whether the buffer is already displayed.
-It is equivalent to adding an element @w{@code{(reusable-frames
-. @var{frame})}} to the action alist of @var{action} (@pxref{Buffer
-Display Action Alists}).  The @var{frame} argument is provided for
-compatibility reasons, Lisp programs should not use it.
+Необязательный аргумент @var{frame}, если не-@code{nil}, указывает, какие
+фреймы проверять при принятии решения о том, отображается ли уже буфер.  Это
+эквивалентно добавлению элемента @w{@code{(reusable-frames. @var{frame})}} в
+список действий @var{action} (@pxref{Buffer Display Action Alists}).
+Аргумент @var{frame} предоставляется из соображений совместимости, программы
+Lisp не должны его использовать.
 @end deffn
 
 @defvar display-buffer-overriding-action
-The value of this variable should be a display action, which is
-treated with the highest priority by @code{display-buffer}.  The
-default value is an empty display action, i.e., @w{@code{(nil . nil)}}.
+Значением этой переменной должно быть действие отображения, которое
+обрабатывается @code{display-buffer} с наивысшим приоритетом.  Значение по
+умолчанию - пустое действие отображения, то есть @w{@code{(nil . nil)}}.
 @end defvar
 
 @defopt display-buffer-alist
-The value of this option is an alist mapping conditions to display
-actions.  Each condition may be either a regular expression matching a
-buffer name or a function that takes two arguments: a buffer name and
-the @var{action} argument passed to @code{display-buffer}.  If either
-the name of the buffer passed to @code{display-buffer} matches a
-regular expression in this alist, or the function specified by a
-condition returns не-@code{nil}, then @code{display-buffer} uses the
-corresponding display action to display the buffer.
+Значение этой опции - список условий отображения для отображения действий.
+Каждое условие может быть либо регулярным выражением, соответствующим имени
+буфера, либо функцией, которая принимает два аргумента: имя буфера и
+аргумент @var{action}, переданный в @code{display-buffer}.  Если либо имя
+буфера, переданное в @code{display-buffer}, совпадает с регулярным
+выражением в этом списке, либо функция, заданная условием, возвращает
+не-@code{nil}, то @code{display-buffer} использует соответствующее действие
+display для отображения буфера.
 @end defopt
 
 @defopt display-buffer-base-action
-The value of this option should be a display action.  This option can
-be used to define a standard display action for calls to
-@code{display-buffer}.
+Значением этого параметра должно быть действие отображения.  Этот параметр
+можно использовать для определения стандартного действия отображения для
+вызовов @code{display-buffer}.
 @end defopt
 
 @defvr Constant display-buffer-fallback-action
-This display action specifies the fallback behavior for
-@code{display-buffer} if no other display actions are given.
+Это действие отображения задает резервное поведение для
+@code{display-buffer}, если не заданы другие действия отображения.
 @end defvr
 
 
 @node Buffer Display Action Functions
-@subsection Action Functions for Buffer Display
+@subsection Функции Действий для Отображения Буфера
 @cindex buffer display action function
 @cindex action function, for buffer display
 
-An @dfn{action function} is a function @code{display-buffer} calls for
-choosing a window to display a buffer.  Action functions take two
-arguments: @var{buffer}, the buffer to display, and @var{alist}, an
-action alist (@pxref{Buffer Display Action Alists}).  They are
-supposed to return a window displaying @var{buffer} if they succeed
-and @code{nil} if they fail.
+@dfn{Функция действия} - это функция, вызываемая @code{display-buffer} для
+выбора окна для отображения буфера.  Функции действий принимают два
+аргумента: @var{buffer}, отображаемый буфер, и @var{alist}, список действий
+(@pxref{Buffer Display Action Alists}).  Должны возвращать окно,
+отображающее @var{buffer} в случае успеха и @code{nil} в случае неудачи.
 
-   The following basic action functions are defined in Emacs.
+   В Emacs определены следующие основные функции действий.
 
 @defun display-buffer-same-window buffer alist
-This function tries to display @var{buffer} in the selected window.
-It fails if the selected window is a minibuffer window or is dedicated
-to another buffer (@pxref{Dedicated Windows}).  It also fails if
-@var{alist} has a не-@code{nil} @code{inhibit-same-window} entry.
+Функция пытается отобразить @var{buffer} в выбранном окне.  Это не удается,
+если выбранное окно является окном минибуфера или выделено для другого
+буфера (@pxref{Dedicated Windows}).  Это также не удается, если @var{alist}
+имеет запись не-@code{nil} @code{inhibit-same-window}.
 @end defun
 
 @defun display-buffer-reuse-window buffer alist
-This function tries to display @var{buffer} by finding a window that
-is already displaying it.
+Функция пытается отобразить @var{buffer}, находя окно, в котором он уже
+отображается.
 
-If @var{alist} has a не-@code{nil} @code{inhibit-same-window} entry,
-the selected window is not eligible for reuse.  The set of frames to
-search for a window already displaying @var{buffer} can be specified
-with the help of the @code{reusable-frames} action alist entry.  If
-@var{alist} contains no @code{reusable-frames} entry, this function
-searches just the selected frame.
+Если @var{alist} имеет запись не-@code{nil} @code{inhibit-same-window},
+выбранное окно не может быть использовано повторно.  Набор фреймов для
+поиска окна, в котором уже отображается @var{buffer}, можно указать с
+помощью записи @code{reusable-frames} action alist.  Если @var{alist} не
+содержит записи @code{reusable-frames}, функция ищет только выбранный фрейм.
 
-If this function chooses a window on another frame, it makes that
-frame visible and, unless @var{alist} contains an
-@code{inhibit-switch-frame} entry, raises that frame if necessary.
+Если функция выбирает окно в другом фрейме, делает этот фрейм видимым и,
+если @var{alist} не содержит запись @code{inhibit-switch-frame}, при
+необходимости поднимает этот фрейм.
 @end defun
 
 @defun display-buffer-reuse-mode-window buffer alist
-This function tries to display @var{buffer} by finding a window
-that is displaying a buffer in a given mode.
+Функция пытается отобразить @var{buffer}, находя окно, отображающее буфер в
+заданном режиме.
 
-If @var{alist} contains a @code{mode} entry, its value specifes a
-major mode (a symbol) or a list of major modes.  If @var{alist}
-contains no @code{mode} entry, the current major mode of @var{buffer}
-is used instead.  A window is a candidate if it displays a buffer
-whose mode derives from one of the modes specified thusly.
+Если @var{alist} содержит запись @code{mode}, его значение определяет
+основной режим (символ) или список основных режимов.  Если @var{alist} не
+содержит записи @code{mode}, вместо этого используется текущий основной
+режим @var{buffer}.  Окно является кандидатом, если оно отображает буфер,
+режим которого является производным от одного из указанных таким образом
+режимов.
 
-The behavior is also controlled by @var{alist} entries for
-@code{inhibit-same-window}, @code{reusable-frames} and
-@code{inhibit-switch-frame}, like @code{display-buffer-reuse-window}
-does.
+Поведение также контролируется записями @var{alist} для
+@code{inhibit-same-window}, @code{reusable-frames} и
+@code{inhibit-switch-frame}, как это делает
+@code{display-buffer-reuse-window}.
 @end defun
 
 @defun display-buffer-pop-up-window buffer alist
-This function tries to display @var{buffer} by splitting the largest
-or least recently-used window (usually located on the selected frame).
-It actually performs the split by calling the function specified by
-@code{split-window-preferred-function} (@pxref{Choosing Window
-Options}).
+Функция пытается отобразить @var{buffer} путем разделения самого большого
+или наименее использованного окна (обычно расположенного в выбранном
+фрейме).  Фактически выполняется разделение, вызывая функцию, указанную в
+@code{split-window-preferred-function} (@pxref{Choosing Window Options}).
 
-The size of the new window can be adjusted by supplying
-@code{window-height} and @code{window-width} entries in @var{alist}.
-If @var{alist} contains a @code{preserve-size} entry, Emacs will also
-try to preserve the size of the new window during future resize
-operations (@pxref{Preserving Window Sizes}).
+Размер нового окна можно настроить, добавив записи @code{window-height} и
+@code{window-width} в @var{alist}.  Если @var{alist} содержит запись
+@code{preserve-size}, Emacs также попытается сохранить размер нового окна
+во время будущих операций изменения размера
+(@pxref{Preserving Window Sizes}).
 
-This function fails if no window can be split.  More often than not,
-this happens because no window is large enough to allow splitting.
-Setting @code{split-height-threshold} or @code{split-width-threshold}
-to lower values may help in this regard.  Splitting also fails when
-the selected frame has an @code{unsplittable} frame parameter;
+Функция не работает, если ни одно окно не может быть разделено.  Чаще всего
+это происходит из-за того, что ни одно окно не является достаточно большим,
+чтобы позволить разделение.  В этом отношении может помочь установка более
+низких значений @code{split-height-threshold} или
+@code{split-width-threshold}.  Разделение также не выполняется, если
+выбранный фрейм имеет параметр фрейма @code{unsplittable},
 @pxref{Buffer Parameters}.
 @end defun
 
 @defun display-buffer-in-previous-window buffer alist
-This function tries to display @var{buffer} in a window where it was
-displayed previously.
+Функция пытается отобразить @var{buffer} в окне, в котором он отображался
+ранее.
 
-If @var{alist} contains a не-@code{nil} @code{inhibit-same-window}
-entry, the selected window is not eligible for use.  A dedicated
-window is usable only if it already shows @var{buffer}.  If
-@var{alist} contains a @code{previous-window} entry, the window
-specified by that entry is usable even if it never showed @var{buffer}
-before.
+Если @var{alist} содержит запись не-@code{nil} @code{inhibit-same-window},
+выбранное окно нельзя использовать.  Выделенное окно можно использовать,
+только если оно уже показывает @var{buffer}.  Если @var{alist} содержит
+запись @code{previous-window}, окно, указанное этой записью, можно
+использовать, даже если оно никогда раньше не отображало @var{buffer}.
 
-If @var{alist} contains a @code{reusable-frames} entry (@pxref{Buffer
-Display Action Alists}), its value determines which frames to search
-for a suitable window.  If @var{alist} contains no
-@code{reusable-frames} entry, this function searches just the selected
-frame if @code{display-buffer-reuse-frames} and @code{pop-up-frames}
-are both @code{nil}; it searches all frames on the current terminal if
-either of those variables is не-@code{nil}.
+Если @var{alist} содержит запись @code{reusable-frames}
+(@pxref{Buffer Display Action Alists}), его значение определяет, в каких
+фреймах искать подходящее окно.  Если @var{alist} не содержит записи
+@code{reusable-frames}, функция ищет только выбранный фрейм, если
+@code{display-buffer-reuse-frames} и @code{pop-up-frames} оба являются
+@code{nil}; ищутся все фреймы на текущем терминале, если любая из этих
+переменных имеет значение не-@code{nil}.
 
-If more than one window qualifies as usable according to these rules,
-this function makes a choice in the following order of preference:
+Если более одного окна квалифицируется как пригодное для использования в
+соответствии с этими правилами, эта функция делает выбор в следующем порядке
+предпочтения:
 
 @itemize @bullet
 @item
-The window specified by any @code{previous-window} @var{alist} entry,
-provided it is not the selected window.
+Окно, указанное любой записью @code{previous-window} @var{alist}, при
+условии, что это не выбранное окно.
 
 @item
-A window that showed @var{buffer} before, provided it is not the
-selected window.
+Окно, которое раньше показывало @var{buffer}, при условии, что это не
+выбранное окно.
 
 @item
-The selected window if it is either specified by a
-@code{previous-window} @var{alist} entry or showed @var{buffer}
-before.
+Выбранное окно, если оно либо указано записью @code{previous-window}
+@var{alist}, либо ранее показывало @var{buffer}.
 @end itemize
 @end defun
 
 @defun display-buffer-use-some-window buffer alist
-This function tries to display @var{buffer} by choosing an existing
-window and displaying the buffer in that window.  It can fail if all
-windows are dedicated to other buffers (@pxref{Dedicated Windows}).
+Функция пытается отобразить @var{buffer}, выбирая существующее окно и
+отображая буфер в этом окне.  Может произойти сбой, если все окна
+предназначены для других буферов.  (@pxref{Dedicated Windows}).
 @end defun
 
 @defun display-buffer-below-selected buffer alist
-This function tries to display @var{buffer} in a window below the
-selected window.  If there is a window below the selected one and that
-window already displays @var{buffer}, it reuses that window.
+Функция пытается отобразить @var{buffer} в окне под выбранным окном.  Если
+под выбранным есть окно, и в этом окне уже отображается @var{buffer}, оно
+повторно использует это окно.
 
-If there is no such window, this function tries to create a new window
-by splitting the selected one, and displays @var{buffer} there.  It will
-also try to adjust that window's size provided @var{alist} contains a
-suitable @code{window-height} or @code{window-width} entry, see above.
+Если такого окна нет, функция пытается создать новое окно, разделив
+выбранное, и отображает там @var{buffer}.  Также попытается отрегулировать
+размер этого окна при условии, что @var{alist} содержит подходящую запись
+@code{window-height} или @code{window-width}, смотреть выше.
 
-If splitting the selected window fails and there is a non-dedicated
-window below the selected one showing some other buffer, this function
-tries to use that window for showing @var{buffer}.
+Если разделение выбранного окна не удается, а под выбранным есть не
+выделенное окно, показывающее какой-либо другой буфер, функция пытается
+использовать это окно для отображения @var{buffer}.
 @end defun
 
 @defun display-buffer-at-bottom buffer alist
-This function tries to display @var{buffer} in a window at the bottom
-of the selected frame.
+Эта функция пытается отобразить @var{buffer} в окне внизу выбранного фрейма.
 
-This either tries to split the window at the bottom of the frame or
-the frame's root window, or to reuse an existing window at the bottom
-of the selected frame.
+Это либо пытается разделить окно в нижней части фрейма, либо в корневом окне
+фрейма, либо повторно использовать существующее окно в нижней части
+выбранного фрейма.
 @end defun
 
 @defun display-buffer-pop-up-frame buffer alist
-This function creates a new frame, and displays the buffer in that
-frame's window.  It actually performs the frame creation by calling
-the function specified in @code{pop-up-frame-function}
-(@pxref{Choosing Window Options}).  If @var{alist} contains a
-@code{pop-up-frame-parameters} entry, the associated value is added to
-the newly created frame's parameters.
+Функция создает новый фрейм и отображает буфер в окне этого фрейма.
+Фактически он выполняет создание фрейма, вызывая функцию, указанную в
+@code{pop-up-frame-function} (@pxref{Choosing Window Options}).  Если
+@var{alist} содержит запись @code{pop-up-frame-parameters}, соответствующее
+значение добавляется к параметрам вновь созданного фрейма.
 @end defun
 
 @defun display-buffer-in-child-frame buffer alist
-This function tries to display @var{buffer} in a child frame
-(@pxref{Child Frames}) of the selected frame, either reusing an
-existing child frame or by making a new one.  If @var{alist} has a
-не-@code{nil} @code{child-frame-parameters} entry, the corresponding
-value is an alist of frame parameters to give the new frame.  A
-@code{parent-frame} parameter specifying the selected frame is
-provided by default.  If the child frame should become the child of
-another frame, a corresponding entry must be added to @var{alist}.
+Функция пытается отобразить @var{buffer} в дочернем фрейме
+(@pxref{Child Frames}) выбранного фрейма, либо повторно используя
+существующий дочерний фрейм, либо создавая новый.  Если @var{alist} имеет
+запись не-@code{nil} @code{child-frame-parameters}, соответствующее значение
+представляет собой список параметров фрейма для получения нового фрейма.
+Параметр @code{parent-frame}, указывающий выбранный фрейм, предоставляется
+по умолчанию.  Если дочерний фрейм должен стать потомком другого фрейма,
+соответствующая запись должна быть добавлена в @var{alist}.
 
-The appearance of child frames is largely dependent on the parameters
-provided via @var{alist}.  It is advisable to use at least ratios to
-specify the size (@pxref{Size Parameters}) and the position
-(@pxref{Position Parameters}) of the child frame, and to add a
-@code{keep-ratio} parameter (@pxref{Frame Interaction Parameters}), in
-order to make sure that the child frame remains visible.  For other
-parameters that should be considered see @ref{Child Frames}.
+Внешний вид дочерних фреймов во многом зависит от параметров,
+предоставленных через @var{alist}.  Рекомендуется использовать как минимум
+отношения, чтобы указать размер (@pxref{Size Parameters}) и положение
+(@pxref{Position Parameters}) дочернего кадра, а также добавить параметр
+@code{keep-ratio} (@pxref{Frame Interaction Parameters}), чтобы убедиться,
+что дочерний фрейм остается видимым.  Для других параметров, которые следует
+учитывать смотреть @ref{Child Frames}.
 @end defun
 
 @defun display-buffer-use-some-frame buffer alist
-This function tries to display @var{buffer} by finding a frame that
-meets a predicate (by default any frame other than the selected
-frame).
+Функция пытается отобразить @var{buffer}, находя фрейм, который
+соответствует предикату (по умолчанию любой фрейм, кроме выбранного фрейма).
 
-If this function chooses a window on another frame, it makes that
-frame visible and, unless @var{alist} contains an
-@code{inhibit-switch-frame} entry, raises that frame if necessary.
+Если функция выбирает окно в другом фрейме, она делает этот фрейм видимым и,
+если @var{alist} не содержит запись @code{inhibit-switch-frame}, при
+необходимости поднимает этот фрейм.
 
-If @var{alist} has a не-@code{nil} @code{frame-predicate} entry, its
-value is a function taking one argument (a frame), returning
-не-@code{nil} if the frame is a candidate; this function replaces the
-default predicate.
+Если @var{alist} имеет запись не-@code{nil} @code{frame-predicate}, ее
+значением является функция, принимающая один аргумент (фрейм), возвращающая
+не-@code{nil}, если фрейм является кандидатом; эта функция заменяет
+предикат по умолчанию.
 
-If @var{alist} has a не-@code{nil} @code{inhibit-same-window} entry,
-the selected window is not used; thus if the selected frame has a
-single window, it is not used.
+Если @var{alist} имеет запись не-@code{nil} @code{inhibit-same-window},
+выбранное окно не используется; таким образом, если в выбранном фрейме есть
+одно окно, оно не используется.
 @end defun
 
 @defun display-buffer-no-window buffer alist
-If @var{alist} has a не-@code{nil} @code{allow-no-window} entry, then
-this function does not display @var{buffer} and returns the symbol
-@code{fail}.  This constitutes the only exception to the convention
-that an action function returns either @code{nil} or a window showing
-@var{buffer}.  If @var{alist} has no such @code{allow-no-window}
-entry, this function returns @code{nil}.
+Если @var{alist} имеет запись не-@code{nil} @code{allow-no-window}, то
+функция не отображает @var{buffer} и возвращает символ @code{fail}.  Это
+составляет единственное исключение из соглашения, согласно которому функция
+действия возвращает либо @code{nil}, либо окно, показывающее @var{buffer}.
+Если @var{alist} не имеет такой записи @code{allow-no-window}, функция
+возвращает @code{nil}.
 
-If this function returns @code{fail}, @code{display-buffer} will skip
-the execution of any further display actions and return @code{nil}
-immediately.  If this function returns @code{nil},
-@code{display-buffer} will continue with the next display action, if
-any.
+Если функция возвращает @code{fail}, @code{display-buffer} пропустит
+выполнение любых дальнейших действий по отображению и немедленно вернет
+@code{nil}.  Если эта функция возвращает @code{nil}, @code{display-buffer}
+продолжит выполнение следующего действия по отображению, если таковое
+имеется.
 
-It is assumed that when a caller of @code{display-buffer} specifies a
-не-@code{nil} @code{allow-no-window} entry, it is also able to handle
-a @code{nil} return value.
+Предполагается, что когда вызывающий @code{display-buffer} указывает запись
+не-@code{nil} @code{allow-no-window}, также может обрабатывать возвращаемое
+значение @code{nil}.
 @end defun
 
-Two other action functions are described in their proper
-sections---@code{display-buffer-in-side-window} (@pxref{Displaying
-Buffers in Side Windows}) and @code{display-buffer-in-atom-window}
-(@pxref{Atomic Windows}).
+Две другие функции действий описаны в соответствующих разделах ---
+@code{display-buffer-in-side-window}
+(@pxref{Displaying Buffers in Side Windows}) и
+@code{display-buffer-in-atom-window} (@pxref{Atomic Windows}).
 
 
 @node Buffer Display Action Alists
