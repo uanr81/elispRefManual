@@ -4907,159 +4907,156 @@ Aункция выполняет прокрутку вперед на @var {coun
 @end defopt
 
 @defopt scroll-down-aggressively
-The value of this variable should be either @code{nil} or a fraction
-@var{f} between 0 and 1.  If it is a fraction, that specifies where on
-the screen to put point when scrolling down.  More precisely, when a
-window scrolls down because point is above the window start, the new
-start position is chosen to put point @var{f} part of the window
-height from the top.  The larger @var{f}, the more aggressive the
-scrolling.
+Значение этой переменной должно быть либо @code{nil}, либо дробью @var{f} от
+0 до 1.  Если это дробь, это указывает, где на экране поставить точку при
+прокрутке вниз.  Точнее, когда окно прокручивается вниз, потому что точка
+находится выше начала окна, новая начальная позиция выбирается так, чтобы
+точка @var{f} была частью высоты окна сверху.  Чем больше @var{f}, тем
+агрессивнее прокрутка.
 
-A value of @code{nil} is equivalent to .5, since its effect is to center
-point.  This variable automatically becomes buffer-local when set in any
-fashion.
+Значение @code{nil} эквивалентно .5, так как его действие распространяется
+на центральную точку.  Эта переменная автоматически становится локальной в
+буфере, если она установлена любым способом.
 @end defopt
 
 @defopt scroll-up-aggressively
-Likewise, for scrolling up.  The value, @var{f}, specifies how far
-point should be placed from the bottom of the window; thus, as with
-@code{scroll-down-aggressively}, a larger value scrolls more
-aggressively.
+Точно так же для прокрутки вверх.  Значение @var{f} указывает, как далеко
+точка должна быть размещена от нижней части окна; таким образом, как и в
+случае с @code{scroll-down-aggressively}, большее значение прокручивается
+более агрессивно.
 @end defopt
 
 @defopt scroll-step
-This variable is an older variant of @code{scroll-conservatively}.
-The difference is that if its value is @var{n}, that permits scrolling
-only by precisely @var{n} lines, not a smaller number.  This feature
-does not work with @code{scroll-margin}.  The default value is zero.
+Переменная является более старым вариантом @code{scroll-conservatively}.
+Разница в том, что если её значение - @var{n}, это позволяет прокручивать
+только по строкам @var{n}, а не меньшему их числу.  Функция не работает с
+@code{scroll-margin}.  Значение по умолчанию - ноль.
 @end defopt
 
 @cindex @code{scroll-command} property
 @defopt scroll-preserve-screen-position
-If this option is @code{t}, whenever a scrolling command moves point
-off-window, Emacs tries to adjust point to keep the cursor at its old
-vertical position in the window, rather than the window edge.
+Если эта опция - @code{t}, всякий раз, когда команда прокрутки перемещает
+точку за пределы окна, Emacs пытается настроить точку так, чтобы курсор
+оставался в старом своём вертикальном положении в окне, а не на краю окна.
 
-If the value is не-@code{nil} and not @code{t}, Emacs adjusts point
-to keep the cursor at the same vertical position, even if the
-scrolling command didn't move point off-window.
+Если значение равно не-@code{nil}, а не @code{t}, Emacs корректирует точку,
+чтобы курсор оставался в одной и той же вертикальной позиции, даже если
+команда прокрутки не сместила точку за пределы окна.
 
-This option affects all scroll commands that have a не-@code{nil}
-@code{scroll-command} symbol property.
+Параметр влияет на все команды прокрутки, у которых есть свойство символа
+@code{scroll-command} установленное в не-@code{nil}.
 @end defopt
 
 @defopt next-screen-context-lines
-The value of this variable is the number of lines of continuity to
-retain when scrolling by full screens.  For example, @code{scroll-up}
-with an argument of @code{nil} scrolls so that this many lines at the
-bottom of the window appear instead at the top.  The default value is
-@code{2}.
+Значение переменной - это количество непрерывных строк, которое необходимо
+сохранить при прокрутке на весь экран.  Например, @code{scroll-up} с
+аргументом @code{nil} прокручивается так, что это количество строк внизу
+окна появляется вместо cверху.  Значение по умолчанию - @code{2}.
 @end defopt
 
 @defopt scroll-error-top-bottom
-If this option is @code{nil} (the default), @code{scroll-up-command}
-and @code{scroll-down-command} simply signal an error when no more
-scrolling is possible.
+Если опция - @code{nil} (по умолчанию), @code{scroll-up-command} и
+@code{scroll-down-command} просто сигнализирует об ошибке, когда прокрутка
+становится невозможной.
 
-If the value is @code{t}, these commands instead move point to the
-beginning or end of the buffer (depending on scrolling direction);
-only if point is already on that position do they signal an error.
+Если значение равно @code{t}, команды вместо этого перемещают точку в начало
+или конец буфера (в зависимости от направления прокрутки); только если точка
+уже находится в этой позиции, сигнализируют об ошибке.
 @end defopt
 
 @deffn Command recenter &optional count
 @cindex centering point
-This function scrolls the text in the selected window so that point is
-displayed at a specified vertical position within the window.  It does
-not move point with respect to the text.
+Функция прокручивает текст в выбранном окне так, чтобы точка отображалась в
+заданном вертикальном положении внутри окна.  Не перемещает точку
+относительно текста.
 
-If @var{count} is a non-negative number, that puts the line containing
-point @var{count} lines down from the top of the window.  If
-@var{count} is a negative number, then it counts upward from the
-bottom of the window, so that @minus{}1 stands for the last usable
-line in the window.
+Если @var{count} - неотрицательное число, то строка, содержащая точки
+@var{count}, помещается вниз от верхнего края окна.  Если @var{count} -
+отрицательное число, то отсчитывается вверх от нижней части окна, так что
+@minus{}1 обозначает последнюю используемую строку в окне.
 
-If @var{count} is @code{nil} (or a не-@code{nil} list),
-@code{recenter} puts the line containing point in the middle of the
-window.  If @var{count} is @code{nil}, this function may redraw the
-frame, according to the value of @code{recenter-redisplay}.
+Если @var{count} - это @code{nil} (или список не-@code{nil}),
+@code{recenter} помещает строку, содержащую точку, в середину окна.  Если
+@var{count} равен @code{nil}, функция может перерисовывать фрейм в
+соответствии со значением @code{recenter-redisplay}.
 
-When @code{recenter} is called interactively, @var{count} is the raw
-prefix argument.  Thus, typing @kbd{C-u} as the prefix sets the
-@var{count} to a не-@code{nil} list, while typing @kbd{C-u 4} sets
-@var{count} to 4, which positions the current line four lines from the
-top.
+Когда @code{recenter} вызывается интерактивно, @var{count} является
+аргументом необработанного префикса.  Таким образом, ввод @kbd{C-u} в
+качестве префикса устанавливает @var{count} в список не-@code{nil}, а ввод
+@kbd{C-u 4} устанавливает @var{count} в значение 4, что позиционирует
+текущую строку на четыре строки сверху.
 
-With an argument of zero, @code{recenter} positions the current line at
-the top of the window.  The command @code{recenter-top-bottom} offers
-a more convenient way to achieve this.
+Если аргумент равен нулю, @code{recenter} помещает текущую строку вверху
+окна.  Команда @code{recenter-top-bottom} предлагает более удобный способ
+добиться этого.
 @end deffn
 
 @vindex recenter-window-group-function
 @defun recenter-window-group &optional count
-This function is like @code{recenter}, except that when the selected
-window is part of a group of windows (@pxref{Window Group}),
-@code{recenter-window-group} scrolls the entire group.  This condition
-holds when the buffer local variable
-@code{recenter-window-group-function} is set to a function.  In this
-case, @code{recenter-window-group} calls the function with the
-argument @var{count}, then returns its result.  The argument
-@var{count} has the same meaning as in @code{recenter}, but with
-respect to the entire window group.
+Функция похожа на @code{recenter}, за исключением того, что когда выбранное
+окно является частью группы окон (@pxref{Window Group}),
+@code{recenter-window-group} прокручивает всю группу.  Это условие
+выполняется, когда для локальной переменной
+@code{recenter-window-group-function} буфера задана функция.  В этом случае
+@code{recenter-window-group} вызывает функцию с аргументом @var{count}, а
+затем возвращает ее результат.  Аргумент @var{count} имеет то же значение,
+что и аргумент @code{recenter}, но по отношению ко всей группе окон.
 @end defun
 
 @defopt recenter-redisplay
-If this variable is не-@code{nil}, calling @code{recenter} with a
-@code{nil} argument redraws the frame.  The default value is
-@code{tty}, which means only redraw the frame if it is a tty frame.
+Если эта переменная - не-@code{nil}, вызов @code{recenter} с аргументом
+@code{nil} перерисовывает фрейм.  Значение по умолчанию - @code{tty}, что
+означает перерисовку фрейм только в том случае, если это фрейм tty.
 @end defopt
 
 @deffn Command recenter-top-bottom &optional count
-This command, which is the default binding for @kbd{C-l}, acts like
-@code{recenter}, except if called with no argument.  In that case,
-successive calls place point according to the cycling order defined
-by the variable @code{recenter-positions}.
+Команда, которая является привязкой по умолчанию для @kbd{C-l}, действует
+как @code{recenter}, за исключением случаев, когда вызывается без
+аргументов.  В этом случае последовательные вызовы помещают точку в
+соответствии с циклическим порядком, определяемым переменной
+@code{recenter-positions}.
 @end deffn
 
 @defopt recenter-positions
-This variable controls how @code{recenter-top-bottom} behaves when
-called with no argument.  The default value is @code{(middle top
-bottom)}, which means that successive calls of
-@code{recenter-top-bottom} with no argument cycle between placing
-point at the middle, top, and bottom of the window.
+Переменная контролирует поведение @code{recenter-top-bottom} при вызове без
+аргументов.  Значение по умолчанию - @code{(middle top bottom)}, что
+означает, что последовательные вызовы @code{recenter-top-bottom} без
+аргументов цикл между размещением точки в середине, вверху и внизу окна.
 @end defopt
 
 
 @node Vertical Scrolling
-@section Vertical Fractional Scrolling
+@section Вертикальная Дробная Прокрутка
 @cindex vertical fractional scrolling
 @cindex vertical scroll position
 
-   @dfn{Vertical fractional scrolling} means shifting text in a window
-up or down by a specified multiple or fraction of a line.  Emacs uses
-it, for example, on images and screen lines which are taller than the
-window.  Each window has a @dfn{vertical scroll position}, which is a
-number, never less than zero.  It specifies how far to raise the
-contents of the window when displaying them.  Raising the window
-contents generally makes all or part of some lines disappear off the
-top, and all or part of some other lines appear at the bottom.  The
-usual value is zero.
+   @dfn{Вертикальная дробная прокрутка} означает сдвиг текста в окне вверх
+или вниз на указанное кратное или дробное значение строки.  Emacs использует
+это, например, на изображениях и строках экрана, которые выше окна.  Каждое
+окно имеет @dfn{положение вертикальной прокрутки} - число, которое не может
+быть меньше нуля.  Оно указывает, насколько далеко поднимать содержимое окна
+при его отображении.  Увеличение содержимого окна обычно приводит к тому,
+что некоторые строки полностью или частично исчезают сверху, а некоторые
+другие строки полностью или частично появляются внизу.  Обычное значение
+равно нулю.
 
-   The vertical scroll position is measured in units of the normal line
-height, which is the height of the default font.  Thus, if the value is
-.5, that means the window contents will be scrolled up half the normal
-line height.  If it is 3.3, that means the window contents are scrolled
-up somewhat over three times the normal line height.
+   Положение вертикальной прокрутки измеряется в единицах нормальной высоты
+строки, которая является высотой шрифта по умолчанию.  Таким образом, если
+значение равно .5, это означает, что содержимое окна будет прокручиваться
+вверх на половину нормальной высоты строки.  Если это 3.3, это означает, что
+содержимое окна прокручивается вверх в три раза больше нормальной высоты
+строки.
 
-   What fraction of a line the vertical scrolling covers, or how many
-lines, depends on what the lines contain.  A value of .5 could scroll a
-line whose height is very short off the screen, while a value of 3.3
-could scroll just part of the way through a tall line or an image.
+   Какую часть строки покрывает вертикальная прокрутка или сколько строк,
+зависит от того, что они содержат.  Значение .5 может прокручивать строку,
+высота которой очень мала, за пределами экрана, а значение 3.3 может
+прокручивать только часть пути через высокую строку или изображение.
 
 @defun window-vscroll &optional window pixels-p
-This function returns the current vertical scroll position of
-@var{window}.  The default for @var{window} is the selected window.
-If @var{pixels-p} is не-@code{nil}, the return value is measured in
-pixels, rather than in units of the normal line height.
+Функция возвращает текущую позицию вертикальной прокрутки @var{window}.  По
+умолчанию для @var{window} выбрано окно.  Если @var{pixels-p} равно
+не-@code{nil}, возвращаемое значение измеряется в пикселях, а не в единицах
+нормальной высоты строки.
 
 @example
 @group
@@ -5070,17 +5067,17 @@ pixels, rather than in units of the normal line height.
 @end defun
 
 @defun set-window-vscroll window lines &optional pixels-p
-This function sets @var{window}'s vertical scroll position to
-@var{lines}.  If @var{window} is @code{nil}, the selected window is
-used.  The argument @var{lines} should be zero or positive; if not, it
-is taken as zero.
+Функция устанавливает положение вертикальной прокрутки @var{window} на
+@var{lines}.  Если @var{window} равен @code{nil}, используется выбранное
+окно.  Аргумент @var{lines} должен быть нулевым или положительным; в
+противном случае принимается равным нулю.
 
 
-The actual vertical scroll position must always correspond
-to an integral number of pixels, so the value you specify
-is rounded accordingly.
+Фактическое положение вертикальной прокрутки всегда должно соответствовать
+целому числу пикселей, поэтому указанное вами значение округляется
+соответствующим образом.
 
-The return value is the result of this rounding.
+Возвращаемое значение является результатом этого округления.
 
 @example
 @group
@@ -5089,112 +5086,111 @@ The return value is the result of this rounding.
 @end group
 @end example
 
-If @var{pixels-p} is не-@code{nil}, @var{lines} specifies a number of
-pixels.  In this case, the return value is @var{lines}.
+Если @var{pixels-p} установлено в не-@code{nil}, @var{lines}, указывает
+количество пикселей.  В этом случае возвращаемое значение - @var{lines}.
 @end defun
 
 @defvar auto-window-vscroll
-If this variable is не-@code{nil}, the @code{line-move},
-@code{scroll-up}, and @code{scroll-down} functions will automatically
-modify the vertical scroll position to scroll through display rows
-that are taller than the height of the window, for example in the
-presence of large images.
+Если переменная - не-@code{nil}, функции @code{line-move}, @code{scroll-up}
+и @code{scroll-down} автоматически изменят положение вертикальной прокрутки
+для прокрутки отображаемых строк, которые выше, чем высота окна, например,
+при наличии больших изображений.
 @end defvar
 
 @node Horizontal Scrolling
-@section Horizontal Scrolling
+@section Горизонтальная Прокрутка
 @cindex horizontal scrolling
 
-  @dfn{Horizontal scrolling} means shifting the image in the window left
-or right by a specified multiple of the normal character width.  Each
-window has a @dfn{horizontal scroll position}, which is a number, never
-less than zero.  It specifies how far to shift the contents left.
-Shifting the window contents left generally makes all or part of some
-characters disappear off the left, and all or part of some other
-characters appear at the right.  The usual value is zero.
+  @dfn{Горизонтальная прокрутка} означает сдвиг изображения в окне влево или
+вправо на указанное кратное нормальной ширине символа.  Каждое окно имеет
+@dfn{положение горизонтальной прокрутки} - число, которое не может быть
+меньше нуля.  Оно указывает, как далеко сдвинуть содержимое влево.  Сдвиг
+содержимого окна влево обычно приводит к тому, что некоторые символы
+полностью или частично исчезают слева, а некоторые другие символы полностью
+или частично появляются справа.  Обычное значение равно нулю.
 
-  The horizontal scroll position is measured in units of the normal
-character width, which is the width of space in the default font.  Thus,
-if the value is 5, that means the window contents are scrolled left by 5
-times the normal character width.  How many characters actually
-disappear off to the left depends on their width, and could vary from
-line to line.
+  Положение горизонтальной прокрутки измеряется в единицах нормальной ширины
+символа, которая является шириной пространства в шрифте по умолчанию.  Таким
+образом, если значение равно 5, это означает, что содержимое окна
+прокручивается влево в 5 раз больше по сравнению с обычной шириной символа.
+Сколько символов фактически исчезает слева, зависит от их ширины и может
+варьироваться от строки к строке.
 
-  Because we read from side to side in the inner loop, and from top
-to bottom in the outer loop, the effect of horizontal scrolling is
-not like that of textual or vertical scrolling.  Textual scrolling
-involves selection of a portion of text to display, and vertical
-scrolling moves the window contents contiguously; but horizontal
-scrolling causes part of @emph{each line} to go off screen.
+  Поскольку читается из стороны в сторону во внутреннем цикле и сверху вниз
+во внешнем цикле, эффект горизонтальной прокрутки не похож на текстовую или
+вертикальную прокрутку.  Текстовая прокрутка включает выделение части текста
+для отображения, а вертикальная прокрутка перемещает содержимое окна
+непрерывно; но при горизонтальной прокрутке часть @emph{каждой строки}
+уходит за пределы экрана.
 
-  Usually, no horizontal scrolling is in effect; then the leftmost
-column is at the left edge of the window.  In this state, scrolling to
-the right is meaningless, since there is no data to the left of the edge
-to be revealed by it; so this is not allowed.  Scrolling to the left is
-allowed; it scrolls the first columns of text off the edge of the window
-and can reveal additional columns on the right that were truncated
-before.  Once a window has a nonzero amount of leftward horizontal
-scrolling, you can scroll it back to the right, but only so far as to
-reduce the net horizontal scroll to zero.  There is no limit to how far
-left you can scroll, but eventually all the text will disappear off the
-left edge.
+  Обычно когда горизонтальная прокрутка не действует; тогда крайний левый
+столбец находится у левого края окна.  В этом состоянии прокрутка вправо
+бессмысленна, поскольку нет данных слева от края, которые можно было бы
+раскрыть; так что это не разрешено.  Когда прокрутка влево разрешена;
+прокручивает первые столбцы текста от края окна и может отображать
+дополнительные столбцы справа, которые были усечены ранее.  Как только окно
+имеет ненулевое количество горизонтальной прокрутки влево, можно прокрутить
+его обратно вправо, но только настолько, чтобы уменьшить чистую
+горизонтальную прокрутку до нуля.  Нет ограничений на то, как далеко можно
+прокручивать влево, но в конечном итоге весь текст исчезнет с левого края.
 
 @vindex auto-hscroll-mode
-  If @code{auto-hscroll-mode} is set, redisplay automatically alters
-the horizontal scrolling of a window as necessary to ensure that point
-is always visible.  However, you can still set the horizontal
-scrolling value explicitly.  The value you specify serves as a lower
-bound for automatic scrolling, i.e., automatic scrolling will not
-scroll a window to a column less than the specified one.
+  Если установлено @code{auto-hscroll-mode}, перерисовка автоматически
+изменяет горизонтальную прокрутку окна по мере необходимости, чтобы точка
+всегда была видна.  Однако все равно можно явно установить значение
+горизонтальной прокрутки.  Указанное значение служит нижней границей для
+автоматической прокрутки, то есть автоматическая прокрутка не будет
+прокручивать окно до столбца меньше указанного.
 
-  The default value of @code{auto-hscroll-mode} is @code{t}; setting
-it to @code{current-line} activates a variant of automatic horizontal
-scrolling whereby only the line showing the cursor is horizontally
-scrolled to make point visible, the rest of the window is left either
-unscrolled, or at the minimum scroll amount set by @code{scroll-left}
-and @code{scroll-right}, see below.
+  Значение @code{auto-hscroll-mode} по умолчанию - @code{t}; установка
+значения @code{current-line} активирует вариант автоматической
+горизонтальной прокрутки, при котором только строка, показывающая курсор,
+прокручивается по горизонтали, чтобы сделать точку видимой, остальная часть
+окна остается либо без прокрутки, либо с минимальным размером прокрутки,
+установленным @code{scroll-left} и @code{scroll-right}, смотреть ниже.
 
 @deffn Command scroll-left &optional count set-minimum
-This function scrolls the selected window @var{count} columns to the
-left (or to the right if @var{count} is negative).  The default
-for @var{count} is the window width, minus 2.
+Функция прокручивает выбранные столбцы @var{count} окна влево (или вправо,
+если @var{count} отрицательно).  По умолчанию для @var{count} ширина окна
+минус 2.
 
-The return value is the total amount of leftward horizontal scrolling in
-effect after the change---just like the value returned by
-@code{window-hscroll} (below).
+Возвращаемое значение - это общий объем горизонтальной прокрутки влево,
+действующий после изменения - точно так же, как значение, возвращаемое
+@code{window-hscroll} (ниже).
 
-Note that text in paragraphs whose base direction is right-to-left
-(@pxref{Bidirectional Display}) moves in the opposite direction: e.g.,
-it moves to the right when @code{scroll-left} is invoked with a
-positive value of @var{count}.
+Обратить внимание, что текст в абзацах, у которых базовое направление -
+справа налево (@pxref{Bidirectional Display}), перемещается в
+противоположном направлении: например, перемещается вправо, когда
+@code{scroll-left} вызывается с положительным значением @var{count}.
 
-Once you scroll a window as far right as it can go, back to its normal
-position where the total leftward scrolling is zero, attempts to scroll
-any farther right have no effect.
+Когда прокручивается окно как можно дальше вправо, возвращаясь в нормальное
+положение, при котором общая прокрутка влево равна нулю, попытки прокрутки
+вправо не имеют никакого эффекта.
 
-If @var{set-minimum} is не-@code{nil}, the new scroll amount becomes
-the lower bound for automatic scrolling; that is, automatic scrolling
-will not scroll a window to a column less than the value returned by
-this function.  Interactive calls pass не-@code{nil} for
-@var{set-minimum}.
+Если @var{set-minimum} равен не-@code{nil}, новая величина прокрутки
+становится нижней границей для автоматической прокрутки; то есть
+автоматическая прокрутка не будет прокручивать окно до столбца, меньшего,
+чем значение, возвращаемое этой функцией.  Интерактивные вызовы используют
+не-@code{nil} вместо @var{set-minimum}.
 @end deffn
 
 @deffn Command scroll-right &optional count set-minimum
-This function scrolls the selected window @var{count} columns to the
-right (or to the left if @var{count} is negative).  The default
-for @var{count} is the window width, minus 2.  Aside from the direction
-of scrolling, this works just like @code{scroll-left}.
+Функция прокручивает столбцы @var{count} выбранного окна вправо (или влево,
+если @var{count} отрицательное значение).  По умолчанию для @var{count}
+задана ширина окна минус 2.  Помимо направления прокрутки, это работает так
+же, как @code{scroll-left}.
 @end deffn
 
 @defun window-hscroll &optional window
-This function returns the total leftward horizontal scrolling of
-@var{window}---the number of columns by which the text in @var{window}
-is scrolled left past the left margin.  (In right-to-left paragraphs,
-the value is the total amount of the rightward scrolling instead.)
-The default for @var{window} is the selected window.
+Функция возвращает общую горизонтальную прокрутку влево для @var{window} ---
+количество столбцов, по которым текст в @var{window} прокручивается влево
+за левое поле.  (В абзацах с письмом справа налево вместо этого значение
+представляет собой общий объем прокрутки вправо.)  По умолчанию для
+@var{window} выбрано окно.
 
-The return value is never negative.  It is zero when no horizontal
-scrolling has been done in @var{window} (which is usually the case).
+Возвращаемое значение никогда не бывает отрицательным.  Равно нулю, если в
+@var{window} не выполнялась горизонтальная прокрутка (что обычно и имеет
+место).
 
 
 @example
@@ -5214,22 +5210,22 @@ scrolling has been done in @var{window} (which is usually the case).
 @end defun
 
 @defun set-window-hscroll window columns
-This function sets horizontal scrolling of @var{window}.  The value of
-@var{columns} specifies the amount of scrolling, in terms of columns
-from the left margin (right margin in right-to-left paragraphs).  The
-argument @var{columns} should be zero or positive; if not, it is taken
-as zero.  Fractional values of @var{columns} are not supported at
-present.
+Функция устанавливает горизонтальную прокрутку @var{window}.  Значение
+@var{columns} определяет величину прокрутки в столбцах от левого поля
+(правое поле в абзацах справа налево).  Аргумент @var{columns} должен быть
+нулевым или положительным; в противном случае принимается равным нулю.
+Дробные значения @var{columns} в настоящее время не поддерживаются.
 
-Note that @code{set-window-hscroll} may appear not to work if you test
-it by evaluating a call with @kbd{M-:} in a simple way.  What happens
-is that the function sets the horizontal scroll value and returns, but
-then redisplay adjusts the horizontal scrolling to make point visible,
-and this overrides what the function did.  You can observe the
-function's effect if you call it while point is sufficiently far from
-the left margin that it will remain visible.
+Обратить внимание, что @code{set-window-hscroll} может показаться
+неработающим, если проверить, оценив вызов с помощью @kbd{M-:} простым
+способом.  Что происходит, так это то, что функция устанавливает значение
+горизонтальной прокрутки и возвращается, но затем перерисовка настраивает
+горизонтальную прокрутку, чтобы сделать точку видимой, и это отменяет то,
+что сделала функция.  Можно наблюдать эффект функции, если вызвать ее, когда
+точка находится достаточно далеко от левого края, чтобы она оставалась
+видимой.
 
-The value returned is @var{columns}.
+Возвращаемое значение - @var{columns}.
 
 @example
 @group
@@ -5239,10 +5235,10 @@ The value returned is @var{columns}.
 @end example
 @end defun
 
-   Here is how you can determine whether a given position @var{position}
-is off the screen due to horizontal scrolling:
+   Вот как можно определить, находится ли данная позиция @var{position} за
+пределами экрана вне горизонтальной прокрутки:
 
-@c FIXME: Maybe hscroll-on-screen-p is a better name?
+@c FIXME: Может быть, hscroll-on-screen-p - лучшее имя?
 @example
 @group
 (defun hscroll-on-screen (window position)
@@ -5257,210 +5253,207 @@ is off the screen due to horizontal scrolling:
 
 
 @node Coordinates and Windows
-@section Coordinates and Windows
+@section Координаты и Окна
 @cindex frame-relative coordinate
 @cindex coordinate, relative to frame
 @cindex window position
 
-This section describes functions that report positions of and within a
-window.  Most of these functions report positions relative to an origin
-at the native position of the window's frame (@pxref{Frame Geometry}).
-Some functions report positions relative to the origin of the display of
-the window's frame.  In any case, the origin has the coordinates (0, 0)
-and X and Y coordinates increase rightward and downward respectively.
+В этом разделе описаны функции, которые сообщают о положениях окна и внутри
+него.  Большинство этих функций сообщают о положениях относительно исходной
+точки в исходной позиции фрейма окна (@pxref{Frame Geometry}).  Некоторые
+функции сообщают о положениях относительно исходной точки отображения рамки
+окна.  В любом случае начало координат имеет координаты (0, 0) и X и Y,
+координаты увеличиваются вправо и вниз соответственно.
 
-  For the following functions, X and Y coordinates are reported in
-integer character units, i.e., numbers of lines and columns
-respectively.  On a graphical display, each ``line'' and ``column''
-corresponds to the height and width of the default character specified by
-the frame's default font (@pxref{Frame Font}).
+  Для следующих функций координаты X и Y указываются в целочисленных
+единицах символов, то есть в количестве строк и столбцов соответственно.  На
+графическом дисплее каждое ``line'' и ``column'' соответствует высоте и
+ширине символа по умолчанию, заданного шрифтом фрейма по умолчанию
+(@pxref{Frame Font}).
 
 @defun window-edges &optional window body absolute pixelwise
-This function returns a list of the edge coordinates of @var{window}.
-If @var{window} is omitted or @code{nil}, it defaults to the selected
-window.
+Функция возвращает список координат краев @var{window}.  Если @var{window}
+опущено или @code{nil}, по умолчанию используется выбранное окно.
 
-The return value has the form @code{(@var{left} @var{top} @var{right}
-@var{bottom})}.  These list elements are, respectively, the X
-coordinate of the leftmost column occupied by the window, the Y
-coordinate of the topmost row, the X coordinate one column to the
-right of the rightmost column, and the Y coordinate one row down from
-the bottommost row.
+Возвращаемое значение имеет вид
+@code{(@var{left} @var{top} @var{right} @var{bottom})}.  Этими элементами
+списка являются, соответственно, координата X крайнего левого столбца,
+занятого окном, координата Y самой верхней строки, координата X на один
+столбец справа от самого правого столбца и координата Y на одну строку ниже
+самой нижней.
 
-Note that these are the actual outer edges of the window, including any
-header line, mode line, scroll bar, fringes, window divider and display
-margins.  On a text terminal, if the window has a neighbor on its right,
-its right edge includes the separator line between the window and its
-neighbor.
+Обратить внимание, что это фактические внешние края окна, включая любую
+строку заголовка, строку режима, полосу прокрутки, края, разделитель окна и
+поля отображения.  На текстовом терминале, если у окна есть сосед справа,
+его правый край включает разделительную линию между окном и его соседом.
 
-If the optional argument @var{body} is @code{nil}, this means to
-return the edges corresponding to the total size of @var{window}.
-@var{body} не-@code{nil} means to return the edges of @var{window}'s
-body (aka text area).  If @var{body} is не-@code{nil}, @var{window}
-must specify a live window.
+Если необязательный аргумент @var{body} - @code{nil}, это означает, что
+нужно вернуть края, соответствующие общему размеру @var{window}.  @var{body}
+установленное в не-@code{nil} означает вернуть края тела @var{window} (также
+известного как текстовая область).  Если @var{body} - установленно в
+не-@code{nil}, в @var{window}, необходимо указать активное окно.
 
-If the optional argument @var{absolute} is @code{nil}, this means to
-return edges relative to the native position of @var{window}'s frame.
-@var{absolute} не-@code{nil} means to return coordinates relative to
-the origin (0, 0) of @var{window}'s display.  On non-graphical systems
-this argument has no effect.
+Если необязательный аргумент @var{absolute} - @code{nil}, это означает
+возврат краев относительно исходной позиции фрейма @var{window}.
+@var{absolute} в не-@code{nil} означает возвращать координаты относительно
+исходной точки (0, 0) отображения @var{window}.  На неграфические системы
+этот аргумент не действует.
 
-If the optional argument @var{pixelwise} is @code{nil}, this means to
-return the coordinates in terms of the default character width and
-height of @var{window}'s frame (@pxref{Frame Font}), rounded if
-necessary.  @var{pixelwise} не-@code{nil} means to return the
-coordinates in pixels.  Note that the pixel specified by @var{right} and
-@var{bottom} is immediately outside of these edges.  If @var{absolute}
-is не-@code{nil}, @var{pixelwise} is implicitly не-@code{nil} too.
+Если необязательный аргумент @var{pixelwise} установлен в @code{nil}, это
+означает, что необходимо вернуть координаты в терминах ширины символа по
+умолчанию и высоты (@pxref{Frame Font}) фрейма @var{window}, округленных,
+если необходимо.  @var{pixelwise} в не-@code{nil} означает возвращать
+координаты в пикселях.  Обратить внимание, что пиксель, указанный в
+@var{right} и @var{bottom}, находится сразу за пределами этих краев.  Если
+@var{absolute} равен не-@code{nil}, @var{pixelwise}, неявно устанавливается
+в не-@code{nil} тоже.
 @end defun
 
 @defun window-body-edges &optional window
-This function returns the edges of @var{window}'s body (@pxref{Window
-Sizes}).  Calling @code{(window-body-edges window)} is equivalent to
-calling @code{(window-edges window t)}, see above.
+Функция возвращает края тела @var{window} (@pxref{Window Sizes}).  Вызов
+@code{(window-body-edges window)} эквивалентен вызову
+@code{(window-edges window t)}, смотреть выше.
 @end defun
 
-@comment The following two functions are confusing and hardly used.
+@comment Следующие две функции сбивают с толку и почти не используются.
 @ignore
 @defun window-left-column &optional window
-This function returns the leftmost column of @var{window}.  This value
-equals the @var{left} entry in the list returned by @code{(window-edges
-window)} minus the number of columns occupied by the internal border of
-@var{window}'s frame.
+Функция возвращает крайний левый столбец @var{window}.  Это значение равно
+записи @var{left} в списке, возвращаемом @code{(window-edges window)}, за
+вычетом количества столбцов, занятых внутренней границей фрейма
+@var{window}.
 @end defun
 
 @defun window-top-line &optional window
-This function returns the topmost row of @var{window}.  This value is
-equal to the @var{top} entry in the list returned by @code{(window-edges
-window)} minus the number of lines occupied by the internal border of
-@var{window}'s frame.
+Функция возвращает самую верхнюю строку @var{window}.  Это значение равно
+записи @var{top} в списке, возвращаемом @code{(window-edges window)}, за
+вычетом количества строк, занятых внутренней границей фрейма @var{window}.
 @end defun
 @end ignore
 
-  The following functions can be used to relate a set of
-frame-relative coordinates to a window:
+  Следующие функции могут использоваться для связывания набора координат
+относительно фрейма с окном:
 
 @defun window-at x y &optional frame
-This function returns the live window at the coordinates @var{x} and
-@var{y} given in default character sizes (@pxref{Frame Font}) relative
-to the native position of @var{frame} (@pxref{Frame Geometry}).
+Функция возвращает окно реального времени с координатами @var{x} и @var{y},
+заданными в размерах символов по умолчанию (@pxref{Frame Font}),
+относительно исходной позиции @var{frame} (@pxref{Frame Geometry}).
 
-If there is no window at that position, the return value is @code{nil}.
-If @var{frame} is omitted or @code{nil}, it defaults to the selected
-frame.
+Если в этой позиции нет окна, возвращаемое значение - @code{nil}.  Если
+@var{frame} опущен или @code{nil}, по умолчанию используется выбранный
+фрейм.
 @end defun
 
 @defun coordinates-in-window-p coordinates window
-This function checks whether a window @var{window} occupies the frame
-relative coordinates @var{coordinates}, and if so, which part of the
-window that is.  @var{window} should be a live window.
+Функция проверяет, занимает ли окно @var{window} относительные координаты
+фрейма @var{coordinates}, и если да, то в какой части окна оно находится.
+@var{window} должно быть активным окном.
 
-@var{coordinates} should be a cons cell of the form @code{(@var{x}
-. @var{y})}, where @var{x} and @var{y} are given in default character
-sizes (@pxref{Frame Font}) relative to the native position of
-@var{window}'s frame (@pxref{Frame Geometry}).
+@var{coordinates} должно быть cons-ячейкой вида @code{(@var{x} . @var{y})},
+где @var{x} и @var{y} задаются с размерами символов по умолчанию
+(@pxref{Frame Font}) относительно исходной позиции фрейма @var{window}
+(@pxref{Frame Geometry}).
 
-If there is no window at the specified position, the return value is
-@code{nil} .  Otherwise, the return value is one of the following:
+Если в указанной позиции окна нет, возвращаемое значение - @code{nil}.  В
+противном случае возвращаемое значение будет одним из следующих:
 
 @table @code
 @item (@var{relx} . @var{rely})
-The coordinates are inside @var{window}.  The numbers @var{relx} and
-@var{rely} are the equivalent window-relative coordinates for the
-specified position, counting from 0 at the top left corner of the
-window.
+Координаты внутри @var{window}.  Числа @var{relx} и @var{rely} - это
+эквивалентные координаты относительно окна для указанной позиции, считая от
+0 в верхнем левом углу окна.
 
 @item mode-line
-The coordinates are in the mode line of @var{window}.
+Координаты находятся в строке режима @var{window}.
 
 @item header-line
-The coordinates are in the header line of @var{window}.
+Координаты указаны в строке заголовка @var{window}.
 
 @item right-divider
-The coordinates are in the divider separating @var{window} from a
-window on the right.
+Координаты указаны в разделителе @var{window} от окна справа.
 
 @item bottom-divider
 The coordinates are in the divider separating @var{window} from a
 window beneath.
 
 @item vertical-line
-The coordinates are in the vertical line between @var{window} and its
-neighbor to the right.  This value occurs only if the window doesn't
-have a scroll bar; positions in a scroll bar are considered outside the
-window for these purposes.
+Координаты находятся на вертикальной линии между @var{window} и его соседом
+справа.  Это значение появляется только в том случае, если в окне нет полосы
+прокрутки; для этих целей позиции на полосе прокрутки считаются за пределами
+окна.
 
 @item left-fringe
 @itemx right-fringe
-The coordinates are in the left or right fringe of the window.
+Координаты указаны в левой или правой части окна.
 
 @item left-margin
 @itemx right-margin
-The coordinates are in the left or right margin of the window.
+Координаты указаны в левом или правом поле окна.
 
 @item nil
-The coordinates are not in any part of @var{window}.
+Координаты не находятся ни в какой части @var{window}.
 @end table
 
-The function @code{coordinates-in-window-p} does not require a frame as
-argument because it always uses the frame that @var{window} is on.
+Функция @code{coordinates-in-window-p} не требует фрейма в качестве
+аргумента, потому что она всегда использует фрейм, на котором находится
+@var{window}.
 @end defun
 
-  The following functions return window positions in pixels, rather
-than character units.  Though mostly useful on graphical displays,
-they can also be called on text terminals, where the screen area of
-each text character is taken to be one pixel.
+  Следующие функции возвращают положение окна в пикселях, а не в единицах
+символов.  Хотя в основном они полезны на графических дисплеях, их также
+можно вызывать на текстовых терминалах, где площадь экрана каждого
+текстового символа принимается равной одному пикселю.
 
 @defun window-pixel-edges &optional window
-This function returns a list of pixel coordinates for the edges of
-@var{window}.  Calling @code{(window-pixel-edges window)} is equivalent
-to calling @code{(window-edges window nil nil t)}, see above.
+Функция возвращает список пиксельных координат краев @var{window}.  Вызов
+@code{(window-pixel-edges window)} эквивалентен вызову
+@code{(window-edges window nil nil t)}, смотреть выше.
 @end defun
 
-@comment The following two functions are confusing and hardly used.
+@comment Следующие две функции сбивают с толку и почти не используются.
 @ignore
 @defun window-pixel-left &optional window
-This function returns the left pixel edge of window @var{window}.  This
-value equals the @var{left} entry in the list returned by
-@code{(window-pixel-edges window)} minus the number of pixels occupied
-by the internal border of @var{window}'s frame.  @var{window} must be a
-valid window and defaults to the selected one.
+Функция возвращает левый край пикселя окна @var{window}.  Это значение равно
+записи @var{left} в списке, возвращаемом @code{(window-pixel-edges window)},
+за вычетом количества пикселей, занятых внутренней границей кадра
+@var{window}.  @var{window} должно быть действительным окном и по умолчанию
+выбранным.
 @end defun
 
 @defun window-pixel-top &optional window
-This function returns the top pixel edge of window @var{window}.  This
-value is equal to the @var{top} entry in the list returned by
-@code{(window-pixel-edges window)} minus the number of pixels occupied
-by the internal border of @var{window}'s frame.  @var{window} must be a
-valid window and defaults to the selected one.
+Функция возвращает край верхнего пикселя окна @var{window}.  Это значение
+равно записи @var{top} в списке, возвращаемом
+@code{(window-pixel-edges window)}, за вычетом количества пикселей, занятых
+внутренней границей кадра @var{window}.  @var{window} должно быть
+действительным окном и по умолчанию выбранным.
 @end defun
 @end ignore
 
 @defun window-body-pixel-edges &optional window
-This function returns the pixel edges of @var{window}'s body.  Calling
-@code{(window-body-pixel-edges window)} is equivalent to calling
-@code{(window-edges window t nil t)}, see above.
+Функция возвращает пиксельные края тела @var{window}.  Вызов
+@code{(window-body-pixel-edges window)} эквивалентен вызову
+@code{(window-edges window t nil t)}, смотреть выше.
 @end defun
 
-  The following functions return window positions in pixels, relative to
-the origin of the display screen rather than that of the frame:
+  Следующие функции возвращают положение окон в пикселях относительно
+исходной точки экрана дисплея, а не исходной точки фрейма:
 
 @defun window-absolute-pixel-edges &optional window
-This function returns the pixel coordinates of @var{window} relative to
-an origin at (0, 0) of the display of @var{window}'s frame.  Calling
-@code{(window-absolute-pixel-edges)} is equivalent to calling
-@code{(window-edges window nil t t)}, see above.
+Функция возвращает пиксельные координаты @var{window} относительно начала
+координат (0, 0) отображения фрейма @var{window}.  Вызов
+@code{(window-absolute-pixel-edges)} эквивалентен вызову
+@code{(window-edges window nil t t)}, смотреть выше.
 @end defun
 
 @defun window-absolute-body-pixel-edges &optional window
-This function returns the pixel coordinates of @var{window}'s body
-relative to an origin at (0, 0) of the display of @var{window}'s frame.
-Calling @code{(window-absolute-body-pixel-edges window)} is equivalent
-to calling @code{(window-edges window t t t)}, see above.
+Функция возвращает пиксельные координаты тела @var{window} относительно
+начала координат (0, 0) отображения фрейма @var{window}.  Вызов
+@code{(window-absolute-body-pixel-edges window)} эквивалентен вызову
+@code{(window-edges window t t t)}, смотреть выше.
 
-Combined with @code{set-mouse-absolute-pixel-position}, this function
-can be used to move the mouse pointer to an arbitrary buffer position
-visible in some window:
+В сочетании с @code{set-mouse-absolute-pixel-position} функцию можно
+использовать для перемещения указателя мыши в произвольную позицию буфера,
+видимую в каком-либо окне:
 
 @example
 @group
@@ -5472,29 +5465,28 @@ visible in some window:
 @end group
 @end example
 
-On a graphical terminal this form ``warps'' the mouse cursor to the
-upper left corner of the glyph at the selected window's point.  A
-position calculated this way can be also used to show a tooltip window
-there.
+На графическом терминале это формирует ``перекосы'' курсора мыши в верхнем
+левом углу глифа в выбранной точке окна.  Позиция, рассчитанная таким
+образом, также может использоваться для отображения окна всплывающей
+подсказки.
 @end defun
 
-The following function returns the screen coordinates of a buffer
-position visible in a window:
+Следующая функция возвращает экранные координаты позиции буфера, видимой в
+окне:
 
 @defun window-absolute-pixel-position &optional position window
-If the buffer position @var{position} is visible in window @var{window},
-this function returns the display coordinates of the upper/left corner
-of the glyph at @var{position}.  The return value is a cons of the X-
-and Y-coordinates of that corner, relative to an origin at (0, 0) of
-@var{window}'s display.  It returns @code{nil} if @var{position} is not
-visible in @var{window}.
+Если буферная позиция @var{position} видна в окне @var{window}, функция
+возвращает отображаемые координаты верхнего/левого угла глифа в
+@var{position}.  Возвращаемое значение - это cons-ячейка X- и Y-координат
+этого угла относительно начала координат в (0, 0) отображения @var{window}.
+Возвращает @code{nil}, если @var{position} не отображается в @var{window}.
 
-@var{window} must be a live window and defaults to the selected
-window.  @var{position} defaults to the value of @code{window-point}
-of @var{window}.
+@var{window} должно быть активным окном и по умолчанию использовать
+выбранное окно.  @var{position} по умолчанию имеет значение
+@code{window-point} для @var{window}.
 
-This means that in order to move the mouse pointer to the position of
-point in the selected window, it's sufficient to write:
+Это означает, что для того, чтобы переместить указатель мыши в положение
+точки в выбранном окне, достаточно написать:
 
 @example
 @group
@@ -5505,146 +5497,146 @@ point in the selected window, it's sufficient to write:
 @end example
 @end defun
 
-The following function returns the largest rectangle that can be
-inscribed in a window without covering text displayed in that window.
+Следующая функция возвращает самый большой прямоугольник, который может быть
+вписан в окно, не закрывая отображаемый в этом окне текст.
 
 @defun window-largest-empty-rectangle &optional window count min-width min-height positions left
-This function calculates the dimensions of the largest empty rectangle
-that can be inscribed in the specified @var{window}'s text area.
-@var{window} must be a live window and defaults to the selected one.
+Функция вычисляет размеры самого большого пустого прямоугольника, который
+может быть вписан в указанную текстовую область @var{window}.  @var{window}
+должно быть активным окном и по умолчанию быть выбранным.
 
-The return value is a triple of the width and the start and end
-y-coordinates of the largest rectangle that can be inscribed into the
-empty space (space not displaying any text) of the text area of
-@var{window}.  No x-coordinates are returned by this function---any such
-rectangle is assumed to end at the right edge of @var{window}'s text
-area.  If no empty space can be found, the return value is @code{nil}.
+Возвращаемое значение - это тройная ширина и начальная и конечная координаты
+y самого большого прямоугольника, который может быть вписан в пустое
+пространство (пространство, не отображающее никакого текста) текстовой
+области @var{window}.  Функция не возвращает x-координаты - предполагается,
+что любой такой прямоугольник заканчивается на правом краю текстовой области
+@var{window}.  Если пустое пространство не найдено, возвращается значение
+@code{nil}.
 
-The optional argument @var{count}, if не-@code{nil}, specifies a
-maximum number of rectangles to return.  This means that the return
-value is a list of triples specifying rectangles with the largest
-rectangle first.  @var{count} can be also a cons cell whose car
-specifies the number of rectangles to return and whose @sc{cdr}, if
-не-@code{nil}, states that all rectangles returned must be disjoint.
+Необязательный аргумент @var{count}, если не-@code{nil}, указывает
+максимальное количество возвращаемых прямоугольников.  Это означает, что
+возвращаемое значение представляет собой список троек, определяющих
+прямоугольники с наибольшим прямоугольником первым.  @var{count} также может
+быть cons-ячейкой, car которой определяет количество возвращаемых
+прямоугольников, а @sc{cdr}, если не-@code{nil}, утверждает, что все
+возвращаемые прямоугольники должны быть непересекающимися.
 
-The optional arguments @var{min-width} and @var{min-height}, if
-не-@code{nil}, specify the minimum width and height of any rectangle
-returned.
+Необязательные аргументы @var{min-width} и @var{min-height}, если
+не-@code{nil}, указывают минимальную ширину и высоту любого возвращаемого
+прямоугольника.
 
-The optional argument @var{positions}, if не-@code{nil}, is a cons cell
-whose @sc{car} specifies the uppermost and whose @sc{cdr} specifies the
-lowermost pixel position that must be covered by any rectangle returned.
-These positions measure from the start of the text area of @var{window}.
+Необязательный аргумент @var{positions}, если не-@code{nil}, является
+cons-ячейкой, @sc{car} которой определяет самый верхний, а @sc{cdr} которой
+определяет положение самого нижнего пикселя, которое должно быть покрыто
+любым возвращаемым прямоугольником.  Эти позиции измеряются от начала
+текстовой области @var{window}.
 
-The optional argument @var{left}, if не-@code{nil}, means to return
-values suitable for buffers displaying right to left text.  In that
-case, any rectangle returned is assumed to start at the left edge of
-@var{window}'s text area.
+Необязательный аргумент @var{left}, если не-@code{nil}, означает возвращение
+значений, подходящих для буферов, отображающих текст справа налево.  В этом
+случае предполагается, что любой возвращаемый прямоугольник начинается с
+левого края текстовой области @var{window}.
 
-Note that this function has to retrieve the dimensions of each line of
-@var{window}'s glyph matrix via @code{window-lines-pixel-dimensions}
-(@pxref{Size of Displayed Text}).  Hence, this function may also return
-@code{nil} when the current glyph matrix of @var{window} is not
-up-to-date.
+Обратить внимание, что эта функция должна получать размеры каждой строки
+матрицы глифов @var{window} через @code{window-lines-pixel-dimensions}
+(@pxref{Size of Displayed Text}).  Следовательно, функция может также
+возвращать @code{nil}, если текущая матрица глифов @var{window} устарела.
 @end defun
 
 
 @node Mouse Window Auto-selection
-@section Mouse Window Auto-selection
+@section Автоматический Выбор Окна Мыши
 @cindex window auto-selection
 @cindex auto-selection of window
-The following option allows to automatically select the window under the
-mouse pointer.  This accomplishes a policy similar to that of window
-managers that give focus to a frame (and thus trigger its subsequent
-selection) whenever the mouse pointer enters its window-system window
+Следующая опция позволяет автоматически выбирать окно под курсором мыши.
+Это реализует политику, аналогичную политике оконных менеджеров, которые
+дают фокус фрейму (и, таким образом, запускают его последующий выбор) всякий
+раз, когда указатель мыши входит в окно его оконной системы
 (@pxref{Input Focus}).
 
 @defopt mouse-autoselect-window
-If this variable is не-@code{nil}, Emacs will try to automatically
-select the window under the mouse pointer.  The following values are
-meaningful:
+Если эта переменная - не-@code{nil}, Emacs попытается автоматически выбрать
+окно под указателем мыши.  Следующие значения имеют значение:
 
 @table @asis
 @item A positive number
-This specifies a delay in seconds after which auto-selection triggers.
-The window under the mouse pointer is selected after the mouse has
-remained in it for the entire duration of the delay.
+Это определяет задержку в секундах, после которой срабатывает автоматический
+выбор.  Окно под указателем мыши выбирается после того, как мышь оставалась
+в нем в течение всего времени задержки.
 
 @item A negative number
-A negative number has a similar effect as a positive number, but selects
-the window under the mouse pointer only after the mouse pointer has
-remained in it for the entire duration of the absolute value of that
-number and in addition has stopped moving.
+Отрицательное число имеет тот же эффект, что и положительное число, но
+выбирает окно под указателем мыши только после того, как указатель мыши
+оставался в нем в течение всего времени абсолютного значения этого числа и,
+кроме того, без движения.
 
 @item Other value
-Any other не-@code{nil} value means to select a window instantaneously
-as soon as the mouse pointer enters it.
+Любое другое значение не-@code{nil} означает мгновенное выделение окна, как
+только указатель мыши входит в него.
 @end table
 
-In either case, the mouse pointer must enter the text area of a window in
-order to trigger its selection.  Dragging the scroll bar slider or the
-mode line of a window conceptually should not cause its auto-selection.
+В любом случае указатель мыши должен войти в текстовую область окна, чтобы
+вызвать его выбор.  Перетаскивание ползунка полосы прокрутки или строки
+режима окна концептуально не должно вызывать его автоматический выбор.
 
-Mouse auto-selection selects the minibuffer window only if it is active,
-and never deselects the active minibuffer window.
+Автоматический выбор мыши выбирает окно минибуфера, только если оно активно,
+и никогда не отменяет выбор активного окна минибуфера.
 @end defopt
 
-Mouse auto-selection can be used to emulate a focus follows mouse policy
-for child frames (@pxref{Child Frames}) which usually are not tracked by
-the window manager.  This requires to set the value of
-@code{focus-follows-mouse} (@pxref{Input Focus}) to a не-@code{nil}
-value.  If the value of @code{focus-follows-mouse} is @code{auto-raise},
-entering a child frame with the mouse will raise it automatically above
-all other child frames of that frame's parent frame.
+Автоматический выбор мыши может использоваться для имитации фокуса в
+соответствии с политикой мыши для дочерних фреймов (@pxref{Child Frames}),
+которые обычно не отслеживаются оконным менеджером.  Для этого необходимо
+установить значение @code{focus-follows-mouse} (@pxref{Input Focus}) на
+значение не-@code{nil}.  Если значение @code{focus-follows-mouse} равно
+@code{auto-raise}, ввод дочернего фрейма с помощью мыши автоматически
+поднимет его над всеми другими дочерними фреймами родительского фрейма
+этого фрейма.
 
 
 @node Window Configurations
-@section Window Configurations
+@section Конфигурации Окон
 @cindex window configurations
 @cindex saving window information
 
-A @dfn{window configuration} records the entire layout of one
-frame---all windows, their sizes, which buffers they contain, how those
-buffers are scrolled, and their value of point; also their
-fringes, margins, and scroll bar settings.  It also includes the value
-of @code{minibuffer-scroll-window}.  As a special exception, the window
-configuration does not record the value of point in the selected window
-for the current buffer.
+  @dfn{Конфигурация окна} записывает весь макет одного фрейма - все окна, их
+размеры, какие буферы они содержат, как эти буферы прокручиваются, и их
+значение точки; также их оконтовка, поля и настройки полосы прокрутки.
+Также включается значение @code{minibuffer-scroll-window}.  В качестве
+особого исключения конфигурация окна не записывает значение точки в
+выбранном окне для текущего буфера.
 
-  You can bring back an entire frame layout by restoring a previously
-saved window configuration.  If you want to record the layout of all
-frames instead of just one, use a frame configuration instead of a
-window configuration.  @xref{Frame Configurations}.
+  Можно вернуть всю компоновку фрейма, восстановив ранее сохраненную
+конфигурацию окна.  Если потребуется записать макет всех фреймов, а не
+только одного, используется конфигурация фрейма вместо конфигурации окна.
+@xref{Frame Configurations}.
 
 @defun current-window-configuration &optional frame
-This function returns a new object representing @var{frame}'s current
-window configuration.  The default for @var{frame} is the selected
-frame.  The variable @code{window-persistent-parameters} specifies
-which window parameters (if any) are saved by this function.
-@xref{Window Parameters}.
+Функция возвращает новый объект, представляющий текущую конфигурацию окна
+@var{frame}.  По умолчанию для @var{frame} используется выбранный фрейм.
+Переменная @code{window-persistent-parameters} указывает, какие параметры
+окна (если есть) сохраняются этой функцией.  @xref{Window Parameters}.
 @end defun
 
 @defun set-window-configuration configuration
-This function restores the configuration of windows and buffers as
-specified by @var{configuration}, for the frame that @var{configuration}
-was created for.
+Функция восстанавливает конфигурацию окон и буферов, указанную в
+@var{configuration}, для кадра, для которого был создан @var{configuration}.
 
-The argument @var{configuration} must be a value that was previously
-returned by @code{current-window-configuration}.  The configuration is
-restored in the frame from which @var{configuration} was made, whether
-that frame is selected or not.  In some rare cases this may trigger
-execution of the @code{window-size-change-functions} (@pxref{Window
-Hooks}) even if the size of windows did not change at all.  The
-@code{window-configuration-change-hook} functions will be called if and
-only if at least one window was added to or deleted from the frame.
+Аргумент @var{configuration} должен быть значением, которое ранее было
+возвращено @code{current-window-configuration}.  Конфигурация
+восстанавливается в фрейме, из которого была создана @var{configuration}, не
+зависимо от того, выбран этот фрейм или нет.  В некоторых редких случаях это
+может вызвать выполнение @code{window-size-change-functions}
+(@pxref{Window Hooks}), даже если размер окон вообще не изменился.  Функции
+@code{window-configuration-change-hook} будут вызываться тогда и только
+тогда, когда хотя бы одно окно было добавлено или удалено из фрейма.
 
-If the frame from which @var{configuration} was saved is dead, all this
-function does is restore the three variables @code{window-min-height},
-@code{window-min-width} and @code{minibuffer-scroll-window}.  In this
-case, the function returns @code{nil}.  Otherwise, it returns @code{t}.
+Если фрейм, из которого была сохранена @var{configuration}, мертв, все, что
+делает эта функция, - это восстанавливает три переменные
+@code{window-min-height}, @code{window-min-width} и
+@code{minibuffer-scroll-window}.  В этом случае функция возвращает
+@code{nil}.  В противном случае возвращает @code{t}.
 
-Here is a way of using this function to get the same effect
-as @code{save-window-excursion}:
+Вот способ использования этой функции для получения того же эффекта, что и
+у @code{save-window-excursion}:
 
 @example
 @group
@@ -5658,388 +5650,380 @@ as @code{save-window-excursion}:
 @end defun
 
 @defmac save-window-excursion forms@dots{}
-This macro records the window configuration of the selected frame,
-executes @var{forms} in sequence, then restores the earlier window
-configuration.  The return value is the value of the final form in
+Этот макрос записывает конфигурацию окна выбранного фрейма, последовательно
+выполняет @var{forms}, а затем восстанавливает более раннюю конфигурацию
+окна.  Возвращаемое значение - это значение окончательной формы в
 @var{forms}.
 
-Most Lisp code should not use this macro; @code{save-selected-window}
-is typically sufficient.  In particular, this macro cannot reliably
-prevent the code in @var{forms} from opening new windows, because new
-windows might be opened in other frames (@pxref{Choosing Window}), and
-@code{save-window-excursion} only saves and restores the window
-configuration on the current frame.
+Большая часть кода Lisp не должна использовать этот макрос;
+@code{save-selected-window} обычно бывает достаточно.  В частности, этот
+макрос не может надежно предотвратить открытие новых окон кодом в
+@var{forms}, потому что новые окна могут открываться в других фреймах
+(@pxref{Choosing Window}), а @code{save-window-excursion} сохраняет и
+восстанавливает конфигурацию окна только в текущем фрейме.
 
-Do not use this macro in @code{window-size-change-functions}; exiting
-the macro triggers execution of @code{window-size-change-functions},
-leading to an endless loop.
+Не используйте этот макрос в @code{window-size-change-functions}; выход из
+макроса запускает выполнение @code{window-size-change-functions}, что
+приводит к бесконечному циклу.
 @end defmac
 
 @defun window-configuration-p object
-This function returns @code{t} if @var{object} is a window configuration.
+Функция возвращает @code{t}, если @var{object} является конфигурацией окна.
 @end defun
 
 @defun compare-window-configurations config1 config2
-This function compares two window configurations as regards the
-structure of windows, but ignores the values of point and the
-saved scrolling positions---it can return @code{t} even if those
-aspects differ.
+Функция сравнивает две конфигурации окон в отношении структуры окон, но
+игнорирует значения точки и сохраненные позиции прокрутки - она может
+возвращать @code{t}, даже если эти аспекты различаются.
 
-The function @code{equal} can also compare two window configurations; it
-regards configurations as unequal if they differ in any respect, even a
-saved point.
+Функция @code{equal} также может сравнивать две конфигурации окон; она
+считает конфигурации неравными, если они различаются в каком-либо отношении,
+даже если они сохранены.
 @end defun
 
 @defun window-configuration-frame config
-This function returns the frame for which the window configuration
-@var{config} was made.
+Функция возвращает фрейм, для которого была сделана конфигурация окна
+@var{config}.
 @end defun
 
-  Other primitives to look inside of window configurations would make
-sense, but are not implemented because we did not need them.  See the
-file @file{winner.el} for some more operations on windows
-configurations.
+  Другие примитивы, позволяющие заглянуть внутрь конфигураций окон, имели бы
+смысл, но не реализованы, потому что они не нужны.  Смотреть файл
+@file{winner.el} для получения дополнительных сведений об операциях с
+конфигурациями окон.
 
-  The objects returned by @code{current-window-configuration} die
-together with the Emacs process.  In order to store a window
-configuration on disk and read it back in another Emacs session, you
-can use the functions described next.  These functions are also useful
-to clone the state of a frame into an arbitrary live window
-(@code{set-window-configuration} effectively clones the windows of a
-frame into the root window of that very frame only).
+  Объекты, возвращаемые @code{current-window-configuration}, умирают вместе
+с процессом Emacs.  Чтобы сохранить конфигурацию окна на диске и прочитать
+ее в другом сеансе Emacs, можно использовать функции, описанные ниже.  Эти
+функции также полезны для клонирования состояния фрейма в произвольное
+активное окно (@code{set-window-configuration} эффективно клонирует окна
+фрейма только в корневое окно этого самого фрейма).
 
 @cindex window state
 @defun window-state-get &optional window writable
-This function returns the state of @var{window} as a Lisp object.  The
-argument @var{window} must be a valid window and defaults to the root
-window of the selected frame.
+Функция возвращает состояние @var{window} как объекта Lisp.  Аргумент
+@var{window} должен быть действительным окном и по умолчанию использовать
+корневое окно выбранного фрейма.
 
-If the optional argument @var{writable} is не-@code{nil}, this means to
-not use markers for sampling positions like @code{window-point} or
-@code{window-start}.  This argument should be не-@code{nil} when the
-state will be written to disk and read back in another session.
+Если необязательный аргумент @var{writable} - не-@code{nil}, это означает,
+что маркеры не используются для выборки позиций, таких как
+@code{window-point} или @code{window-start}.  Этот аргумент должен быть
+не-@code{nil}, когда состояние будет записано на диск и прочитано в другом
+сеансе.
 
-Together, the argument @var{writable} and the variable
-@code{window-persistent-parameters} specify which window parameters are
-saved by this function.  @xref{Window Parameters}.
+Вместе аргумент @var{writable} и переменная
+@code{window-persistent-parameters} определяют, какие параметры окна
+сохраняются этой функцией.  @xref{Window Parameters}.
 @end defun
 
-The value returned by @code{window-state-get} can be used in the same
-session to make a clone of a window in another window.  It can be also
-written to disk and read back in another session.  In either case, use
-the following function to restore the state of the window.
+Значение, возвращаемое @code{window-state-get}, можно использовать в том же
+сеансе для создания клона окна в другом окне.  Его также можно записать на
+диск и прочитать в другом сеансе.  В любом случае использовать следующую
+функцию для восстановления состояния окна.
 
 @defun window-state-put state &optional window ignore
-This function puts the window state @var{state} into @var{window}.
-The argument @var{state} should be the state of a window returned by
-an earlier invocation of @code{window-state-get}, see above.  The
-optional argument @var{window} can be either a live window or an
-internal window (@pxref{Windows and Frames}) and defaults to the
-selected one.  If @var{window} is not live, it is replaced by a live
-window before putting @var{state} into it.
+Функция помещает состояние окна @var{state} в @var{window}.  Аргумент
+@var{state} должен быть состоянием окна, возвращенным предыдущим вызовом
+@code{window-state-get}, смотреть выше.  Необязательный аргумент
+@var{window} может быть либо активным окном, либо внутренним окном
+(@pxref{Windows and Frames}) и по умолчанию быть выбранным.  Если
+@var{window} не является активным, оно заменяется активным окном перед
+помещением в него @var{state}.
 
-If the optional argument @var{ignore} is не-@code{nil}, it means to ignore
-minimum window sizes and fixed-size restrictions.  If @var{ignore}
-is @code{safe}, this means windows can get as small as one line
-and/or two columns.
+Если необязательный аргумент @var{ignore} - не-@code{nil}, это означает
+игнорирование минимальных размеров окна и ограничений фиксированного
+размера.  Если @var{ignore} равен @code{safe}, это означает, что окна могут
+быть размером с одну строку и/или два столбца.
 @end defun
 
-The functions @code{window-state-get} and @code{window-state-put} also
-allow to exchange the contents of two live windows.  The following
-function does precisely that:
+Функции @code{window-state-get} и @code{window-state-put} также позволяют
+обмениваться содержимым двух активным окнам.  Следующая функция делает
+именно это:
 
 @deffn Command window-swap-states &optional window-1 window-2 size
-This command swaps the states of the two live windows @var{window-1} and
-@var{window-2}.  @var{window-1} must specify a live window and defaults
-to the selected one.  @var{window-2} must specify a live window and
-defaults to the window following @var{window-1} in the cyclic ordering
-of windows, excluding minibuffer windows and including live windows on
-all visible frames.
+Команда меняет местами состояния двух активных окон @var{window-1} и
+@var{window-2}.  @var{window-1} должно указывать активное окно и по
+умолчанию использовать выбранное.  @var{window-2} должно указывать активное
+окно и по умолчанию использовать окно, следующее за @var{window-1} в
+циклическом порядке окон, исключая окна минибуфера и включая активные окна
+на всех видимых фреймах.
 
-Optional argument @var{size} не-@code{nil} means to try swapping the
-sizes of @var{window-1} and @var{window-2} as well.  A value of
-@code{height} means to swap heights only, a value of @code{width}
-means to swap widths only, while @code{t} means to swap both widths
-and heights, if possible.  Frames are not resized by this function.
+Необязательный аргумент @var{size} не-@code{nil} означает попытку также
+поменять местами размеры @var{window-1} и @var{window-2}.  Значение
+@code{height} означает замену только высоты, значение @code{width} означает
+замену только ширины, а @code{t} означает замену и ширины, и высоты, если
+это возможно.  Функция не изменяет размер фреймов.
 @end deffn
 
 
 @node Window Parameters
-@section Window Parameters
+@section Параметры Окна
 @cindex window parameters
 
-This section describes the window parameters that can be used to
-associate additional information with windows.
+В этом разделе описаны параметры окна, которые можно использовать для
+связывания дополнительной информации с окнами.
 
 @defun window-parameter window parameter
-This function returns @var{window}'s value for @var{parameter}.  The
-default for @var{window} is the selected window.  If @var{window} has no
-setting for @var{parameter}, this function returns @code{nil}.
+Функция возвращает значение @var{window} для @var{parameter}.  По умолчанию
+для @var{window} выбрано окно.  Если @var{window} не имеет настройки для
+@var{parameter}, функция возвращает @code{nil}.
 @end defun
 
 @defun window-parameters &optional window
-This function returns all parameters of @var{window} and their values.
-The default for @var{window} is the selected window.  The return value
-is either @code{nil}, or an association list whose elements have the form
+Функция возвращает все параметры @var{window} и их значения.  По умолчанию
+для @var{window} выбрано окно.  Возвращаемое значение - либо @code{nil},
+либо список ассоциаций, элементы которого имеют форму
 @code{(@var{parameter} . @var{value})}.
 @end defun
 
 @defun set-window-parameter window parameter value
-This function sets @var{window}'s value of @var{parameter} to
-@var{value} and returns @var{value}.  The default for @var{window}
-is the selected window.
+Функция устанавливает значение @var{window} для @var{parameter} равное
+@var{value} и возвращает @var{value}.  По умолчанию для @var{window} выбрано
+окно.
 @end defun
 
-By default, the functions that save and restore window configurations or the
-states of windows (@pxref{Window Configurations}) do not care about
-window parameters.  This means that when you change the value of a
-parameter within the body of a @code{save-window-excursion}, the
-previous value is not restored when that macro exits.  It also means
-that when you restore via @code{window-state-put} a window state saved
-earlier by @code{window-state-get}, all cloned windows have their
-parameters reset to @code{nil}.  The following variable allows you to
-override the standard behavior:
+По умолчанию функции, сохраняющие и восстанавливающие конфигурации окон или
+состояния окон (@pxref{Window Configurations}), не заботятся о параметрах
+окна.  Это означает, что когда изменяется значение параметра в теле
+@code{save-window-excursion}, предыдущее значение не восстанавливается при
+выходе из этого макроса.  Это также означает, что при восстановлении с
+помощью @code{window-state-put} состояния окна, сохраненного ранее с помощью
+@code{window-state-get}, параметры всех клонированных окон сбрасываются на
+@code{nil}.  Следующая переменная позволяет переопределить стандартное
+поведение:
 
 @cindex persistent window parameters
 @defvar window-persistent-parameters
-This variable is an alist specifying which parameters get saved by
-@code{current-window-configuration} and @code{window-state-get}, and
-subsequently restored by @code{set-window-configuration} and
+Переменная представляет собой список, определяющий, какие параметры
+сохраняются @code{current-window-configuration} и @code{window-state-get}, а
+затем восстанавливаются @code{set-window-configuration} и
 @code{window-state-put}.  @xref{Window Configurations}.
 
-The @sc{car} of each entry of this alist is a symbol specifying the
-parameter.  The @sc{cdr} should be one of the following:
+@sc{car} каждой записи этого списка является символом, определяющим параметр.  @sc{cdr} должен быть одним из следующих:
 
 @table @asis
 @item @code{nil}
-This value means the parameter is saved neither by
-@code{window-state-get} nor by @code{current-window-configuration}.
+Это значение означает, что параметр не сохраняется ни в
+@code{window-state-get}, ни в @code{current-window-configuration}.
 
 @item @code{t}
-This value specifies that the parameter is saved by
-@code{current-window-configuration} and (provided its @var{writable}
-argument is @code{nil}) by @code{window-state-get}.
+Это значение указывает, что параметр сохраняется с помощью
+@code{current-window-configuration} и (предоставляет свой @var{writable},
+аргумент - @code{nil}) по @code{window-state-get}.
 
 @item @code{writable}
-This means that the parameter is saved unconditionally by both
-@code{current-window-configuration} and @code{window-state-get}.  This
-value should not be used for parameters whose values do not have a read
-syntax.  Otherwise, invoking @code{window-state-put} in another session
-may fail with an @code{invalid-read-syntax} error.
+Это означает, что параметр безоговорочно сохраняется как
+@code{current-window-configuration} и @code{window-state-get}.  Это значение
+не следует использовать для параметров, значения которых не имеют синтаксиса
+чтения.  В противном случае вызов @code{window-state-put} в другом сеансе
+может завершиться ошибкой @code{invalid-read-syntax}.
 @end table
 @end defvar
 
-Some functions (notably @code{delete-window},
-@code{delete-other-windows} and @code{split-window}), may behave
-specially when the window specified by their @var{window} argument has
-a parameter whose name is equal to the function's name.  You can
-override such special behavior by binding the following variable to a
-не-@code{nil} value:
+Некоторые функции (особенно @code{delete-window},
+@code{delete-other-windows} и @code{split-window}) могут вести себя особым
+образом, когда окно, указанное их аргументом @var{window}, имеет параметр,
+имя которого совпадает с именем функции.  Можно переопределить такое особое
+поведение, привязав следующую переменную к значению не-@code{nil}:
 
 @defvar ignore-window-parameters
-If this variable is не-@code{nil}, some standard functions do not
-process window parameters.  The functions currently affected by this are
-@code{split-window}, @code{delete-window}, @code{delete-other-windows},
-and @code{other-window}.
+Если эта переменная - не-@code{nil}, некоторые стандартные функции не
+обрабатывают параметры окна.  В настоящее время это влияет на функции
+@code{split-window}, @code{delete-window}, @code{delete-other-windows}, и
+@code{other-window}.
 
-An application can bind this variable to a не-@code{nil} value around
-calls to these functions.  If it does so, the application is fully
-responsible for correctly assigning the parameters of all involved
-windows when exiting that function.
+Приложение может привязать эту переменную к значению не-@code{nil} вокруг
+вызовов этих функций.  Если это так, приложение полностью отвечает за
+правильное назначение параметров всех задействованных окон при выходе из
+этой функции.
 @end defvar
 
-The following parameters are currently used by the window management
-code:
+Следующие параметры в настоящее время используются кодом управления окнами:
 
 @table @code
 @item delete-window
-@vindex delete-window@r{, a window parameter}
-This parameter affects the execution of @code{delete-window}
+@vindex delete-window@r{, параметр окна}
+Этот параметр влияет на выполнение @code{delete-window}
 (@pxref{Deleting Windows}).
 
 @item delete-other-windows
-@vindex delete-other-windows@r{, a window parameter}
-This parameter affects the execution of @code{delete-other-windows}
+@vindex delete-other-windows@r{, параметр окна}
+Этот параметр влияет на выполнение @code{delete-other-windows}
 (@pxref{Deleting Windows}).
 
 @item no-delete-other-windows
-@vindex no-delete-other-windows@r{, a window parameter}
-This parameter marks the window as not deletable by
+@vindex no-delete-other-windows@r{, параметр окна}
+Этот параметр отмечает окно как не удаляемое с помощью
 @code{delete-other-windows} (@pxref{Deleting Windows}).
 
 @item split-window
-@vindex split-window@r{, a window parameter}
-This parameter affects the execution of @code{split-window}
+@vindex split-window@r{, параметр окна}
+Этот параметр влияет на выполнение @code{split-window}
 (@pxref{Splitting Windows}).
 
 @item other-window
-@vindex other-window@r{, a window parameter}
-This parameter affects the execution of @code{other-window}
+@vindex other-window@r{, параметр окна}
+Этот параметр влияет на выполнение @code{other-window}
 (@pxref{Cyclic Window Ordering}).
 
 @item no-other-window
-@vindex no-other-window@r{, a window parameter}
-This parameter marks the window as not selectable by @code{other-window}
-(@pxref{Cyclic Window Ordering}).
+@vindex no-other-window@r{, параметр окна}
+Этот параметр отмечает окно как недоступное для выбора с помощью
+@code{other-window} (@pxref{Cyclic Window Ordering}).
 
 @item clone-of
-@vindex clone-of@r{, a window parameter}
-This parameter specifies the window that this one has been cloned
-from.  It is installed by @code{window-state-get} (@pxref{Window
-Configurations}).
+@vindex clone-of@r{, параметр окна}
+Этот параметр указывает окно, из которого оно было клонировано.
+Устанавливается @code{window-state-get} (@pxref{Window Configurations}).
 
 @item window-preserved-size
-@vindex window-preserved-size@r{, a window parameter}
-This parameter specifies a buffer, a direction where @code{nil} means
-vertical and @code{t} horizontal, and a size in pixels.  If this window
-displays the specified buffer and its size in the indicated direction
-equals the size specified by this parameter, then Emacs will try to
-preserve the size of this window in the indicated direction.  This
-parameter is installed and updated by the function
-@code{window-preserve-size} (@pxref{Preserving Window Sizes}).
+@vindex window-preserved-size@r{, параметр окна}
+Этот параметр определяет буфер, направление, где @code{nil} означает
+вертикальное, а @code{t} горизонтальное, и размер в пикселях.  Если это окно
+отображает указанный буфер и его размер в указанном направлении равен
+размеру, заданному этим параметром, то Emacs попытается сохранить размер
+этого окна в указанном направлении.  Этот параметр устанавливается и
+обновляется функцией @code{window-preserve-size}
+(@pxref{Preserving Window Sizes}).
 
 @item quit-restore
-@vindex quit-restore@r{, a window parameter}
-This parameter is installed by the buffer display functions
-(@pxref{Choosing Window}) and consulted by @code{quit-restore-window}
-(@pxref{Quitting Windows}).  It is a list of four elements, see the
-description of @code{quit-restore-window} in @ref{Quitting Windows}
-for details.
+@vindex quit-restore@r{, параметр окна}
+Этот параметр устанавливается функциями отображения буфера
+(@pxref{Choosing Window}) и просматривается @code{quit-restore-window}
+(@pxref{Quitting Windows}).  Это список из четырех элементов, подробности
+смотреть в описании @code{quit-restore-window} в @ref{Quitting Windows}.
 
 @item window-side
 @itemx window-slot
-@vindex window-side@r{, a window parameter}
-@vindex window-slot@r{, a window parameter}
-These parameters are used internally for implementing side windows
+@vindex window-side@r{, параметр окна}
+@vindex window-slot@r{, параметр окна}
+Эти параметры используются внутри для реализации боковых окон
 (@pxref{Side Windows}).
 
 @item window-atom
-@vindex window-atom@r{, a window parameter}
-This parameter is used internally for implementing atomic windows, see
+@vindex window-atom@r{, параметр окна}
+Этот параметр используется внутри для реализации атомарных окон, смотреть
 @ref{Atomic Windows}.
 
 @item mode-line-format
-@vindex mode-line-format@r{, a window parameter}
-This parameter replaces the value of the buffer-local variable
-@code{mode-line-format} (@pxref{Mode Line Basics}) of this window's
-buffer whenever this window is displayed.  The symbol @code{none} means
-to suppress display of a mode line for this window.  Display and
-contents of the mode line on other windows showing this buffer are not
-affected.
+@vindex mode-line-format@r{, параметр окна}
+Параметр заменяет значение локальной переменной @code{mode-line-format}
+(@pxref{Mode Line Basics}) буфера этого окна всякий раз, когда это окно
+отображается.  Символ @code{none} означает запретить отображение строки
+режима для этого окна.  Отображение и содержимое строки режима в других
+окнах, показывающих этот буфер, не затрагиваются.
 
 @item header-line-format
-@vindex header-line-format@r{, a window parameter}
-This parameter replaces the value of the buffer-local variable
-@code{header-line-format} (@pxref{Mode Line Basics}) of this window's
-buffer whenever this window is displayed.  The symbol @code{none} means
-to suppress display of a header line for this window.  Display and
-contents of the header line on other windows showing this buffer are not
-affected.
+@vindex header-line-format@r{, параметр окна}
+Этот параметр заменяет значение локальной переменной
+@code{header-line-format} (@pxref{Mode Line Basics}) буфера этого окна
+всякий раз, когда это окно отображается.  Символ @code{none} означает
+запретить отображение строки заголовка для этого окна.  Отображение и
+содержимое строки заголовка в других окнах, показывающих этот буфер, не
+затрагиваются.
 
 @item min-margins
 @vindex min-margins@r{, a window parameter}
-The value of this parameter is a cons cell whose @sc{car} and
-@sc{cdr}, if не-@code{nil}, specify the minimum values (in columns)
-for the left and right margin of this window (@pxref{Display Margins}.
-When present, Emacs will use these values instead of the actual margin
-widths for determining whether a window can be split or shrunk
-horizontally.
+Значением этого параметра является cons-ячейка, @sc{car} и @sc{cdr} которой,
+если не-@code{nil}, задает минимальные значения (в столбцах) для левого и
+правого поля этого окна (@pxref{Display Margins}.  Если присутствует, Emacs
+будет использовать эти значения вместо фактической ширины полей для
+определение возможности разделения или сжатия окна по горизонтали.
 
-Emacs never auto-adjusts the margins of any window after splitting or
-resizing it.  It is the sole responsibility of any application setting
-this parameter to adjust the margins of this window as well as those of
-any new window that inherits this window's margins due to a split.
-Both @code{window-configuration-change-hook} and
-@code{window-size-change-functions} (@pxref{Window Hooks}) should be
-employed for this purpose.
+Emacs никогда не изменяет автоматически поля любого окна после его
+разделения или изменения размера.  Любое приложение, устанавливающее этот
+параметр, несет исключительную ответственность за настройку полей этого
+окна, а также полей любого нового окна, которое наследует поля этого окна
+из-за разделения.  Для этого следует использовать оба
+@code{window-configuration-change-hook} и
+@code{window-size-change-functions} (@pxref{Window Hooks}).
 
-This parameter was introduced in Emacs version 25.1 to support
-applications that use large margins to center buffer text within a
-window and should be used, with due care, exclusively by those
-applications.  It might be replaced by an improved solution in future
-versions of Emacs.
+Этот параметр был введен в Emacs версии 25.1 для поддержки приложений,
+использующих большие поля для центрирования текста буфера в окне, и должен
+использоваться с должной осторожностью исключительно этими приложениями.  В
+будущих версиях Emacs его можно заменить улучшенным решением.
 @end table
 
 @node Window Hooks
-@section Hooks for Window Scrolling and Changes
+@section Перехватчики для Прокрутки Окон и Изменений
 @cindex hooks for window operations
 
-This section describes how a Lisp program can take action whenever a
-window displays a different part of its buffer or a different buffer.
-There are three actions that can change this: scrolling the window,
-switching buffers in the window, and changing the size of the window.
-The first two actions run @code{window-scroll-functions}; the last runs
+В этом разделе описывается, как программа на Lisp может действовать всякий
+раз, когда окно отображает другую часть своего буфера или другой буфер.  Это
+можно изменить тремя действиями: прокруткой окна, переключением буферов в
+окне и изменением размера окна.  Первые два действия запускают
+@code{window-scroll-functions}; последний запускает
 @code{window-size-change-functions}.
 
 @defvar window-scroll-functions
-This variable holds a list of functions that Emacs should call before
-redisplaying a window with scrolling.  Displaying a different buffer in
-the window also runs these functions.
+Эта переменная содержит список функций, которые Emacs должен вызвать перед
+повторным отображением окна с прокруткой.  Отображение другого буфера в окне
+также запускает эти функции.
 
-This variable is not a normal hook, because each function is called with
-two arguments: the window, and its new display-start position.  At the
-time of the call, the display-start position of the window argument is
-already set to its new value, and the buffer to be displayed in the
-window is already set as the current buffer.
+Эта переменная не является обычной ловушкой, потому что каждая функция
+вызывается с двумя аргументами: окном и его новой позицией начала
+отображения.  Во время вызова позиция display-start аргумента окна уже
+установлена на свое новое значение, и буфер, который должен отображаться в
+окне, уже установлен как текущий буфер.
 
-These functions must take care when using @code{window-end}
-(@pxref{Window Start and End}); if you need an up-to-date value, you
-must use the @var{update} argument to ensure you get it.
+Эти функции должны проявлять осторожность при использовании
+@code{window-end} (@pxref{Window Start and End}); если нужно актуальное
+значение, потребуется использовать аргумент @var{update}, чтобы убедиться
+о его получении.
 
-@strong{Warning:} don't use this feature to alter the way the window
-is scrolled.  It's not designed for that, and such use probably won't
-work.
+@strong{Предупреждение:} не использовать эту функцию для изменения способа
+прокрутки окна.  Не предназначена для этого, и такое использование,
+вероятно, не сработает.
 @end defvar
 
 @defun run-window-scroll-functions &optional window
-This function calls @code{window-scroll-functions} for the specified
-@var{window}, which defaults to the selected window.
+Функция вызывает @code{window-scroll-functions} для указанного @var{window},
+которое по умолчанию соответствует выбранному окну.
 @end defun
 
 @defvar window-size-change-functions
-This variable holds a list of functions to be called if the size of any
-window changes for any reason.  The functions are called once per
-redisplay, and once for each frame on which size changes have occurred.
+Переменная содержит список функций, которые будут вызываться, если размер
+любого окна изменится по какой-либо причине.  Функции вызываются один раз
+для повторного отображения и один раз для каждого кадра, в котором произошли
+изменения размера.
 
-Each function receives the frame as its sole argument.  To find out
-whether a specific window has changed size, compare the return values of
-@code{window-pixel-width-before-size-change} and
-@code{window-pixel-width} respectively
-@code{window-pixel-height-before-size-change} and
-@code{window-pixel-height} for that window (@pxref{Window Sizes}).
+Каждая функция получает фрейм как единственный аргумент.  Чтобы узнать,
+изменилось ли размером конкретное окно, сравнивается возвращаемые значения
+@code{window-pixel-width-before-size-change} и @code{window-pixel-width}
+соответственно @code{window-pixel-height-before-size-change} и
+@code{window-pixel-height} для этого окна (@pxref{Window Sizes}).
 
-These function are usually only called when at least one window was
-added or has changed size since the last time this hook was run for
-the associated frame.  In some rare cases this hook also runs when a
-window that was added intermittently has been deleted afterwards.  In
-these cases none of the windows on the frame will appear to have
-changed its size.
+Эти функции обычно вызываются только тогда, когда было добавлено хотя бы
+одно окно или изменился размер с момента последнего запуска этой ловушки для
+связанного фрейма.  В некоторых редких случаях этот перехватчик также
+запускается, когда окно, которое добавлялось с перерывами, впоследствии было
+удалено.  В этих случаях будет казаться, что ни одно из окон в рамке не
+изменило свой размер.
 @end defvar
 
 @defvar window-configuration-change-hook
-A normal hook that is run every time the window configuration of a
-frame changes.  Window configuration changes include splitting and
-deleting windows, and the display of a different buffer in a window.
+Обычная ловушка, которая запускается каждый раз при изменении конфигурации
+окна фрейма.  Изменения конфигурации окна включают разделение и удаление
+окон, а также отображение другого буфера в окне.
 
-The hook can be also used for tracking changes of window sizes.  It
-is, however, not run when the size of a frame changes or automatic
-resizing of a minibuffer window (@pxref{Minibuffer Windows}) changes
-the size of another window.  As a rule, adding a function to
-@code{window-size-change-functions}, see above, is the recommended way
-for reliably tracking size changes of any window.
+Ловушку также можно использовать для отслеживания изменений размеров окон.
+Однако она не запускается, когда размер фрейма изменяется или автоматическое
+изменение размера окна минибуфера (@pxref{Minibuffer Windows}) изменяет
+размер другого окна.  Как правило, добавление функции в
+@code{window-size-change-functions}, смотреть выше, является рекомендуемым
+способом надежного отслеживания изменений размера любого окна.
 
-The buffer-local value of this hook is run once for each window on the
-affected frame, with the relevant window selected and its buffer
-current.  The global value of this hook is run once for the modified
-frame, with that frame selected.
+Локальное в буфере значение этой ловушки запускается один раз для каждого
+окна в затронутом фрейме, с соответствующим выбранным окном и текущим
+буфером.  Глобальное значение этой ловушки запускается один раз для
+измененного фрейма с выбранным фреймом.
 @end defvar
 
 @defun run-window-configuration-change-hook &optional frame
-This function runs @code{window-configuration-change-hook} for the
-specified @var{frame}, which defaults to the selected frame.
+Эта функция запускает @code{window-configuration-change-hook} для указанного
+@var{frame}, который по умолчанию соответствует выбранному фрейму.
 @end defun
 
-  In addition, you can use @code{jit-lock-register} to register a Font
-Lock fontification function, which will be called whenever parts of a
-buffer are (re)fontified because a window was scrolled or its size
-changed.  @xref{Other Font Lock Variables}.
+  Кроме того, можно использовать @code{jit-lock-register} для регистрации
+функции фонетирования Font Lock, которая будет вызываться всякий раз, когда
+части буфера (повторно) фонируются из-за прокрутки окна или изменения его
+размера.  @xref{Other Font Lock Variables}.
