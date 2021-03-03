@@ -4,424 +4,424 @@
 @c Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Frames
-@chapter Frames
+@chapter Фреймы
 @cindex frame
 
-  A @dfn{frame} is a screen object that contains one or more Emacs
-windows (@pxref{Windows}).  It is the kind of object called a
-``window'' in the terminology of graphical environments; but we can't
-call it a ``window'' here, because Emacs uses that word in a different
-way.  In Emacs Lisp, a @dfn{frame object} is a Lisp object that
-represents a frame on the screen.  @xref{Frame Type}.
+  @dfn{Фрейм} - экранный объект, содержащий одно или несколько окон Emacs
+(@pxref{Windows}).  Это объект, который в терминологии графической среды
+называется ``окно''; но здесь не получится назвать ``окном'', потому что
+Emacs использует это слово для-другого.  В Emacs Lisp @dfn{объект фрейм} -
+это объект Lisp, представляющий фрейм на экране.  @xref{Frame Type}.
 
-  A frame initially contains a single main window and/or a minibuffer
-window; you can subdivide the main window vertically or horizontally
-into smaller windows.  @xref{Splitting Windows}.
+  Фрейм изначально содержит одно главное окно и/или окно минибуфера; можно
+разделить главное окно по вертикали или горизонтали на более мелкие окна.
+@xref{Splitting Windows}.
 
 @cindex terminal
-  A @dfn{terminal} is a display device capable of displaying one or
-more Emacs frames.  In Emacs Lisp, a @dfn{terminal object} is a Lisp
-object that represents a terminal.  @xref{Terminal Type}.
+  @dfn{Терминал} - это устройство отображения, способное отображать один или
+несколько фреймов Emacs.  В Emacs Lisp @dfn{объект терминал} - это объект
+Lisp, представляющий терминал.  @xref{Terminal Type}.
 
 @cindex text terminal
 @cindex graphical terminal
 @cindex graphical display
-  There are two classes of terminals: @dfn{text terminals} and
-@dfn{graphical terminals}.  Text terminals are non-graphics-capable
-displays, including @command{xterm} and other terminal emulators.  On
-a text terminal, each Emacs frame occupies the terminal's entire
-screen; although you can create additional frames and switch between
-them, the terminal only shows one frame at a time.  Graphical
-terminals, on the other hand, are managed by graphical display systems
-such as the X Window System, which allow Emacs to show multiple frames
-simultaneously on the same display.
+  Есть два класса терминалов: @dfn{текстовые терминалы} и
+@dfn{графические терминалы}.  Текстовые терминалы - это дисплеи без
+поддержки графики, включая @command{xterm} и другие эмуляторы терминала.  В
+текстовом терминале каждый фрейм Emacs занимает весь экран терминала; хотя
+можно создавать дополнительные фреймы и переключаться между ними, терминал
+показывает только фрейм за раз.  С другой стороны, графические терминалы
+управляются системами графического отображения, такими как X Window System,
+которые позволяют Emacs отображать несколько фреймов одновременно на одном и
+том же дисплее.
 
-  On GNU and Unix systems, you can create additional frames on any
-available terminal, within a single Emacs session, regardless of
-whether Emacs was started on a text or graphical terminal.  Emacs can
-display on both graphical and text terminals simultaneously.  This
-comes in handy, for instance, when you connect to the same session
-from several remote locations.  @xref{Multiple Terminals}.
+  В системах GNU и Unix можно создавать дополнительные фреймы на любом
+доступном терминале в рамках одного сеанса Emacs, независимо от того, был ли
+Emacs запущен на текстовом или графическом терминале.  Emacs может
+одновременно отображать как на графическом, так и на текстовом терминалах.
+Это удобно, например, когда подключаться к одному сеансу из нескольких
+удаленных мест.  @xref{Multiple Terminals}.
 
 @defun framep object
-This predicate returns a non-@code{nil} value if @var{object} is a
-frame, and @code{nil} otherwise.  For a frame, the value indicates which
-kind of display the frame uses:
+Этот предикат возвращает значение не-@code{nil}, если @var{object} является
+фреймом, и @code{nil} в противном случае.  Для фрейма значение указывает,
+какой вид отображения используется в фрейме:
 
 @table @code
 @item t
-The frame is displayed on a text terminal.
+Фрейм отображается на текстовом терминале.
 @item x
-The frame is displayed on an X graphical terminal.
+Фрейм отображается на графическом терминале X.
 @item w32
-The frame is displayed on a MS-Windows graphical terminal.
+Фрейм отображается на графическом терминале MS-Windows.
 @item ns
-The frame is displayed on a GNUstep or Macintosh Cocoa graphical
-terminal.
+Фрейм отображается в графическом терминале GNUstep или Macintosh Cocoa.
 @item pc
-The frame is displayed on an MS-DOS terminal.
+Фрейм отображается на терминале MS-DOS.
 @end table
 @end defun
 
 @defun frame-terminal &optional frame
-This function returns the terminal object that displays @var{frame}.
-If @var{frame} is @code{nil} or unspecified, it defaults to the
-selected frame.
+Функция возвращает объект терминала, который отображает @var{frame}.  Если
+@var{frame} равен @code{nil} или не указан, по умолчанию используется
+выбранный фрейм.
 @end defun
 
 @defun terminal-live-p object
-This predicate returns a non-@code{nil} value if @var{object} is a
-terminal that is live (i.e., not deleted), and @code{nil} otherwise.
-For live terminals, the return value indicates what kind of frames are
-displayed on that terminal; the list of possible values is the same as
-for @code{framep} above.
+Этот предикат возвращает значение не-@code{nil}, если @var{object} - это
+активный терминал (то есть не удаленный), и @code{nil} в противном случае.
+Для работающих терминалов возвращаемое значение указывает, какие фреймы
+отображаются на этом терминале; список возможных значений такой же, как и
+для @code{framep} выше.
 @end defun
 
 @cindex top-level frame
-On a graphical terminal we distinguish two types of frames: A normal
-@dfn{top-level frame} is a frame whose window-system window is a child
-of the window-system's root window for that terminal.  A child frame is
-a frame whose window-system window is the child of the window-system
-window of another Emacs frame.  @xref{Child Frames}.
+На графическом терминале различаются два типа фреймов: Обычный
+@dfn{фрейм верхнего уровня} - это фрейм, окно оконной системы которого
+является дочерним по отношению к корневому окну оконной системы для этого
+терминала.  Дочерний фрейм - это фрейм, окно оконной системы которого
+является дочерним по отношению к окну оконной системы другого фрейма Emacs.
+@xref{Child Frames}.
 
 @menu
-* Creating Frames::             Creating additional frames.
-* Multiple Terminals::          Displaying on several different devices.
-* Frame Geometry::              Geometric properties of frames.
-* Frame Parameters::            Controlling frame size, position, font, etc.
-* Terminal Parameters::         Parameters common for all frames on terminal.
-* Frame Titles::                Automatic updating of frame titles.
-* Deleting Frames::             Frames last until explicitly deleted.
-* Finding All Frames::          How to examine all existing frames.
-* Minibuffers and Frames::      How a frame finds the minibuffer to use.
-* Input Focus::                 Specifying the selected frame.
-* Visibility of Frames::        Frames may be visible or invisible, or icons.
-* Raising and Lowering::        Raising, Lowering and Restacking Frames.
-* Frame Configurations::        Saving the state of all frames.
-* Child Frames::                Making a frame the child of another.
-* Mouse Tracking::              Getting events that say when the mouse moves.
-* Mouse Position::              Asking where the mouse is, or moving it.
-* Pop-Up Menus::                Displaying a menu for the user to select from.
-* Dialog Boxes::                Displaying a box to ask yes or no.
-* Pointer Shape::               Specifying the shape of the mouse pointer.
-* Window System Selections::    Transferring text to and from other X clients.
-* Drag and Drop::               Internals of Drag-and-Drop implementation.
-* Color Names::                 Getting the definitions of color names.
-* Text Terminal Colors::        Defining colors for text terminals.
-* Resources::                   Getting resource values from the server.
-* Display Feature Testing::     Determining the features of a terminal.
+* Creating Frames::             Создание дополнительных рамок.
+* Multiple Terminals::         Отображение на нескольких разных устройствах.
+* Frame Geometry::              Геометрические свойства фреймов.
+* Frame Parameters::            Управление размером фрейма, положением,
+                                   шрифтом и так далее.
+* Terminal Parameters::         Параметры общие для всех фреймов
+                                   на терминале.
+* Frame Titles::               Автоматическое обновление заголовков фреймов.
+* Deleting Frames::             Фреймы сохраняются до тех пор, пока не
+                                   будут удалены явным образом.
+* Finding All Frames::          Как изучить все существующие фреймы.
+* Minibuffers and Frames::      Как фрейм находит используемый минибуфер.
+* Input Focus::                 Указание выбранного кадра.
+* Visibility of Frames::        Фреймы могут быть видимыми или невидимыми,
+                                   а также значками.
+* Raising and Lowering::        Подъем, опускание и перестановка фреймов.
+* Frame Configurations::        Сохранение состояния всех кадров.
+* Child Frames::                Делаем фрейм потомком для другого.
+* Mouse Tracking::              Получение событий, которые говорят,
+                                   когда движется мышь.
+* Mouse Position::              Узнать положение мыши, перемещение мыши.
+* Pop-Up Menus::                Отображение меню для выбора пользователем.
+* Dialog Boxes::                Отображение поля, чтобы спросить да или нет.
+* Pointer Shape::               Указание формы указателя мыши.
+* Window System Selections::    Передача текста другим X-клиентам и от них.
+* Drag and Drop::               Внутреннее устройство реализации
+                                   Drag-and-Drop.
+* Color Names::                 Получение определений названий цветов.
+* Text Terminal Colors::        Определение цветов для текстовых терминалов.
+* Resources::                   Получение значений ресурсов с сервера.
+* Display Feature Testing::     Определение возможностей терминала.
 @end menu
 
 
 @node Creating Frames
-@section Creating Frames
+@section Создание Фреймов
 @cindex frame creation
 
-To create a new frame, call the function @code{make-frame}.
+Чтобы создать новый фрейм, вызывается функция @code{make-frame}.
 
 @deffn Command make-frame &optional parameters
-This function creates and returns a new frame, displaying the current
-buffer.
+Функция создает и возвращает новый фрейм, отображающий текущий буфер.
 
-The @var{parameters} argument is an alist that specifies frame
-parameters for the new frame.  @xref{Frame Parameters}.  If you specify
-the @code{terminal} parameter in @var{parameters}, the new frame is
-created on that terminal.  Otherwise, if you specify the
-@code{window-system} frame parameter in @var{parameters}, that
-determines whether the frame should be displayed on a text terminal or a
-graphical terminal.  @xref{Window Systems}.  If neither is specified,
-the new frame is created in the same terminal as the selected frame.
+Аргумент @var{parameters} - это список, который определяет параметры фрейма
+для нового фрейма.  @xref{Frame Parameters}.  Если указан параметр
+@code{terminal} в @var{parameters}, новый фрейм будет создан на этом
+терминале.  В противном случае, если указан параметр фрейма
+@code{window-system} в @var{parameters}, определяется, должен ли фрейм
+отображаться на текстовом терминале или графическом терминале.
+@xref{Window Systems}.  Если ни один из них не указан, новый фрейм создается
+в том же терминале, что и выбранный фрейм.
 
-Any parameters not mentioned in @var{parameters} default to the values
-in the alist @code{default-frame-alist} (@pxref{Initial Parameters});
-parameters not specified there default from the X resources or its
-equivalent on your operating system (@pxref{X Resources,, X Resources,
-emacs, The GNU Emacs Manual}).  After the frame is created, this
-function applies any parameters specified in
-@code{frame-inherited-parameters} (see below) it has no assigned yet,
-taking the values from the frame that was selected when
-@code{make-frame} was called.
+Любые параметры, не упомянутые в @var{parameters}, по умолчанию равны
+значениям в alist @code{default-frame-alist} (@pxref{Initial Parameters});
+параметры, не указанные там, по умолчанию из ресурсов X или их эквивалента в
+вашей операционной системе
+(@pxref{X Resources,, X Resources, emacs, The GNU Emacs Manual}).  После
+создания фрейма эта функция применяет любые параметры, указанные в
+@code{frame-inherited-parameters} (смотреть ниже), которым еще не назначено,
+беря значения из фрейма, который был выбран при вызове @code{make-frame}.
 
-Note that on multi-monitor displays (@pxref{Multiple Terminals}), the
-window manager might position the frame differently than specified by
-the positional parameters in @var{parameters} (@pxref{Position
-Parameters}).  For example, some window managers have a policy of
-displaying the frame on the monitor that contains the largest part of
-the window (a.k.a.@: the @dfn{dominating} monitor).
+Обратить внимание, что на многомониторных дисплеях
+(@pxref{Multiple Terminals}) оконный менеджер может позиционировать фрейм
+иначе, чем указано в позиционных параметрах в @var{parameters}
+(@pxref{Position Parameters}).  Например, у некоторых оконных менеджеров
+есть политика отображения фрейма на мониторе, который содержит большую часть
+окна (оно же @: монитор @dfn{доминирующий}).
 
-This function itself does not make the new frame the selected frame.
-@xref{Input Focus}.  The previously selected frame remains selected.
-On graphical terminals, however, the windowing system may select the
-new frame for its own reasons.
+Сама функция не делает новый фрейм выбранным. @xref{Input Focus}.  Ранее
+выбранный фрейм остается выбранным.  Однако на графических терминалах
+оконная система может выбрать новый фрейм по своим причинам.
 @end deffn
 
 @defvar before-make-frame-hook
-A normal hook run by @code{make-frame} before it creates the frame.
+Обычный обработчик, запускаемый @code{make-frame} перед созданием фрейма.
 @end defvar
 
 @defvar after-make-frame-functions
-An abnormal hook run by @code{make-frame} after it created the frame.
-Each function in @code{after-make-frame-functions} receives one
-argument, the frame just created.
+Аномальный перехватчик, запущенный @code{make-frame} после создания фрейма.
+Каждая функция в @code{after-make-frame-functions} получает один аргумент -
+только что созданный фрейм.
 @end defvar
 
-Note that any functions added to these hooks by your initial file are
-usually not run for the initial frame, since Emacs reads the initial
-file only after creating that frame.  However, if the initial frame is
-specified to use a separate minibuffer frame (@pxref{Minibuffers and
-Frames}), the functions will be run for both, the minibuffer-less and
-the minibuffer frame.
+Обратить внимание, что любые функции, добавленные к этим перехватчикам вашим
+начальным файлом, обычно не запускаются для начального фрейма, поскольку
+Emacs читает начальный файл только после создания этого фрейма.  Однако,
+если начальный фрейм задан для использования отдельного фрейма минибуфера
+(@pxref{Minibuffers and Frames}), функции будут выполняться как для фрейма
+без минибуфера, так и для фрейма минибуфера.
 
 @defvar frame-inherited-parameters
-This variable specifies the list of frame parameters that a newly
-created frame inherits from the currently selected frame.  For each
-parameter (a symbol) that is an element in this list and has not been
-assigned earlier when processing @code{make-frame}, the function sets
-the value of that parameter in the created frame to its value in the
-selected frame.
+Переменная определяет список параметров фрейма, которые вновь созданный
+фрейм наследует от текущего выбранного фрейма.  Для каждого параметра
+(символа), который является элементом в этом списке и не был назначен ранее
+при обработке @code{make-frame}, функция устанавливает значение этого
+параметра в созданном фрейме равным его значению в выбранном фрейме.
 @end defvar
 
 
 @node Multiple Terminals
-@section Multiple Terminals
+@section Несколько Терминалов
 @cindex multiple terminals
 @cindex multi-tty
 @cindex multiple X displays
 @cindex displays, multiple
 
-  Emacs represents each terminal as a @dfn{terminal object} data type
-(@pxref{Terminal Type}).  On GNU and Unix systems, Emacs can use
-multiple terminals simultaneously in each session.  On other systems,
-it can only use a single terminal.  Each terminal object has the
-following attributes:
+  Emacs представляет каждый терминал как тип данных @dfn{объект терминал}
+(@pxref{Terminal Type}).  В системах GNU и Unix Emacs может использовать
+несколько терминалов одновременно в каждом сеансе.  В других системах может
+использовать только один терминал.  Каждый терминальный объект имеет
+следующие атрибуты:
 
 @itemize @bullet
 @item
-The name of the device used by the terminal (e.g., @samp{:0.0} or
+Название устройства, используемого терминалом. (такое как, @samp{:0.0} или
 @file{/dev/tty}).
 
 @item
-The terminal and keyboard coding systems used on the terminal.
+Системы кодирования терминала и клавиатуры, используемые на терминале.
 @xref{Terminal I/O Encoding}.
 
 @item
-The kind of display associated with the terminal.  This is the symbol
-returned by the function @code{terminal-live-p} (i.e., @code{x},
-@code{t}, @code{w32}, @code{ns}, or @code{pc}).  @xref{Frames}.
+Вид дисплея, связанный с терминалом.  Это символ, возвращаемый функцией
+@code{terminal-live-p} (такое как, @code{x}, @code{t}, @code{w32},
+@code{ns}, или @code{pc}).  @xref{Frames}.
 
 @item
-A list of terminal parameters.  @xref{Terminal Parameters}.
+Список параметров терминала.  @xref{Terminal Parameters}.
 @end itemize
 
-  There is no primitive for creating terminal objects.  Emacs creates
-them as needed, such as when you call @code{make-frame-on-display}
-(described below).
+  Примитива для создания терминальных объектов нет.  Emacs создает их по
+мере необходимости, например, когда вызывается @code{make-frame-on-display}
+(описано ниже).
 
 @defun terminal-name &optional terminal
-This function returns the file name of the device used by
-@var{terminal}.  If @var{terminal} is omitted or @code{nil}, it
-defaults to the selected frame's terminal.  @var{terminal} can also be
-a frame, meaning that frame's terminal.
+Функция возвращает имя файла устройства, используемого @var{terminal}.  Если
+@var{terminal} опущен или @code{nil}, по умолчанию используется терминал
+выбранного фрейма.  @var{terminal} также может быть фреймом, что означает
+его терминал.
 @end defun
 
 @defun terminal-list
-This function returns a list of all live terminal objects.
+Функция возвращает список всех активных терминальных объектов.
 @end defun
 
 @defun get-device-terminal device
-This function returns a terminal whose device name is given by
-@var{device}.  If @var{device} is a string, it can be either the file
-name of a terminal device, or the name of an X display of the form
-@samp{@var{host}:@var{server}.@var{screen}}.  If @var{device} is a
-frame, this function returns that frame's terminal; @code{nil} means
-the selected frame.  Finally, if @var{device} is a terminal object
-that represents a live terminal, that terminal is returned.  The
-function signals an error if its argument is none of the above.
+Функция возвращает терминал, имя устройства которого задано @var{device}.
+Если @var{device} - строка, это может быть либо имя файла терминального
+устройства, либо имя X-дисплея в форме
+@samp{@var{host}:@var{server}.@var{screen}}.  Если @var{device} - это фрейм,
+функция возвращает терминал этого фрейма; @code{nil} означает выбранный
+фрейм.  Наконец, если @var{device} - это объект терминала, представляющий
+работающий терминал, этот терминал возвращается.  Функция сигнализирует об
+ошибке, если ее аргумент не соответствует ни одному из вышеперечисленных.
 @end defun
 
 @defun delete-terminal &optional terminal force
-This function deletes all frames on @var{terminal} and frees the
-resources used by it.  It runs the abnormal hook
-@code{delete-terminal-functions}, passing @var{terminal} as the
-argument to each function.
+Функция удаляет все фреймы на @var{terminal} и освобождает используемые им
+ресурсы.  Запускает ненормальную ловушку @code{delete-terminal-functions},
+передавая @var{terminal} в качестве аргумента каждой функции.
 
-If @var{terminal} is omitted or @code{nil}, it defaults to the
-selected frame's terminal.  @var{terminal} can also be a frame,
-meaning that frame's terminal.
+Если @var{terminal} опущен или @code{nil}, по умолчанию используется
+терминал выбранного фрейма.  @var{terminal} также может быть фреймом, что
+означает его терминал.
 
-Normally, this function signals an error if you attempt to delete the
-sole active terminal, but if @var{force} is non-@code{nil}, you are
-allowed to do so.  Emacs automatically calls this function when the
-last frame on a terminal is deleted (@pxref{Deleting Frames}).
+Обычно функция сигнализирует об ошибке, если попытаться удалить единственный
+активный терминал, но если @var{force} - не-@code{nil}, это можно сделать.
+Emacs автоматически вызывает эту функцию, когда последний фрейм на терминале
+удаляется (@pxref{Deleting Frames}).
 @end defun
 
 @defvar delete-terminal-functions
-An abnormal hook run by @code{delete-terminal}.  Each function
-receives one argument, the @var{terminal} argument passed to
-@code{delete-terminal}.  Due to technical details, the functions may
-be called either just before the terminal is deleted, or just
-afterwards.
+Ненормальная ловушка, запускаемая @code{delete-terminal}.  Каждая функция
+получает один аргумент, аргумент @var{terminal} передается в
+@code{delete-terminal}.  По техническим причинам функции могут вызываться
+либо непосредственно перед удалением терминала, либо сразу после него.
 @end defvar
 
 @cindex terminal-local variables
-  A few Lisp variables are @dfn{terminal-local}; that is, they have a
-separate binding for each terminal.  The binding in effect at any time
-is the one for the terminal that the currently selected frame belongs
-to.  These variables include @code{default-minibuffer-frame},
-@code{defining-kbd-macro}, @code{last-kbd-macro}, and
-@code{system-key-alist}.  They are always terminal-local, and can
-never be buffer-local (@pxref{Buffer-Local Variables}).
+  Несколько переменных Lisp: @dfn{terminal-local}; то есть у них есть
+отдельная привязка для каждого терминала.  В любой момент действует привязка
+для терминала, которому принадлежит текущий выбранный фрейм.  Эти переменные
+включают @code{default-minibuffer-frame}, @code{defining-kbd-macro},
+@code{last-kbd-macro} и @code{system-key-alist}.  Они всегда локальны для
+терминала и никогда не могут быть локальными для буфера
+(@pxref{Buffer-Local Variables}).
 
-  On GNU and Unix systems, each X display is a separate graphical
-terminal.  When Emacs is started from within the X window system, it
-uses the X display specified by the @env{DISPLAY} environment
-variable, or by the @samp{--display} option (@pxref{Initial Options,,,
-emacs, The GNU Emacs Manual}).  Emacs can connect to other X displays
-via the command @code{make-frame-on-display}.  Each X display has its
-own selected frame and its own minibuffer windows; however, only one
-of those frames is @emph{the} selected frame at any given moment
-(@pxref{Input Focus}).  Emacs can even connect to other text
-terminals, by interacting with the @command{emacsclient} program.
+  В системах GNU и Unix каждый дисплей X представляет собой отдельный
+графический терминал.  Когда Emacs запускается из оконной системы X, он
+использует отображение X, заданное переменной среды @env{DISPLAY} или
+параметром @samp{--display}
+(@pxref{Initial Options,,, emacs, The GNU Emacs Manual}).  Emacs может
+подключаться к другим дисплеям X с помощью команды
+@code{make-frame-on-display}.  Каждый X-дисплей имеет свой собственный
+выбранный фрейм и свои собственные окна минибуфера; однако только один из
+этих фреймов является @emph{по настоящему} выбранным фреймом в любой момент
+(@pxref{Input Focus}).  Emacs может даже подключаться к другим текстовым
+терминалам, взаимодействуя с программой @command{emacsclient}.
 @xref{Emacs Server,,, emacs, The GNU Emacs Manual}.
 
 @cindex X display names
 @cindex display name on X
-  A single X server can handle more than one display.  Each X display
-has a three-part name,
-@samp{@var{hostname}:@var{displaynumber}.@var{screennumber}}.  The
-first part, @var{hostname}, specifies the name of the machine to which
-the display is physically connected.  The second part,
-@var{displaynumber}, is a zero-based number that identifies one or
-more monitors connected to that machine that share a common keyboard
-and pointing device (mouse, tablet, etc.).  The third part,
-@var{screennumber}, identifies a zero-based screen number (a separate
-monitor) that is part of a single monitor collection on that X server.
-When you use two or more screens belonging to one server, Emacs knows
-by the similarity in their names that they share a single keyboard.
+  Один X-сервер может обрабатывать более одного дисплея.  Каждый дисплей X
+имеет имя, состоящее из трех частей,
+@samp{@var{hostname}:@var{displaynumber}.@var{screennumber}}.  Первая часть,
+@var{hostname}, определяет имя машины, к которой физически подключен
+дисплей.  Вторая часть, @var{displaynumber}, представляет собой
+отсчитываемое от нуля число, которое идентифицирует один или несколько
+мониторов, подключенных к этому компьютеру, которые имеют общую клавиатуру и
+указывающее устройство (мышь, планшет и так далее).  Третья часть,
+@var{screennumber}, определяет отсчитываемый от нуля номер экрана (отдельный
+монитор), который является частью одной коллекции мониторов на этом
+X-сервере.  Когда используется два или более экрана, принадлежащих одному
+серверу, Emacs знает по схожести их имен, что они используют одну
+ключевую карту.
 
-  Systems that don't use the X window system, such as MS-Windows,
-don't support the notion of X displays, and have only one display on
-each host.  The display name on these systems doesn't follow the above
-3-part format; for example, the display name on MS-Windows systems is
-a constant string @samp{w32}, and exists for compatibility, so that
-you could pass it to functions that expect a display name.
+  Системы, которые не используют систему X Window, такие как MS-Windows, не
+поддерживают понятие X-дисплеев и имеют только один дисплей на каждом хосте.
+Отображаемое имя в этих системах не соответствует указанному выше формату из
+трех частей; например, отображаемое имя в системах MS-Windows представляет
+собой постоянную строку @samp{w32} и существует для совместимости, чтобы
+иметь возможность передавать ее функциям, ожидающим отображаемое имя.
 
 @deffn Command make-frame-on-display display &optional parameters
-This function creates and returns a new frame on @var{display}, taking
-the other frame parameters from the alist @var{parameters}.
-@var{display} should be the name of an X display (a string).
+Функция создает и возвращает новый фрейм на @var{display}, беря другие
+параметры фрейма из alist @var{parameters}.  @var{display} должно быть
+именем X-дисплея (строка).
 
-Before creating the frame, this function ensures that Emacs is set
-up to display graphics.  For instance, if Emacs has not processed X
-resources (e.g., if it was started on a text terminal), it does so at
-this time.  In all other respects, this function behaves like
-@code{make-frame} (@pxref{Creating Frames}).
+Перед созданием фрейма эта функция гарантирует, что Emacs настроен для
+отображения графики.  Например, если Emacs не обработал X-ресурсы (например,
+если он был запущен на текстовом терминале), он делает это в это время.  В
+остальном эта функция ведет себя как @code{make-frame}
+(@pxref{Creating Frames}).
 @end deffn
 
 @defun x-display-list
-This function returns a list that indicates which X displays Emacs has
-a connection to.  The elements of the list are strings, and each one
-is a display name.
+Функция возвращает список, указывающий, к какому отображению X имеет
+соединение Emacs.  Элементы списка представляют собой строки, и каждый из
+них является отображаемым именем.
 @end defun
 
 @defun x-open-connection display &optional xrm-string must-succeed
-This function opens a connection to the X display @var{display},
-without creating a frame on that display.  Normally, Emacs Lisp
-programs need not call this function, as @code{make-frame-on-display}
-calls it automatically.  The only reason for calling it is to check
-whether communication can be established with a given X display.
+Функция открывает соединение с X-дисплеем @var{display} без создания фрейма
+на этом дисплее.  Обычно программы Emacs Lisp не нуждаются в вызове этой
+функции, поскольку @code{make-frame-on-display} вызывает ее автоматически.
+Единственная причина для его вызова - проверить, можно ли установить связь
+с данным дисплеем X.
 
-The optional argument @var{xrm-string}, if not @code{nil}, is a string
-of resource names and values, in the same format used in the
-@file{.Xresources} file.  @xref{X Resources,, X Resources, emacs, The
-GNU Emacs Manual}.  These values apply to all Emacs frames created on
-this display, overriding the resource values recorded in the X server.
-Here's an example of what this string might look like:
+Необязательный аргумент @var{xrm-string}, если не @code{nil}, представляет
+собой строку имен и значений ресурсов в том же формате, что и в файле
+@file{.Xresources}.
+@xref{X Resources,, X Resources, emacs, The GNU Emacs Manual}. Эти значения
+применяются ко всем фреймам Emacs, созданным на этом дисплее, перекрывая
+значения ресурсов, записанные на X-сервере.  Вот пример того, как может
+выглядеть эта строка:
 
 @example
 "*BorderWidth: 3\n*InternalBorder: 2\n"
 @end example
 
-If @var{must-succeed} is non-@code{nil}, failure to open the connection
-terminates Emacs.  Otherwise, it is an ordinary Lisp error.
+Если @var{must-succeed} равен не-@code{nil}, то при отказе от открытия
+соединения Emacs завершается.  В противном случае это обычная ошибка Lisp.
 @end defun
 
 @defun x-close-connection display
-This function closes the connection to display @var{display}.  Before
-you can do this, you must first delete all the frames that were open
-on that display (@pxref{Deleting Frames}).
+Функция закрывает соединение для отображения @var{display}.  Прежде чем
+можно это сделать, потребуется сначала удалить все фреймы, которые были
+открыты на этом дисплее (@pxref{Deleting Frames}).
 @end defun
 
 @cindex multi-monitor
-  On some multi-monitor setups, a single X display outputs to more
-than one physical monitor.  You can use the functions
-@code{display-monitor-attributes-list} and @code{frame-monitor-attributes}
-to obtain information about such setups.
+  В некоторых конфигурациях с несколькими мониторами один X-дисплей
+выводится на несколько физических мониторов.  Можно использовать функции
+@code{display-monitor-attributes-list} и @code{frame-monitor-attributes} для
+получения информации о таких настройках.
 
 @defun display-monitor-attributes-list &optional display
-This function returns a list of physical monitor attributes on
-@var{display}, which can be a display name (a string), a terminal, or
-a frame; if omitted or @code{nil}, it defaults to the selected frame's
-display.  Each element of the list is an association list,
-representing the attributes of a physical monitor.  The first element
-corresponds to the primary monitor.  The attribute keys and values
-are:
+Функция возвращает список атрибутов физического монитора на @var{display},
+который может быть отображаемым именем (строкой), терминалом или фреймом;
+если опущено или @code{nil}, по умолчанию используется отображение
+выбранного фрейма.  Каждый элемент списка представляет собой список
+ассоциаций, представляющий атрибуты физического монитора.  Первый элемент
+соответствует основному монитору.  Ключи и значения атрибутов::
 
 @table @samp
 @item geometry
-Position of the top-left corner of the monitor's screen and its size,
-in pixels, as @samp{(@var{x} @var{y} @var{width} @var{height})}.  Note
-that, if the monitor is not the primary monitor, some of the
-coordinates might be negative.
+Положение левого верхнего угла экрана монитора и его размер в пикселях как
+@samp{(@var{x} @var{y} @var{width} @var{height})}.  Обратить внимание: если
+монитор не является основным, некоторые координаты могут быть
+отрицательными.
 
 @item workarea
-Position of the top-left corner and size of the work area (usable
-space) in pixels as @samp{(@var{x} @var{y} @var{width} @var{height})}.
-This may be different from @samp{geometry} in that space occupied by
-various window manager features (docks, taskbars, etc.)@: may be
-excluded from the work area.  Whether or not such features actually
-subtract from the work area depends on the platform and environment.
-Again, if the monitor is not the primary monitor, some of the
-coordinates might be negative.
+Положение левого верхнего угла и размер рабочей области (полезного
+пространства) в пикселях формируется как
+@samp{(@var{x} @var{y} @var{width} @var{height})}.  Это может отличаться от
+@samp{geometry} тем, что пространство занято различными функциями оконного
+менеджера (доки, панели задач и так далее)@: и может быть исключено из
+рабочей зоны.  То, действительно ли такие функции удаляются из рабочей
+области, зависит от платформы и среды.  Опять же, если монитор не является
+основным монитором, некоторые координаты могут быть отрицательными.
 
 @item mm-size
-Width and height in millimeters as @samp{(@var{width} @var{height})}
+Ширина и высота в миллиметрах как @samp{(@var{width} @var{height})}
 
 @item frames
-List of frames that this physical monitor dominates (see below).
+Список фреймов, доминирующих на этом физическом мониторе (смотреть ниже).
 
 @item name
-Name of the physical monitor as @var{string}.
+Имя физического монитора @var{string}.
 
 @item source
-Source of the multi-monitor information as @var{string};
-e.g., @samp{XRandr} or @samp{Xinerama}.
+Источник мультимониторной информации как @var{string}; например,
+@samp{XRandr} или @samp{Xinerama}.
 @end table
 
-@var{x}, @var{y}, @var{width}, and @var{height} are integers.
-@samp{name} and @samp{source} may be absent.
+@var{x}, @var{y}, @var{width} и @var{height} целые числа.
+@samp{name} и @samp{source} могут отсутствовать.
 
-A frame is @dfn{dominated} by a physical monitor when either the
-largest area of the frame resides in that monitor, or (if the frame
-does not intersect any physical monitors) that monitor is the closest
-to the frame.  Every (non-tooltip) frame (whether visible or not) in a
-graphical display is dominated by exactly one physical monitor at a
-time, though the frame can span multiple (or no) physical monitors.
+Фрейм становится @dfn{доминирующим} на физическом мониторе, когда либо самая
+большая область фрема находится на этом мониторе, либо (если кадр не
+пересекает никакие физические мониторы) этот монитор является ближайшим к
+фрейму.  В каждом (не всплывающем) фрейме (видимом или невидимом) на
+графическом дисплее доминирует ровно один физический монитор за раз, хотя
+фрейм может охватывать несколько (или ни одного) физических мониторов.
 
-Here's an example of the data produced by this function on a 2-monitor
-display:
+Вот пример данных, созданных этой функцией на дисплее с двумя мониторами:
 
 @lisp
   (display-monitor-attributes-list)
   @result{}
-  (((geometry 0 0 1920 1080) ;; @r{Left-hand, primary monitor}
-    (workarea 0 0 1920 1050) ;; @r{A taskbar occupies some of the height}
+  (((geometry 0 0 1920 1080) ;; @r{Левая основная панель задач monitor}
+    (workarea 0 0 1920 1050) ;; @r{занимает часть высоты}
     (mm-size 677 381)
     (name . "DISPLAY1")
     (frames #<frame emacs@@host *Messages* 0x11578c0>
             #<frame emacs@@host *scratch* 0x114b838>))
-   ((geometry 1920 0 1680 1050) ;; @r{Right-hand monitor}
-    (workarea 1920 0 1680 1050) ;; @r{Whole screen can be used}
+   ((geometry 1920 0 1680 1050) ;; @r{Правый монитор }
+    (workarea 1920 0 1680 1050) ;; @r{можно использовать весь экран}
     (mm-size 593 370)
     (name . "DISPLAY2")
     (frames)))
@@ -430,44 +430,45 @@ display:
 @end defun
 
 @defun frame-monitor-attributes &optional frame
-This function returns the attributes of the physical monitor
-dominating (see above) @var{frame}, which defaults to the selected frame.
+Функция возвращает атрибуты доминирующего физического монитора (смотреть
+выше) @var{frame}, который по умолчанию соответствует выбранному фрейму.
 @end defun
 
 
 @node Frame Geometry
-@section Frame Geometry
+@section Геометрия Фрейма
 @cindex frame geometry
 @cindex frame position
 @cindex position of frame
 @cindex frame size
 @cindex size of frame
 
-The geometry of a frame depends on the toolkit that was used to build
-this instance of Emacs and the terminal that displays the frame.  This
-chapter describes these dependencies and some of the functions to deal
-with them.  Note that the @var{frame} argument of all of these functions
-has to specify a live frame (@pxref{Deleting Frames}).  If omitted or
-@code{nil}, it specifies the selected frame (@pxref{Input Focus}).
+Геометрия фрейма зависит от набора инструментов, который использовался для
+создания этого экземпляра Emacs, и терминала, отображающего фрейм.  В этой
+главе описаны эти зависимости и некоторые функции для их устранения.
+Обратить внимание, что аргумент @var{frame} всех этих функций должен
+указывать активный фрейм (@pxref{Deleting Frames}).  Если опущено или
+@code{nil}, указывается выбранный фрейм (@pxref{Input Focus}).
 
 @menu
-* Frame Layout::            Basic layout of frames.
-* Frame Font::              The default font of a frame and how to set it.
-* Frame Position::          The position of a frame on its display.
-* Frame Size::              Specifying and retrieving a frame's size.
-* Implied Frame Resizing::  Implied resizing of frames and how to prevent it.
+* Frame Layout::            Базовая компоновка фреймов.
+* Frame Font::              Шрифт фрейма по умолчанию и как его установить.
+* Frame Position::          Положение фрейма на его дисплее.
+* Frame Size::              Определение и получение размера фрейма.
+* Implied Frame Resizing::  Подразумевается изменение размера фреймов и
+                               как этого избежать.
 @end menu
 
 
 @node Frame Layout
-@subsection Frame Layout
+@subsection Макет Фрейма
 @cindex frame layout
 @cindex layout of frame
 
-A visible frame occupies a rectangular area on its terminal's display.
-This area may contain a number of nested rectangles, each serving a
-different purpose.  The drawing below sketches the layout of a frame on
-a graphical terminal:
+Видимая фрейм занимает прямоугольную область на дисплее терминала.  Эта
+область может содержать несколько вложенных прямоугольников, каждый из
+которых служит своей цели.  На приведенном ниже рисунке схематично показано
+расположение фрейма на графическом терминале.:
 @smallexample
 @group
 
@@ -494,8 +495,8 @@ Height |  | | Height                           | |  | Height
 @end group
 @end smallexample
 
-In practice not all of the areas shown in the drawing will or may be
-present.  The meaning of these areas is described below.
+На практике не все области, показанные на чертеже, будут или могут
+присутствовать.  Значение этих областей описано ниже.
 
 @table @asis
 @item Outer Frame
@@ -504,124 +505,127 @@ present.  The meaning of these areas is described below.
 @cindex outer width
 @cindex outer height
 @cindex outer size
-The @dfn{outer frame} is a rectangle comprising all areas shown in the
-drawing.  The edges of that rectangle are called the @dfn{outer edges}
-of the frame.  Together, the @dfn{outer width} and @dfn{outer height} of
-the frame specify the @dfn{outer size} of that rectangle.
+@dfn{outer frame} - это прямоугольник, включающий все области, показанные на
+чертеже.  Края этого прямоугольника называются @dfn{outer edges} фрейма.
+Вместе @dfn{outer width} и @dfn{outer height} фрейма задают @dfn{outer size}
+этого прямоугольника.
 
-Knowing the outer size of a frame is useful for fitting a frame into the
-working area of its display (@pxref{Multiple Terminals}) or for placing
-two frames adjacent to each other on the screen.  Usually, the outer
-size of a frame is available only after the frame has been mapped (made
-visible, @pxref{Visibility of Frames}) at least once.  For the initial
-frame or a frame that has not been created yet, the outer size can be
-only estimated or must be calculated from the window-system's or window
-manager's defaults.  One workaround is to obtain the differences of the
-outer and native (see below) sizes of a mapped frame and use them for
-calculating the outer size of the new frame.
+Знание внешнего размера фрейма полезно для размещения фрейма в рабочей
+области его дисплея (@pxref{Multiple Terminals}) или для размещения двух
+фреймов рядом друг с другом на экране.  Обычно внешний размер фрейма
+доступен только после того, как фрейм был отображен (сделан видимым,
+@pxref{Visibility of Frames}) хотя бы один раз.  Для начального фрейма или
+фрейма, который еще не был создан, внешний размер может быть только оценен
+или должен быть вычисляется из значений по умолчанию оконной системы или
+оконного менеджера.  Один обходной путь состоит в том, чтобы получить
+различия внешнего и собственного (смотреть ниже) размеров отображаемого
+фрейма и использовать их для вычисления внешнего размера нового фрейма.
 
 @cindex outer position
-The position of the upper left corner of the outer frame (indicated by
-@samp{(0)} in the drawing above) is the @dfn{outer position} of the
-frame.  The outer position of a graphical frame is also referred to as
-``the position'' of the frame because it usually remains unchanged on
-its display whenever the frame is resized or its layout is changed.
+Положение верхнего левого угла внешнего фрейма (обозначено @samp{(0)} на
+рисунке выше) - это @dfn{outer position} фрейма.  Внешнее положение
+графического фрейма также называется ``позиция'' фрейма, потому что оно
+обычно остается неизменным на его дисплее всякий раз, когда изменяется
+размер фрейма или изменяется его макет.
 
-The outer position is specified by and can be set via the @code{left}
-and @code{top} frame parameters (@pxref{Position Parameters}).  For a
-normal, top-level frame these parameters usually represent its absolute
-position (see below) with respect to its display's origin.  For a child
-frame (@pxref{Child Frames}) these parameters represent its position
-relative to the native position (see below) of its parent frame.  For
-frames on text terminals the values of these parameters are meaningless
-and always zero.
+Внешняя позиция определяется и может быть установлена через параметры фрейма
+@code{left} и @code{top} (@pxref{Position Parameters}).  Для обычного фрейма
+верхнего уровня эти параметры обычно представляют его абсолютное положение
+(смотреть ниже) по отношению к исходной точке его отображения.  Для
+дочернего фрейма (@pxref{Child Frames}) эти параметры представляют его
+положение относительно исходного положения (смотреть ниже) его родительского
+фрейма.  Для фреймов на текстовых терминалах значения этих параметров
+бессмысленны и всегда равны нулю.
 
 @item External Border
 @cindex external border
-The @dfn{external border} is part of the decorations supplied by the
-window manager.  It is typically used for resizing the frame with the
-mouse and is therefore not shown on ``fullboth'' and maximized frames
-(@pxref{Size Parameters}).  Its width is determined by the window
-manager and cannot be changed by Emacs' functions.
+@dfn{external border} - это часть декораций, предоставляемых оконным
+менеджером.  Обычно используется для изменения размера фрейма с помощью мыши
+и поэтому не отображается в ``fullboth'' и максимальных параметрах фрейма
+(@pxref{Size Parameters}).  Его ширина определяется оконным менеджером и не
+может быть изменена функциями Emacs.
 
-External borders don't exist on text terminal frames.  For graphical
-frames, their display can be suppressed by setting the
-@code{override-redirect} or @code{undecorated} frame parameter
+На фреймах текстового терминала отсутствуют внешние границы.  Для
+графических фреймов их отображение можно запретить, установив параметр
+фрейма @code{override-redirect} или @code{undecorated}
 (@pxref{Management Parameters}).
 
 @item Outer Border
 @cindex outer border
-The @dfn{outer border} is a separate border whose width can be specified
-with the @code{border-width} frame parameter (@pxref{Layout
-Parameters}).  In practice, either the external or the outer border of a
-frame are displayed but never both at the same time.  Usually, the outer
-border is shown only for special frames that are not (fully) controlled
-by the window manager like tooltip frames (@pxref{Tooltips}), child
-frames (@pxref{Child Frames}) and @code{undecorated} or
-@code{override-redirect} frames (@pxref{Management Parameters}).
+@dfn{outer border} - это отдельный фрейм рамка, ширину которого можно
+указать с помощью параметра фрейма @code{border-width}
+(@pxref{Layout Parameters}).  На практике отображается либо внешняя, либо
+внешняя граница фрейма, но никогда обе одновременно.  Обычно внешняя граница
+отображается только для специальных фреймов, которые не (полностью)
+контролируются оконным менеджером, например фреймы всплывающих подсказок
+(@pxref{Tooltips}), дочерние фреймы (@pxref{Child Frames}) и
+@code{undecorated} или @code{override-redirect} фреймы
+(@pxref{Management Parameters}).
 
-Outer borders are never shown on text terminal frames and on frames
-generated by GTK+ routines.  On MS-Windows, the outer border is emulated
-with the help of a one pixel wide external border.  Non-toolkit builds
-on X allow to change the color of the outer border by setting the
-@code{border-color} frame parameter (@pxref{Layout Parameters}).
+Внешние границы никогда не отображаются на фреймах текстового терминала и
+фреймах, сгенерированных подпрограммами GTK+.  В MS-Windows внешняя граница
+эмулируется с помощью внешней границы шириной в один пиксель.
+Не-инструментальные сборки на X позволяют изменять цвет внешней границы,
+задав параметр фрейма @code{border-color} (@pxref{Layout Parameters}).
 
 @item Title Bar
 @cindex title bar
 @cindex caption bar
-The @dfn{title bar}, a.k.a.@ @dfn{caption bar}, is also part of the
-window manager's decorations and typically displays the title of the
-frame (@pxref{Frame Titles}) as well as buttons for minimizing,
-maximizing and deleting the frame.  It can be also used for dragging
-the frame with the mouse.  The title bar is usually not displayed for
-fullboth (@pxref{Size Parameters}), tooltip (@pxref{Tooltips}) and
-child frames (@pxref{Child Frames}) and doesn't exist for terminal
-frames.  Display of the title bar can be suppressed by setting the
-@code{override-redirect} or the @code{undecorated} frame parameters
+@dfn{title bar}, он же @dfn{caption bar}, также является частью декораций
+оконного менеджера и обычно отображает заголовок фрейма
+(@pxref{Frame Titles}), а также кнопки для минимизации, развертывания и
+удаления фрейма.  Его также можно использовать для перетаскивания фрейма
+мышью.  Строка заголовка обычно не отображается для всех фреймов
+(@pxref{Size Parameters}), всплывающих подсказок (@pxref{Tooltips}) и
+дочерних фреймов (@pxref{Child Frames}) и не существует для оконечных
+фреймов.  Отображение строки заголовка можно отключить, задав параметры
+фрейма @code{override-redirect} или @code{undecorated}
 (@pxref{Management Parameters}).
 
 @item Menu Bar
 @cindex internal menu bar
 @cindex external menu bar
-The menu bar (@pxref{Menu Bar}) can be either internal (drawn by Emacs
-itself) or external (drawn by the toolkit).  Most builds (GTK+, Lucid,
-Motif and MS-Windows) rely on an external menu bar.  NS also uses an
-external menu bar which, however, is not part of the outer frame.
-Non-toolkit builds can provide an internal menu bar.  On text terminal
-frames, the menu bar is part of the frame's root window (@pxref{Windows
-and Frames}).  As a rule, menu bars are never shown on child frames
-(@pxref{Child Frames}).  Display of the menu bar can be suppressed by
-setting the @code{menu-bar-lines} parameter (@pxref{Layout Parameters})
-to zero.
+Строка меню (@pxref{Menu Bar}) может быть внутренней (нарисованной самим
+Emacs) или внешней (нарисованной набором инструментов).  Большинство сборок
+(GTK+, Lucid, Motif и MS-Windows) полагаются на внешнюю строку меню.  NS
+также использует внешнюю строку меню, которая, однако, не является частью
+внешнего фрейма.  Сборки без инструментов могут содержать внутреннюю строку
+меню.  В фреймах текстового терминала строка меню является частью корневого
+окна фрейма (@pxref{Windows and Frames}).  Как правило, в дочерних фреймах
+(@pxref{Child Frames}) строки меню никогда не отображаются.  Отображение
+строки меню можно отключить, установив параметр @code{menu-bar-lines}
+(@pxref{Layout Parameters}) равным нулю.
 
-Whether the menu bar is wrapped or truncated whenever its width
-becomes too large to fit on its frame depends on the toolkit .
-Usually, only Motif and MS-Windows builds can wrap the menu bar.  When
-they (un-)wrap the menu bar, they try to keep the outer height of the
-frame unchanged, so the native height of the frame (see below) will
-change instead.
+Будет ли строка меню обернута или усечена, когда ее ширина становится
+слишком большой, чтобы поместиться в ее фрейм, зависит от набора
+инструментов.  Обычно только сборки Motif и MS-Windows могут обернуть строку
+меню.  Когда они (отменяют) обёртывают строки меню, стараются сохранить
+внешнюю высоту фрейма неизменной, поэтому вместо этого изменится собственная
+высота фрейма (смотреть ниже).
 
 @item Tool Bar
 @cindex internal tool bar
 @cindex external tool bar
-Like the menu bar, the tool bar (@pxref{Tool Bar}) can be either
-internal (drawn by Emacs itself) or external (drawn by a toolkit).  The
-GTK+ and NS builds have the tool bar drawn by the toolkit.  The
-remaining builds use internal tool bars.  With GTK+ the tool bar can be
-located on either side of the frame, immediately outside the internal
-border, see below.  Tool bars are usually not shown for child frames
-(@pxref{Child Frames}).  Display of the tool bar can be suppressed by
-setting the @code{tool-bar-lines} parameter (@pxref{Layout
-Parameters}) to zero.
+Как и строка меню, панель инструментов (@pxref{Tool Bar}) может быть
+внутренней (нарисованная самим Emacs) или внешней (нарисованная набором
+инструментов).  В сборках GTK + и NS панель инструментов нарисована набором
+инструментов.  В остальных сборках используются внутренние панели
+инструментов.  С GTK+ панель инструментов может быть расположена с любой
+стороны фрейма, сразу за внутренней границей, смотреть ниже.  Панели
+инструментов обычно не отображаются для дочерних фреймов
+(@pxref{Child Frames}).  Отображение панели инструментов можно отключить,
+установив параметр @code{tool-bar-lines} (@pxref{Layout Parameters}) равным
+нулю.
 
-If the variable @code{auto-resize-tool-bars} is non-@code{nil}, Emacs
-wraps the internal tool bar when its width becomes too large for its
-frame.  If and when Emacs (un-)wraps the internal tool bar, it by
-default keeps the outer height of the frame unchanged, so the native
-height of the frame (see below) will change instead.  Emacs built with
-GTK+, on the other hand, never wraps the tool bar but may
-automatically increase the outer width of a frame in order to
-accommodate an overlong tool bar.
+Если переменная @code{auto-resize-tool-bars} равна не-@code{nil}, Emacs
+оборачивает внутреннюю панель инструментов, когда ее ширина становится
+слишком большой для ее фрейма.  Если и когда Emacs (отменяет-) обертывает
+внутреннюю панель инструментов, по умолчанию сохраняет внешнюю высоту фрейма
+неизменной, поэтому вместо этого изменится собственная высота фрейма
+(смотреть ниже). Emacs, созданный с помощью GTK +, с другой стороны, никогда
+не оборачивает панель инструментов, но может автоматически увеличивать
+внешнюю ширину фрейма, чтобы приспособить слишком длинную панель
+инструментов.
 
 @item Native Frame
 @cindex native frame
@@ -629,57 +633,56 @@ accommodate an overlong tool bar.
 @cindex native width
 @cindex native height
 @cindex native size
-The @dfn{native frame} is a rectangle located entirely within the outer
-frame.  It excludes the areas occupied by an external or outer border,
-the title bar and any external menu or tool bar.  The edges of the
-native frame are called the @dfn{native edges} of the frame.  Together,
-the @dfn{native width} and @dfn{native height} of a frame specify the
-@dfn{native size} of the frame.
+@dfn{native frame} - это прямоугольник, полностью расположенный внутри
+внешнего фрейма.  Он исключает области, занятые внешней границей, строкой
+заголовка и любым внешним меню или панелью инструментов.  Края родного
+фрейма называются @dfn{native edges} фрейма.  Вместе @dfn{native width} и
+@dfn{native height} фрейма определяют @dfn{native size} фрейма.
 
-The native size of a frame is the size Emacs passes to the window-system
-or window manager when creating or resizing the frame from within Emacs.
-It is also the size Emacs receives from the window-system or window
-manager whenever these resize the frame's window-system window, for
-example, after maximizing the frame by clicking on the corresponding
-button in the title bar or when dragging its external border with the
-mouse.
+Собственный размер фрейма - это размер, который Emacs передает оконной
+системе или оконному менеджеру при создании или изменении размера фрейма из
+Emacs.  Это также размер, который Emacs получает от оконной системы или
+оконного менеджера всякий раз, когда они изменяют размер окна оконной
+системы фрейма, например, после максимизации фрейма путем нажатия
+соответствующей кнопки в строке заголовка или при перетаскивании его внешней
+границы мышью.
 
 @cindex native position
-The position of the top left corner of the native frame specifies the
-@dfn{native position} of the frame.  (1)--(3) in the drawing above
-indicate that position for the various builds:
+Положение верхнего левого угла собственного фрейма определяет
+@dfn{native position} фрейма.  (1) - (3) на рисунке выше указывают, что
+положение для различных сборок:
 
 @itemize @w{}
-@item (1) non-toolkit and terminal frames
+@item (1) не-toolkit и терминальные фреймы
 
-@item (2) Lucid, Motif and MS-Windows frames
+@item (2) Lucid, Motif и MS-Windows фреймы
 
-@item (3) GTK+ and NS frames
+@item (3) GTK+ и NS фреймы
 @end itemize
 
-Accordingly, the native height of a frame may include the height of the
-tool bar but not that of the menu bar (Lucid, Motif, MS-Windows) or
-those of the menu bar and the tool bar (non-toolkit and text terminal
-frames).
+Соответственно, собственная высота фрейма может включать высоту панели
+инструментов, но не высоту строки меню (Lucid, Motif, MS-Windows) или высоту
+строки меню и панели инструментов (фреймы без инструментов и текстовые
+терминалы).
 
-The native position of a frame is the reference position for functions
-that set or return the current position of the mouse (@pxref{Mouse
-Position}) and for functions dealing with the position of windows like
-@code{window-edges}, @code{window-at} or @code{coordinates-in-window-p}
-(@pxref{Coordinates and Windows}).  It also specifies the (0, 0) origin
-for locating and positioning child frames within this frame
+Собственная позиция фрейма - это опорная позиция для функций, которые
+устанавливают или возвращают текущую позицию мыши (@pxref{Mouse Position}),
+а также для функций, работающих с положением окон, таких как
+@code{window-edges}, @code{window-at} или @code{coordinates-in-window-p}
+(@pxref{Coordinates and Windows}).  Также определяет (0, 0) источник для
+поиска и позиционирования дочерних фреймов внутри этого фрейма
 (@pxref{Child Frames}).
 
-Note also that the native position of a frame usually remains unaltered
-on its display when removing or adding the window manager decorations by
-changing the frame's @code{override-redirect} or @code{undecorated}
-parameter (@pxref{Management Parameters}).
+Также обратить внимание, что исходное положение фрейма обычно остается
+неизменным на его дисплее при удалении или добавлении декораций оконного
+менеджера путем изменения параметра фрейма @code{override-redirect} или
+@code{undecorated} (@pxref{Management Parameters}).
 
 @item Internal Border
-The internal border is a border drawn by Emacs around the inner frame
-(see below).  Its width is specified by the @code{internal-border-width}
-frame parameter (@pxref{Layout Parameters}).  Its color is specified by
-the background of the @code{internal-border} face.
+Внутренняя граница - это граница, нарисованная Emacs вокруг внутреннего
+фрейма (смотреть ниже).  Её ширина задается параметром фрейма
+@code{internal-border-width} (@pxref{Layout Parameters}).  Её цвет
+определяется фоном фрейма @code{internal-border}.
 
 @item Inner Frame
 @cindex inner frame
@@ -688,35 +691,33 @@ the background of the @code{internal-border} face.
 @cindex inner height
 @cindex inner size
 @cindex display area
-The @dfn{inner frame} is the rectangle reserved for the frame's windows.
-It's enclosed by the internal border which, however, is not part of the
-inner frame.  Its edges are called the @dfn{inner edges} of the frame.
-The @dfn{inner width} and @dfn{inner height} specify the @dfn{inner
-size} of the rectangle.  The inner frame is sometimes also referred to
-as the @dfn{display area} of the frame.
+@dfn{inner frame} - это прямоугольник, зарезервированный для окон фрейма.
+Заключен во внутренний фрейм, который, однако, не является частью
+внутреннего фрейма.  Его края называются @dfn{inner edges} фрейма.
+@dfn{inner width} и @dfn{inner height} указывают @dfn{inner size}
+прямоугольника.  Внутренний фрейм иногда также называют @dfn{display area}
+фрейма.
 
 @cindex minibuffer-less frame
 @cindex minibuffer-only frame
-As a rule, the inner frame is subdivided into the frame's root window
-(@pxref{Windows and Frames}) and the frame's minibuffer window
-(@pxref{Minibuffer Windows}).  There are two notable exceptions to this
-rule: A @dfn{minibuffer-less frame} contains a root window only and does
-not contain a minibuffer window.  A @dfn{minibuffer-only frame} contains
-only a minibuffer window which also serves as that frame's root window.
-See @ref{Initial Parameters} for how to create such frame
-configurations.
+Как правило, внутренний фрейм подразделяется на корневое окно фрейма
+(@pxref{Windows and Frames}) и окно минибуфера фрейма
+(@pxref{Minibuffer Windows}).  Из этого правила есть два заметных
+исключения: @dfn{minibuffer-less frame} содержит только корневое окно и не
+содержит окно минибуфера.  @dfn{minibuffer-only frame} содержит только окно
+минибуфера, которое также служит корневым окном этого фрейма.
+@ref{Initial Parameters} о том, как создавать такие конфигурации фреймов.
 
 @item Text Area
 @cindex text area
-The @dfn{text area} of a frame is a somewhat fictitious area that can be
-embedded in the native frame.  Its position is unspecified.  Its width
-can be obtained by removing from that of the native width the widths of
-the internal border, one vertical scroll bar, and one left and one right
-fringe if they are specified for this frame, see @ref{Layout
-Parameters}.  Its height can be obtained by removing from that of the
-native height the widths of the internal border and the heights of the
-frame's internal menu and tool bars and one horizontal scroll bar if
-specified for this frame.
+@dfn{text area} фрейма - это несколько вымышленная область, которая может
+быть встроена в исходный фрейм.  Её положение не указано.  Её ширину можно
+получить, удалив из исходной ширины ширину внутренней границы, одной
+вертикальной полосы прокрутки, а также одной левой и одной правой кромок,
+если они указаны для этого фрейма, @ref{Layout Parameters}.  Её высоту можно
+получить, удалив из исходной высоты ширину внутренней границы и высоту
+внутреннего меню и панелей инструментов фрейма, а также одну горизонтальную
+полосу прокрутки, если она указана для этого фрейма.
 @end table
 
 @cindex absolute position
@@ -725,144 +726,146 @@ specified for this frame.
 @cindex absolute frame edges
 @cindex display origin
 @cindex origin of display
-The @dfn{absolute position} of a frame is given as a pair (X, Y) of
-horizontal and vertical pixel offsets relative to an origin (0, 0) of
-the frame's display.  Correspondingly, the @dfn{absolute edges} of a
-frame are given as pixel offsets from that origin.
+@dfn{absolute position} кадра задается как пара (X, Y) горизонтальных и
+вертикальных смещений пикселей относительно исходной точки (0, 0)
+отображения фрейма.  Соответственно, @dfn{absolute edges} фрейма задаются
+как пиксельные смещения от этого источника.
 
-  Note that with multiple monitors, the origin of the display does not
-necessarily coincide with the top-left corner of the entire usable
-display area of the terminal.  Hence the absolute position of a frame
-can be negative in such an environment even when that frame is
-completely visible.
+  Обратить внимание, что при использовании нескольких мониторов исходная
+точка дисплея не обязательно совпадает с верхним левым углом всей
+используемой области отображения терминала.  Следовательно, абсолютное
+положение фрейма может быть отрицательным в такой среде, даже когда этот
+фрейм полностью виден.
 
-  By convention, vertical offsets increase ``downwards''.  This means
-that the height of a frame is obtained by subtracting the offset of its
-top edge from that of its bottom edge.  Horizontal offsets increase
-``rightwards'', as expected, so a frame's width is calculated by
-subtracting the offset of its left edge from that of its right edge.
+  По соглашению вертикальные смещения увеличивают ``downwards''.  Это
+означает, что высота фрейма получается вычитанием смещения его верхнего края
+из смещения его нижнего края.  Горизонтальные смещения увеличивают
+``rightwards'', как и ожидалось, поэтому ширина фрейма рассчитывается путем
+вычитания смещения его левого края из смещения его правого края.
 
-  For a frame on a graphical terminal the following function returns the
-sizes of the areas described above:
+  Для фрейма на графическом терминале следующая функция возвращает размеры
+описанных выше областей.:
 
 @defun frame-geometry &optional frame
-This function returns geometric attributes of @var{frame}.  The return
-value is an association list of the attributes listed below.  All
-coordinate, height and width values are integers counting pixels.  Note
-that if @var{frame} has not been mapped yet, (@pxref{Visibility of
-Frames}) some of the return values may only represent approximations of
-the actual values---those that can be seen after the frame has been
-mapped.
+Функция возвращает геометрические атрибуты @var{frame}.  Возвращаемое
+значение - это список ассоциаций атрибутов, перечисленных ниже.  Все
+значения координат, высоты и ширины являются целыми числами, считая пиксели.
+Обратить внимание, что если @var{frame} еще не отображен,
+(@pxref{Visibility of Frames}) некоторые из возвращаемых значений могут
+представлять только приближения фактических значений - тех, которые можно
+увидеть после отображения фрейма.
 
 @table @code
 @item outer-position
-A cons representing the absolute position of the outer @var{frame},
-relative to the origin at position (0, 0) of @var{frame}'s display.
+Cons-ячейка, представляющая абсолютную позицию внешнего @var{frame}
+относительно начала координат в позиции (0, 0) отображения @var{frame}.
 
 @item outer-size
-A cons of the outer width and height of @var{frame}.
+Cons-ячейка внешней ширины и высоты @var{frame}.
 
 @item external-border-size
-A cons of the horizontal and vertical width of @var{frame}'s external
-borders as supplied by the window manager.  If the window manager
-doesn't supply these values, Emacs will try to guess them from the
-coordinates of the outer and inner frame.
+Cons-ячейка горизонтальной и вертикальной ширины внешних границ @var{frame},
+предоставляемых оконным менеджером.  Если оконный менеджер не предоставляет
+эти значения, Emacs попытается угадать их по координатам внешнего и
+внутреннего фрейма.
 
 @item outer-border-width
-The width of the outer border of @var{frame}.  The value is meaningful
-for non-GTK+ X builds only.
+Ширина внешней границы @var{frame}.  Значение имеет смысл только для сборок,
+не относящихся к GTK+ и X.
 
 @item title-bar-size
-A cons of the width and height of the title bar of @var{frame} as
-supplied by the window manager or operating system.  If both of them are
-zero, the frame has no title bar.  If only the width is zero, Emacs was
-not able to retrieve the width information.
+Cons-ячейки ширины и высоты строки заголовка @var{frame}, предоставляемые
+оконным менеджером или операционной системой.  Если обе они равны нулю, у
+фрейма нет строки заголовка.  Если только ширина равна нулю, Emacs не смог
+получить информацию о ширине.
 
 @item menu-bar-external
-If non-@code{nil}, this means the menu bar is external (not part of the
-native frame of @var{frame}).
+Если не-@code{nil}, это означает, что строка меню является внешней (не
+является частью собственного фрейма @var{frame}).
 
 @item menu-bar-size
-A cons of the width and height of the menu bar of @var{frame}.
+Cons-ячейки ширины и высоты строки меню @var{frame}.
 
 @item tool-bar-external
-If non-@code{nil}, this means the tool bar is external (not part of the
-native frame of @var{frame}).
+Если не-@code{nil}, это означает, что панель инструментов является внешней
+(не является частью собственного фрейма @var{frame}).
 
 @item tool-bar-position
-This tells on which side the tool bar on @var{frame} is and can be one
-of @code{left}, @code{top}, @code{right} or @code{bottom}.  The only
-toolkit that currently supports a value other than @code{top} is GTK+.
+Говорит о том, с какой стороны находится панель инструментов на @var{frame},
+и может быть одним из @code{left}, @code{top}, @code{right} или
+@code{bottom}.  Единственный инструментарий, который в настоящее время
+поддерживает значение, отличное от @code{top} - это GTK+.
 
 @item tool-bar-size
-A cons of the width and height of the tool bar of @var{frame}.
+Cons-чейки ширины и высоты панели инструментов @var{frame}.
 
 @item internal-border-width
-The width of the internal border of @var{frame}.
+Ширина внутренней границы @var{frame}.
 @end table
 @end defun
 
-The following function can be used to retrieve the edges of the outer,
-native and inner frame.
+Следующая функция может использоваться для получения краев внешнего и
+внутреннего фреймов.
 
 @defun frame-edges &optional frame type
-This function returns the absolute edges of the outer, native or inner
-frame of @var{frame}.  @var{frame} must be a live frame and defaults to
-the selected one.  The returned list has the form @w{@code{(@var{left}
-@var{top} @var{right} @var{bottom})}} where all values are in pixels
-relative to the origin of @var{frame}'s display.  For terminal frames
-the values returned for @var{left} and @var{top} are always zero.
+Функция возвращает абсолютные границы внешнего, собственного или внутреннего
+фрейма @var{frame}.  @var{frame} должен быть активным фреймом и по умолчанию
+быть выбранным.  Возвращенный список имеет вид
+@w{@code{(@var{left} @var{top} @var{right} @var{bottom})}}, где все значения
+указаны в пикселях относительно исходной точки отображения @var{frame}.  Для
+терминальных фреймов значения, возвращаемые для @var{left} и @var{top},
+всегда равны нулю.
 
-Optional argument @var{type} specifies the type of the edges to return:
-@code{outer-edges} means to return the outer edges of @var{frame},
-@code{native-edges} (or @code{nil}) means to return its native edges and
-@code{inner-edges} means to return its inner edges.
+Необязательный аргумент @var{type} указывает тип возвращаемых краёв:
+@code{outer-edges} означает возвращать внешние края @var{frame},
+@code{native-edges} (или @code{nil}) означает возвращать собственные края,
+а @code{inner-edges} означает возвращать внутренние края.
 
-By convention, the pixels of the display at the values returned for
-@var{left} and @var{top} are considered to be inside (part of)
-@var{frame}.  Hence, if @var{left} and @var{top} are both zero, the
-pixel at the display's origin is part of @var{frame}.  The pixels at
-@var{bottom} and @var{right}, on the other hand, are considered to lie
-immediately outside @var{frame}.  This means that if you have, for
-example, two side-by-side frames positioned such that the right outer
-edge of the frame on the left equals the left outer edge of the frame on
-the right, the pixels at that edge show a part of the frame on the
-right.
+По соглашению пиксели дисплея при значениях, возвращаемых для @var{left} и
+@var{top}, считаются находящимися внутри (частью) @var{frame}.
+Следовательно, если оба @var{left} и @var{top} равны нулю, пиксель в
+исходной точке дисплея является частью @var{frame}.  С другой стороны,
+пиксели в @var{bottom} и @var{right} считаются лежащими непосредственно за
+пределами @var{frame}.  Это означает, что если есть, например, два соседних
+фрейма, расположенных так, что правый внешний край фрейма слева равен левому
+внешнему краю фрейма справа, пиксели на этом краю показывают часть фрейма
+справа.
 @end defun
 
 
 @node Frame Font
-@subsection Frame Font
+@subsection Шрифт Фрейма
 @cindex default font
 @cindex default character size
 @cindex default character width
 @cindex default width of character
 @cindex default character height
 @cindex default height of character
-Each frame has a @dfn{default font} which specifies the default
-character size for that frame.  This size is meant when retrieving or
-changing the size of a frame in terms of columns or lines
-(@pxref{Size Parameters}).  It is also used when resizing (@pxref{Window
-Sizes}) or splitting (@pxref{Splitting Windows}) windows.
+У каждого фрейма есть @dfn{шрифт по умолчанию}, который определяет размер
+символа по умолчанию для этого фрейма.  Этот размер подразумевается при
+извлечении или изменении размера фрейма с точки зрения столбцов или строк
+(@pxref{Size Parameters}).  Также используется при изменении размера
+(@pxref{Window Sizes}) или разделении (@pxref{Splitting Windows}) окна.
 
 @cindex line height
 @cindex column width
 @cindex canonical character height
 @cindex canonical character width
-The terms @dfn{line height} and @dfn{canonical character height} are
-sometimes used instead of ``default character height''.  Similarly, the
-terms @dfn{column width} and @dfn{canonical character width} are used
-instead of ``default character width''.
+Иногда вместо ``высота символа по умолчанию'' используются термины
+@dfn{высота линии} и @dfn{каноническая высота символа}.  Точно так же
+термины @dfn{ширина колонки} и @dfn{каноническая ширина символа}
+используются вместо ``ширина символа по умолчанию''.
 
 @defun frame-char-height &optional frame
 @defunx frame-char-width &optional frame
-These functions return the default height and width of a character in
-@var{frame}, measured in pixels.  Together, these values establish the
-size of the default font on @var{frame}.  The values depend on the
-choice of font for @var{frame}, see @ref{Font and Color Parameters}.
+Функции возвращают высоту и ширину символа в @var{frame} по умолчанию,
+измеренную в пикселях.  Вместе эти значения определяют размер шрифта по
+умолчанию на @var{frame}.  Значения зависят от выбора шрифта для
+@var{frame}, смотреть @ref{Font and Color Parameters}.
 @end defun
 
-The default font can be also set directly with the following function:
+Шрифт по умолчанию также можно установить напрямую с помощью следующей
+функции:
 
 @deffn Command set-frame-font font &optional keep-size frames
 This sets the default font to @var{font}.  When called interactively, it
@@ -871,14 +874,14 @@ frame.  When called from Lisp, @var{font} should be a font name (a
 string), a font object, font entity, or a font spec.
 
 If the optional argument @var{keep-size} is @code{nil}, this keeps the
-number of frame lines and columns fixed.  (If non-@code{nil}, the option
+number of frame lines and columns fixed.  (If не-@code{nil}, the option
 @code{frame-inhibit-implied-resize} described in the next section will
-override this.)  If @var{keep-size} is non-@code{nil} (or with a prefix
+override this.)  If @var{keep-size} is не-@code{nil} (or with a prefix
 argument), it tries to keep the size of the display area of the current
 frame fixed by adjusting the number of lines and columns.
 
 If the optional argument @var{frames} is @code{nil}, this applies the
-font to the selected frame only.  If @var{frames} is non-@code{nil}, it
+font to the selected frame only.  If @var{frames} is не-@code{nil}, it
 should be a list of frames to act upon, or @code{t} meaning all existing
 and all future graphical frames.
 @end deffn
@@ -1042,7 +1045,7 @@ following option may help in that case.
 If this option is @code{nil} (the default), a frame's text pixel size is
 usually rounded to a multiple of the current values of that frame's
 @code{frame-char-height} and @code{frame-char-width} whenever the frame
-is resized.  If this is non-@code{nil}, no rounding occurs, hence frame
+is resized.  If this is не-@code{nil}, no rounding occurs, hence frame
 sizes can increase/decrease by one pixel.
 
 Setting this variable usually causes the next resize operation to pass
@@ -1058,7 +1061,7 @@ with arguments that do not specify the frame size as an integer multiple
 of its character size, however, may: be ignored, cause a rounding
 (GTK+), or be accepted (Lucid, Motif, MS-Windows).
 
-With some window managers you may have to set this to non-@code{nil} in
+With some window managers you may have to set this to не-@code{nil} in
 order to make a frame appear truly maximized or full-screen.
 @end defopt
 
@@ -1067,7 +1070,7 @@ This function sets the size of the text area of @var{frame}, measured in
 terms of the canonical height and width of a character on @var{frame}
 (@pxref{Frame Font}).
 
-The optional argument @var{pixelwise} non-@code{nil} means to measure
+The optional argument @var{pixelwise} не-@code{nil} means to measure
 the new width and height in units of pixels instead.  Note that if
 @code{frame-resize-pixelwise} is @code{nil}, some toolkits may refuse to
 truly honor the request if it does not increase/decrease the frame size
@@ -1079,7 +1082,7 @@ This function resizes the text area of @var{frame} to a height of
 @var{height} lines.  The sizes of existing windows in @var{frame} are
 altered proportionally to fit.
 
-If @var{pretend} is non-@code{nil}, then Emacs displays @var{height}
+If @var{pretend} is не-@code{nil}, then Emacs displays @var{height}
 lines of output in @var{frame}, but does not change its value for the
 actual height of the frame.  This is only useful on text terminals.
 Using a smaller height than the terminal actually implements may be
@@ -1089,7 +1092,7 @@ height directly does not always work, because knowing the correct
 actual size may be necessary for correct cursor positioning on
 text terminals.
 
-The optional fourth argument @var{pixelwise} non-@code{nil} means that
+The optional fourth argument @var{pixelwise} не-@code{nil} means that
 @var{frame} should be @var{height} pixels high.  Note that if
 @code{frame-resize-pixelwise} is @code{nil}, some window managers may
 refuse to truly honor the request if it does not increase/decrease the
@@ -1101,7 +1104,7 @@ This function sets the width of the text area of @var{frame}, measured
 in characters.  The argument @var{pretend} has the same meaning as in
 @code{set-frame-height}.
 
-The optional fourth argument @var{pixelwise} non-@code{nil} means that
+The optional fourth argument @var{pixelwise} не-@code{nil} means that
 @var{frame} should be @var{width} pixels wide.  Note that if
 @code{frame-resize-pixelwise} is @code{nil}, some window managers may
 refuse to fully honor the request if it does not increase/decrease the
@@ -1127,7 +1130,7 @@ frame's windows without actually changing the size of the inner frame,
 use the following function.
 
 @defun frame-size-changed-p &optional frame
-This function returns non-@code{nil} when the inner width or height of
+This function returns не-@code{nil} when the inner width or height of
 @var{frame} has changed since @code{window-size-change-functions} was
 run the last time for @var{frame}.  It always returns @code{nil}
 immediately after running @code{window-size-change-functions} for
@@ -1159,7 +1162,7 @@ If this option is @code{nil}, changing font, menu bar, tool bar,
 internal borders, fringes or scroll bars of a specific frame may
 implicitly resize the frame's display area in order to preserve the
 number of columns or lines the frame displays.  If this option is
-non-@code{nil}, no implied resizing is done.
+не-@code{nil}, no implied resizing is done.
 
 The value of this option can be also a list of frame parameters.  In
 that case, implied resizing is inhibited when changing a parameter that
@@ -1188,7 +1191,7 @@ no window system support).
 
 Note that when a frame is not large enough to accommodate a change of
 any of the parameters listed above, Emacs may try to enlarge the frame
-even if this option is non-@code{nil}.
+even if this option is не-@code{nil}.
 @end defopt
 
 
@@ -1212,7 +1215,7 @@ frame transparency, the parameter @code{alpha} is also meaningful.
 
   By default, frame parameters are saved and restored by the desktop
 library functions (@pxref{Desktop Save Mode}) when the variable
-@code{desktop-restore-frames} is non-@code{nil}.  It's the
+@code{desktop-restore-frames} is не-@code{nil}.  It's the
 responsibility of applications that their parameters are included in
 @code{frameset-persistent-filter-alist} to avoid that they get
 meaningless or even harmful values in restored sessions.
@@ -1269,7 +1272,7 @@ of the menu or tool bar, when eventually performed by the toolkit, will
 defeat this intention.
 
 Sometimes, binding @code{frame-inhibit-implied-resize} (@pxref{Implied
-Frame Resizing}) to a non-@code{nil} value around calls to this function
+Frame Resizing}) to a не-@code{nil} value around calls to this function
 may fix the problem sketched here.  Sometimes, however, exactly such
 binding may be hit by the problem.
 @end defun
@@ -1406,7 +1409,7 @@ in this frame.  Its value is @code{color}, @code{grayscale} or
 
 @vindex title@r{, a frame parameter}
 @item title
-If a frame has a non-@code{nil} title, it appears in the window
+If a frame has a не-@code{nil} title, it appears in the window
 system's title bar at the top of the frame, and also in the mode line
 of windows in that frame if @code{mode-line-frame-identification} uses
 @samp{%F} (@pxref{%-Constructs}).  This is normally the case when
@@ -1487,7 +1490,7 @@ frame's top position to the height of its workarea or parent frame minus
 the height of the frame.
 
 Emacs will try to keep the position ratios of a child frame unaltered if
-that frame has a non-@code{nil} @code{keep-ratio} parameter
+that frame has a не-@code{nil} @code{keep-ratio} parameter
 (@pxref{Frame Interaction Parameters}) and its parent frame is resized.
 
 Since the outer size of a frame (@pxref{Frame Geometry}) is usually
@@ -1499,7 +1502,7 @@ child frame is positioned nicely within the area of its parent frame.
 
 Some window managers ignore program-specified positions.  If you want to
 be sure the position you specify is not ignored, specify a
-non-@code{nil} value for the @code{user-position} parameter as in the
+не-@code{nil} value for the @code{user-position} parameter as in the
 following example:
 
 @example
@@ -1547,7 +1550,7 @@ When you create a frame and specify its screen position with the
 @code{left} and @code{top} parameters, use this parameter to say whether
 the specified position was user-specified (explicitly requested in some
 way by a human user) or merely program-specified (chosen by a program).
-A non-@code{nil} value says the position was user-specified.
+A не-@code{nil} value says the position was user-specified.
 
 @cindex window positions and window managers
 Window managers generally heed user-specified positions, and some heed
@@ -1557,7 +1560,7 @@ place it with the mouse.  Some window managers, including @code{twm},
 let the user specify whether to obey program-specified positions or
 ignore them.
 
-When you call @code{make-frame}, you should specify a non-@code{nil}
+When you call @code{make-frame}, you should specify a не-@code{nil}
 value for this parameter if the values of the @code{left} and @code{top}
 parameters represent the user's stated preference; otherwise, use
 @code{nil}.
@@ -1617,7 +1620,7 @@ width.  Similarly, the @dfn{height ratio} of a frame is the ratio of its
 outer height to the height of its workarea or its parent's native frame.
 
 Emacs will try to keep the width and height ratio of a child frame
-unaltered if that frame has a non-@code{nil} @code{keep-ratio} parameter
+unaltered if that frame has a не-@code{nil} @code{keep-ratio} parameter
 (@pxref{Frame Interaction Parameters}) and its parent frame is resized.
 
 Since the outer size of a frame is usually unavailable before a frame
@@ -1654,7 +1657,7 @@ Geometry}) of the frame, in characters.  Normally, the functions that
 establish a frame's initial width or resize a frame horizontally make
 sure that all the frame's windows, vertical scroll bars, fringes,
 margins and vertical dividers can be displayed.  This parameter, if
-non-@code{nil} allows to make a frame narrower than that with the
+не-@code{nil} allows to make a frame narrower than that with the
 consequence that any components that do not fit will be clipped by the
 window manager.
 
@@ -1665,7 +1668,7 @@ Geometry}) of the frame, in characters.  Normally, the functions that
 establish a frame's initial size or resize a frame make sure that all
 the frame's windows, horizontal scroll bars and dividers, mode and
 header lines, the echo area and the internal menu and tool bar can be
-displayed.  This parameter, if non-@code{nil} allows to make a frame
+displayed.  This parameter, if не-@code{nil} allows to make a frame
 smaller than that with the consequence that any components that do not
 fit will be clipped by the window manager.
 
@@ -1834,7 +1837,7 @@ integer).  @xref{Line Height}, for more information.
 
 @vindex no-special-glyphs@r{, a frame parameter}
 @item no-special-glyphs
-If this is non-@code{nil}, it suppresses the display of any truncation
+If this is не-@code{nil}, it suppresses the display of any truncation
 and continuation glyphs (@pxref{Truncation}) for all buffers displayed
 by this frame.  This is useful to eliminate such glyphs when fitting a
 frame to its buffer via @code{fit-frame-to-buffer} (@pxref{Resizing
@@ -1873,7 +1876,7 @@ The buffer-predicate function for this frame.  The function
 @code{other-buffer} uses this predicate (from the selected frame) to
 decide which buffers it should consider, if the predicate is not
 @code{nil}.  It calls the predicate with one argument, a buffer, once for
-each buffer; if the predicate returns a non-@code{nil} value, it
+each buffer; if the predicate returns a не-@code{nil} value, it
 considers that buffer.
 
 @vindex buffer-list@r{, a frame parameter}
@@ -1883,7 +1886,7 @@ most-recently-selected first.
 
 @vindex unsplittable@r{, a frame parameter}
 @item unsplittable
-If non-@code{nil}, this frame's window is never split automatically.
+If не-@code{nil}, this frame's window is never split automatically.
 @end table
 
 
@@ -1897,26 +1900,26 @@ These parameters supply forms of interactions between different frames.
 @table @code
 @vindex parent-frame@r{, a frame parameter}
 @item parent-frame
-If non-@code{nil}, this means that this frame is a child frame
+If не-@code{nil}, this means that this frame is a child frame
 (@pxref{Child Frames}), and this parameter specifies its parent frame.
 If @code{nil}, this means that this frame is a normal, top-level frame.
 
 @vindex delete-before@r{, a frame parameter}
 @item delete-before
-If non-@code{nil}, this parameter specifies another frame whose deletion
+If не-@code{nil}, this parameter specifies another frame whose deletion
 will automatically trigger the deletion of this frame.  @xref{Deleting
 Frames}.
 
 @vindex mouse-wheel-frame@r{, a frame parameter}
 @item mouse-wheel-frame
-If non-@code{nil}, this parameter specifies the frame whose windows will
+If не-@code{nil}, this parameter specifies the frame whose windows will
 be scrolled whenever the mouse wheel is scrolled with the mouse pointer
 hovering over this frame, see @ref{Mouse Commands,,, emacs, The GNU
 Emacs Manual}.
 
 @vindex no-other-frame@r{, a frame parameter}
 @item no-other-frame
-If this is non-@code{nil}, then this frame is not eligible as candidate
+If this is не-@code{nil}, then this frame is not eligible as candidate
 for the functions @code{next-frame}, @code{previous-frame}
 (@pxref{Finding All Frames}) and @code{other-frame}, see @ref{Frame
 Commands,,, emacs, The GNU Emacs Manual}.
@@ -1930,7 +1933,7 @@ instead of the function specified by the variable
 
 @vindex minibuffer-exit@r{, a frame parameter}
 @item minibuffer-exit
-When this parameter is non-@code{nil}, Emacs will by default make this
+When this parameter is не-@code{nil}, Emacs will by default make this
 frame invisible whenever the minibuffer (@pxref{Minibuffers}) is exited.
 Alternatively, it can specify the functions @code{iconify-frame} and
 @code{delete-frame}.  This parameter is useful to make a child frame
@@ -1940,7 +1943,7 @@ exiting the minibuffer.
 @vindex keep-ratio@r{, a frame parameter}
 @item keep-ratio
 This parameter is currently meaningful for child frames (@pxref{Child
-Frames}) only.  If it is non-@code{nil}, then Emacs will try to keep the
+Frames}) only.  If it is не-@code{nil}, then Emacs will try to keep the
 frame's size (width and height) ratios (@pxref{Size Parameters}) as well
 as its left and right position ratios (@pxref{Position Parameters})
 unaltered whenever its parent frame is resized.
@@ -1979,17 +1982,17 @@ they can be used for undecorated top-level frames as well.
 @table @code
 @vindex drag-internal-border@r{, a frame parameter}
 @item drag-internal-border
-If non-@code{nil}, the frame can be resized by dragging its internal
+If не-@code{nil}, the frame can be resized by dragging its internal
 borders, if present, with the mouse.
 
 @vindex drag-with-header-line@r{, a frame parameter}
 @item drag-with-header-line
-If non-@code{nil}, the frame can be moved with the mouse by dragging the
+If не-@code{nil}, the frame can be moved with the mouse by dragging the
 header line of its topmost window.
 
 @vindex drag-with-mode-line@r{, a frame parameter}
 @item drag-with-mode-line
-If non-@code{nil}, the frame can be moved with the mouse by dragging the
+If не-@code{nil}, the frame can be moved with the mouse by dragging the
 mode line of its bottommost window.  Note that such a frame is not
 allowed to have its own minibuffer window.
 
@@ -2006,7 +2009,7 @@ above the top edge of its display or parent frame.  Moreover, as many
 pixels of the frame as specified by that number will remain visible when
 the frame is moved against any of the remaining edges of its display or
 parent frame.  Setting this parameter is useful to guard against
-dragging a child frame with a non-@code{nil}
+dragging a child frame with a не-@code{nil}
 @code{drag-with-header-line} parameter completely out of the area
 of its parent frame.
 
@@ -2017,7 +2020,7 @@ appears below the bottom edge of its display or parent frame.  Moreover,
 as many pixels of the frame as specified by that number will remain
 visible when the frame is moved against any of the remaining edges of
 its display or parent frame.  Setting this parameter is useful to guard
-against dragging a child frame with a non-@code{nil}
+against dragging a child frame with a не-@code{nil}
 @code{drag-with-mode-line} parameter completely out of the area of
 its parent frame.
 @end table
@@ -2040,12 +2043,12 @@ iconified.  @xref{Visibility of Frames}.
 
 @vindex auto-raise@r{, a frame parameter}
 @item auto-raise
-If non-@code{nil}, Emacs automatically raises the frame when it is
+If не-@code{nil}, Emacs automatically raises the frame when it is
 selected.  Some window managers do not allow this.
 
 @vindex auto-lower@r{, a frame parameter}
 @item auto-lower
-If non-@code{nil}, Emacs automatically lowers the frame when it is
+If не-@code{nil}, Emacs automatically lowers the frame when it is
 deselected.  Some window managers do not allow this.
 
 @vindex icon-type@r{, a frame parameter}
@@ -2053,7 +2056,7 @@ deselected.  Some window managers do not allow this.
 The type of icon to use for this frame.  If the value is a string,
 that specifies a file containing a bitmap to use; @code{nil} specifies
 no icon (in which case the window manager decides what to show); any
-other non-@code{nil} value specifies the default Emacs icon.
+other не-@code{nil} value specifies the default Emacs icon.
 
 @vindex icon-name@r{, a frame parameter}
 @item icon-name
@@ -2074,26 +2077,26 @@ actual effect.
 
 @vindex wait-for-wm@r{, a frame parameter}
 @item wait-for-wm
-If non-@code{nil}, tell Xt to wait for the window manager to confirm
+If не-@code{nil}, tell Xt to wait for the window manager to confirm
 geometry changes.  Some window managers, including versions of Fvwm2
 and KDE, fail to confirm, so Xt hangs.  Set this to @code{nil} to
 prevent hanging with those window managers.
 
 @vindex sticky@r{, a frame parameter}
 @item sticky
-If non-@code{nil}, the frame is visible on all virtual desktops on systems
+If не-@code{nil}, the frame is visible on all virtual desktops on systems
 with virtual desktops.
 
 @vindex inhibit-double-buffering@r{, a frame parameter}
 @item inhibit-double-buffering
-If non-@code{nil}, the frame is drawn to the screen without double
+If не-@code{nil}, the frame is drawn to the screen without double
 buffering.  Emacs normally attempts to use double buffering, where
 available, to reduce flicker.  Set this property if you experience
 display bugs or pine for that retro, flicker-y feeling.
 
 @vindex skip-taskbar@r{, a frame parameter}
 @item skip-taskbar
-If non-@code{nil}, this tells the window manager to remove the frame's
+If не-@code{nil}, this tells the window manager to remove the frame's
 icon from the taskbar associated with the frame's display and inhibit
 switching to the frame's window via the combination @kbd{Alt-@key{TAB}}.
 On MS-Windows, iconifying such a frame will "roll in" its window-system
@@ -2102,13 +2105,13 @@ this parameter.
 
 @vindex no-focus-on-map@r{, a frame parameter}
 @item no-focus-on-map
-If non-@code{nil}, this means that the frame does not want to receive
+If не-@code{nil}, this means that the frame does not want to receive
 input focus when it is mapped (@pxref{Visibility of Frames}).  Some
 window managers may not honor this parameter.
 
 @vindex no-accept-focus@r{, a frame parameter}
 @item no-accept-focus
-If non-@code{nil}, this means that the frame does not want to receive
+If не-@code{nil}, this means that the frame does not want to receive
 input focus via explicit mouse clicks or when moving the mouse into it
 either via @code{focus-follows-mouse} (@pxref{Input Focus}) or
 @code{mouse-autoselect-window} (@pxref{Mouse Window Auto-selection}).
@@ -2118,7 +2121,7 @@ this parameter.
 
 @vindex undecorated@r{, a frame parameter}
 @item undecorated
-If non-@code{nil}, this frame's window-system window is drawn without
+If не-@code{nil}, this frame's window-system window is drawn without
 decorations, like the title, minimize/maximize boxes and external
 borders.  This usually means that the window cannot be dragged, resized,
 iconified, maximized or deleted with the mouse.  If @code{nil}, the frame's
@@ -2134,7 +2137,7 @@ it on an undecorated frame.
 @vindex override-redirect@r{, a frame parameter}
 @item override-redirect
 @cindex override redirect frames
-If non-@code{nil}, this means that this is an @dfn{override redirect}
+If не-@code{nil}, this means that this is an @dfn{override redirect}
 frame---a frame not handled by window managers under X.  Override
 redirect frames have no window manager decorations, can be positioned
 and resized only via Emacs' positioning and resizing functions and are
@@ -2161,7 +2164,7 @@ with a dark background.
 
 @vindex ns-transparent-titlebar@r{, a frame parameter}
 @item ns-transparent-titlebar
-Only available on macOS, if non-@code{nil}, set the titlebar and
+Only available on macOS, if не-@code{nil}, set the titlebar and
 toolbar to be transparent.  This effectively sets the background color
 of both to match the Emacs background color.
 @end table
@@ -2223,7 +2226,7 @@ This variable controls the width of the block cursor displayed on
 extra-wide glyphs such as a tab or a stretch of white space.  By
 default, the block cursor is only as wide as the font's default
 character, and will not cover all of the width of the glyph under it
-if that glyph is extra-wide.  A non-@code{nil} value of this variable
+if that glyph is extra-wide.  A не-@code{nil} value of this variable
 means draw the block cursor as wide as the glyph under it.  The
 default value is @code{nil}.
 
@@ -2369,13 +2372,13 @@ The color for the border of the frame.  It is equivalent to the
 
 @vindex scroll-bar-foreground@r{, a frame parameter}
 @item scroll-bar-foreground
-If non-@code{nil}, the color for the foreground of scroll bars.  It is
+If не-@code{nil}, the color for the foreground of scroll bars.  It is
 equivalent to the @code{:foreground} attribute of the
 @code{scroll-bar} face.
 
 @vindex scroll-bar-background@r{, a frame parameter}
 @item scroll-bar-background
-If non-@code{nil}, the color for the background of scroll bars.  It is
+If не-@code{nil}, the color for the background of scroll bars.  It is
 equivalent to the @code{:background} attribute of the
 @code{scroll-bar} face.
 @end table
@@ -2540,12 +2543,12 @@ specifies a tooltip, this function runs the hook
 Note that a frame cannot be deleted as long as its minibuffer serves as
 surrogate minibuffer for another frame (@pxref{Minibuffers and Frames}).
 Normally, you cannot delete a frame if all other frames are invisible,
-but if @var{force} is non-@code{nil}, then you are allowed to do so.
+but if @var{force} is не-@code{nil}, then you are allowed to do so.
 @end deffn
 
 @defun frame-live-p frame
-This function returns non-@code{nil} if the frame @var{frame} has not
-been deleted.  The possible non-@code{nil} return values are like those
+This function returns не-@code{nil} if the frame @var{frame} has not
+been deleted.  The possible не-@code{nil} return values are like those
 of @code{framep}.  @xref{Frames}.
 @end defun
 
@@ -2596,7 +2599,7 @@ the selected frame's display.  It returns @code{nil} if @var{display}
 contains no Emacs frame.
 
 Frames are listed from topmost (first) to bottommost (last).  As a
-special case, if @var{display} is non-@code{nil} and specifies a live
+special case, if @var{display} is не-@code{nil} and specifies a live
 frame, it returns the child frames of that frame in Z (stacking) order.
 
 This function is not meaningful on text terminals.
@@ -2609,7 +2612,7 @@ frame following @var{frame}, in the list of all live frames, on
 @var{frame}'s terminal.  The argument @var{frame} must specify a live
 frame and defaults to the selected frame.  It never returns a frame
 whose @code{no-other-frame} parameter (@pxref{Frame Interaction
-Parameters}) is non-@code{nil}.
+Parameters}) is не-@code{nil}.
 
 The second argument, @var{minibuf}, says which frames to consider:
 
@@ -2729,7 +2732,7 @@ window managers may refuse to comply.
 This function gives @var{frame} the focus of the X server without
 necessarily raising it.  @var{frame} @code{nil} means use the selected
 frame.  Under X, the optional argument @var{noactivate}, if
-non-@code{nil}, means to avoid making @var{frame}'s window-system window
+не-@code{nil}, means to avoid making @var{frame}'s window-system window
 the ``active'' window which should insist a bit more on avoiding to
 raise @var{frame} above other frames.
 
@@ -2754,7 +2757,7 @@ The specified @var{frame} becomes the selected frame, and its terminal
 becomes the selected terminal.  This function then calls
 @code{select-window} as a subroutine, passing the window selected
 within @var{frame} as its first argument and @var{norecord} as its
-second argument (hence, if @var{norecord} is non-@code{nil}, this
+second argument (hence, if @var{norecord} is не-@code{nil}, this
 avoids changing the order of recently selected windows and the buffer
 list).  @xref{Selecting Windows}.
 
@@ -2843,7 +2846,7 @@ the focus automatically follow the position of the mouse pointer and a
 frame that gains focus is raised automatically.
 @end table
 
-If this option is non-@code{nil}, Emacs moves the mouse pointer to the
+If this option is не-@code{nil}, Emacs moves the mouse pointer to the
 frame selected by @code{select-frame-set-input-focus}.  That function is
 used by a number of commands like, for example, @code{other-frame} and
 @code{pop-to-buffer}.
@@ -2930,7 +2933,7 @@ This function makes frame @var{frame} invisible.  If you omit
 all child frames of @var{frame} (and their descendants) invisible too
 (@pxref{Child Frames}).
 
-Unless @var{force} is non-@code{nil}, this function refuses to make
+Unless @var{force} is не-@code{nil}, this function refuses to make
 @var{frame} invisible if all other frames are invisible.
 @end deffn
 
@@ -2942,7 +2945,7 @@ any control, but Emacs does provide events that you can use to keep
 track of such changes.  @xref{Misc Events}.
 
 @defun x-double-buffered-p &optional frame
-This function returns non-@code{nil} if @var{frame} is currently
+This function returns не-@code{nil} if @var{frame} is currently
 being rendered with double buffering.  @var{frame} defaults to the
 selected frame.
 @end defun
@@ -2995,7 +2998,7 @@ this lowers @var{frame} below all other child frames of its parent.
 This function restacks @var{frame1} below @var{frame2}.  This implies
 that if both frames are visible and their display areas overlap,
 @var{frame2} will (partially) obscure @var{frame1}.  If the optional
-third argument @var{above} is non-@code{nil}, this function restacks
+third argument @var{above} is не-@code{nil}, this function restacks
 @var{frame1} above @var{frame2}.  This means that if both frames are
 visible and their display areas overlap, @var{frame1} will (partially)
 obscure @var{frame2}.
@@ -3022,7 +3025,7 @@ undefined.  You can list frames in their current stacking order with the
 function @code{frame-list-z-order} (@pxref{Finding All Frames}).
 
 @defopt minibuffer-auto-raise
-If this is non-@code{nil}, activation of the minibuffer raises the frame
+If this is не-@code{nil}, activation of the minibuffer raises the frame
 that the minibuffer window is in.
 @end defopt
 
@@ -3062,7 +3065,7 @@ This function restores the state of frames described in
 frames.
 
 Ordinarily, this function deletes all existing frames not listed in
-@var{configuration}.  But if @var{nodelete} is non-@code{nil}, the
+@var{configuration}.  But if @var{nodelete} is не-@code{nil}, the
 unwanted frames are iconified instead.
 @end defun
 
@@ -3164,16 +3167,16 @@ advisable to disable a child frame's window manager decorations with the
   To resize or move an undecorated child frame with the mouse, special
 frame parameters (@pxref{Mouse Dragging Parameters}) have to be used.
 The internal border of a child frame, if present, can be used to resize
-the frame with the mouse, provided that frame has a non-@code{nil}
+the frame with the mouse, provided that frame has a не-@code{nil}
 @code{drag-internal-border} parameter.  If set, the @code{snap-width}
 parameter indicates the number of pixels where the frame @dfn{snaps} at
 the respective edge or corner of its parent frame.
 
   There are two ways to drag an entire child frame with the mouse: The
-@code{drag-with-mode-line} parameter, if non-@code{nil}, allows to drag
+@code{drag-with-mode-line} parameter, if не-@code{nil}, allows to drag
 a frame without minibuffer window (@pxref{Minibuffer Windows}) via the
 mode line area of its bottommost window.  The
-@code{drag-with-header-line} parameter, if non-@code{nil}, allows to
+@code{drag-with-header-line} parameter, if не-@code{nil}, allows to
 drag the frame via the header line area of its topmost window.
 
   In order to give a child frame a draggable header or mode line, the
@@ -3190,11 +3193,11 @@ button has been released, it is advisable to set the frame's
 
   The @code{top-visible} parameter specifies the number of pixels at the
 top of the frame that always remain visible within the parent's native
-frame during dragging and should be set when specifying a non-@code{nil}
+frame during dragging and should be set when specifying a не-@code{nil}
 @code{drag-with-header-line} parameter.  The @code{bottom-visible}
 parameter specifies the number of pixels at the bottom of the frame that
 always remain visible within the parent's native frame during dragging
-and should be preferred when specifying a non-@code{nil}
+and should be preferred when specifying a не-@code{nil}
 @code{drag-with-mode-line} parameter.
 
   When a child frame is used for displaying a buffer via
@@ -3262,7 +3265,7 @@ This function returns @code{nil} if @var{frame} has no parent frame.
 @end defun
 
 @defun frame-ancestor-p ancestor descendant
-This functions returns non-@code{nil} if @var{ancestor} is an ancestor
+This functions returns не-@code{nil} if @var{ancestor} is an ancestor
 of @var{descendant}.  @var{ancestor} is an ancestor of @var{descendant}
 when it is either @var{descendant}'s parent frame or it is an ancestor
 of @var{descendant}'s parent frame.  Both, @var{ancestor} and
@@ -3323,7 +3326,7 @@ it is time to stop tracking.
 
 The @code{track-mouse} form causes Emacs to generate mouse motion
 events by binding the variable @code{track-mouse} to a
-non-@code{nil} value.  If that variable has the special value
+не-@code{nil} value.  If that variable has the special value
 @code{dragging}, it additionally instructs the display engine to
 refrain from changing the shape of the mouse pointer.  This is
 desirable in Lisp programs that require mouse dragging across large
@@ -3397,7 +3400,7 @@ Geometry}).
 @end defun
 
 @defvar mouse-position-function
-If non-@code{nil}, the value of this variable is a function for
+If не-@code{nil}, the value of this variable is a function for
 @code{mouse-position} to call.  @code{mouse-position} calls this
 function just before returning, with its normal return value as the
 sole argument, and it returns whatever this function returns to it.
@@ -3452,7 +3455,7 @@ The following function can tell whether the mouse cursor is currently
 visible on a frame:
 
 @defun frame-pointer-visible-p &optional frame
-This predicate function returns non-@code{nil} if the mouse pointer
+This predicate function returns не-@code{nil} if the mouse pointer
 displayed on @var{frame} is visible; otherwise it returns @code{nil}.
 @var{frame} omitted or @code{nil} means the selected frame.  This is
 useful when @code{make-pointer-invisible} is set to @code{t}: it
@@ -3599,7 +3602,7 @@ Dialog boxes always appear in the center of a frame; the argument
 @code{x-popup-menu}, but the precise coordinates or the individual
 window don't matter; only the frame matters.
 
-If @var{header} is non-@code{nil}, the frame title for the box is
+If @var{header} is не-@code{nil}, the frame title for the box is
 @samp{Information}, otherwise it is @samp{Question}.  The former is used
 for @code{message-box} (@pxref{message-box}).  (On text terminals, the
 box title is not displayed.)
@@ -3824,7 +3827,7 @@ This returns @code{t} if @var{frame} can really display the color
 omitted or @code{nil}, the question applies to the selected frame.
 
 Some terminals support a different set of colors for foreground and
-background.  If @var{background-p} is non-@code{nil}, that means you are
+background.  If @var{background-p} is не-@code{nil}, that means you are
 asking whether @var{color} can be used as a background; otherwise you
 are asking whether it can be used as a foreground.
 
@@ -3998,7 +4001,7 @@ or @file{~/.Xresources}).  Then:
 @end example
 
 @defvar inhibit-x-resources
-If this variable is non-@code{nil}, Emacs does not look up X
+If this variable is не-@code{nil}, Emacs does not look up X
 resources, and X resources do not have any effect when creating new
 frames.
 @end defvar
@@ -4054,7 +4057,7 @@ This function returns @code{t} if the screen can display shades of gray.
 
 @defun display-supports-face-attributes-p attributes &optional display
 @anchor{Display Face Attribute Testing}
-This function returns non-@code{nil} if all the face attributes in
+This function returns не-@code{nil} if all the face attributes in
 @var{attributes} are supported (@pxref{Face Attributes}).
 
 The definition of ``supported'' is somewhat heuristic, but basically
@@ -4151,7 +4154,7 @@ when the question is inapplicable to a certain kind of display.
 
 @cindex SaveUnder feature
 @defun display-save-under &optional display
-This function returns non-@code{nil} if the display supports the
+This function returns не-@code{nil} if the display supports the
 SaveUnder feature.  That feature is used by pop-up windows
 to save the pixels they obscure, so that they can pop down
 quickly.
