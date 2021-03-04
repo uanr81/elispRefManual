@@ -868,854 +868,841 @@ Cons-чейки ширины и высоты панели инструменто
 функции:
 
 @deffn Command set-frame-font font &optional keep-size frames
-This sets the default font to @var{font}.  When called interactively, it
-prompts for the name of a font, and uses that font on the selected
-frame.  When called from Lisp, @var{font} should be a font name (a
-string), a font object, font entity, or a font spec.
+Устанавливает шрифт по умолчанию @var{font}.  При интерактивном вызове
+запрашивает имя шрифта и использует этот шрифт в выбранном фрейме.  При
+вызове из Lisp @var{font} должен быть именем шрифта (строка), объектом
+шрифта, сущностью шрифта или спецификацией шрифта.
 
-If the optional argument @var{keep-size} is @code{nil}, this keeps the
-number of frame lines and columns fixed.  (If не-@code{nil}, the option
-@code{frame-inhibit-implied-resize} described in the next section will
-override this.)  If @var{keep-size} is не-@code{nil} (or with a prefix
-argument), it tries to keep the size of the display area of the current
-frame fixed by adjusting the number of lines and columns.
+Если необязательный аргумент @var{keep-size} - @code{nil}, сохраняется
+количество строк и столбцов фрейма фиксированным.  (Если не-@code{nil},
+параметр @code{frame-inhibit-implied-resize}, описанный в следующем разделе,
+переопределит это.)  Если @var{keep-size} равен не-@code{nil} (или с
+аргументом префикса), пытается сохраниться размер области отображения
+текущего фрейма фиксированным, регулируя количество строк и столбцы.
 
-If the optional argument @var{frames} is @code{nil}, this applies the
-font to the selected frame only.  If @var{frames} is не-@code{nil}, it
-should be a list of frames to act upon, or @code{t} meaning all existing
-and all future graphical frames.
+Если необязательный аргумент @var{frames} - @code{nil}, шрифт применяется
+только к выбранному фрейму.  Если @var{frames} - это не-@code{nil}, это
+должен быть список фреймов, над которыми нужно действовать, или @code{t},
+означающий все существующие и все будущие графические фреймы.
 @end deffn
 
 
 @node Frame Position
-@subsection Frame Position
+@subsection Положение Фрейма
 @cindex frame position
 @cindex position of frame
 
-On graphical systems, the position of a normal top-level frame is
-specified as the absolute position of its outer frame (@pxref{Frame
-Geometry}).  The position of a child frame (@pxref{Child Frames}) is
-specified via pixel offsets of its outer edges relative to the native
-position of its parent frame.
+В графических системах положение нормального фрейма верхнего уровня
+определяется как абсолютное положение его внешнего фрейма
+(@pxref{Frame Geometry}).  Положение дочернего фрейма (@pxref{Child Frames})
+задается через пиксельные смещения его внешних краев относительно исходного
+положения его родительского кадра.
 
-  You can access or change the position of a frame using the frame
-parameters @code{left} and @code{top} (@pxref{Position Parameters}).
-Here are two additional functions for working with the positions of an
-existing, visible frame.  For both functions, the argument @var{frame}
-must denote a live frame and defaults to the selected frame.
+  Можно получить доступ или изменить положение фрейма, используя параметры
+фрейма @code{left} и @code{top} (@pxref{Position Parameters}).  Вот две
+дополнительные функции для работы с позициями существующего видимого фрейма.
+Для обеих функций аргумент @var{frame} должен обозначать активный фрейм и
+по умолчанию использовать выбранный фрейм.
 
 @defun frame-position &optional frame
-For a normal, non-child frame this function returns a cons of the pixel
-coordinates of its outer position (@pxref{Frame Layout}) with respect to
-the origin @code{(0, 0)} of its display.  For a child frame
-(@pxref{Child Frames}) this function returns the pixel coordinates of
-its outer position with respect to an origin @code{(0, 0)} at the native
-position of @var{frame}'s parent.
+Для нормального, не дочернего фрейма эта функция возвращает cons-координаты
+пиксельных координат его внешнего положения (@pxref{Frame Layout})
+относительно исходной точки @code{(0, 0)} его отображения.  Для дочернего
+фрейма (@pxref{Child Frames}) эта функция возвращает пиксельные координаты
+его внешней позиции относительно исходной точки @code{(0, 0)} в исходной
+позиции родительского фрейма @var{frame}.
 
-Negative values never indicate an offset from the right or bottom
-edge of @var{frame}'s display or parent frame.  Rather, they mean that
-@var{frame}'s outer position is on the left and/or above the origin of
-its display or the native position of its parent frame.  This usually
-means that @var{frame} is only partially visible (or completely
-invisible).  However, on systems where the display's origin does not
-coincide with its top-left corner, the frame may be visible on a
-secondary monitor.
+Отрицательные значения никогда не указывают на смещение от правого или
+нижнего края дисплея @var{frame} или родительского фрейма.  Скорее, они
+означают, что внешняя позиция @var{frame} находится слева и/или над исходной
+точкой его отображения или исходной позицией его родительского фрейма.
+Обычно это означает, что @var{frame} виден только частично (или полностью не
+видим).  Однако в системах, где исходная точка дисплея не совпадает с его
+верхним левым углом, рамка может быть видна на дополнительном мониторе.
 
-On a text terminal frame both values are zero.
+В фрейме текстового терминала оба значения равны нулю.
 @end defun
 
 @defun set-frame-position frame x y
-This function sets the outer frame position of @var{frame} to (@var{x},
-@var{y}).  The latter arguments specify pixels and normally count from
-the origin at the position (0, 0) of @var{frame}'s display.  For child
-frames, they count from the native position of @var{frame}'s parent
-frame.
+Функция устанавливает внешнюю позицию фрейма @var{frame} на (@var{x},
+@var{y}).  Последние аргументы определяют пиксели и обычно отсчитывают от
+начала координат в позиции (0, 0) дисплея @var{frame}.  Для дочерних фреймов
+они отсчитываются от исходной позиции родительского фрейма @var{frame}.
 
-Negative parameter values position the right edge of the outer frame by
-@var{-x} pixels left from the right edge of the screen (or the parent
-frame's native rectangle) and the bottom edge by @var{-y} pixels up from
-the bottom edge of the screen (or the parent frame's native rectangle).
+Отрицательные значения параметров позиционируют правый край внешнего фрейма
+на @var{-x} пикселей слева от правого края экрана (или собственного
+прямоугольника родительского фрейма), а нижний край на @var{-y} пикселей
+вверх от нижнего края экрана (или родительского фрейма) родного
+прямоугольника.
 
-Note that negative values do not permit to align the right or bottom
-edge of @var{frame} exactly at the right or bottom edge of its display
-or parent frame.  Neither do they allow to specify a position that does
-not lie within the edges of the display or parent frame.  The frame
-parameters @code{left} and @code{top} (@pxref{Position Parameters})
-allow to do that, but may still fail to provide good results for the
-initial or a new frame.
+Обратить внимание, что отрицательные значения не позволяют выровнять правый
+или нижний край @var{frame} точно по правому или нижнему краю его дисплея
+или родительского фрейма.  Также не позволяют указать позицию, которая не
+находится в пределах краев дисплея или родительского фрейма.  Параметры
+фрейма @code{left} и @code{top} (@pxref{Position Parameters}) позволяют это
+сделать, но все же могут не дать хороших результатов для исходного или
+нового фрейма.
 
-This function has no effect on text terminal frames.
+Функция не влияет на фреймы текстового терминала.
 @end defun
 
 @defvar move-frame-functions
 @cindex frame position changes, a hook
-This hook specifies the functions that are run when an Emacs frame is moved
-(assigned a new position) by the window-system or window manager.  The
-functions are run with one argument, the frame that moved.  For a child
-frame (@pxref{Child Frames}), the functions are run only when the
-position of the frame changes in relation to that of its parent frame.
+Этот перехватчик определяет функции, которые запускаются, когда фрейм Emacs
+перемещается (ему назначается новая позиция) оконной системой или оконным
+менеджером.  Функции запускаются с одним аргументом - перемещенным фреймом.
+Для дочернего фрейма (@pxref{Child Frames}) функции запускаются только
+тогда, когда положение фрейма изменяется по отношению к положению его
+родительского фрейма.
 @end defvar
 
 
 @node Frame Size
-@subsection Frame Size
+@subsection Размер Фрейма
 @cindex frame size
 @cindex text width of a frame
 @cindex text height of a frame
 @cindex text size of a frame
-The canonical way to specify the @dfn{size of a frame} from within Emacs
-is by specifying its @dfn{text size}---a tuple of the width and height
-of the frame's text area (@pxref{Frame Layout}).  It can be measured
-either in pixels or in terms of the frame's canonical character size
-(@pxref{Frame Font}).
+Канонический способ указать @dfn{размер фрейма} из Emacs - это указать его
+@dfn{размер текста} --- кортеж ширины и высоты текстовой области
+(@pxref{Frame Layout}) фрейма.  Его можно измерить либо в пикселях, либо в
+единицах канонического размера символа фрейма (@pxref{Frame Font}).
 
-  For frames with an internal menu or tool bar, the frame's native
-height cannot be told exactly before the frame has been actually drawn.
-This means that in general you cannot use the native size to specify the
-initial size of a frame.  As soon as you know the native size of a
-visible frame, you can calculate its outer size (@pxref{Frame Layout})
-by adding in the remaining components from the return value of
-@code{frame-geometry}.  For invisible frames or for frames that have
-yet to be created, however, the outer size can only be estimated.  This
-also means that calculating an exact initial position of a frame
-specified via offsets from the right or bottom edge of the screen
-(@pxref{Frame Position}) is impossible.
+  Для фреймов с внутренним меню или панелью инструментов нельзя точно
+определить собственную высоту фрейма до того, как фрейм будет фактически
+нарисован.  Это означает, что, как правило, не получиться использовать
+собственный размер для указания начального размера фрейми.  Как только
+узнать собственный размер видимого фрейма, можно вычислить его внешний
+размер (@pxref{Frame Layout}), добавив оставшиеся компоненты из
+возвращаемого значения @code{frame-geometry}.  Однако для невидимых фреймов
+или фреймов, которые еще предстоит создать, внешний размер можно только
+оценить.  Это также означает, что вычисление точного начального положения
+фрейма, указанного с помощью смещений от правого или нижнего края экрана
+(@pxref{Frame Position}), невозможно.
 
-  The text size of any frame can be set and retrieved with the help of
-the @code{height} and @code{width} frame parameters (@pxref{Size
-Parameters}).  The text size of the initial frame can be also set with
-the help of an X-style geometry specification.  @xref{Emacs Invocation,,
-Command Line Arguments for Emacs Invocation, emacs, The GNU Emacs
-Manual}.  Below we list some functions to access and set the size of an
-existing, visible frame, by default the selected one.
+  Размер текста любого фрейма можно установить и получить с помощью
+параметров фрейма @code{height} и @code{width} (@pxref{Size Parameters}).
+Размер текста исходного фрейма также можно установить с помощью спецификации
+геометрии X-стиля.  @xref{Emacs Invocation,, Command Line Arguments for Emacs Invocation, emacs, The GNU Emacs Manual}.  Ниже перечислены некоторые
+функции для доступа и устанавки размера существующего видимого фрейма, по
+умолчанию выбранной.
 
 @defun frame-height &optional frame
 @defunx frame-width &optional frame
-These functions return the height and width of the text area of
-@var{frame}, measured in units of the default font height and width of
-@var{frame} (@pxref{Frame Font}).  These functions are plain shorthands
-for writing @code{(frame-parameter frame 'height)} and
+Функции возвращают высоту и ширину текстовой области @var{frame}, измеренные
+в единицах высоты шрифта по умолчанию и ширины @var{frame}
+(@pxref{Frame Font}).  Эти функции представляют собой простые сокращения для
+записи @code{(frame-parameter frame 'height)} и
 @code{(frame-parameter frame 'width)}.
 
-If the text area of @var{frame} measured in pixels is not a multiple of
-its default font size, the values returned by these functions are
-rounded down to the number of characters of the default font that fully
-fit into the text area.
+Если текстовая область @var{frame}, измеренная в пикселях, не кратна размеру
+шрифта по умолчанию, значения, возвращаемые этими функциями, округляются в
+меньшую сторону до количества символов шрифта по умолчанию, которые
+полностью помещаются в текстовую область.
 @end defun
 
-The functions following next return the pixel widths and heights of the
-native, outer and inner frame and the text area (@pxref{Frame Layout})
-of a given frame.  For a text terminal, the results are in characters
-rather than pixels.
+Следующие далее функции возвращают ширину и высоту в пикселях собственного,
+внешнего и внутреннего фрейма и текстовой области (@pxref{Frame Layout})
+данного фрейма.  Для текстового терминала результаты выражаются в символах,
+а не в пикселях.
 
 @defun frame-outer-width &optional frame
 @defunx frame-outer-height &optional frame
-These functions return the outer width and height of @var{frame} in
-pixels.
+Функции возвращают внешнюю ширину и высоту @var{frame} в пикселях.
 @end defun
 
 @defun frame-native-height &optional frame
 @defunx frame-native-width &optional frame
-These functions return the native width and height of @var{frame} in
-pixels.
+Функции возвращают исходную ширину и высоту @var{frame} в пикселях.
 @end defun
 
 @defun frame-inner-width &optional frame
 @defunx frame-inner-height &optional frame
-These functions return the inner width and height of @var{frame} in
-pixels.
+Функции возвращают внутреннюю ширину и высоту @var{frame} в пикселях.
 @end defun
 
 @defun frame-text-width &optional frame
 @defunx frame-text-height &optional frame
-These functions return the width and height of the text area of
-@var{frame} in pixels.
+Функции возвращают ширину и высоту текстовой области @var{frame} в пикселях.
 @end defun
 
-On window systems that support it, Emacs tries by default to make the
-text size of a frame measured in pixels a multiple of the frame's
-character size.  This, however, usually means that a frame can be
-resized only in character size increments when dragging its external
-borders.  It also may break attempts to truly maximize the frame or
-making it ``fullheight'' or ``fullwidth'' (@pxref{Size Parameters})
-leaving some empty space below and/or on the right of the frame.  The
-following option may help in that case.
+В оконных системах, которые его поддерживают, Emacs по умолчанию пытается
+сделать размер текста фрейма, измеренный в пикселях, кратным размеру символа
+фрейма.  Это, однако, обычно означает, что размер фрейма можно изменять
+только с приращением размера символа при перетаскивании его внешних границ.
+Это также может нарушить попытки по-настоящему развернуть фрейм или сделать
+его ``полной высотой'' или ``полной шириной'' (@pxref{Size Parameters}),
+оставив некоторое пустое пространство ниже и/или справа от фрейма.  В этом
+случае может помочь следующий вариант.
 
 @defopt frame-resize-pixelwise
-If this option is @code{nil} (the default), a frame's text pixel size is
-usually rounded to a multiple of the current values of that frame's
-@code{frame-char-height} and @code{frame-char-width} whenever the frame
-is resized.  If this is не-@code{nil}, no rounding occurs, hence frame
-sizes can increase/decrease by one pixel.
+Если этот параметр - @code{nil} (по умолчанию), размер пикселя текста фрейма
+обычно округляется до кратного числа текущих значений
+@code{frame-char-height} и @code{frame-char-width} этого фрейма при
+изменении размера фрейма.  Если не-@code{nil}, округления не происходит,
+следовательно, размеры фрейма могут увеличиваться/уменьшаться на один
+пиксель.
 
-Setting this variable usually causes the next resize operation to pass
-the corresponding size hints to the window manager.  This means that
-this variable should be set only in a user's initial file; applications
-should never bind it temporarily.
+Установка этой переменной обычно приводит к тому, что следующая операция
+изменения размера передает соответствующие подсказки размера диспетчеру
+окон.  Это означает, что эта переменная должна быть установлена только в
+исходном файле пользователя; приложения никогда не должны привязывать его
+временно.
 
-The precise meaning of a value of @code{nil} for this option depends on
-the toolkit used.  Dragging the external border with the mouse is done
-character-wise provided the window manager is willing to process the
-corresponding size hints.  Calling @code{set-frame-size} (see below)
-with arguments that do not specify the frame size as an integer multiple
-of its character size, however, may: be ignored, cause a rounding
-(GTK+), or be accepted (Lucid, Motif, MS-Windows).
+Точное значение @code{nil} для этой опции зависит от используемого
+инструментария.  Перетаскивание внешней границы с помощью мыши выполняется
+посимвольно, если оконный менеджер готов обрабатывать подсказки
+соответствующего размера.  Однако вызов @code{set-frame-size} (смотреть
+ниже) с аргументами, которые не определяют размер фрейма как целое число,
+кратное его размеру символа, может: игнорироваться, вызывать округление
+(GTK+) или быть принятым (Lucid, Motif, MS-Windows).
 
-With some window managers you may have to set this to не-@code{nil} in
-order to make a frame appear truly maximized or full-screen.
+В некоторых оконных менеджерах может потребоваться установить для опции
+значение не-@code{nil}, чтобы фрейм выглядел действительно развернутым или
+полноэкранным.
 @end defopt
 
 @defun set-frame-size frame width height &optional pixelwise
-This function sets the size of the text area of @var{frame}, measured in
-terms of the canonical height and width of a character on @var{frame}
+Функция устанавливает размер текстовой области @var{frame}, измеренный в
+терминах канонической высоты и ширины символа на @var{frame}
 (@pxref{Frame Font}).
 
-The optional argument @var{pixelwise} не-@code{nil} means to measure
-the new width and height in units of pixels instead.  Note that if
-@code{frame-resize-pixelwise} is @code{nil}, some toolkits may refuse to
-truly honor the request if it does not increase/decrease the frame size
-to a multiple of its character size.
+Необязательный аргумент @var{pixelwise} не-@code{nil} означает, что вместо
+этого нужно измерять новую ширину и высоту в пикселях.  Обратить внимание,
+что если @code{frame-resize-pixelwise} равен @code{nil}, некоторые наборы
+инструментов могут отказываться действительно выполнять запрос, если не
+увеличивается/не уменьшается размер фрейма до кратного размера его символа.
 @end defun
 
 @defun set-frame-height frame height &optional pretend pixelwise
-This function resizes the text area of @var{frame} to a height of
-@var{height} lines.  The sizes of existing windows in @var{frame} are
-altered proportionally to fit.
+Функция изменяет размер текстовой области @var{frame} до высоты @var{height}
+строк.  Размеры существующих окон в @var{frame} изменяются пропорционально
+подгонке.
 
-If @var{pretend} is не-@code{nil}, then Emacs displays @var{height}
-lines of output in @var{frame}, but does not change its value for the
-actual height of the frame.  This is only useful on text terminals.
-Using a smaller height than the terminal actually implements may be
-useful to reproduce behavior observed on a smaller screen, or if the
-terminal malfunctions when using its whole screen.  Setting the frame
-height directly does not always work, because knowing the correct
-actual size may be necessary for correct cursor positioning on
-text terminals.
+Если @var{pretend} равен не-@code{nil}, то Emacs отображает строки вывода
+@var{height} в @var{frame}, но не изменяет свое значение для фактической
+высоты фрейма.  Это полезно только на текстовых терминалах.  Использование
+меньшей высоты, чем на самом деле реализует терминал, может быть полезно для
+воспроизведения поведения, наблюдаемого на меньшем экране, или в случае
+неисправности терминала при использовании всего экрана.  Непосредственная
+установка высоты фрейма не всегда работает, потому что знание правильного
+фактического размера может быть необходимо для правильного позиционирования
+курсора на текстовых терминалах.
 
-The optional fourth argument @var{pixelwise} не-@code{nil} means that
-@var{frame} should be @var{height} pixels high.  Note that if
-@code{frame-resize-pixelwise} is @code{nil}, some window managers may
-refuse to truly honor the request if it does not increase/decrease the
-frame height to a multiple of its character height.
+Необязательный четвертый аргумент @var{pixelwise} не-@code{nil} означает,
+что @var{frame} должен иметь высоту @var{height} пикселей.  Обратить
+внимание, что если @code{frame-resize-pixelwise} равно @code{nil}, некоторые
+оконные менеджеры могут отказываться действительно выполнять запрос, если
+не увеличивается/не уменьшается высота фрейма до кратной высоты его символа.
 @end defun
 
 @defun set-frame-width frame width &optional pretend pixelwise
-This function sets the width of the text area of @var{frame}, measured
-in characters.  The argument @var{pretend} has the same meaning as in
+Функция устанавливает ширину текстовой области @var{frame}, измеряемую в
+символах.  Аргумент @var{pretend} имеет то же значение, что и аргумент
 @code{set-frame-height}.
 
-The optional fourth argument @var{pixelwise} не-@code{nil} means that
-@var{frame} should be @var{width} pixels wide.  Note that if
-@code{frame-resize-pixelwise} is @code{nil}, some window managers may
-refuse to fully honor the request if it does not increase/decrease the
-frame width to a multiple of its character width.
+Необязательный четвертый аргумент @var{pixelwise} не-@code{nil} означает,
+что @var{frame} должен иметь ширину @var{width} пикселей.  Обратить
+внимание, что если @code{frame-resize-pixelwise} равно @code{nil}, некоторые
+оконные менеджеры могут отказываться полностью удовлетворить запрос, если
+не увеличивается/не уменьшается ширина фрейма до кратной ширины его символа.
 @end defun
 
-None of these three functions will make a frame smaller than needed to
-display all of its windows together with their scroll bars, fringes,
-margins, dividers, mode and header lines.  This contrasts with requests
-by the window manager triggered, for example, by dragging the external
-border of a frame with the mouse.  Such requests are always honored by
-clipping, if necessary, portions that cannot be displayed at the right,
-bottom corner of the frame.  The parameters @code{min-width} and
-@code{min-height} (@pxref{Size Parameters}) can be used to obtain a
-similar behavior when changing the frame size from within Emacs.
+Ни одна из этих трех функций не сделает фрейм меньше, чем необходимо для
+отображения всех его окон вместе с их полосами прокрутки, полосами, полями,
+разделителями, режимом и строками заголовка.  Это контрастирует с запросами
+оконного менеджера, запускаемыми, например, путем перетаскивания внешней
+границы фрейма с помощью мыши.  Такие запросы всегда выполняются путем
+отсечения, если необходимо, частей, которые не могут быть отображены в
+правом нижнем углу фрейма.  Параметры @code{min-width} и @code{min-height}
+(@pxref{Size Parameters}) можно использовать для получения аналогичного
+поведения при изменении размера фрейма из Emacs.
 
 @cindex tracking frame size changes
-  The abnormal hook @code{window-size-change-functions} (@pxref{Window
-Hooks}) tracks all changes of the inner size of a frame including those
-induced by request of the window-system or window manager.  To rule out
-false positives that might occur when changing only the sizes of a
-frame's windows without actually changing the size of the inner frame,
-use the following function.
+  Не нормальная ловушка @code{window-size-change-functions}
+(@pxref{Window Hooks}) отслеживает все изменения внутреннего размера фрейма,
+в том числе вызванные запросом оконной системы или оконного менеджера.
+Чтобы исключить ложные срабатывания, которые могут возникнуть при изменении
+только размеров окон фрейма без фактического изменения размера внутреннего
+фрейма, используется следующая функция.
 
 @defun frame-size-changed-p &optional frame
-This function returns не-@code{nil} when the inner width or height of
-@var{frame} has changed since @code{window-size-change-functions} was
-run the last time for @var{frame}.  It always returns @code{nil}
-immediately after running @code{window-size-change-functions} for
+Функция возвращает не-@code{nil}, когда внутренняя ширина или высота
+@var{frame} изменилась с момента последнего запуска
+@code{window-size-change-functions} для @var{frame}.  Всегда возвращается
+@code{nil} сразу после запуска @code{window-size-change-functions} для
 @var{frame}.
 @end defun
 
 
 @node Implied Frame Resizing
-@subsection Implied Frame Resizing
+@subsection Подразумеваемое Изменение Размера Фрейма
 @cindex implied frame resizing
 @cindex implied resizing of frame
 
-By default, Emacs tries to keep the number of lines and columns of a
-frame's text area unaltered when, for example, adding or removing the
-menu bar, changing the default font or setting the width of the frame's
-scroll bars.  This means, however, that in such case Emacs must ask the
-window manager to resize the outer frame in order to accommodate the
-size change.  Note that wrapping a menu or tool bar usually does not
-resize the frame's outer size, hence this will alter the number of
-displayed lines.
+По умолчанию Emacs пытается сохранить неизменным количество строк и столбцов
+в текстовой области фрейма, например, при добавлении или удалении строки
+меню, изменении шрифта по умолчанию или установке ширины полос прокрутки
+фрейма.  Однако это означает, что в таком случае Emacs должен попросить
+диспетчер окон изменить размер внешнего фрейма, чтобы приспособиться к
+изменению размера.  Обратить внимание, что обертывание меню или панели
+инструментов обычно не изменяет внешний размер фрейма, следовательно, это
+изменит количество отображаемых строк.
 
-  Occasionally, such @dfn{implied frame resizing} may be unwanted, for
-example, when the frame is maximized or made full-screen (where it's
-turned off by default).  In other cases you can disable implied resizing
-with the following option:
+  Иногда такое @dfn{подразумеваемое изменение размера фрейма} может быть
+нежелательным, например, когда фрейм развернут или сделан в полноэкранном
+режиме (где он отключен по умолчанию).  В других случаях можно отключить
+подразумеваемое изменение размера с помощью следующей опции:
 
 @defopt frame-inhibit-implied-resize
-If this option is @code{nil}, changing font, menu bar, tool bar,
-internal borders, fringes or scroll bars of a specific frame may
-implicitly resize the frame's display area in order to preserve the
-number of columns or lines the frame displays.  If this option is
-не-@code{nil}, no implied resizing is done.
+Если этот параметр - @code{nil}, изменение шрифта, строки меню, панели
+инструментов, внутренних границ, полос или полос прокрутки определенного
+фрейма может неявно изменить размер области отображения фрейма, чтобы
+сохранить количество столбцов или строк, отображаемых фреймом.  Если этот
+параметр - не-@code{nil}, подразумеваемое изменение размера не выполняется.
 
-The value of this option can be also a list of frame parameters.  In
-that case, implied resizing is inhibited when changing a parameter that
-appears in this list.  The frame parameters currently handled by this
-option are: @code{font}, @code{font-backend},
-@code{internal-border-width}, @code{menu-bar-lines} and
+Значением этой опции также может быть список параметров фрейма.  В этом
+случае подразумеваемое изменение размера запрещается при изменении
+параметра, который появляется в этом списке.  Параметры фрейма, которые в
+настоящее время обрабатываются этой опцией:: @code{font},
+@code{font-backend}, @code{internal-border-width}, @code{menu-bar-lines} и
 @code{tool-bar-lines}.
 
-Changing any of the @code{scroll-bar-width}, @code{scroll-bar-height},
-@code{vertical-scroll-bars}, @code{horizontal-scroll-bars},
-@code{left-fringe} and @code{right-fringe} frame parameters is handled
-as if the frame contained just one live window.  This means, for
-example, that removing vertical scroll bars on a frame containing
-several side by side windows will shrink the outer frame width by the
-width of one scroll bar provided this option is @code{nil} and keep it
-unchanged if this option is either @code{t} or a list containing
+Изменение любого из параметров фрейма @code{scroll-bar-width},
+@code{scroll-bar-height}, @code{vertical-scroll-bars},
+@code{horizontal-scroll-bars}, @code{left-fringe} и @code{right-fringe}
+обрабатывается так, как если бы фрейм содержал только одно активное окно.
+Это означает, например, что удаление вертикальных полос прокрутки на фрейме,
+содержащем несколько боковых окон, уменьшит внешнюю ширину фрейма на ширину
+одной полосы прокрутки при условии, что этот параметр - @code{nil}, и
+оставит его неизменным, если этот параметр - @code{t} или список, содержащий
 @code{vertical-scroll-bars}.
 
-The default value is @code{'(tool-bar-lines)} for Lucid, Motif and
-MS-Windows (which means that adding/removing a tool bar there does not
-change the outer frame height), @code{nil} on all other window systems
-including GTK+ (which means that changing any of the parameters listed
-above may change the size of the outer frame), and @code{t} otherwise
-(which means the outer frame size never changes implicitly when there's
-no window system support).
+Значение по умолчанию - @code{'(tool-bar-lines)} для Lucid, Motif и
+MS-Windows (что означает, что добавление/удаление панели инструментов не
+изменяет высоту внешнего фрейма), @code{nil} для всех других оконных систем,
+включая GTK+ (что означает, что изменение любого из параметров перечисленных
+выше могут изменить размер внешнего фрейма), и @code{t} в противном случае
+(что означает, что размер внешнего фрейма никогда не изменяется неявно, если
+нет поддержки оконной системы).
 
-Note that when a frame is not large enough to accommodate a change of
-any of the parameters listed above, Emacs may try to enlarge the frame
-even if this option is не-@code{nil}.
+Заметьте, что когда размер кадра недостаточно велик, чтобы приспособиться к
+изменению любого из параметров, перечисленных выше, Emacs может попытаться
+увеличить фрейм, даже если эта опция установлена в не-@code{nil}.
 @end defopt
 
 
 @node Frame Parameters
-@section Frame Parameters
+@section Параметры Фрейма
 @cindex frame parameters
 
-  A frame has many parameters that control its appearance and behavior.
-Just what parameters a frame has depends on what display mechanism it
-uses.
+  У фрейма есть множество параметров, которые управляют его внешним видом и
+поведением.  Какие параметры имеет фрейм, зависит от того, какой механизм
+отображения он использует.
 
-  Frame parameters exist mostly for the sake of graphical displays.
-Most frame parameters have no effect when applied to a frame on a text
-terminal; only the @code{height}, @code{width}, @code{name},
-@code{title}, @code{menu-bar-lines}, @code{buffer-list} and
-@code{buffer-predicate} parameters do something special.  If the
-terminal supports colors, the parameters @code{foreground-color},
-@code{background-color}, @code{background-mode} and
-@code{display-type} are also meaningful.  If the terminal supports
-frame transparency, the parameter @code{alpha} is also meaningful.
+  Параметры фрейма существуют в основном для графического отображения.
+Большинство параметров фрейма не действуют при применении к фрейму в
+текстовом терминале; только параметры @code{height}, @code{width},
+@code{name}, @code{title}, @code{menu-bar-lines}, @code{buffer-list} и
+@code{buffer-predicate} делают что-то особенное.  Если терминал поддерживает
+цвета, параметры @code{foreground-color}, @code{background-color},
+@code{background-mode} и @code{display-type} также имеют значение.  Если
+терминал поддерживает прозрачность фрейма, значение параметра @code{alpha}
+также имеет значение.
 
-  By default, frame parameters are saved and restored by the desktop
-library functions (@pxref{Desktop Save Mode}) when the variable
-@code{desktop-restore-frames} is не-@code{nil}.  It's the
-responsibility of applications that their parameters are included in
-@code{frameset-persistent-filter-alist} to avoid that they get
-meaningless or even harmful values in restored sessions.
+  По умолчанию параметры фрейма сохраняются и восстанавливаются функциями
+библиотеки рабочего стола (@pxref{Desktop Save Mode}), когда переменная
+@code{desktop-restore-frames} имеет значение не-@code{nil}.  Приложения
+несут ответственность за то, чтобы их параметры были включены в
+@code{frameset-persistent-filter-alist}, чтобы избежать получения
+бессмысленных или даже вредных значений в восстановленных сеансах.
 
 @menu
-* Parameter Access::       How to change a frame's parameters.
-* Initial Parameters::     Specifying frame parameters when you make a frame.
-* Window Frame Parameters:: List of frame parameters for window systems.
-* Geometry::               Parsing geometry specifications.
+* Parameter Access::       Как изменить параметры фрейма.
+* Initial Parameters::     Указание параметров фрейма при создании.
+* Window Frame Parameters:: Список параметров фреймов для оконных систем.
+* Geometry::               Разбор геометрических характеристик.
 @end menu
 
 @node Parameter Access
-@subsection Access to Frame Parameters
+@subsection Доступ к Параметрам Фрейма
 
-These functions let you read and change the parameter values of a
-frame.
+Эти функции позволяют читать и изменять значения параметров кадра.
 
 @defun frame-parameter frame parameter
-This function returns the value of the parameter @var{parameter} (a
-symbol) of @var{frame}.  If @var{frame} is @code{nil}, it returns the
-selected frame's parameter.  If @var{frame} has no setting for
-@var{parameter}, this function returns @code{nil}.
+Функция возвращает значение параметра @var{parameter} (символ) для
+@var{frame}.  Если @var{frame} равен @code{nil}, возвращается параметр
+выбранного фрейма.  Если @var{frame} не имеет настройки для @var{parameter},
+функция возвращает @code{nil}.
 @end defun
 
 @defun frame-parameters &optional frame
-The function @code{frame-parameters} returns an alist listing all the
-parameters of @var{frame} and their values.  If @var{frame} is
-@code{nil} or omitted, this returns the selected frame's parameters
+Функция @code{frame-parameters} возвращает список, в котором перечислены все
+параметры @var{frame} и их значения.  Если @var{frame} равен @code{nil} или
+опущен, это возвращает параметры выбранного фрейма.
 @end defun
 
 @defun modify-frame-parameters frame alist
-This function alters the frame @var{frame} based on the elements of
-@var{alist}.  Each element of @var{alist} has the form
-@code{(@var{parm} . @var{value})}, where @var{parm} is a symbol naming
-a parameter.  If you don't mention a parameter in @var{alist}, its
-value doesn't change.  If @var{frame} is @code{nil}, it defaults to
-the selected frame.
+Функция изменяет фрейм @var{frame} на основе элементов @var{alist}.  Каждый
+элемент @var{alist} имеет вид @code{(@var{parm} . @var{value})}, где
+@var{parm} - это символ, обозначающий параметр.  Если вы не указан параметр
+в @var{alist}, его значение не изменится.  Если @var{frame} равен
+@code{nil}, по умолчанию используется выбранный фрейм.
 
-Some parameters are only meaningful for frames on certain kinds of
-display (@pxref{Frames}).  If @var{alist} includes parameters that are
-not meaningful for the @var{frame}'s display, this function will
-change its value in the frame's parameter list, but will otherwise
-ignore it.
+Некоторые параметры имеют значение только для фреймов на определенных типах
+дисплеев (@pxref{Frames}).  Если @var{alist} включает параметры, которые не
+имеют смысла для отображения @var{frame}, эта функция изменит свое значение
+в списке параметров фрейма, но в противном случае проигнорирует его.
 
-When @var{alist} specifies more than one parameter whose value can
-affect the new size of @var{frame}, the final size of the frame may
-differ according to the toolkit used.  For example, specifying that a
-frame should from now on have a menu and/or tool bar instead of none and
-simultaneously specifying the new height of the frame will inevitably
-lead to a recalculation of the frame's height.  Conceptually, in such
-case, this function will try to have the explicit height specification
-prevail.  It cannot be excluded, however, that the addition (or removal)
-of the menu or tool bar, when eventually performed by the toolkit, will
-defeat this intention.
+Когда @var{alist} указывает более одного параметра, значение которого может
+повлиять на новый размер @var{frame}, окончательный размер фрейма может
+отличаться в зависимости от используемого инструментария.  Например,
+указание, что отныне фрейм должен иметь меню и/или панель инструментов, а не
+ничего, и одновременное указание новой высоты фрейма неизбежно приведет к
+перерасчету высоты фрейма.  По идее, в таком случае эта функция будет
+пытаться сделать так, чтобы явная спецификация высоты преобладала.  Однако
+нельзя исключить, что добавление (или удаление) меню или панели
+инструментов, когда в конечном итоге выполняется набором инструментов,
+разрушит это намерение.
 
-Sometimes, binding @code{frame-inhibit-implied-resize} (@pxref{Implied
-Frame Resizing}) to a не-@code{nil} value around calls to this function
-may fix the problem sketched here.  Sometimes, however, exactly such
-binding may be hit by the problem.
+Иногда привязка @code{frame-inhibit-implied-resize}
+(@pxref{Implied Frame Resizing}) к значению не-@code{nil} вокруг вызовов
+этой функции может решить описанную здесь проблему.  Иногда, однако,
+проблема может возникнуть именно в такой привязке.
 @end defun
 
 @defun set-frame-parameter frame parm value
-This function sets the frame parameter @var{parm} to the specified
-@var{value}.  If @var{frame} is @code{nil}, it defaults to the selected
-frame.
+Функция устанавливает параметр фрейма @var{parm} равным указанному
+@var{value}.  Если @var{frame} равен @code{nil}, по умолчанию используется
+выбранный фрейм.
 @end defun
 
 @defun modify-all-frames-parameters alist
-This function alters the frame parameters of all existing frames
-according to @var{alist}, then modifies @code{default-frame-alist}
-(and, if necessary, @code{initial-frame-alist}) to apply the same
-parameter values to frames that will be created henceforth.
+Функция изменяет параметры фреймов всех существующих фреймов в соответствии
+с @var{alist}, затем изменяет @code{default-frame-alist} (и, если
+необходимо, @code{initial-frame-alist}), чтобы применить те же значени
+я параметров к фреймам, которые будут создаваться впредь.
 @end defun
 
 @node Initial Parameters
-@subsection Initial Frame Parameters
+@subsection Параметры Начального Фрейма
 @cindex parameters of initial frame
 
-You can specify the parameters for the initial startup frame by
-setting @code{initial-frame-alist} in your init file (@pxref{Init
-File}).
+Можно указать параметры для начального стартового фрейма, установив
+@code{initial-frame-alist} в файле инициализации (@pxref{Init File}).
 
 @defopt initial-frame-alist
-This variable's value is an alist of parameter values used when
-creating the initial frame.  You can set this variable to specify the
-appearance of the initial frame without altering subsequent frames.
-Each element has the form:
+Значение этой переменной представляет собой список значений параметров,
+используемых при создании начального фрейма.  Можно установить эту
+переменную, чтобы указать внешний вид начального фрейма без изменения
+последующих фреймов.  Каждый элемент имеет форму:
 
 @example
 (@var{parameter} . @var{value})
 @end example
 
-Emacs creates the initial frame before it reads your init
-file.  After reading that file, Emacs checks @code{initial-frame-alist},
-and applies the parameter settings in the altered value to the already
-created initial frame.
+Emacs создает начальный фрейм перед чтением файла инициализации.
+После чтения этого файла Emacs проверяет @code{initial-frame-alist} и
+применяет настройки параметров в измененном значении к уже созданному
+начальному фрейму.
 
-If these settings affect the frame geometry and appearance, you'll see
-the frame appear with the wrong ones and then change to the specified
-ones.  If that bothers you, you can specify the same geometry and
-appearance with X resources; those do take effect before the frame is
-created.  @xref{X Resources,, X Resources, emacs, The GNU Emacs Manual}.
+Если эти настройки влияют на геометрию и внешний вид фрейми, фрейм
+отобразится с неправильными параметрами, а затем изменится на указанные.
+Если это беспокоит, можно указать ту же геометрию и внешний вид с ресурсами
+X; они вступают в силу до создания фрейма.
+@xref{X Resources,, X Resources, emacs, The GNU Emacs Manual}.
 
-X resource settings typically apply to all frames.  If you want to
-specify some X resources solely for the sake of the initial frame, and
-you don't want them to apply to subsequent frames, here's how to achieve
-this.  Specify parameters in @code{default-frame-alist} to override the
-X resources for subsequent frames; then, to prevent these from affecting
-the initial frame, specify the same parameters in
-@code{initial-frame-alist} with values that match the X resources.
+Параметры ресурсов X обычно применяются ко всем фреймам.  Если нужно указать
+некоторые ресурсы X исключительно ради начального фрейма и не требуется
+чтобы они применялись к последующим фреймам, вот как этого добиться.
+Задаются параметры в @code{default-frame-alist}, чтобы переопределить
+ресурсы X для последующих фреймов; затем, чтобы они не влияли на начальный
+фрейм, указываются те же параметры в @code{initial-frame-alist} со
+значениями, соответствующими X-ресурсам.
 @end defopt
 
 @cindex minibuffer-only frame
-If these parameters include @code{(minibuffer . nil)}, that indicates
-that the initial frame should have no minibuffer.  In this case, Emacs
-creates a separate @dfn{minibuffer-only frame} as well.
+Если эти параметры включают @code{(minibuffer . nil)}, это означает, что в
+начальном фрейме не должно быть минибуфера.  В этом случае Emacs также
+создает отдельный @dfn{minibuffer-only frame}.
 
 @defopt minibuffer-frame-alist
-This variable's value is an alist of parameter values used when
-creating an initial minibuffer-only frame (i.e., the minibuffer-only
-frame that Emacs creates if @code{initial-frame-alist} specifies a
-frame with no minibuffer).
+Значение этой переменной представляет собой список значений параметров,
+используемых при создании начального фрейма только для минибуфера (то есть
+фрейма только для минибуфера, который Emacs создает, если
+@code{initial-frame-alist} определяет фрейм без минибуфера).
 @end defopt
 
 @defopt default-frame-alist
-This is an alist specifying default values of frame parameters for all
-Emacs frames---the first frame, and subsequent frames.  When using the X
-Window System, you can get the same results by means of X resources
-in many cases.
+Это список, определяющий значения параметров фрейма по умолчанию для всех
+фреймов Emacs - первого фрейма и последующих фреймов.  При использовании
+системы X Window можно получить те же результаты с помощью ресурсов X во
+многих случаях.
 
-Setting this variable does not affect existing frames.  Furthermore,
-functions that display a buffer in a separate frame may override the
-default parameters by supplying their own parameters.
+Установка этой переменной не влияет на существующие фреймы.  Кроме того,
+функции, отображающие буфер в отдельном фрейме, могут переопределить
+параметры по умолчанию, предоставив свои собственные параметры.
 @end defopt
 
-If you invoke Emacs with command-line options that specify frame
-appearance, those options take effect by adding elements to either
-@code{initial-frame-alist} or @code{default-frame-alist}.  Options
-which affect just the initial frame, such as @samp{--geometry} and
-@samp{--maximized}, add to @code{initial-frame-alist}; the others add
-to @code{default-frame-alist}.  @pxref{Emacs Invocation,, Command Line
-Arguments for Emacs Invocation, emacs, The GNU Emacs Manual}.
+Если вызывается Emacs с параметрами командной строки, которые определяют
+внешний вид фрейма, эти параметры вступают в силу путем добавления элементов
+в @code{initial-frame-alist} или @code{default-frame-alist}.  Параметры,
+которые влияют только на начальный фрейм, такие как @samp{--geometry} и
+@samp{--maximized}, добавляются к @code{initial-frame-alist}; остальные
+добавится в @code{default-frame-alist}.
+@pxref{Emacs Invocation,, Command Line Arguments for Emacs Invocation, emacs, The GNU Emacs Manual}.
 
 @node Window Frame Parameters
-@subsection Window Frame Parameters
+@subsection Параметры Фрейма Окна
 @cindex frame parameters for windowed displays
 
-  Just what parameters a frame has depends on what display mechanism
-it uses.  This section describes the parameters that have special
-meanings on some or all kinds of terminals.  Of these, @code{name},
-@code{title}, @code{height}, @code{width}, @code{buffer-list} and
-@code{buffer-predicate} provide meaningful information in terminal
-frames, and @code{tty-color-mode} is meaningful only for frames on
-text terminals.
+  Какие параметры имеет фрейм, зависит от того, какой механизм отображения
+он использует.  В этом разделе описаны параметры, которые имеют особое
+значение для некоторых или всех типов терминалов.  Из них @code{name},
+@code{title}, @code{height}, @code{width}, @code{buffer-list} и
+@code{buffer-predicate} предоставляет значимую информацию в терминальных
+фреймах, а @code{tty-color-mode} имеет смысл только для фреймов на текстовых
+терминалах.
 
 @menu
-* Basic Parameters::            Parameters that are fundamental.
-* Position Parameters::         The position of the frame on the screen.
-* Size Parameters::             Frame's size.
-* Layout Parameters::           Size of parts of the frame, and
-                                  enabling or disabling some parts.
-* Buffer Parameters::           Which buffers have been or should be shown.
-* Frame Interaction Parameters::  Parameters for interacting with other
-                                  frames.
-* Mouse Dragging Parameters::   Parameters for resizing and moving
-                                  frames with the mouse.
-* Management Parameters::       Communicating with the window manager.
-* Cursor Parameters::           Controlling the cursor appearance.
-* Font and Color Parameters::   Fonts and colors for the frame text.
+* Basic Parameters::           Параметры, которые являются фундаментальными.
+* Position Parameters::         Положение фрейма на экране.
+* Size Parameters::             Размер фрейма.
+* Layout Parameters::           Размер частей фрейма, а также включение или
+                                   отключение некоторых частей.
+* Buffer Parameters::           Какие буферы были или должны быть показаны.
+* Frame Interaction Parameters::Параметры взаимодействия с другими фреймами.
+* Mouse Dragging Parameters::   Параметры для изменения размера и
+                                   перемещения фреймов мышью.
+* Management Parameters::       Общение с оконным менеджером.
+* Cursor Parameters::           Управление внешним видом курсора.
+* Font and Color Parameters::   Шрифты и цвета для текста фрейма.
 @end menu
 
 @node Basic Parameters
-@subsubsection Basic Parameters
+@subsubsection Основные Параметры
 
-  These frame parameters give the most basic information about the
-frame.  @code{title} and @code{name} are meaningful on all terminals.
+  Эти параметры фрейма дают основную информацию о фрейме.  @code{title} и
+@code{name} значимы на всех терминалах.
 
 @table @code
-@vindex display@r{, a frame parameter}
+@vindex display@r{, пареметр фрейма}
 @item display
-The display on which to open this frame.  It should be a string of the
-form @samp{@var{host}:@var{dpy}.@var{screen}}, just like the
-@env{DISPLAY} environment variable.  @xref{Multiple Terminals}, for
-more details about display names.
+Дисплей, на котором открывается этот фрейм.  Это должна быть строка вида
+@samp{@var{host}:@var{dpy}.@var{screen}}, как и переменная окружения
+@env{DISPLAY}.  @xref{Multiple Terminals}, чтобы узнать больше об
+отображаемых именах.
 
-@vindex display-type@r{, a frame parameter}
+@vindex display-type@r{, пареметр фрейма}
 @item display-type
-This parameter describes the range of possible colors that can be used
-in this frame.  Its value is @code{color}, @code{grayscale} or
-@code{mono}.
+Параметр описывает диапазон возможных цветов, которые можно использовать в
+этом фрейме.  Его значение @code{color}, @code{grayscale} или @code{mono}.
 
-@vindex title@r{, a frame parameter}
+@vindex title@r{, пареметр фрейма}
 @item title
-If a frame has a не-@code{nil} title, it appears in the window
-system's title bar at the top of the frame, and also in the mode line
-of windows in that frame if @code{mode-line-frame-identification} uses
-@samp{%F} (@pxref{%-Constructs}).  This is normally the case when
-Emacs is not using a window system, and can only display one frame at
-a time.  @xref{Frame Titles}.
+Если у фрейма есть заголовок не-@code{nil}, он появляется в строке заголовка
+оконной системы в верхней части фрейма, а также в строке режима окон в этом
+фрейме, если @code{mode-line-frame-identification} использует @samp{%F}
+(@pxref{%-Constructs}).  Обычно это происходит, когда Emacs не использует
+оконную систему и может отображать только один фрейм за раз.
+@xref{Frame Titles}.
 
-@vindex name@r{, a frame parameter}
+@vindex name@r{, параметр кадра}
 @item name
-The name of the frame.  The frame name serves as a default for the frame
-title, if the @code{title} parameter is unspecified or @code{nil}.  If
-you don't specify a name, Emacs sets the frame name automatically
-(@pxref{Frame Titles}).
+Название фрейма.  Имя фрейма используется по умолчанию для заголовка фрейма,
+если параметр @code{title} не указан или @code{nil}.  Если не указано имя,
+Emacs автоматически установит имя фрейма (@pxref{Frame Titles}).
 
-If you specify the frame name explicitly when you create the frame, the
-name is also used (instead of the name of the Emacs executable) when
-looking up X resources for the frame.
+Если явно указано имя фрейма при создании фрейма, это имя также используется
+(вместо имени исполняемого файла Emacs) при поиске ресурсов X для фрейма.
 
-@vindex explicit-name@r{, a frame parameter}
+@vindex explicit-name@r{, пареметр фрейма}
 @item explicit-name
-If the frame name was specified explicitly when the frame was created,
-this parameter will be that name.  If the frame wasn't explicitly
-named, this parameter will be @code{nil}.
+Если имя фрейма было указано явно при создании фрейма, этот параметр будет
+этим именем.  Если фрейм не был назван явно, этот параметр будет @code{nil}.
 @end table
 
 
 @node Position Parameters
-@subsubsection Position Parameters
+@subsubsection Параметры Положения
 @cindex window position on display
 @cindex frame position
 
-Parameters describing the X- and Y-offsets of a frame are always
-measured in pixels.  For a normal, non-child frame they specify the
-frame's outer position (@pxref{Frame Geometry}) relative to its
-display's origin.  For a child frame (@pxref{Child Frames}) they specify
-the frame's outer position relative to the native position of the
-frame's parent frame.  (Note that none of these parameters is meaningful
-on TTY frames.)
+Параметры, описывающие X- и Y-смещения фрейма, всегда измеряются в пикселях.
+Для нормального, не дочернего фрейма они определяют внешнюю позицию
+(@pxref{Frame Geometry}) фрейма относительно его исходной точки отображения.
+Для дочернего фрейма (@pxref{Child Frames}) они определяют внешнее положение
+фрейма относительно исходного положения родительского фрейма.  (Обратить
+внимание, что ни один из этих параметров не имеет значения для фреймов TTY.)
 
 @table @code
-@vindex left@r{, a frame parameter}
+@vindex left@r{, параметр фрейма}
 @item left
-The position, in pixels, of the left outer edge of the frame with
-respect to the left edge of the frame's display or parent frame.  It can
-be specified in one of the following ways.
+Положение в пикселях левого внешнего края фрейма по отношению к левому краю
+отображения фрейма или родительского фрейма.  Можно указать одним из
+следующих способов.
 
 @table @asis
 @item an integer
-A positive integer always relates the left edge of the frame to the left
-edge of its display or parent frame.  A negative integer relates the
-right frame edge to the right edge of the display or parent frame.
+Положительное целое число всегда связывает левый край фрейма с левым краем
+его дисплея или родительского фрейма.  Отрицательное целое число связывает
+правый край фрейма с правым краем дисплея или родительского фрейма.
 
 @item @code{(+ @var{pos})}
-This specifies the position of the left frame edge relative to the left
-edge of its display or parent frame.  The integer @var{pos} may be
-positive or negative; a negative value specifies a position outside the
-screen or parent frame or on a monitor other than the primary one (for
-multi-monitor displays).
+Это определяет положение левого края фрейма относительно левого края его
+дисплея или родительского фрейма.  Целое число @var{pos} может быть
+положительным или отрицательным; отрицательное значение указывает положение
+за пределами экрана или родительского фрейма или на мониторе, отличном от
+основного (для дисплеев с несколькими мониторами).
 
 @item @code{(- @var{pos})}
-This specifies the position of the right frame edge relative to the
-right edge of the display or parent frame.  The integer @var{pos} may be
-positive or negative; a negative value specifies a position outside the
-screen or parent frame or on a monitor other than the primary one (for
-multi-monitor displays).
+Это определяет положение правого края фрейма относительно правого края
+дисплея или родительского фрейма.  Целое число @var{pos} может быть
+положительным или отрицательным; отрицательное значение указывает положение
+за пределами экрана или родительского фрейма или на мониторе, отличном от
+основного (для дисплеев с несколькими мониторами).
 
 @cindex left position ratio
 @cindex top position ratio
 @item a floating-point value
-A floating-point value in the range 0.0 to 1.0 specifies the left edge's
-offset via the @dfn{left position ratio} of the frame---the ratio of the
-left edge of its outer frame to the width of the frame's workarea
-(@pxref{Multiple Terminals}) or its parent's native frame (@pxref{Child
-Frames}) minus the width of the outer frame.  Thus, a left position
-ratio of 0.0 flushes a frame to the left, a ratio of 0.5 centers it and
-a ratio of 1.0 flushes it to the right of its display or parent frame.
-Similarly, the @dfn{top position ratio} of a frame is the ratio of the
-frame's top position to the height of its workarea or parent frame minus
-the height of the frame.
+Значение с плавающей запятой в диапазоне от 0.0 до 1.0 указывает смещение
+левого края через @dfn{соотношение левой позиции} фрейма --- отношение
+левого края его внешнего фрейма к ширине рабочей области
+(@pxref{Multiple Terminals}) фрейма или его родительского фрейма
+(@pxref{Child Frames}) минус ширина внешнего фрейма.  Таким образом,
+соотношение левой позиции 0.0 сбрасывает фрейм влево, коэффициент 0.5
+центрирует его, а коэффициент 1.0 сбрасывает его справа от дисплея или
+родительского фрейма.  Точно так же @dfn{коэффициент верхней позиции} фрейма
+- это отношение верхнего положения фрейма к высоте его рабочей области или
+родительского фрейма за вычетом высоты фрейма.
 
-Emacs will try to keep the position ratios of a child frame unaltered if
-that frame has a не-@code{nil} @code{keep-ratio} parameter
-(@pxref{Frame Interaction Parameters}) and its parent frame is resized.
+Emacs будет пытаться сохранить соотношения позиций дочернего фрейма
+неизменными, если этот фрейм имеет параметр не-@code{nil} @code{keep-ratio}
+(@pxref{Frame Interaction Parameters}), а его родительский фрейм изменяет
+размер.
 
-Since the outer size of a frame (@pxref{Frame Geometry}) is usually
-unavailable before a frame has been made visible, it is generally not
-advisable to use floating-point values when creating decorated frames.
-Floating-point values are more suited for ensuring that an (undecorated)
-child frame is positioned nicely within the area of its parent frame.
+Поскольку внешний размер фрейма (@pxref{Frame Geometry}) обычно недоступен
+до того, как фрейм станет видимым, обычно не рекомендуется использовать
+значения с плавающей запятой при создании декорированных фреймов.  Значения
+с плавающей запятой больше подходят для обеспечения того, чтобы
+(недекорированный) дочерний фрейм правильно располагался в области своего
+родительского фрейма.
 @end table
 
-Some window managers ignore program-specified positions.  If you want to
-be sure the position you specify is not ignored, specify a
-не-@code{nil} value for the @code{user-position} parameter as in the
-following example:
+Некоторые оконные менеджеры игнорируют позиции, указанные в программе.  Если
+требуется уверенность, что указанная позиция не игнорируется, указывается
+значение не-@code{nil} для параметра @code{user-position}, как в следующем
+примере:
 
 @example
 (modify-frame-parameters
   nil '((user-position . t) (left . (+ -4))))
 @end example
 
-In general, it is not a good idea to position a frame relative to the
-right or bottom edge of its display.  Positioning the initial or a new
-frame is either not accurate (because the size of the outer frame is not
-yet fully known before the frame has been made visible) or will cause
-additional flicker (if the frame has to be repositioned after becoming
-visible).
+Как правило, не рекомендуется размещать фрейм относительно правого или
+нижнего края экрана.  Расположение исходного или нового фрейма либо неточно
+(потому что размер внешнего фрейма еще не полностью известен до того, как
+фрейм станет видимым), либо вызовется дополнительное мерцание (если фрейм
+необходимо переместить после того, как он стал видимым).
 
-  Note also, that positions specified relative to the right/bottom edge
-of a display, workarea or parent frame as well as floating-point offsets
-are stored internally as integer offsets relative to the left/top edge
-of the display, workarea or parent frame edge.  They are also returned
-as such by functions like @code{frame-parameters} and restored as such
-by the desktop saving routines.
+  Также обратить внимание, что позиции, указанные относительно
+правого/нижнего края дисплея, рабочей области или родительского фрейма, а
+также смещения с плавающей точкой сохраняются внутри как целочисленные
+смещения относительно левого/верхнего края дисплея, рабочей области или края
+родительского фрейма.  Они также возвращаются такими функциями, как
+@code{frame-parameters}, и восстанавливаются как таковые процедурами
+сохранения рабочего стола.
 
-@vindex top@r{, a frame parameter}
+@vindex top@r{, параметр фрейма}
 @item top
-The screen position of the top (or bottom) edge, in pixels, with respect
-to the top (or bottom) edge of the display or parent frame.  It works
-just like @code{left}, except vertically instead of horizontally.
+Положение верхнего (или нижнего) края экрана в пикселях относительно
+верхнего (или нижнего) края дисплея или родительского фрейма.  Работает так
+же, как @code{left}, за исключением вертикально, а не горизонтально.
 
-@vindex icon-left@r{, a frame parameter}
+@vindex icon-left@r{, параметр фрейма}
 @item icon-left
-The screen position of the left edge of the frame's icon, in pixels,
-counting from the left edge of the screen.  This takes effect when the
-frame is iconified, if the window manager supports this feature.  If
-you specify a value for this parameter, then you must also specify a
-value for @code{icon-top} and vice versa.
+Положение на экране левого края значка фрейма в пикселях, считая от левого
+края экрана.  Это вступает в силу, когда фрейм отображается в виде значка,
+если оконный менеджер поддерживает эту функцию.  Если указано значение для
+этого параметра, также потребуется указать значение для @code{icon-top} и
+наоборот.
 
-@vindex icon-top@r{, a frame parameter}
+@vindex icon-top@r{, параметр фрейма}
 @item icon-top
-The screen position of the top edge of the frame's icon, in pixels,
-counting from the top edge of the screen.  This takes effect when the
-frame is iconified, if the window manager supports this feature.
+Положение на экране верхнего края значка фрейма в пикселях, считая от
+верхнего края экрана.  Это вступает в силу, когда фрейм отображается в виде
+значка, если оконный менеджер поддерживает эту функцию.
 
-@vindex user-position@r{, a frame parameter}
+@vindex user-position@r{, параметр фрейма}
 @item user-position
-When you create a frame and specify its screen position with the
-@code{left} and @code{top} parameters, use this parameter to say whether
-the specified position was user-specified (explicitly requested in some
-way by a human user) or merely program-specified (chosen by a program).
-A не-@code{nil} value says the position was user-specified.
+Когда создаётся фрейм и указывается его положение на экране с помощью
+параметров @code{left} и @code{top}, использовать этот параметр, чтобы
+указать, была ли указанная позиция указана пользователем (явно запрошена
+каким-то образом пользователем-человеком) или просто указана программой
+(выбрана программой).  Значение не-@code{nil} говорит о том, что позиция
+была указана пользователем.
 
 @cindex window positions and window managers
-Window managers generally heed user-specified positions, and some heed
-program-specified positions too.  But many ignore program-specified
-positions, placing the window in a default fashion or letting the user
-place it with the mouse.  Some window managers, including @code{twm},
-let the user specify whether to obey program-specified positions or
-ignore them.
+Оконные менеджеры обычно принимают во внимание позиции, указанные
+пользователем, а некоторые также учитывают позиции, определенные программой.
+Но многие игнорируют определенные программой позиции, размещая окно по
+умолчанию или позволяя пользователю размещать его с помощью мыши.  Некоторые
+оконные менеджеры, в том числе @code{twm}, позволяют пользователю указывать,
+следует ли подчиняться программным позициям или игнорировать их.
 
-When you call @code{make-frame}, you should specify a не-@code{nil}
-value for this parameter if the values of the @code{left} and @code{top}
-parameters represent the user's stated preference; otherwise, use
-@code{nil}.
+Когда вызывается @code{make-frame}, потребуется указать значение
+не-@code{nil} для этого параметра, если значения параметров @code{left} и
+@code{top} представляют заявленные пользователем предпочтения; в противном
+случае используется @code{nil}.
 
-@vindex z-group@r{, a frame parameter}
+@vindex z-group@r{, параметр фрейма}
 @item z-group
-This parameter specifies a relative position of the frame's
-window-system window in the stacking (Z-) order of the frame's display.
+Параметр определяет относительное положение окна оконной системы фрейма в
+порядке наложения (Z-) отображения фрейма.
 
-If this is @code{above}, the frame's window-system window is displayed
-above all other window-system windows that do not have the @code{above}
-property set.  If this is @code{nil}, the frame's window is displayed below all
-windows that have the @code{above} property set and above all windows
-that have the @code{below} property set.  If this is @code{below}, the
-frame's window is displayed below all windows that do not have the
-@code{below} property set.
+Если установлен в @code{above}, окно оконной системы фрейма отображается
+над всеми другими окнами оконной системы, для которых не установлено
+свойство @code{above}.  Если установлен в @code{nil}, окно фрейма
+отображается под всеми окнами, для которых установлено свойство
+@code{above}, и над всеми окнами, для которых установлено свойство
+@code{below}.  Если установлено в @code{below}, окно фрейма отображается под
+всеми окнами, для которых не установлено свойство @code{below}.
 
-To position the frame above or below a specific other frame use the
-function @code{frame-restack} (@pxref{Raising and Lowering}).
+Чтобы разместить фрейм выше или ниже определенного другого фрейма,
+использовать функцию @code{frame-restack} (@pxref{Raising and Lowering}).
 @end table
 
 
 @node Size Parameters
-@subsubsection Size Parameters
+@subsubsection Параметры Размера
 @cindex window size on display
 
-Frame parameters usually specify frame sizes in character units.  On
-graphical displays, the @code{default} face determines the actual pixel
-sizes of these character units (@pxref{Face Attributes}).
+Параметры фрейма обычно указывают размеры фрейма в единицах символов.  На
+графических дисплеях грань @code{default} определяет фактические размеры в
+пикселях этих символьных единиц (@pxref{Face Attributes}).
 
 @table @code
-@vindex width@r{, a frame parameter}
+@vindex width@r{, параметр фрейма}
 @item width
-This parameter specifies the width of the frame.  It can be specified as
-in the following ways:
+Этот параметр определяет ширину фрейма.  Его можно указать следующим
+образом:
 
 @table @asis
 @item an integer
-A positive integer specifies the width of the frame's text area
-(@pxref{Frame Geometry}) in characters.
+Положительное целое число определяет ширину текстовой области
+(@pxref{Frame Geometry}) фрейма в символах.
 
 @item a cons cell
-If this is a cons cell with the symbol @code{text-pixels} in its
-@sc{car}, the @sc{cdr} of that cell specifies the width of the frame's
-text area in pixels.
+Если это cons-ячейка с символом @code{text-pixels} в ее @sc{car}, @sc{cdr}
+этой ячейки определяет ширину текстовой области фрейма в пикселях.
 
 @cindex frame width ratio
 @cindex frame height ratio
 @item a floating-point value
-A floating-point number between 0.0 and 1.0 can be used to specify the
-width of a frame via its @dfn{width ratio}---the ratio of its outer
-width (@pxref{Frame Geometry}) to the width of the frame's workarea
-(@pxref{Multiple Terminals}) or its parent frame's (@pxref{Child
-Frames}) native frame.  Thus, a value of 0.5 makes the frame occupy half
-of the width of its workarea or parent frame, a value of 1.0 the full
-width.  Similarly, the @dfn{height ratio} of a frame is the ratio of its
-outer height to the height of its workarea or its parent's native frame.
+Число с плавающей точкой от 0.0 до 1.0 может использоваться для указания
+ширины фрейма через его @dfn{соотношение ширины} --- отношение его внешней
+ширины (@pxref{Frame Geometry}) к ширине рабочей области
+(@pxref{Multiple Terminals}) фрейма или собственного фрейма
+(@pxref{Child Frames}) его родительского фрейма.  Таким образом, значение
+0.5 заставляет фрейм занимать половину ширины своей рабочей области или
+родительского фрейма, а значение 1.0 - полную ширину.  Точно так же
+@dfn{соотношение высоты} фрейма - это отношение его внешней высоты к высоте
+его рабочей области или собственного фрейма его родителя.
 
-Emacs will try to keep the width and height ratio of a child frame
-unaltered if that frame has a не-@code{nil} @code{keep-ratio} parameter
-(@pxref{Frame Interaction Parameters}) and its parent frame is resized.
+Emacs будет пытаться сохранить неизменным соотношение ширины и высоты
+дочернего фрейма, если этот фрейм имеет параметр не-@code{nil}
+@code{keep-ratio} (@pxref{Frame Interaction Parameters}) и его родительский
+фрейм изменяется.
 
-Since the outer size of a frame is usually unavailable before a frame
-has been made visible, it is generally not advisable to use
-floating-point values when creating decorated frames.  Floating-point
-values are more suited to ensure that a child frame always fits within
-the area of its parent frame as, for example, when customizing
-@code{display-buffer-alist} (@pxref{Choosing Window}) via
+Поскольку внешний размер фрейма обычно недоступен до того, как фрейм станет
+видимым, обычно не рекомендуется использовать значения с плавающей запятой
+при создании декорированных фреймов.  Значения с плавающей запятой больше
+подходят для гарантии того, что дочерний фрейм всегда помещается в область
+своего родительского фрейма, как, например, при настройке
+@code{display-buffer-alist} (@pxref{Choosing Window}) через
 @code{display-buffer-in-child-frame}.
 @end table
 
-Regardless of how this parameter was specified, functions reporting the
-value of this parameter like @code{frame-parameters} always report the
-width of the frame's text area in characters as an integer rounded, if
-necessary, to a multiple of the frame's default character width.  That
-value is also used by the desktop saving routines.
+Независимо от того, как был указан этот параметр, функции, сообщающие
+значение этого параметра, такие как @code{frame-parameters}, всегда сообщают
+ширину текстовой области фрейма в символах как целое число, округленное,
+если необходимо, до кратного ширине символа фрейма по умолчанию.  Это
+значение также используется процедурами сохранения рабочего стола.
 
-@vindex height@r{, a frame parameter}
+@vindex height@r{, параметр фрейма}
 @item height
-This parameter specifies the height of the frame.  It works just like
-@code{width}, except vertically instead of horizontally.
+Этот параметр определяет высоту фрейма.  Работает так же, как @code{width},
+только вертикально, а не горизонтально.
 
-@vindex user-size@r{, a frame parameter}
+@vindex user-size@r{, параметр фрейма}
 @item user-size
-This does for the size parameters @code{height} and @code{width} what
-the @code{user-position} parameter (@pxref{Position Parameters,
-user-position}) does for the position parameters @code{top} and
-@code{left}.
+Производит для параметров размера @code{height} и @code{width} то же, что
+параметр @code{user-position} (@pxref{Position Parameters, user-position})
+делает для параметров положения @code{top} и @code{left}.
 
-@vindex min-width@r{, a frame parameter}
+@vindex min-width@r{, параметр фрейма}
 @item min-width
-This parameter specifies the minimum native width (@pxref{Frame
-Geometry}) of the frame, in characters.  Normally, the functions that
-establish a frame's initial width or resize a frame horizontally make
-sure that all the frame's windows, vertical scroll bars, fringes,
-margins and vertical dividers can be displayed.  This parameter, if
-не-@code{nil} allows to make a frame narrower than that with the
-consequence that any components that do not fit will be clipped by the
-window manager.
+Параметр указывает минимальную ширину (@pxref{Frame Geometry}) фрейма в
+символах.  Обычно функции, устанавливающие начальную ширину фрейма или
+изменяющие размер фрейма по горизонтали, обеспечивают отображение всех окон
+фрейма, вертикальных полос прокрутки, полос, полей и вертикальных
+разделителей.  Этот параметр, если не-@code{nil} позволяет сделать фрейм
+более узким, чем было бы, в результате чего любые компоненты, которые не
+подходят, будут обрезаны оконным менеджером.
 
-@vindex min-height@r{, a frame parameter}
+@vindex min-height@r{, параметр фрейма}
 @item min-height
-This parameter specifies the minimum native height (@pxref{Frame
-Geometry}) of the frame, in characters.  Normally, the functions that
-establish a frame's initial size or resize a frame make sure that all
-the frame's windows, horizontal scroll bars and dividers, mode and
-header lines, the echo area and the internal menu and tool bar can be
-displayed.  This parameter, if не-@code{nil} allows to make a frame
-smaller than that with the consequence that any components that do not
-fit will be clipped by the window manager.
+Параметр указывает минимальную исходную высоту (@pxref{Frame Geometry})
+фрейма в символах.  Обычно функции, устанавливающие начальный размер фрейма
+или изменяющие размер фрейма, обеспечивают отображение всех окон фрейма,
+горизонтальных полос прокрутки и разделителей, строк режима и заголовков,
+эхо-области, внутреннего меню и панели инструментов.  Этот параметр, если
+не-@code{nil} позволяет уменьшить размер фрейма, в результате чего любые
+компоненты, которые не помещаются, будут обрезаны оконным менеджером.
 
 @cindex fullboth frames
 @cindex fullheight frames
 @cindex fullwidth frames
 @cindex maximized frames
-@vindex fullscreen@r{, a frame parameter}
+@vindex fullscreen@r{, параметр фрейма}
 @item fullscreen
-This parameter specifies whether to maximize the frame's width, height
-or both.  Its value can be @code{fullwidth}, @code{fullheight},
-@code{fullboth}, or @code{maximized}.  A @dfn{fullwidth} frame is as
-wide as possible, a @dfn{fullheight} frame is as tall as possible, and
-a @dfn{fullboth} frame is both as wide and as tall as possible.  A
-@dfn{maximized} frame is like a ``fullboth'' frame, except that it usually
-keeps its title bar and the buttons for resizing
-and closing the frame.  Also, maximized frames typically avoid hiding
-any task bar or panels displayed on the desktop.  A ``fullboth'' frame,
-on the other hand, usually omits the title bar and occupies the entire
-available screen space.
+Параметр указывает, следует ли максимизировать ширину фрейма, высоту или и
+то, и другое.  Его значение может быть @code{fullwidth}, @code{fullheight},
+@code{fullboth} или @code{maximized}.  @dfn{fullwidth} фрейма означает
+максимальную ширину, @dfn{fullheight} фрейма - максимальную высоту, а
+@dfn{fullboth} - максимальную ширину и максимальную высоту.  @dfn{maximized}
+фрейма похож на ``fullboth'' фрейма, за исключением того, что обычно
+сохраняет строку заголовка и кнопки для изменения размера и закрытия фрейма.
+Кроме того, развернутые фреймы обычно не скрывают панель задач или панели,
+отображаемые на рабочем столе.  С другой стороны, ``fullboth'' фрейма обычно
+пропускает строку заголовка и занимает все доступное пространство экрана.
 
-Full-height and full-width frames are more similar to maximized
-frames in this regard.  However, these typically display an external
-border which might be absent with maximized frames.  Hence the heights
-of maximized and full-height frames and the widths of maximized and
-full-width frames often differ by a few pixels.
+В этом отношении полноразмерные и полноширинные фреймы больше похожи на
+развернутые фреймы.  Однако они обычно отображают внешнюю границу, которая
+может отсутствовать в развернутых фреймах.  Следовательно, высота
+развернутых и полноразмерных фреймов и ширина развернутых и полноразмерных
+фреймов часто отличаются на несколько пикселей.
 
-With some window managers you may have to customize the variable
-@code{frame-resize-pixelwise} (@pxref{Frame Size}) in order to make a
-frame truly appear maximized or full-screen.  Moreover, some window
-managers might not support smooth transition between the various
-full-screen or maximization states.  Customizing the variable
-@code{x-frame-normalize-before-maximize} can help to overcome that.
+В некоторых оконных менеджерах может потребоваться настроить переменную
+@code{frame-resize-pixelwise} (@pxref{Frame Size}), чтобы фрейм
+действительно выглядел развернутым или полноэкранным.  Более того, некоторые
+оконные менеджеры могут не поддерживать плавный переход между различными
+состояниями полноэкранного режима или максимизации.  Изменение переменной
+@code{x-frame-normalize-before-maximize} может помочь решить эту проблему.
 
-Full-screen on macOS hides both the tool-bar and the menu-bar, however
-both will be displayed if the mouse pointer is moved to the top of the
-screen.
+В полноэкранном режиме в macOS скрываются как панель инструментов, так и
+строка меню, однако обе будут отображаться, если указатель мыши переместится
+в верхнюю часть экрана.
 
 @vindex fullscreen-restore@r{, a frame parameter}
 @item fullscreen-restore
-This parameter specifies the desired fullscreen state of the frame
-after invoking the @code{toggle-frame-fullscreen} command (@pxref{Frame
-Commands,,, emacs, The GNU Emacs Manual}) in the ``fullboth'' state.
-Normally this parameter is installed automatically by that command when
-toggling the state to fullboth.  If, however, you start Emacs in the
-``fullboth'' state, you have to specify the desired behavior in your initial
-file as, for example
+Параметр указывает желаемое полноэкранное состояние фрейма после вызова
+команды @code{toggle-frame-fullscreen}
+(@pxref{Frame Commands,,, emacs, The GNU Emacs Manual}) в состоянии
+``fullboth''.  Обычно этот параметр устанавливается автоматически этой
+командой при переключении состояния на полное.  Если, однако, запускается
+Emacs в состоянии ``fullboth'', потребуется указать желаемое поведение в
+исходном файле, например, как
 
 @example
 (setq default-frame-alist
@@ -1723,170 +1710,169 @@ file as, for example
       (fullscreen-restore . fullheight)))
 @end example
 
-This will give a new frame full height after typing in it @key{F11} for
-the first time.
+Это даст новый фрейм во всю высоту после первого ввода в него @key{F11}.
 
-@vindex fit-frame-to-buffer-margins@r{, a frame parameter}
+@vindex fit-frame-to-buffer-margins@r{, параметр фрейма}
 @item fit-frame-to-buffer-margins
-This parameter allows to override the value of the option
-@code{fit-frame-to-buffer-margins} when fitting this frame to the buffer
-of its root window with @code{fit-frame-to-buffer} (@pxref{Resizing
-Windows}).
+Параметр позволяет переопределить значение опции
+@code{fit-frame-to-buffer-margins} при подгонке этого фрейма к буферу его
+корневого окна с помощью @code{fit-frame-to-buffer}
+(@pxref{Resizing Windows}).
 
-@vindex fit-frame-to-buffer-sizes@r{, a frame parameter}
+@vindex fit-frame-to-buffer-sizes@r{, параметр фрейма}
 @item fit-frame-to-buffer-sizes
-This parameter allows to override the value of the option
-@code{fit-frame-to-buffer-sizes} when fitting this frame to the buffer
-of its root window with @code{fit-frame-to-buffer} (@pxref{Resizing
-Windows}).
+Параметр позволяет переопределить значение опции
+@code{fit-frame-to-buffer-sizes} при подгонке этого фрейма к буферу его
+корневого окна с помощью @code{fit-frame-to-buffer}
+(@pxref{Resizing Windows}).
 @end table
 
 
 @node Layout Parameters
-@subsubsection Layout Parameters
+@subsubsection Параметры Макета
 @cindex layout parameters of frames
 @cindex frame layout parameters
 
-  These frame parameters enable or disable various parts of the
-frame, or control their sizes.
+  Эти параметры фрейма включают или отключают различные части фрейма или
+управляют их размерами.
 
 @table @code
-@vindex border-width@r{, a frame parameter}
+@vindex border-width@r{, a параметр фрейма}
 @item border-width
-The width in pixels of the frame's outer border (@pxref{Frame Geometry}).
+Ширина в пикселях внешней границы кадра (@pxref{Frame Geometry}).
 
-@vindex internal-border-width@r{, a frame parameter}
+@vindex internal-border-width@r{, параметр фрейма}
 @item internal-border-width
-The width in pixels of the frame's internal border (@pxref{Frame
-Geometry}).
+Ширина в пикселях внутренней границы кадра (@pxref{Frame Geometry}).
 
 @vindex vertical-scroll-bars@r{, a frame parameter}
 @item vertical-scroll-bars
-Whether the frame has scroll bars (@pxref{Scroll Bars}) for vertical
-scrolling, and which side of the frame they should be on.  The possible
-values are @code{left}, @code{right}, and @code{nil} for no scroll bars.
+Есть ли в фрейме полосы прокрутки (@pxref{Scroll Bars}) для вертикальной
+прокрутки и с какой стороны фрейма они должны быть.  Возможные значения:
+@code{left}, @code{right} и @code{nil} без полос прокрутки.
 
-@vindex horizontal-scroll-bars@r{, a frame parameter}
+@vindex horizontal-scroll-bars@r{, параметр фрейма}
 @item horizontal-scroll-bars
-Whether the frame has scroll bars for horizontal scrolling (@code{t} and
-@code{bottom} mean yes, @code{nil} means no).
+Есть ли в фрейме полосы прокрутки для горизонтальной прокрутки (@code{t} и
+@code{bottom} означают да, @code{nil} означает нет).
 
-@vindex scroll-bar-width@r{, a frame parameter}
+@vindex scroll-bar-width@r{, параметр фрейма}
 @item scroll-bar-width
-The width of vertical scroll bars, in pixels, or @code{nil} meaning to
-use the default width.
+Ширина вертикальных полос прокрутки в пикселях или @code{nil} означает
+использование ширины по умолчанию.
 
-@vindex scroll-bar-height@r{, a frame parameter}
+@vindex scroll-bar-height@r{, параметр фрейма}
 @item scroll-bar-height
-The height of horizontal scroll bars, in pixels, or @code{nil} meaning
-to use the default height.
+Высота горизонтальных полос прокрутки в пикселях или @code{nil}, что
+означает использование высоты по умолчанию.
 
-@vindex left-fringe@r{, a frame parameter}
-@vindex right-fringe@r{, a frame parameter}
+@vindex left-fringe@r{, параметр фрейма}
+@vindex right-fringe@r{, параметр фрейма}
 @item left-fringe
 @itemx right-fringe
-The default width of the left and right fringes of windows in this
-frame (@pxref{Fringes}).  If either of these is zero, that effectively
-removes the corresponding fringe.
+Ширина по умолчанию левой и правой кромок окон в этом фрейме
+(@pxref{Fringes}).  Если любой из них равен нулю, это эффективно удаляет
+соответствующую полосу.
 
-When you use @code{frame-parameter} to query the value of either of
-these two frame parameters, the return value is always an integer.
-When using @code{set-frame-parameter}, passing a @code{nil} value
-imposes an actual default value of 8 pixels.
+Когда используется @code{frame-parameter} для запроса значения любого из
+этих двух параметров фрейма, возвращаемое значение всегда является целым
+числом.  При использовании @code{set-frame-parameter} передача значения
+@code{nil} накладывает фактическое значение по умолчанию 8 пикселей.
 
-@vindex right-divider-width@r{, a frame parameter}
+@vindex right-divider-width@r{, параметр фрейма}
 @item right-divider-width
-The width (thickness) reserved for the right divider (@pxref{Window
-Dividers}) of any window on the frame, in pixels.  A value of zero means
-to not draw right dividers.
+Ширина (толщина), зарезервированная для правого разделителя
+(@pxref{Window Dividers}) любого окна в фрейме, в пикселях.  Нулевое
+значение означает, что правые разделители не отображаются.
 
-@vindex bottom-divider-width@r{, a frame parameter}
+@vindex bottom-divider-width@r{, параметр фрейма}
 @item bottom-divider-width
-The width (thickness) reserved for the bottom divider (@pxref{Window
-Dividers}) of any window on the frame, in pixels.  A value of zero means
-to not draw bottom dividers.
+Ширина (толщина), зарезервированная для нижнего делителя
+(@pxref{Window Dividers}) любого окна в фрейме, в пикселях.  Нулевое
+значение означает, что нижние разделители не отображаются.
 
-@vindex menu-bar-lines@r{, a frame parameter}
+@vindex menu-bar-lines@r{, параметр фрейма}
 @item menu-bar-lines
-The number of lines to allocate at the top of the frame for a menu bar
-(@pxref{Menu Bar}).  The default is one if Menu Bar mode is enabled and
-zero otherwise.  @xref{Menu Bars,,,emacs, The GNU Emacs Manual}.  For an
-external menu bar (@pxref{Frame Layout}), this value remains unchanged
-even when the menu bar wraps to two or more lines.  In that case, the
-@code{menu-bar-size} value returned by @code{frame-geometry}
-(@pxref{Frame Geometry}) allows to derive whether the menu bar actually
-occupies one or more lines.
+Число строк, выделяемых в верхней части фрейма для строки меню
+(@pxref{Menu Bar}).  По умолчанию значение равно единице, если включен режим
+строки меню, и нулю в противном случае.
+@xref{Menu Bars,,,emacs, The GNU Emacs Manual}.  Для внешней строки меню
+(@pxref{Frame Layout}) это значение остается неизменным, даже если строка
+меню переносится на две или более строк.  В этом случае значение
+@code{menu-bar-size}, возвращаемое @code{frame-geometry}
+(@pxref{Frame Geometry}), позволяет определить, действительно ли строка меню
+занимает одну или несколько строк.
 
-@vindex tool-bar-lines@r{, a frame parameter}
+@vindex tool-bar-lines@r{, параметр фрейма}
 @item tool-bar-lines
-The number of lines to use for the tool bar (@pxref{Tool Bar}).  The
-default is one if Tool Bar mode is enabled and zero otherwise.
-@xref{Tool Bars,,,emacs, The GNU Emacs Manual}.  This value may change
-whenever the tool bar wraps (@pxref{Frame Layout}).
+Количество строк для панели инструментов (@pxref{Tool Bar}).  По умолчанию
+используется один, если включен режим панели инструментов, и ноль в
+противном случае.  @xref{Tool Bars,,,emacs, The GNU Emacs Manual}.  Это
+значение может измениться всякий раз, когда панель инструментов переносит
+(@pxref{Frame Layout}).
 
-@vindex tool-bar-position@r{, a frame parameter}
+@vindex tool-bar-position@r{, параметр фрейма}
 @item tool-bar-position
-The position of the tool bar when Emacs was built with GTK+.  Its value
-can be one of @code{top}, @code{bottom} @code{left}, @code{right}.  The
-default is @code{top}.
+Положение панели инструментов, когда Emacs был собран с помощью GTK+.  Его
+значение может быть одним из @code{top}, @code{bottom} @code{left},
+@code{right}.  По умолчанию - @code{top}.
 
-@vindex line-spacing@r{, a frame parameter}
+@vindex line-spacing@r{, параметр фрейма}
 @item line-spacing
-Additional space to leave below each text line, in pixels (a positive
-integer).  @xref{Line Height}, for more information.
+Дополнительное пространство в пикселях (положительное целое число), которое
+следует оставить под каждой текстовой строкой.  @xref{Line Height}, для
+получения дополнительной информации.
 
-@vindex no-special-glyphs@r{, a frame parameter}
+@vindex no-special-glyphs@r{, параметр фрейма}
 @item no-special-glyphs
-If this is не-@code{nil}, it suppresses the display of any truncation
-and continuation glyphs (@pxref{Truncation}) for all buffers displayed
-by this frame.  This is useful to eliminate such glyphs when fitting a
-frame to its buffer via @code{fit-frame-to-buffer} (@pxref{Resizing
-Windows}).
+Если установленно в не-@code{nil}, подавляется отображение любых глифов
+усечения и продолжения (@pxref{Truncation}) для всех буферов, отображаемых
+этим фреймом.  Это полезно для устранения таких глифов при подгонке фрейма
+к его буферу через @code{fit-frame-to-buffer} (@pxref{Resizing Windows}).
 @end table
 
 
 @node Buffer Parameters
-@subsubsection Buffer Parameters
+@subsubsection Параметры Буфера
 @cindex frame, which buffers to display
 @cindex buffers to display on frame
 
-  These frame parameters, meaningful on all kinds of terminals, deal
-with which buffers have been, or should, be displayed in the frame.
+  Эти параметры фрейма, значимые для всех типов терминалов, имеют дело с
+тем, какие буферы были или должны отображаться в фрейме.
 
 @table @code
-@vindex minibuffer@r{, a frame parameter}
+@vindex minibuffer@r{, параметр фрейма}
 @item minibuffer
-Whether this frame has its own minibuffer.  The value @code{t} means
-yes, @code{nil} means no, @code{only} means this frame is just a
-minibuffer.  If the value is a minibuffer window (in some other
-frame), the frame uses that minibuffer.
+Имеет ли этот фрейм собственный минибуфер.  Значение @code{t} означает «да»,
+@code{nil} означает «нет», @code{only} означает, что этот фрейм является
+просто минибуфером.  Если значение является окном минибуфера (в каком-то
+другом фрейме), фреймx использует этот минибуфер.
 
-This parameter takes effect when the frame is created.  If specified as
-@code{nil}, Emacs will try to set it to the minibuffer window of
-@code{default-minibuffer-frame} (@pxref{Minibuffers and Frames}).  For
-an existing frame, this parameter can be used exclusively to specify
-another minibuffer window.  It is not allowed to change it from a
-minibuffer window to @code{t} and vice-versa, or from @code{t} to
-@code{nil}.  If the parameter specifies a minibuffer window already,
-setting it to @code{nil} has no effect.
+Параметр вступает в силу при создании фрейма.  Если установлен в @code{nil},
+Emacs попытается установить его в окно минибуфера
+@code{default-minibuffer-frame} (@pxref{Minibuffers and Frames}).  Для
+существующего фрейма этот параметр может использоваться исключительно для
+указания другого окна минибуфера.  Не разрешается менять его из окна
+минибуфера на @code{t} и наоборот, или с @code{t} на @code{nil}.  Если
+параметр уже определяет окно минибуфера, установка его на @code{nil} не
+имеет никакого эффекта.
 
-@vindex buffer-predicate@r{, a frame parameter}
+@vindex buffer-predicate@r{, параметр фрейма}
 @item buffer-predicate
-The buffer-predicate function for this frame.  The function
-@code{other-buffer} uses this predicate (from the selected frame) to
-decide which buffers it should consider, if the predicate is not
-@code{nil}.  It calls the predicate with one argument, a buffer, once for
-each buffer; if the predicate returns a не-@code{nil} value, it
-considers that buffer.
+Функция предиката буфера для этого фрейма.  Функция @code{other-buffer}
+использует этот предикат (из выбранного фрейма), чтобы решить, какие буферы
+следует учитывать, если предикат не @code{nil}.  Вызывает предикат с одним
+аргументом, буфером, один раз для каждого буфера; если предикат возвращает
+значение не-@code{nil}, он считает этот буфер.
 
-@vindex buffer-list@r{, a frame parameter}
+@vindex buffer-list@r{, параметр фрейма}
 @item buffer-list
-A list of buffers that have been selected in this frame, ordered
-most-recently-selected first.
+Список буферов, которые были выбраны в этом фрейме, отсортированные по
+порядку в первую очередь идут последние выбранные.
 
-@vindex unsplittable@r{, a frame parameter}
+@vindex unsplittable@r{, параметр фрейма}
 @item unsplittable
-If не-@code{nil}, this frame's window is never split automatically.
+Если не-@code{nil}, окно этого фрейма никогда не разделяется автоматически.
 @end table
 
 
@@ -1895,520 +1881,513 @@ If не-@code{nil}, this frame's window is never split automatically.
 @cindex frame interaction parameters
 @cindex interaction parameters between frames
 
-These parameters supply forms of interactions between different frames.
+Эти параметры обеспечивают формы взаимодействия между различными фреймами.
 
 @table @code
-@vindex parent-frame@r{, a frame parameter}
+@vindex parent-frame@r{, параметр фрейма}
 @item parent-frame
-If не-@code{nil}, this means that this frame is a child frame
-(@pxref{Child Frames}), and this parameter specifies its parent frame.
-If @code{nil}, this means that this frame is a normal, top-level frame.
+Если не-@code{nil}, это означает, что этот фрейм является дочерним
+(@pxref{Child Frames}), и этот параметр указывает его родительский фрейм.
+Если @code {nil}, это означает, что этот фрейм является нормальным фреймом
+верхнего уровня.
 
-@vindex delete-before@r{, a frame parameter}
+@vindex delete-before@r{, параметр фрейма}
 @item delete-before
-If не-@code{nil}, this parameter specifies another frame whose deletion
-will automatically trigger the deletion of this frame.  @xref{Deleting
-Frames}.
+Если не-@code{nil}, этот параметр указывает другой фрейм, удаление которого
+автоматически инициирует удаление этого фрейма.  @xref{Deleting Frames}.
 
-@vindex mouse-wheel-frame@r{, a frame parameter}
+@vindex mouse-wheel-frame@r{, параметр фрейма}
 @item mouse-wheel-frame
-If не-@code{nil}, this parameter specifies the frame whose windows will
-be scrolled whenever the mouse wheel is scrolled with the mouse pointer
-hovering over this frame, see @ref{Mouse Commands,,, emacs, The GNU
-Emacs Manual}.
+Если не-@code{nil}, этот параметр указывает фрейм, окна которого будут
+прокручиваться всякий раз, когда колесо мыши прокручивается с указателем
+мыши, наведенным на этот фрейм, смотреть
+@ref{Mouse Commands,,, emacs, The GNU Emacs Manual}.
 
-@vindex no-other-frame@r{, a frame parameter}
+@vindex no-other-frame@r{, параметр фрейма}
 @item no-other-frame
-If this is не-@code{nil}, then this frame is not eligible as candidate
-for the functions @code{next-frame}, @code{previous-frame}
-(@pxref{Finding All Frames}) and @code{other-frame}, see @ref{Frame
-Commands,,, emacs, The GNU Emacs Manual}.
+Если установлен в не-@code{nil}, то этот фрейм не может быть кандидатом на
+функции @code{next-frame}, @code{previous-frame}
+(@pxref{Finding All Frames}) и @code{other-frame}, смотреть
+@ref{Frame Commands,,, emacs, The GNU Emacs Manual}.
 
-@vindex auto-hide-function@r{, a frame parameter}
+@vindex auto-hide-function@r{, параметр фрейма}
 @item auto-hide-function
-When this parameter specifies a function, that function will be called
-instead of the function specified by the variable
-@code{frame-auto-hide-function} when quitting the frame's only window
-(@pxref{Quitting Windows}) and there are other frames left.
+Когда параметр указывает функцию, функция будет вызываться вместо функции,
+указанной переменной @code{frame-auto-hide-function}, при выходе из
+единственного фрейма окна (@pxref{Quitting Windows}), не затрагивая другие
+фреймы.
 
-@vindex minibuffer-exit@r{, a frame parameter}
+@vindex minibuffer-exit@r{, параметр фрейма}
 @item minibuffer-exit
-When this parameter is не-@code{nil}, Emacs will by default make this
-frame invisible whenever the minibuffer (@pxref{Minibuffers}) is exited.
-Alternatively, it can specify the functions @code{iconify-frame} and
-@code{delete-frame}.  This parameter is useful to make a child frame
-disappear automatically (similar to how Emacs deals with a window) when
-exiting the minibuffer.
+Когда параметр - не-@code{nil}, Emacs по умолчанию будет делать этот фрейм
+невидимым всякий раз, когда минибуфер (@pxref{Minibuffers}) выходит из
+строя.  В качестве альтернативы можно указать функции @code{iconify-frame} и
+@code{delete-frame}.  Параметр полезен для автоматического исчезновения
+дочернего фрейма (аналогично тому, как Emacs работает с окном) при выходе
+из минибуфера.
 
-@vindex keep-ratio@r{, a frame parameter}
+@vindex keep-ratio@r{, параметр фрейма}
 @item keep-ratio
-This parameter is currently meaningful for child frames (@pxref{Child
-Frames}) only.  If it is не-@code{nil}, then Emacs will try to keep the
-frame's size (width and height) ratios (@pxref{Size Parameters}) as well
-as its left and right position ratios (@pxref{Position Parameters})
-unaltered whenever its parent frame is resized.
+Параметр в настоящее время имеет значение только для дочерних фреймов
+(@pxref{Child Frames}).  Если это не-@code{nil}, то Emacs будет пытаться
+сохранить соотношения размеров (ширины и высоты) фрейма
+(@pxref{Size Parameters}), а также соотношения его левого и правого
+положения (@pxref{Position Parameters}) неизменными всякий раз, когда
+изменяется размер его родительского фрейма.
 
-If the value of this parameter is @code{nil}, the frame's position and
-size remain unaltered when the parent frame is resized, so the position
-and size ratios may change.  If the value of this parameter is @code{t},
-Emacs will try to preserve the frame's size and position ratios, hence
-the frame's size and position relative to its parent frame may change.
+Если значение этого параметра - @code{nil}, позиция и размер фрейма остаются
+неизменными при изменении размера родительского фрейма, поэтому соотношение
+положения и размера может измениться.  Если значение этого параметра -
+@code{t}, Emacs попытается сохранить размер фрейма и соотношения положения,
+следовательно, размер и положение фрейма относительно его родительского
+фрейма могут измениться.
 
-More individual control is possible by using a cons cell: In that case
-the frame's width ratio is preserved if the @sc{car} of the cell is
-either @code{t} or @code{width-only}.  The height ratio is preserved if
-the @sc{car} of the cell is either @code{t} or @code{height-only}.  The
-left position ratio is preserved if the @sc{cdr} of the cell is either
-@code{t} or @code{left-only}.  The top position ratio is preserved if
-the @sc{cdr} of the cell is either @code{t} or @code{top-only}.
+Более индивидуальный контроль возможен при использовании cons-ячейки: в этом
+случае соотношение ширины фрейма сохраняется, если @sc{car} ячейки имеет
+значение @code{t} или @code{width-only}.  Соотношение высоты сохраняется,
+если @sc{car} ячейки установлено в @code{t} или @code{height-only}.
+Соотношение левой позиции сохраняется, если @sc{cdr} ячейки установлено в
+@code{t} или @code{left-only}.  Коэффициент верхней позиции сохраняется,
+если @sc{cdr} ячейки установлен в @code{t} или @code{top-only}.
 @end table
 
 
 @node Mouse Dragging Parameters
-@subsubsection Mouse Dragging Parameters
+@subsubsection Параметры Перетаскивания Мышью
 @cindex mouse dragging parameters
 @cindex parameters for resizing frames with the mouse
 @cindex parameters for moving frames with the mouse
 
-The parameters described below provide support for resizing a frame by
-dragging its internal borders with the mouse.  They also allow moving a
-frame with the mouse by dragging the header line of its topmost or the
-mode line of its bottommost window.
+Описанные ниже параметры обеспечивают поддержку изменения размера фрейма
+путем перетаскивания его внутренних границ с помощью мыши.  Также позволяют
+перемещать фрейм с помощью мыши, перетаскивая строку заголовка самого
+верхнего окна или строку режима самого нижнего окна.
 
-These parameters are mostly useful for child frames (@pxref{Child
-Frames}) that come without window manager decorations.  If necessary,
-they can be used for undecorated top-level frames as well.
+Эти параметры в основном полезны для дочерних фреймов
+(@pxref{Child Frames}), которые поставляются без декораций оконного
+менеджера.  При необходимости их можно использовать и для недекорированных
+фреймов верхнего уровня.
 
 @table @code
-@vindex drag-internal-border@r{, a frame parameter}
+@vindex drag-internal-border@r{, параметр фрейма}
 @item drag-internal-border
-If не-@code{nil}, the frame can be resized by dragging its internal
-borders, if present, with the mouse.
+Если не-@code{nil}, размер фрейма можно изменить, перетащив его внутренние
+границы, если они есть, с помощью мыши.
 
-@vindex drag-with-header-line@r{, a frame parameter}
+@vindex drag-with-header-line@r{, параметр фрейма}
 @item drag-with-header-line
-If не-@code{nil}, the frame can be moved with the mouse by dragging the
-header line of its topmost window.
+Если не-@code{nil}, фрейм можно перемещать с помощью мыши, перетаскивая
+строку заголовка его самого верхнего окна.
 
-@vindex drag-with-mode-line@r{, a frame parameter}
+@vindex drag-with-mode-line@r{, параметр фрейма}
 @item drag-with-mode-line
-If не-@code{nil}, the frame can be moved with the mouse by dragging the
-mode line of its bottommost window.  Note that such a frame is not
-allowed to have its own minibuffer window.
+Если не-@code{nil}, фрейм можно перемещать с помощью мыши, перетаскивая
+строку режима его самого нижнего окна.  Обратить внимание, что такому фрейму
+не разрешается иметь собственное окно минибуфера.
 
-@vindex snap-width@r{, a frame parameter}
+@vindex snap-width@r{, параметр фрейма}
 @item snap-width
-A frame that is moved with the mouse will ``snap'' at the border(s) of
-the display or its parent frame whenever it is dragged as near to such
-an edge as the number of pixels specified by this parameter.
+Фрейм, который перемещается с помощью мыши, будет ждать ``щелчок'' на
+границе (ах) дисплея или его родительского кадра всякий раз, когда его
+перетаскивают как можно ближе к такому краю, указанным количеством пикселей,
+в этом параметре.
 
-@vindex top-visible@r{, a frame parameter}
+@vindex top-visible@r{, параметр фрейма}
 @item top-visible
-If this parameter is a number, the top edge of the frame never appears
-above the top edge of its display or parent frame.  Moreover, as many
-pixels of the frame as specified by that number will remain visible when
-the frame is moved against any of the remaining edges of its display or
-parent frame.  Setting this parameter is useful to guard against
-dragging a child frame with a не-@code{nil}
-@code{drag-with-header-line} parameter completely out of the area
-of its parent frame.
+Если этот параметр является числом, верхний край фрейма никогда не
+появляется над верхним краем его дисплея или родительского фрейма.  Более
+того, столько пикселей фрейма задано этим числом, будет оставаться видимым,
+когда фрейм перемещается по любому из оставшихся краев его дисплея или
+родительского фрейма.  Установка этого параметра полезна для защиты от
+перетаскивания дочернего фрейма с параметром не-@code{nil}
+@code{drag-with-header-line} полностью за пределы его родительского фрейма.
 
-@vindex bottom-visible@r{, a frame parameter}
+@vindex bottom-visible@r{, параметр фрейма}
 @item bottom-visible
-If this parameter is a number, the bottom edge of the frame never
-appears below the bottom edge of its display or parent frame.  Moreover,
-as many pixels of the frame as specified by that number will remain
-visible when the frame is moved against any of the remaining edges of
-its display or parent frame.  Setting this parameter is useful to guard
-against dragging a child frame with a не-@code{nil}
-@code{drag-with-mode-line} parameter completely out of the area of
-its parent frame.
+Если параметр является числом, нижний край фрейма никогда не будет ниже
+нижнего края его дисплея или родительского фрейма.  Более того, столько
+пикселей фрейма, сколько задано этим числом, будет оставаться видимым, когда
+фрейм перемещается по любому из оставшихся краев его дисплея или
+родительского фрейма.  Установка этого параметра полезна для защиты от
+перетаскивания дочернего фрейма с параметром не-@code{nil}
+@code{drag-with-mode-line} полностью за пределы его родительского фрейма.
 @end table
 
 
 @node Management Parameters
-@subsubsection Window Management Parameters
+@subsubsection Параметры Управления Окнами
 @cindex window manager interaction, and frame parameters
 
-  The following frame parameters control various aspects of the frame's
-interaction with the window manager or window system.  They have no
-effect on text terminals.
+  Следующие ниже параметры фрейма управляют различными аспектами
+взаимодействия кадра с оконным менеджером или оконной системой.  Не влияют
+на текстовые терминалы.
 
 @table @code
-@vindex visibility@r{, a frame parameter}
+@vindex visibility@r{, параметр фрейма}
 @item visibility
-The state of visibility of the frame.  There are three possibilities:
-@code{nil} for invisible, @code{t} for visible, and @code{icon} for
-iconified.  @xref{Visibility of Frames}.
+Состояние видимости фрейма.  Есть три возможности: @code{nil} для
+невидимого, @code{t} для видимого и @code{icon} для иконизированного.
+@xref{Visibility of Frames}.
 
-@vindex auto-raise@r{, a frame parameter}
+@vindex auto-raise@r{, параметр фрейма}
 @item auto-raise
-If не-@code{nil}, Emacs automatically raises the frame when it is
-selected.  Some window managers do not allow this.
+Если не-@code{nil}, Emacs автоматически поднимает фрейм при его выборе.
+Некоторые оконные менеджеры не позволяют этого.
 
-@vindex auto-lower@r{, a frame parameter}
+@vindex auto-lower@r{, параметр фрейма}
 @item auto-lower
-If не-@code{nil}, Emacs automatically lowers the frame when it is
-deselected.  Some window managers do not allow this.
+Если не-@code{nil}, Emacs автоматически опускает фрейм, когда он не выбран.
+Некоторые оконные менеджеры не позволяют этого.
 
-@vindex icon-type@r{, a frame parameter}
+@vindex icon-type@r{, параметр фрейма}
 @item icon-type
-The type of icon to use for this frame.  If the value is a string,
-that specifies a file containing a bitmap to use; @code{nil} specifies
-no icon (in which case the window manager decides what to show); any
-other не-@code{nil} value specifies the default Emacs icon.
+Тип значка, который будет использоваться для этого фрейма.  Если значение
+является строкой, это указывает файл, содержащий растровое изображение для
+использования; @code{nil} не указывает значок (в этом случае оконный
+менеджер решает, что показывать); любое другое значение не-@code{nil}
+определяет значок Emacs по умолчанию.
 
-@vindex icon-name@r{, a frame parameter}
+@vindex icon-name@r{, параметр фрейма}
 @item icon-name
-The name to use in the icon for this frame, when and if the icon
-appears.  If this is @code{nil}, the frame's title is used.
+Имя для использования в значке этого фрейма, когда и если значок появляется.
+Если это @code{nil}, используется заголовок фрейма.
 
-@vindex window-id@r{, a frame parameter}
+@vindex window-id@r{, параметр фрейма}
 @item window-id
-The ID number which the graphical display uses for this frame.  Emacs
-assigns this parameter when the frame is created; changing the
-parameter has no effect on the actual ID number.
+Номер ID, используемый графическим дисплеем для этого фрейма.  Emacs
+назначает этот параметр при создании фрейма; изменение параметра не влияет
+на фактический номер ID.
 
-@vindex outer-window-id@r{, a frame parameter}
+@vindex outer-window-id@r{, параметр фрейма}
 @item outer-window-id
-The ID number of the outermost window-system window in which the frame
-exists.  As with @code{window-id}, changing this parameter has no
-actual effect.
+Номер ID самого внешнего окна оконной системы, в котором существует фрейм.
+Как и в случае с @code{window-id}, изменение этого параметра не имеет
+фактического эффекта.
 
-@vindex wait-for-wm@r{, a frame parameter}
+@vindex wait-for-wm@r{, параметр фрейма}
 @item wait-for-wm
-If не-@code{nil}, tell Xt to wait for the window manager to confirm
-geometry changes.  Some window managers, including versions of Fvwm2
-and KDE, fail to confirm, so Xt hangs.  Set this to @code{nil} to
-prevent hanging with those window managers.
+Если не-@code{nil}, указывает Xt дождаться, пока оконный менеджер подтвердит
+изменения геометрии.  Некоторые оконные менеджеры, включая версии Fvwm2 и
+KDE, не могут подтвердить, поэтому Xt зависает.  Установка для этого
+параметра значения в @code{nil}, предотвратит зависание с этими оконными
+менеджерами.
 
-@vindex sticky@r{, a frame parameter}
+@vindex sticky@r{, параметр фрейма}
 @item sticky
-If не-@code{nil}, the frame is visible on all virtual desktops on systems
-with virtual desktops.
+Если не-@code{nil}, фрейм виден на всех виртуальных рабочих столах в
+системах с виртуальными рабочими столами.
 
-@vindex inhibit-double-buffering@r{, a frame parameter}
+@vindex inhibit-double-buffering@r{, параметр фрейма}
 @item inhibit-double-buffering
-If не-@code{nil}, the frame is drawn to the screen without double
-buffering.  Emacs normally attempts to use double buffering, where
-available, to reduce flicker.  Set this property if you experience
-display bugs or pine for that retro, flicker-y feeling.
+Если не-@code{nil}, фрейм выводится на экран без двойной буферизации.  Emacs
+обычно пытается использовать двойную буферизацию, где это возможно, для
+уменьшения мерцания.  Установка этого свойства, решает возникающие ошибки
+отображения или если требуется почувствовать ретро, flicker-y.
 
-@vindex skip-taskbar@r{, a frame parameter}
+@vindex skip-taskbar@r{, параметр фрейма}
 @item skip-taskbar
-If не-@code{nil}, this tells the window manager to remove the frame's
-icon from the taskbar associated with the frame's display and inhibit
-switching to the frame's window via the combination @kbd{Alt-@key{TAB}}.
-On MS-Windows, iconifying such a frame will "roll in" its window-system
-window at the bottom of the desktop.  Some window managers may not honor
-this parameter.
+Если не-@code{nil}, это указывает диспетчеру окон удалить значок фрейма с
+панели задач, связанной с отображением фрейма, и запретить переключение на
+окно фрейма с помощью комбинации @kbd{Alt-@key{TAB}}.  В MS-Windows иконка
+такого фрейма будет катиться???
 
-@vindex no-focus-on-map@r{, a frame parameter}
+@vindex no-focus-on-map@r{, параметр фрейма}
 @item no-focus-on-map
-If не-@code{nil}, this means that the frame does not want to receive
-input focus when it is mapped (@pxref{Visibility of Frames}).  Some
-window managers may not honor this parameter.
+Если не-@code{nil}, это означает, что фрейм не получает фокус ввода, когда
+отображается в (@pxref{Visibility of Frames}).  Некоторые оконные менеджеры
+могут не учитывать этот параметр.
 
-@vindex no-accept-focus@r{, a frame parameter}
+@vindex no-accept-focus@r{, параметр фрейма}
 @item no-accept-focus
-If не-@code{nil}, this means that the frame does not want to receive
-input focus via explicit mouse clicks or when moving the mouse into it
-either via @code{focus-follows-mouse} (@pxref{Input Focus}) or
-@code{mouse-autoselect-window} (@pxref{Mouse Window Auto-selection}).
-This may have the unwanted side-effect that a user cannot scroll a
-non-selected frame with the mouse.  Some window managers may not honor
-this parameter.
+Если не-@code{nil}, означает, что фрейм не получит фокус ввода посредством
+явных щелчков мышью или при перемещении в него мыши используя
+@code{focus-follows-mouse} (@pxref{Input Focus}) или
+@code{mouse-autoselect-window} (@pxref{Mouse Window Auto-selection}).  Это
+может иметь нежелательный побочный эффект, заключающийся в том, что
+пользователь не может прокручивать невыбранный фрейм с помощью мыши.
+Некоторые оконные менеджеры могут не учитывать этот параметр.
 
-@vindex undecorated@r{, a frame parameter}
+@vindex undecorated@r{, параметр фрейма}
 @item undecorated
-If не-@code{nil}, this frame's window-system window is drawn without
-decorations, like the title, minimize/maximize boxes and external
-borders.  This usually means that the window cannot be dragged, resized,
-iconified, maximized or deleted with the mouse.  If @code{nil}, the frame's
-window is usually drawn with all the elements listed above unless their
-display has been suspended via window manager settings.
+Если не-@code{nil}, окно оконной системы этого фрейма отрисовывается без
+украшений, таких как заголовок, минимизация/развертывание блоков и внешних
+границ.  Обычно это означает, что окно нельзя перетаскивать, изменять
+размер, уменьшать, увеличивать или удалять с помощью мыши.  Если @code{nil},
+окно фрейма обычно рисуется со всеми перечисленными выше элементами, если их
+отображение не было приостановлено в настройках оконного менеджера.
 
-Under X, Emacs uses the Motif window manager hints to turn off
-decorations.  Some window managers may not honor these hints.
+В X Emacs использует подсказки оконного менеджера Motif для отключения
+декораций.  Некоторые оконные менеджеры могут не соблюдать эти подсказки.
 
-NS builds consider the tool bar to be a decoration, and therefore hide
-it on an undecorated frame.
+Сборки NS рассматривают панель инструментов как украшение и поэтому скрывают
+ее на недекорированном фрейме.
 
-@vindex override-redirect@r{, a frame parameter}
+@vindex override-redirect@r{, параметр фрейма}
 @item override-redirect
 @cindex override redirect frames
-If не-@code{nil}, this means that this is an @dfn{override redirect}
-frame---a frame not handled by window managers under X.  Override
-redirect frames have no window manager decorations, can be positioned
-and resized only via Emacs' positioning and resizing functions and are
-usually drawn on top of all other frames.  Setting this parameter has
-no effect on MS-Windows.
+Если не-@code{nil}, означает, что @dfn{переопределяется перенаправление}
+фрейма --- фрейм, не обрабатывается оконными менеджерами в X.
+Переопределить фреймы перенаправления не имеют декораций оконного менеджера,
+их можно позиционировать и изменять размер только с помощью функций
+позиционирования и изменения размера Emacs и обычно рисуются поверх всех
+остальных фреймов.  Установка этого параметра не работает на MS-Windows.
 
 @ignore
-@vindex parent-id@r{, a frame parameter}
+@vindex parent-id@r{, параметр фрейма}
 @item parent-id
-@c ??? Not yet working.
-The X window number of the window that should be the parent of this one.
-Specifying this lets you create an Emacs window inside some other
-application's window.  (It is not certain this will be implemented; try
-it and see if it works.)
+@c ??? Еще не работает.
+Номер X окна, которое должно быть родительским для этого окна.  Указание
+этого позволяет создать окно Emacs внутри окна другого приложения.  (Нет
+уверенности, что это будет реализовано; попробуйте и посмотрите, работает
+ли.)
 @end ignore
 
-@vindex ns-appearance@r{, a frame parameter}
+@vindex ns-appearance@r{, параметр фрейма}
 @item ns-appearance
-Only available on macOS, if set to @code{dark} draw this frame's
-window-system window using the ``vibrant dark'' theme, otherwise use
-the system default.  The ``vibrant dark'' theme can be used to set the
-toolbar and scrollbars to a dark appearance when using an Emacs theme
-with a dark background.
+Доступно только в macOS, если установлено значение @code{dark}, рисовать
+окно оконной системы этого фрейма с использованием темы ``vibrant dark'', в
+противном случае использовать системное значение по умолчанию.  Тема
+``vibrant dark'' может использоваться для установки темного вида панели
+инструментов и полос прокрутки при использовании темы Emacs с темным фоном.
 
-@vindex ns-transparent-titlebar@r{, a frame parameter}
+@vindex ns-transparent-titlebar@r{, параметр фрейма}
 @item ns-transparent-titlebar
-Only available on macOS, if не-@code{nil}, set the titlebar and
-toolbar to be transparent.  This effectively sets the background color
-of both to match the Emacs background color.
+Доступно только в macOS, если не-@code{nil}, установить прозрачность
+заголовка и панели инструментов.  Это эффективно устанавливает цвета фона
+обоих в соответствии с цветом фона Emacs.
 @end table
 
 
 @node Cursor Parameters
-@subsubsection Cursor Parameters
+@subsubsection Параметры Курсора
 @cindex cursor, and frame parameters
 
-  This frame parameter controls the way the cursor looks.
+  Этот параметр фрейма управляет тем, как выглядит курсор.
 
 @table @code
-@vindex cursor-type@r{, a frame parameter}
+@vindex cursor-type@r{, параметр фрейма}
 @item cursor-type
-How to display the cursor.  Legitimate values are:
+Как вывести курсор.  Значущие идентификаторы:
 
 @table @code
 @item box
-Display a filled box.  (This is the default.)
+Отобразить заполненное поле. (Это значение по умолчанию.)
 @item hollow
-Display a hollow box.
+Показать пустое поле.
 @item nil
-Don't display a cursor.
+Не отображать курсор.
 @item bar
-Display a vertical bar between characters.
+Отобразить вертикальную полосу между символами.
 @item (bar . @var{width})
-Display a vertical bar @var{width} pixels wide between characters.
+Отобразить вертикальную полосу шириной @var{width} пикселей между символами.
 @item hbar
-Display a horizontal bar.
+Отобразите горизонтальную полосу.
 @item (hbar . @var{height})
-Display a horizontal bar @var{height} pixels high.
+Отобразить горизонтальную полосу высотой @var{height} пикселей.
 @end table
 @end table
 
 @vindex cursor-type
-The @code{cursor-type} frame parameter may be overridden by the
-variables @code{cursor-type} and
-@code{cursor-in-non-selected-windows}:
+Параметр фрейма @code{cursor-type} может быть переопределен переменными
+@code{cursor-type} и @code{cursor-in-non-selected-windows}:
 
 @defopt cursor-type
-This buffer-local variable controls how the cursor looks in a selected
-window showing the buffer.  If its value is @code{t}, that means to
-use the cursor specified by the @code{cursor-type} frame parameter.
-Otherwise, the value should be one of the cursor types listed above,
-and it overrides the @code{cursor-type} frame parameter.
+Локальная переменная буфера управляет тем, как будет выглядеть курсор в
+выбранном окне, показывающем буфер.  Если её значение - @code{t}, это
+означает использование курсора, заданного параметром фрейма
+@code{cursor-type}.  В противном случае значение должно быть одним из
+перечисленных выше типов курсора, и оно переопределяет параметр фрейма
+@code{cursor-type}.
 @end defopt
 
 @defopt cursor-in-non-selected-windows
-This buffer-local variable controls how the cursor looks in a window
-that is not selected.  It supports the same values as the
-@code{cursor-type} frame parameter; also, @code{nil} means don't
-display a cursor in nonselected windows, and @code{t} (the default)
-means use a standard modification of the usual cursor type (solid box
-becomes hollow box, and bar becomes a narrower bar).
+Локальная переменная буфра управляет тем, как курсор выглядит в окне,
+которое не выбрано.  Поддерживает те же значения, что и параметр фрейма
+@code{cursor-type}; Кроме того, @code{nil} означает, что курсор не
+отображается в невыделенных окнах, а @code{t} (по умолчанию) означает
+использование стандартной модификации обычного типа курсора (сплошная рамка
+становится пустой рамкой, а полоса становится более узкой полосой).
 @end defopt
 
 @defopt x-stretch-cursor
-This variable controls the width of the block cursor displayed on
-extra-wide glyphs such as a tab or a stretch of white space.  By
-default, the block cursor is only as wide as the font's default
-character, and will not cover all of the width of the glyph under it
-if that glyph is extra-wide.  A не-@code{nil} value of this variable
-means draw the block cursor as wide as the glyph under it.  The
-default value is @code{nil}.
+Переменная управляет шириной блока курсора, отображаемого на очень широких
+глифах, таких как табуляция или отрезок пробельного пространства.  По
+умолчанию ширина блочного курсора равна ширине символа шрифта по умолчанию,
+и не будет охватывать всю ширину глифа под ним, если этот глиф является
+сверхшироким.  Значение не-@code{nil} этой переменной означает рисование
+курсора блока шириной с глифом под ним.  Значение по умолчанию - @code{nil}.
 
-This variable has no effect on text-mode frames, since the text-mode
-cursor is drawn by the terminal out of Emacs's control.
+Переменная не влияет на фреймы текстового режима, поскольку курсор
+текстового режима выводится терминалом из-под контроля Emacs.
 @end defopt
 
 @defopt blink-cursor-alist
-This variable specifies how to blink the cursor.  Each element has the
-form @code{(@var{on-state} . @var{off-state})}.  Whenever the cursor
-type equals @var{on-state} (comparing using @code{equal}), the
-corresponding @var{off-state} specifies what the cursor looks like
-when it blinks off.  Both @var{on-state} and @var{off-state}
-should be suitable values for the @code{cursor-type} frame parameter.
+Переменная определяет, мирцание курсора.  Каждый элемент имеет вид
+@code{(@var{on-state} . @var{off-state})}.  Когда тип курсора равен
+@var{on-state} (сравнение с использованием @code{equal}), соответствующий
+@var{off-state} указывает, как выглядит курсор, когда мигает.  Оба
+@var{on-state} и @var{off-state} должны быть подходящими значениями для
+параметра фрейма @code{cursor-type}.
 
-There are various defaults for how to blink each type of cursor, if
-the type is not mentioned as an @var{on-state} here.  Changes in this
-variable do not take effect immediately, only when you specify the
-@code{cursor-type} frame parameter.
+Существуют различные значения по умолчанию для установки каждого типа
+мигания курсора, если тип здесь не указан как @var{on-state}.  Изменения в
+этой переменной не вступают в силу немедленно, если только не указан
+параметр фрейма @code{cursor-type}.
 @end defopt
 
 @node Font and Color Parameters
-@subsubsection Font and Color Parameters
+@subsubsection Параметры Шрифта и Цвета
 @cindex font and color, frame parameters
 
-  These frame parameters control the use of fonts and colors.
+  Эти параметры фрейма управляют использованием шрифтов и цветов.
 
 @table @code
-@vindex font-backend@r{, a frame parameter}
+@vindex font-backend@r{, параметр фрейма}
 @item font-backend
-A list of symbols, specifying the @dfn{font backends} to use for
-drawing fonts in the frame, in order of priority.  On X, there are
-currently two available font backends: @code{x} (the X core font
-driver) and @code{xft} (the Xft font driver).  On MS-Windows, there are
-currently two available font backends: @code{gdi} and
-@code{uniscribe} (@pxref{Windows Fonts,,, emacs, The GNU Emacs
-Manual}).  On other systems, there is only one available font backend,
-so it does not make sense to modify this frame parameter.
+Список символов с указанием @dfn{бекендов шрифтов}, которые будут
+использоваться для рисования шрифтов во фрейме, в порядке приоритета.  В X
+в настоящее время доступны два бэкенда шрифтов: @code{x} (драйвер шрифта
+ядра X) и @code{xft} (драйвер шрифта Xft).  В MS-Windows в настоящее время
+доступны два бэкенда шрифтов: @code{gdi} и @code{uniscribe}
+(@pxref{Windows Fonts,,, emacs, The GNU Emacs Manual}).  В других системах
+доступен только один бэкэнд шрифтов, поэтому нет смысла изменять этот
+параметр фрейма.
 
-@vindex background-mode@r{, a frame parameter}
+@vindex background-mode@r{, параметр фрейма}
 @item background-mode
-This parameter is either @code{dark} or @code{light}, according
-to whether the background color is a light one or a dark one.
+Параметр имеет значение @code{dark} или @code{light}, в зависимости от того,
+какой цвет фона - светлый или темный.
 
-@vindex tty-color-mode@r{, a frame parameter}
+@vindex tty-color-mode@r{, параметр фрейма}
 @item tty-color-mode
 @cindex standard colors for character terminals
-This parameter overrides the terminal's color support as given by the
-system's terminal capabilities database in that this parameter's value
-specifies the color mode to use on a text terminal.  The value can be
-either a symbol or a number.  A number specifies the number of colors
-to use (and, indirectly, what commands to issue to produce each
-color).  For example, @code{(tty-color-mode . 8)} specifies use of the
-ANSI escape sequences for 8 standard text colors.  A value of @minus{}1 turns
-off color support.
+Параметр переопределяет цветовую поддержку терминала, заданную системной
+базой данных возможностей терминала, поскольку значение этого параметра
+определяет цветовой режим для использования на текстовом терминале.
+Значение может быть символом или числом.  Число указывает количество
+используемых цветов (и, косвенно, то, какие команды выполнять для получения
+каждого цвета).  Например, @code{(tty-color-mode . 8)} определяет
+использование управляющих последовательностей ANSI для 8 стандартных цветов
+текста.  Значение @minus{}1 отключает поддержку цвета.
 
-If the parameter's value is a symbol, it specifies a number through
-the value of @code{tty-color-mode-alist}, and the associated number is
-used instead.
+Если значением параметра является символ, указывается число через значение
+@code{tty-color-mode-alist}, и вместо него используется связанное число.
 
-@vindex screen-gamma@r{, a frame parameter}
+@vindex screen-gamma@r{, параметр фрейма}
 @item screen-gamma
 @cindex gamma correction
-If this is a number, Emacs performs gamma correction which adjusts
-the brightness of all colors.  The value should be the screen gamma of
-your display.
+Если это число, Emacs выполняет гамма-коррекцию, которая регулирует яркость
+всех цветов.  Значение должно быть гаммой экрана вашего дисплея.
 
-Usual PC monitors have a screen gamma of 2.2, so color values in
-Emacs, and in X windows generally, are calibrated to display properly
-on a monitor with that gamma value.  If you specify 2.2 for
-@code{screen-gamma}, that means no correction is needed.  Other values
-request correction, designed to make the corrected colors appear on
-your screen the way they would have appeared without correction on an
-ordinary monitor with a gamma value of 2.2.
+Обычные мониторы ПК имеют гамму экрана 2.2, поэтому значения цвета в Emacs и
+в X-окнах в целом откалиброваны для правильного отображения на мониторе с
+этим значением гаммы.  Если указывается 2.2 для @code{screen-gamma}, это
+означает, что исправление не требуется.  Другие значения требуют коррекции,
+чтобы скорректированные цвета отображались на вашем экране так, как они
+выглядели бы без коррекции на обычном мониторе со значением гаммы 2.2.
 
-If your monitor displays colors too light, you should specify a
-@code{screen-gamma} value smaller than 2.2.  This requests correction
-that makes colors darker.  A screen gamma value of 1.5 may give good
-results for LCD color displays.
+Если монитор отображает слишком светлые цвета, потребуется указать значение
+@code{screen-gamma} меньше, чем 2.2.  Это требует коррекции, которая делает
+цвета темнее.  Значение гаммы экрана 1.5 может дать хорошие результаты для
+цветных дисплеев LCD.
 
-@vindex alpha@r{, a frame parameter}
+@vindex alpha@r{, параметр фрейма}
 @item alpha
 @cindex opacity, frame
 @cindex transparency, frame
 @vindex frame-alpha-lower-limit
-This parameter specifies the opacity of the frame, on graphical
-displays that support variable opacity.  It should be an integer
-between 0 and 100, where 0 means completely transparent and 100 means
-completely opaque.  It can also have a @code{nil} value, which tells
-Emacs not to set the frame opacity (leaving it to the window manager).
+Параметр определяет непрозрачность фрейма на графических дисплеях,
+поддерживающих переменную непрозрачность.  Это должно быть целое число от 0
+до 100, где 0 означает полностью прозрачный, а 100 означает полностью
+непрозрачный.  Также может иметь значение @code{nil}, которое говорит Emacs
+не устанавливать непрозрачность фрейма (оставив это оконному менеджеру).
 
-To prevent the frame from disappearing completely from view, the
-variable @code{frame-alpha-lower-limit} defines a lower opacity limit.
-If the value of the frame parameter is less than the value of this
-variable, Emacs uses the latter.  By default,
-@code{frame-alpha-lower-limit} is 20.
+Чтобы фрейм не исчез полностью из поля зрения, переменная
+@code{frame-alpha-lower-limit} определяет нижний предел непрозрачности.
+Если значение параметра фрейма меньше значения этой переменной, Emacs
+использует последнее.  По умолчанию @code{frame-alpha-lower-limit} равно 20.
 
-The @code{alpha} frame parameter can also be a cons cell
-@code{(@var{active} . @var{inactive})}, where @var{active} is the
-opacity of the frame when it is selected, and @var{inactive} is the
-opacity when it is not selected.
+Параметр фрейма @code{alpha} также может быть cons-ячейкой
+@code{(@var{active} . @var{inactive})}, где @var{active} - это
+непрозрачность фрейма, когда он выбран, а @var{inactive} - это
+непрозрачность, когда он не выбран.
 
-Some window systems do not support the @code{alpha} parameter for child
-frames (@pxref{Child Frames}).
+Некоторые оконные системы не поддерживают параметр @code{alpha} для дочерних
+фреймов (@pxref{Child Frames}).
 @end table
 
-The following frame parameters are semi-obsolete in that they are
-automatically equivalent to particular face attributes of particular
-faces (@pxref{Standard Faces,,, emacs, The Emacs Manual}):
+Следующие параметры фрейма частично устарели в том смысле, что они
+автоматически эквивалентны определенным атрибутам вида определенных видов
+(@pxref{Standard Faces,,, emacs, The Emacs Manual}):
 
 @table @code
-@vindex font@r{, a frame parameter}
+@vindex font@r{, параметр фрейма}
 @item font
-The name of the font for displaying text in the frame.  This is a
-string, either a valid font name for your system or the name of an Emacs
-fontset (@pxref{Fontsets}).  It is equivalent to the @code{font}
-attribute of the @code{default} face.
+Название шрифта для отображения текста во фрейме.  Это строка, либо
+допустимое имя шрифта для системы, либо имя набора шрифтов Emacs
+(@pxref{Fontsets}).  Эквивалентено атрибуту @code{font} вида @code{default}.
 
-@vindex foreground-color@r{, a frame parameter}
+@vindex foreground-color@r{, параметр фрейма}
 @item foreground-color
-The color to use for the image of a character.  It is equivalent to
-the @code{:foreground} attribute of the @code{default} face.
+Цвет изображения символа.  Эквивалентно атрибуту @code{:foreground} вида
+@code{default}.
 
-@vindex background-color@r{, a frame parameter}
+@vindex background-color@r{, параметр фрейма}
 @item background-color
-The color to use for the background of characters.  It is equivalent to
-the @code{:background} attribute of the @code{default} face.
+Цвет фона символов.  Эквивалентен атрибуту @code{:background} вида
+@code{default}.
 
-@vindex mouse-color@r{, a frame parameter}
+@vindex mouse-color@r{, параметр фрейма}
 @item mouse-color
-The color for the mouse pointer.  It is equivalent to the @code{:background}
-attribute of the @code{mouse} face.
+Цвет указателя мыши.  Эквивалентно атрибуту @code{:background} вида
+@code{mouse}.
 
-@vindex cursor-color@r{, a frame parameter}
+@vindex cursor-color@r{, параметр фрейма}
 @item cursor-color
-The color for the cursor that shows point.  It is equivalent to the
-@code{:background} attribute of the @code{cursor} face.
+Цвет курсора, который показывает точку.  Эквивалентно атрибуту
+@code{:background} вида @code{cursor}.
 
-@vindex border-color@r{, a frame parameter}
+@vindex border-color@r{, параметр фрейма}
 @item border-color
-The color for the border of the frame.  It is equivalent to the
-@code{:background} attribute of the @code{border} face.
+Цвет границы фрейма.  Эквивалентно атрибуту @code{:background} вида
+@code{border}.
 
-@vindex scroll-bar-foreground@r{, a frame parameter}
+@vindex scroll-bar-foreground@r{, параметр фрейма}
 @item scroll-bar-foreground
-If не-@code{nil}, the color for the foreground of scroll bars.  It is
-equivalent to the @code{:foreground} attribute of the
-@code{scroll-bar} face.
+Если не-@code{nil}, цвет переднего плана полос прокрутки.  Эквивалентно
+атрибуту @code{:foreground} вида @code{scroll-bar}.
 
-@vindex scroll-bar-background@r{, a frame parameter}
+@vindex scroll-bar-background@r{, параметр фрейма}
 @item scroll-bar-background
-If не-@code{nil}, the color for the background of scroll bars.  It is
-equivalent to the @code{:background} attribute of the
-@code{scroll-bar} face.
+Если не-@code{nil}, цвет фона полос прокрутки.  Эквивалентно атрибуту
+@code{:background} вида @code{scroll-bar}.
 @end table
 
 
 @node Geometry
-@subsection Geometry
+@subsection Геометрия
 
-  Here's how to examine the data in an X-style window geometry
-specification:
+  Вот как проверить данные в спецификации геометрии окна в стиле X:
 
 @defun x-parse-geometry geom
 @cindex geometry specification
-The function @code{x-parse-geometry} converts a standard X window
-geometry string to an alist that you can use as part of the argument to
+Функция @code{x-parse-geometry} преобразует стандартную строку геометрии
+окна X в список, который можно использовать как часть аргумента
 @code{make-frame}.
 
-The alist describes which parameters were specified in @var{geom}, and
-gives the values specified for them.  Each element looks like
-@code{(@var{parameter} . @var{value})}.  The possible @var{parameter}
-values are @code{left}, @code{top}, @code{width}, and @code{height}.
+Список описывает, какие параметры были указаны в @var{geom}, и дает
+значения, указанные для них.  Каждый элемент выглядит как
+@code{(@var{parameter} . @var{value})}.  Возможные значения @var{parameter}:
+@code{left}, @code{top}, @code{width} и @code{height}.
 
-For the size parameters, the value must be an integer.  The position
-parameter names @code{left} and @code{top} are not totally accurate,
-because some values indicate the position of the right or bottom edges
-instead.  The @var{value} possibilities for the position parameters are:
-an integer, a list @code{(+ @var{pos})}, or a list @code{(- @var{pos})};
-as previously described (@pxref{Position Parameters}).
+Для параметров размера значение должно быть целым числом.  Имена параметров
+положения @code{left} и @code{top} не совсем точны, потому что некоторые
+значения вместо этого указывают положение правого или нижнего края.
+Возможности @var{value} для параметров позиции: целое число, список
+@code{(+ @var{pos})} или список @code{(- @var{pos})}; как описано ранее
+(@pxref{Position Parameters}).
 
-Here is an example:
+Вот пример:
 
 @example
 (x-parse-geometry "35x70+0-0")
@@ -2418,77 +2397,73 @@ Here is an example:
 @end defun
 
 @node Terminal Parameters
-@section Terminal Parameters
+@section Параметры Терминала
 @cindex terminal parameters
 
-  Each terminal has a list of associated parameters.  These
-@dfn{terminal parameters} are mostly a convenient way of storage for
-terminal-local variables, but some terminal parameters have a special
-meaning.
+  Каждый терминал имеет список связанных параметров.  Эти
+@dfn{параметры терминала} в основном представляют собой удобный способ
+хранения локальных переменных терминала, но некоторые параметры терминала
+имеют особое значение.
 
-  This section describes functions to read and change the parameter values
-of a terminal.  They all accept as their argument either a terminal or
-a frame; the latter means use that frame's terminal.  An argument of
-@code{nil} means the selected frame's terminal.
+  В этом разделе описаны функции для чтения и изменения значений параметров
+терминала.  Все они принимают в качестве аргумента либо терминал, либо
+фрейм; последнее означает использование терминала этого фрейма.  Аргумент
+@code{nil} означает терминал выбранного фрейма.
 
 @defun terminal-parameters &optional terminal
-This function returns an alist listing all the parameters of
-@var{terminal} and their values.
+Функция возвращает список, в котором перечислены все параметры
+@var{terminal} и их значения.
 @end defun
 
 @defun terminal-parameter terminal parameter
-This function returns the value of the parameter @var{parameter} (a
-symbol) of @var{terminal}.  If @var{terminal} has no setting for
-@var{parameter}, this function returns @code{nil}.
+Функция возвращает значение параметра @var{parameter} (символ) объекта
+@var{terminal}.  Если @var{terminal} не имеет настройки для @var{parameter},
+эта функция возвращает @code{nil}.
 @end defun
 
 @defun set-terminal-parameter terminal parameter value
-This function sets the parameter @var{parameter} of @var{terminal} to the
-specified @var{value}, and returns the previous value of that
-parameter.
+Функция устанавливает для параметра @var{parameter} объекта @var{terminal}
+значение указанного объекта @var{value} и возвращает предыдущее значение
+этого параметра.
 @end defun
 
-Here's a list of a few terminal parameters that have a special
-meaning:
+Вот список нескольких параметров терминала, которые имеют особое значение:
 
 @table @code
 @item background-mode
-The classification of the terminal's background color, either
-@code{light} or @code{dark}.
+Классификация цвета фона терминала: @code{light} или @code{dark}.
 @item normal-erase-is-backspace
-Value is either 1 or 0, depending on whether
-@code{normal-erase-is-backspace-mode} is turned on or off on this
-terminal.  @xref{DEL Does Not Delete,,, emacs, The Emacs Manual}.
+Значение равно 1 или 0, в зависимости от того, включен или выключен
+@code{normal-erase-is-backspace-mode} на этом терминале.
+@xref{DEL Does Not Delete,,, emacs, The Emacs Manual}.
 @item terminal-initted
-After the terminal is initialized, this is set to the
-terminal-specific initialization function.
+После инициализации терминала устанавливается функция инициализации,
+специфичная для терминала.
 @item tty-mode-set-strings
-When present, a list of strings containing escape sequences that Emacs
-will output while configuring a tty for rendering.  Emacs emits these
-strings only when configuring a terminal: if you want to enable a mode
-on a terminal that is already active (for example, while in
-@code{tty-setup-hook}), explicitly output the necessary escape
-sequence using @code{send-string-to-terminal} in addition to adding
-the sequence to @code{tty-mode-set-strings}.
+Если присутствует, список строк, содержащих escape-последовательности,
+которые Emacs будет выводить при настройке tty для рендеринга.  Emacs
+генерирует эти строки только при настройке терминала: если требуется
+включить режим на терминале, который уже активен (например, находясь в
+@code{tty-setup-hook}), явно вводится необходимая escape-последовательность
+с помощью @code{send-string-to-terminal} в дополнение к добавлению
+последовательности в @code{tty-mode-set-strings}.
 @item tty-mode-reset-strings
-When present, a list of strings that undo the effects of the strings
-in @code{tty-mode-set-strings}.  Emacs emits these strings when
-exiting, deleting a terminal, or suspending itself.
+Если присутствует, список строк, отменяющих эффекты строк в
+@code{tty-mode-set-strings}.  Emacs выдает эти строки при выходе, удалении
+терминала или приостановке работы.
 @end table
 
 @node Frame Titles
-@section Frame Titles
+@section Заголовки Фреймов
 @cindex frame title
 
-  Every frame has a @code{name} parameter; this serves as the default
-for the frame title which window systems typically display at the top of
-the frame.  You can specify a name explicitly by setting the @code{name}
-frame property.
+  Каждый фрейм имеет параметр @code{name}; это используется по умолчанию для
+заголовка фрейма, который оконные системы обычно отображают в верхней части
+фрейма.  Можно указать имя явно, установив свойство фрейма @code{name}.
 
-  Normally you don't specify the name explicitly, and Emacs computes the
-frame name automatically based on a template stored in the variable
-@code{frame-title-format}.  Emacs recomputes the name each time the
-frame is redisplayed.
+  Обычно не указывается имя явно, и Emacs автоматически вычисляет имя фрейма
+на основе шаблона, хранящегося в переменной @code{frame-title-format}.
+Emacs пересчитывает имя каждый раз при повторном отображении фрейма.
 
 @defvar frame-title-format
 This variable specifies how to compute a name for a frame when you have
