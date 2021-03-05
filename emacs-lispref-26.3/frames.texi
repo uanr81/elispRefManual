@@ -2466,468 +2466,461 @@ KDE, не могут подтвердить, поэтому Xt зависает.
 Emacs пересчитывает имя каждый раз при повторном отображении фрейма.
 
 @defvar frame-title-format
-This variable specifies how to compute a name for a frame when you have
-not explicitly specified one.  The variable's value is actually a mode
-line construct, just like @code{mode-line-format}, except that the
-@samp{%c}, @samp{%C}, and @samp{%l} constructs are ignored.  @xref{Mode Line
-Data}.
+Переменная указывает, как вычислить имя для фрейма, если не указано оно
+явно.  Значение переменной фактически является конструкцией строки режима,
+как и @code{mode-line-format}, за исключением того, что конструкции
+@samp{%c}, @samp{%C} и @samp{%l} игнорируются.  @xref{Mode Line Data}.
 @end defvar
 
 @defvar icon-title-format
-This variable specifies how to compute the name for an iconified frame,
-when you have not explicitly specified the frame title.  This title
-appears in the icon itself.
+Переменная указывает, как вычислить имя для фрейма с иконкой, если явно не
+указан заголовок фрейма.  Этот заголовок отображается в самом значке.
 @end defvar
 
 @defvar multiple-frames
-This variable is set automatically by Emacs.  Its value is @code{t} when
-there are two or more frames (not counting minibuffer-only frames or
-invisible frames).  The default value of @code{frame-title-format} uses
-@code{multiple-frames} so as to put the buffer name in the frame title
-only when there is more than one frame.
+Переменная автоматически устанавливается Emacs.  Её значение @code{t}, когда
+есть два или более фреймов (не считая фреймов только для минибуфера или
+невидимых фреймов).  Значение по умолчанию @code{frame-title-format}
+использует @code{multiple-frames}, чтобы поместить имя буфера в заголовок
+фрейма, только когда имеется более одного фрейма.
 
-The value of this variable is not guaranteed to be accurate except
-while processing @code{frame-title-format} or
-@code{icon-title-format}.
+Не гарантируется, что значение этой переменной будет точным, за исключением
+обработки @code{frame-title-format} или @code{icon-title-format}.
 @end defvar
 
 @node Deleting Frames
-@section Deleting Frames
+@section Удаление Фреймов
 @cindex deleting frames
 
-A @dfn{live frame} is one that has not been deleted.  When a frame is
-deleted, it is removed from its terminal display, although it may
-continue to exist as a Lisp object until there are no more references to
-it.
+@dfn{Активный фрейм} - это тот, который не был удален.  Когда фрейм
+удаляется, он удаляется со своего терминального дисплея, хотя может
+продолжать существовать как объект Lisp до тех пор, пока на него не исчезнут
+ссылки.
 
 @deffn Command delete-frame &optional frame force
 @vindex delete-frame-functions
-This function deletes the frame @var{frame}.  The argument @var{frame}
-must specify a live frame (see below) and defaults to the selected
-frame.
+Функция удаляет фрейм @var{frame}.  Аргумент @var{frame} должен указывать
+активный фрейм (смотреть ниже) и по умолчанию использовать выбранный фрейм.
 
-It first deletes any child frame of @var{frame} (@pxref{Child Frames})
-and any frame whose @code{delete-before} frame parameter (@pxref{Frame
-Interaction Parameters}) specifies @var{frame}.  All such deletions are
-performed recursively; so this step makes sure that no other frames with
-@var{frame} as their ancestor will exist.  Then, unless @var{frame}
-specifies a tooltip, this function runs the hook
-@code{delete-frame-functions} (each function getting one argument,
-@var{frame}) before actually killing the frame.
+Сначала удаляется любой дочерний кадр @var{frame} (@pxref{Child Frames}) и
+любой фрейм, параметр фрейма @code{delete-before} которого
+(@pxref{Frame Interaction Parameters}) указывает @var{frame}.  Все такие
+удаления выполняются рекурсивно; поэтому этот шаг гарантирует, что никаких
+других фреймов с @var{frame} в качестве предка не будет.  Затем, если
+@var{frame} не указывает всплывающую подсказку, эта функция запускает
+ловушку @code{delete-frame-functions} (каждая функция получает один
+аргумент, @var{frame}) перед фактическим уничтожением фрейма.
 
-Note that a frame cannot be deleted as long as its minibuffer serves as
-surrogate minibuffer for another frame (@pxref{Minibuffers and Frames}).
-Normally, you cannot delete a frame if all other frames are invisible,
-but if @var{force} is не-@code{nil}, then you are allowed to do so.
+Обратить внимание, что фрейм не может быть удален, пока его минибуфер служит
+суррогатным минибуфером для другого фрейма (@pxref{Minibuffers and Frames}).
+Обычно не получиться удалить фрейм, если все остальные фреймы невидимы, но
+если @var{force} равен не-@code{nil}, это сделать возможно.
 @end deffn
 
 @defun frame-live-p frame
-This function returns не-@code{nil} if the frame @var{frame} has not
-been deleted.  The possible не-@code{nil} return values are like those
-of @code{framep}.  @xref{Frames}.
+Функция возвращает не-@code{nil}, если фрейм @var{frame} не был удален.
+Возможные возвращаемые значения не-@code{nil} аналогичны значениям
+@code{framep}.  @xref{Frames}.
 @end defun
 
-  Some window managers provide a command to delete a window.  These work
-by sending a special message to the program that operates the window.
-When Emacs gets one of these commands, it generates a
-@code{delete-frame} event, whose normal definition is a command that
-calls the function @code{delete-frame}.  @xref{Misc Events}.
+  Некоторые оконные менеджеры предоставляют команду для удаления окна.  Они
+работают, отправляя специальное сообщение программе, которая управляет
+окном.  Когда Emacs получает одну из этих команд, он генерирует событие
+@code{delete-frame}, обычным определением которого является команда,
+вызывающая функцию @code{delete-frame}.  @xref{Misc Events}.
 
 @deffn Command delete-other-frames &optional frame
-This command deletes all frames on @var{frame}'s terminal, except
-@var{frame}.  If @var{frame} uses another frame's minibuffer, that
-minibuffer frame is left untouched.  The argument @var{frame} must
-specify a live frame and defaults to the selected frame.  Internally,
-this command works by calling @code{delete-frame} with @var{force}
-@code{nil} for all frames that shall be deleted.
+Команда удаляет все фреймы на терминале @var{frame}, кроме @var{frame}.
+Если @var{frame} использует минибуфер другого фрейма, этот фрейм минибуфера
+остается нетронутым.  Аргумент @var{frame} должен указывать активный фрейм
+и по умолчанию использовать выбранный фрейм.  Внутренне эта команда
+работает, вызывая @code{delete-frame} с @var{force} @code{nil} для всех
+фреймов, которые должны быть удалены.
 
-This function does not delete any of @var{frame}'s child frames
-(@pxref{Child Frames}).  If @var{frame} is a child frame, it deletes
-@var{frame}'s siblings only.
+Функция не удаляет ни один из дочерних кадров @var{frame}
+(@pxref{Child Frames}).  Если @var{frame} является дочерним фреймом, он
+удаляет только одноуровневые объекты @var{frame}.
 @end deffn
 
 
 @node Finding All Frames
-@section Finding All Frames
+@section Поиск Всех Фреймов
 @cindex frames, scanning all
 
 @defun frame-list
-This function returns a list of all the live frames, i.e., those that
-have not been deleted.  It is analogous to @code{buffer-list} for
-buffers, and includes frames on all terminals.  The list that you get
-is newly created, so modifying the list doesn't have any effect on the
-internals of Emacs.
+Функция возвращает список всех активных фреймов, то есть тех, которые не
+были удалены.  Аналогичено @code{buffer-list} для буферов и включает фреймы
+на всех терминалах.  Список, который получается, создается заново, поэтому
+изменение списка не влияет на внутреннюю структуру Emacs.
 @end defun
 
 @defun visible-frame-list
-This function returns a list of just the currently visible frames.
-@xref{Visibility of Frames}.  Frames on text terminals always count as
-visible, even though only the selected one is actually displayed.
+Функция возвращает список только видимых в данный момент фреймов.
+@xref{Visibility of Frames}.  Фреймы на текстовых терминалах всегда
+считаются видимыми, даже если фактически отображается только выбранный.
 @end defun
 
 @defun frame-list-z-order &optional display
-This function returns a list of Emacs' frames, in Z (stacking) order
-(@pxref{Raising and Lowering}).  The optional argument @var{display}
-specifies which display to poll.  @var{display} should be either a frame
-or a display name (a string).  If omitted or @code{nil}, that stands for
-the selected frame's display.  It returns @code{nil} if @var{display}
-contains no Emacs frame.
+Функция возвращает список фреймов Emacs в порядке Z (стекирования)
+(@pxref{Raising and Lowering}).  Необязательный аргумент @var{display}
+указывает, какой дисплей следует опросить.  @var{display} должен быть либо
+фреймом, либо отображаемым именем (строкой).  Если опущено или @code{nil},
+это означает отображение выбранного фрейма.  Возвращается @code{nil}, если
+@var{display} не содержит фрейма Emacs.
 
-Frames are listed from topmost (first) to bottommost (last).  As a
-special case, if @var{display} is не-@code{nil} and specifies a live
-frame, it returns the child frames of that frame in Z (stacking) order.
+Фреймы перечислены от самого верхнего (первого) до самого нижнего
+(последнего).  В качестве особого случая, если @var{display} имеет значение
+не-@code{nil} и задается активный фрейм, возвращаются дочерние фреймы этого
+фрейма в Z (наложении) порядке.
 
-This function is not meaningful on text terminals.
+Эта функция не имеет смысла для текстовых терминалов.
 @end defun
 
 @defun next-frame &optional frame minibuf
-This function lets you cycle conveniently through all the frames on a
-specific terminal from an arbitrary starting point.  It returns the
-frame following @var{frame}, in the list of all live frames, on
-@var{frame}'s terminal.  The argument @var{frame} must specify a live
-frame and defaults to the selected frame.  It never returns a frame
-whose @code{no-other-frame} parameter (@pxref{Frame Interaction
-Parameters}) is не-@code{nil}.
+Функция позволяет удобно циклически перебирать все фреймы на конкретном
+терминале с произвольной начальной точки.  Возвращается фрейм, следующий за
+@var{frame}, в списке всех активных фреймов на терминале @var{frame}.
+Аргумент @var{frame} должен указывать активный фрейм и по умолчанию
+использовать выбранный фрейм.  Никогда не возвращается фрейм, у которого
+параметр @code{no-other-frame} (@pxref{Frame Interaction Parameters}) равен
+не-@code{nil}.
 
-The second argument, @var{minibuf}, says which frames to consider:
+Второй аргумент, @var{minibuf}, говорит, какие фреймы следует учитывать:
 
 @table @asis
 @item @code{nil}
-Exclude minibuffer-only frames.
+Исключить фреймы только для минибуфера.
 @item @code{visible}
-Consider all visible frames.
+Учитывать все видимые фреймы.
 @item 0
-Consider all visible or iconified frames.
+Учитывать все видимые или иконизированные фреймы.
 @item a window
-Consider only the frames using that particular window as their
-minibuffer.
+Рассматривать только фреймы, использующие это конкретное окно в качестве
+своего минибуфера.
 @item anything else
-Consider all frames.
+Рассмотреть все фреймы.
 @end table
 @end defun
 
 @defun previous-frame &optional frame minibuf
-Like @code{next-frame}, but cycles through all frames in the opposite
-direction.
+Аналогично @code{next-frame}, но циклически перебирает все фреймы в
+противоположном направлении.
 @end defun
 
-  See also @code{next-window} and @code{previous-window}, in @ref{Cyclic
-Window Ordering}.
+  Смотреть также @code{next-window} и @code{previous-window}, в
+  @ref{Cyclic Window Ordering}.
 
 @node Minibuffers and Frames
-@section Minibuffers and Frames
+@section Минибуферы и Фреймы
 
-Normally, each frame has its own minibuffer window at the bottom, which
-is used whenever that frame is selected.  You can get that window with
-the function @code{minibuffer-window} (@pxref{Minibuffer Windows}).
+Обычно у каждого фрейма есть собственное окно минибуфера внизу, которое
+используется всякий раз, когда этот фрейм выбирается.  Можно получить это
+окно с помощью функции @code{minibuffer-window}
+(@pxref{Minibuffer Windows}).
 
 @cindex frame without a minibuffer
 @cindex surrogate minibuffer frame
-However, you can also create a frame without a minibuffer.  Such a frame
-must use the minibuffer window of some other frame.  That other frame
-will serve as @dfn{surrogate minibuffer frame} for this frame and cannot
-be deleted via @code{delete-frame} (@pxref{Deleting Frames}) as long as
-this frame is live.
+Однако также можно создать фрейм без минибуфера.  Такой фрейм должен
+использовать окно минибуфера какого-либо другого фрейма.  Этот другой фрейм
+будет служить @dfn{фреймом суррогатного минибуфера} для этого фрейма и не
+может быть удален через @code{delete-frame} (@pxref{Deleting Frames}), пока
+этот фрейм существует.
 
-When you create the frame, you can explicitly specify its minibuffer
-window (in some other frame) with the @code{minibuffer} frame parameter
-(@pxref{Buffer Parameters}).  If you don't, then the minibuffer is found
-in the frame which is the value of the variable
-@code{default-minibuffer-frame}.  Its value should be a frame that does
-have a minibuffer.
+Когда создается фрейм, можно явно указать его окно минибуфера (в каком-то
+другом фрейме) с параметром @code{minibuffer} frame
+(@pxref{Buffer Parameters}).  Если этого не сделаеть, то минибуфер находится
+в фрейме, который указывается значением переменной
+@code{default-minibuffer-frame}.  Этим значением должен быть фрейм, у
+которого есть минибуфер.
 
-If you use a minibuffer-only frame, you might want that frame to raise
-when you enter the minibuffer.  If so, set the variable
-@code{minibuffer-auto-raise} to @code{t}.  @xref{Raising and Lowering}.
+Если используется фрейм только для минибуфера, можно захотеть, чтобы этот
+фрейм поднимался при входе в минибуфер.  Если это так, установить для
+переменной @code{minibuffer-auto-raise} значение @code{t}.
+@xref{Raising and Lowering}.
 
 @defvar default-minibuffer-frame
-This variable specifies the frame to use for the minibuffer window, by
-default.  It does not affect existing frames.  It is always local to
-the current terminal and cannot be buffer-local.  @xref{Multiple
-Terminals}.
+Переменная определяет фрейм, используемый по умолчанию для окна минибуфера.
+Это не влияет на существующие фреймы.  Всегда локальна для текущего
+терминала и не может быть локальным для буфера.  @xref{Multiple Terminals}.
 @end defvar
 
 
 @node Input Focus
-@section Input Focus
+@section Входной Фокус
 @cindex input focus
 @cindex selected frame
 
-At any time, one frame in Emacs is the @dfn{selected frame}.  The
-selected window always resides on the selected frame.
+В любой момент один фрейм в Emacs - это @dfn{выбранный фрейм}.  Выбранное
+окно всегда находится на выбранном фрейме.
 
-When Emacs displays its frames on several terminals (@pxref{Multiple
-Terminals}), each terminal has its own selected frame.  But only one
-of these is @emph{the} selected frame: it's the frame that belongs
-to the terminal from which the most recent input came.  That is, when
-Emacs runs a command that came from a certain terminal, the selected
-frame is the one of that terminal.  Since Emacs runs only a single
-command at any given time, it needs to consider only one selected
-frame at a time; this frame is what we call @dfn{the selected frame}
-in this manual.  The display on which the selected frame is shown is
-the @dfn{selected frame's display}.
+Когда Emacs отображает свои фреймы на нескольких терминалах
+(@pxref{Multiple Terminals}), каждый терминал имеет свой собственный
+выбранный фрейм.  Но только один из них - @emph{это} выбранный фрейм:
+фрейм, принадлежащий терминалу, с которого был получен последний ввод.  То
+есть, когда Emacs запускает команду, пришедшую с определенного терминала,
+выбранный фрейм является фреймом этого терминала.  Поскольку Emacs запускает
+только одну команду в любой момент времени, ему нужно рассматривать только
+один выбранный фрейм за раз; этот фрейм называется @dfn{выбранный фрейм} в
+этом руководстве.  Дисплей, на котором отображается выбранный кадр, - это
+@dfn{отображение выбранного кадра}.
 
 @defun selected-frame
-This function returns the selected frame.
+Функция возвращает выбранный фрейм.
 @end defun
 
-Some window systems and window managers direct keyboard input to the
-window object that the mouse is in; others require explicit clicks or
-commands to @dfn{shift the focus} to various window objects.  Either
-way, Emacs automatically keeps track of which frame has the focus.  To
-explicitly switch to a different frame from a Lisp function, call
+Некоторые оконные системы и оконные менеджеры направляют ввод с клавиатуры
+на объект окна, в котором находится мышь; другие требуют явных щелчков или
+@dfn{сместить фокус} команд для  различных оконных объектов.  В любом случае
+Emacs автоматически отслеживает, какой фрейм находится в фокусе.  Чтобы явно
+переключиться на другой фрейм из функции Lisp, вызвать
 @code{select-frame-set-input-focus}.
 
-Lisp programs can also switch frames temporarily by calling the
-function @code{select-frame}.  This does not alter the window system's
-concept of focus; rather, it escapes from the window manager's control
-until that control is somehow reasserted.
+Программы Lisp также могут временно переключать фреймы, вызывая функцию
+@code{select-frame}.  Это не меняет концепции фокуса оконной системы;
+скорее, ускользается из-под управления оконного менеджера до тех пор, пока
+это управление каким-либо образом не будет подтверждено повторно.
 
-When using a text terminal, only one frame can be displayed at a time
-on the terminal, so after a call to @code{select-frame}, the next
-redisplay actually displays the newly selected frame.  This frame
-remains selected until a subsequent call to @code{select-frame}.  Each
-frame on a text terminal has a number which appears in the mode line
-before the buffer name (@pxref{Mode Line Variables}).
+При использовании текстового терминала одновременно на терминале может
+отображаться только один фрейм, поэтому после вызова @code{select-frame}
+следующее повторное отображение фактически отображает только что выбранный
+фрейм.  Этот фрейм остается выбранным до следующего вызова
+@code{select-frame}.  Каждый фрейм на текстовом терминале имеет номер,
+который появляется в строке режима перед именем буфера
+(@pxref{Mode Line Variables}).
 
 @defun select-frame-set-input-focus frame &optional norecord
-This function selects @var{frame}, raises it (should it happen to be
-obscured by other frames) and tries to give it the X server's focus.
-On a text terminal, the next redisplay displays the new frame on the
-entire terminal screen.  The optional argument @var{norecord} has the
-same meaning as for @code{select-frame} (see below).  The return value
-of this function is not significant.
+Функция выбирает @var{frame}, поднимает его (если оказывается закрытым
+другими фреймами) и пытается передать ему фокус X-сервера.  На текстовом
+терминале следующее повторное отображение отображает новый фрейм на всем
+экране терминала.  Необязательный аргумент @var{norecord} имеет то же
+значение, что и @code{select-frame} (смотреть ниже).  Возвращаемое значение
+этой функции не имеет значения.
 @end defun
 
-Ideally, the function described next should focus a frame without also
-raising it above other frames.  Unfortunately, many window-systems or
-window managers may refuse to comply.
+В идеале описанная далее функция должна фокусировать фрейм, не поднимая его
+над другими фреймами.  К сожалению, многие оконные системы или оконные
+менеджеры могут отказаться подчиняться.
 
 @defun x-focus-frame frame &optional noactivate
-This function gives @var{frame} the focus of the X server without
-necessarily raising it.  @var{frame} @code{nil} means use the selected
-frame.  Under X, the optional argument @var{noactivate}, if
-не-@code{nil}, means to avoid making @var{frame}'s window-system window
-the ``active'' window which should insist a bit more on avoiding to
-raise @var{frame} above other frames.
+Функция дает @var{frame} фокус X-сервера без необходимости его поднятия.
+@var{frame} установленное в @code{nil} означает использовать выбранный
+фрейм.  В X необязательный аргумент @var{noactivate}, если не-@code{nil},
+означает, что окно @var{frame} оконной системы не должно быть ``активным''
+окном, которое должно настаивать на том, чтобы не поднимать @var{frame} над
+другими фреймами.
 
-On MS-Windows the @var{noactivate} argument has no effect.  However, if
-@var{frame} is a child frame (@pxref{Child Frames}), this function
-usually focuses @var{frame} without raising it above other child
-frames.
+В MS-Windows аргумент @var{noactivate} не действует.  Однако, если
+@var{frame} является дочерним фреймом (@pxref{Child Frames}), функция обычно
+фокусирует @var{frame}, не поднимая его над другими дочерними кадрами.
 
-If there is no window system support, this function does nothing.
+Если нет поддержки оконной системы, эта функция ничего не делает.
 @end defun
 
 @deffn Command select-frame frame &optional norecord
-This function selects frame @var{frame}, temporarily disregarding the
-focus of the X server if any.  The selection of @var{frame} lasts until
-the next time the user does something to select a different frame, or
-until the next time this function is called.  (If you are using a
-window system, the previously selected frame may be restored as the
-selected frame after return to the command loop, because it still may
-have the window system's input focus.)
+Функция выбирает фрейм @var{frame}, временно игнорируя фокус X-сервера, если
+таковой имеется.  Выбор @var{frame} длится до следующего раза, когда
+пользователь что-то сделает для выбора другого фрейма, или до следующего
+вызова этой функции.  (Если используется оконная система, ранее выбранный
+фрейм может быть восстановлен как выбранный фрейм после возврата в цикл
+команд, потому что все еще может иметься фокус ввода оконной системы.)
 
-The specified @var{frame} becomes the selected frame, and its terminal
-becomes the selected terminal.  This function then calls
-@code{select-window} as a subroutine, passing the window selected
-within @var{frame} as its first argument and @var{norecord} as its
-second argument (hence, if @var{norecord} is не-@code{nil}, this
-avoids changing the order of recently selected windows and the buffer
-list).  @xref{Selecting Windows}.
+Указанный @var{frame} становится выбранным фреймом, а его терминал
+становится выбранным терминалом.  Затем функция вызывает
+@code{select-window} как подпрограмму, передавая окно, выбранное в
+@var{frame}, в качестве первого аргумента и @var{norecord} в качестве
+второго аргумента (следовательно, если @var{norecord} - не-@code{nil}, это
+позволяет избежать изменения порядка недавно выбранных окон и списка
+буферов).  @xref{Selecting Windows}.
 
-This function returns @var{frame}, or @code{nil} if @var{frame} has
-been deleted.
+Функция возвращает @var{frame} или @code{nil}, если @var{frame} был удален. 
 
-In general, you should never use @code{select-frame} in a way that
-could switch to a different terminal without switching back when
-you're done.
+В общем, никогда не нужно использовать @code{select-frame} таким образом,
+чтобы можно было переключиться на другой терминал, не переключаясь обратно,
+в конце.
 @end deffn
 
-Emacs cooperates with the window system by arranging to select frames as
-the server and window manager request.  It does so by generating a
-special kind of input event, called a @dfn{focus} event, when
-appropriate.  The command loop handles a focus event by calling
+Emacs взаимодействует с оконной системой, организуя выбор фреймов в качестве
+запросов сервера и оконного менеджера.  Делает это, генерируя особый вид
+входного события, называемого событием @dfn{фокус}, когда это необходимо.
+Командный цикл обрабатывает событие фокуса, вызывая
 @code{handle-switch-frame}.  @xref{Focus Events}.
 
 @deffn Command handle-switch-frame frame
-This function handles a focus event by selecting frame @var{frame}.
+Функция обрабатывает событие фокуса, выбирая кадр @var{frame}.
 
-Focus events normally do their job by invoking this command.
-Don't call it for any other reason.
+События фокуса обычно выполняют свою работу, вызывая эту команду.
+Не вызывать это по какой-либо другой причине.
 @end deffn
 
 @defun redirect-frame-focus frame &optional focus-frame
-This function redirects focus from @var{frame} to @var{focus-frame}.
-This means that @var{focus-frame} will receive subsequent keystrokes and
-events intended for @var{frame}.  After such an event, the value of
-@code{last-event-frame} will be @var{focus-frame}.  Also, switch-frame
-events specifying @var{frame} will instead select @var{focus-frame}.
+Функция перенаправляет фокус с @var{frame} на @var{focus-frame}.  Это
+означает, что @var{focus-frame} будет получать последующие нажатия клавиш и
+события, предназначенные для @var{frame}.  После такого события значение
+@code{last-event-frame} будет @var{focus-frame}.  Кроме того, события
+switch-frame, указывающие @var{frame}, вместо этого выберут
+@var{focus-frame}.
 
-If @var{focus-frame} is omitted or @code{nil}, that cancels any existing
-redirection for @var{frame}, which therefore once again receives its own
-events.
+Если @var{focus-frame} опущен или @code{nil}, это отменяет любое
+существующее перенаправление для @var{frame}, которое, таким образом, снова
+получает свои собственные события.
 
-One use of focus redirection is for frames that don't have minibuffers.
-These frames use minibuffers on other frames.  Activating a minibuffer
-on another frame redirects focus to that frame.  This puts the focus on
-the minibuffer's frame, where it belongs, even though the mouse remains
-in the frame that activated the minibuffer.
+Одно из применений перенаправления фокуса - для фреймов, у которых нет
+минибуферов.  Эти фреймы используют минибуферы на других фреймах.  Активация
+минибуфера на другом фрейме перенаправляет фокус на этот фрейм.  Это
+помещает фокус на фрейм минибуфера, которому он принадлежит, даже если мышь
+остается в фрейме, который активировал минибуфер.
 
-Selecting a frame can also change focus redirections.  Selecting frame
-@code{bar}, when @code{foo} had been selected, changes any redirections
-pointing to @code{foo} so that they point to @code{bar} instead.  This
-allows focus redirection to work properly when the user switches from
-one frame to another using @code{select-window}.
+Выбор фрейма также может изменить перенаправление фокуса.  Выбор фрейма
+@code{bar}, когда был выбран @code{foo}, изменяет любые перенаправления,
+указывающие на @code{foo}, так, чтобы вместо этого они указывали на
+@code{bar}.  Это позволяет перенаправлению фокуса работать правильно, когда
+пользователь переключается с одного кадра на другой с помощью
+@code{select-window}.
 
-This means that a frame whose focus is redirected to itself is treated
-differently from a frame whose focus is not redirected.
-@code{select-frame} affects the former but not the latter.
+Это означает, что фрейм, фокус которого перенаправлен на себя,
+обрабатывается иначе, чем фрейм, фокус которого не перенаправлен.
+@code{select-frame} влияет на первое, но не на второе.
 
-The redirection lasts until @code{redirect-frame-focus} is called to
-change it.
+Перенаправление длится до тех пор, пока не будет вызвана функция
+@code{redirect-frame-focus} для его изменения.
 @end defun
 
 @defvar focus-in-hook
-This is a normal hook run when an Emacs frame gains input focus.  The
-frame gaining focus is selected when this hook is run.
+Нормальный запуск ловушки, когда фрейм Emacs получает фокус ввода.
+Фокусировка кадра выбирается, когда этот хук запущен.
 @end defvar
 
 @defvar focus-out-hook
-This is a normal hook run when an Emacs frame has lost input focus and
-no other Emacs frame has gained input focus instead.
+Нормальный запуск ловушки, когда фрейм Emacs потерял фокус ввода и вместо
+этого никакой другой фрейм Emacs не получил фокус ввода.
 @end defvar
 
 @defopt focus-follows-mouse
-This option informs Emacs whether and how the window manager transfers
-focus when you move the mouse pointer into a frame.  It can have three
-meaningful values:
+Опция сообщает Emacs, передает ли оконный менеджер фокус, когда перемещается
+указатель мыши во фрейм, и каким образом.  Может иметь три значимых
+значения:
 
 @table @asis
 @item @code{nil}
-The default value @code{nil} should be used when your window manager
-follows a ``click-to-focus'' policy where you have to click the mouse
-inside of a frame in order for that frame to gain focus.
+Значение по умолчанию @code{nil} следует использовать, когда оконный
+менеджер следует политике ``щелчок для фокусировки'', где требуется щелкнуть
+мышью внутри фрейма, чтобы этот фрейм получил фокус.
 
 @item @code{t}
-The value @code{t} should be used when your window manager has the focus
-automatically follow the position of the mouse pointer but a frame that
-gains focus is not raised automatically and may even remain occluded by
-other window-system windows.
+Значение @code{t} следует использовать, когда оконный менеджер имеет фокус,
+автоматически отслеживающий положение указателя мыши, но фрейм, который
+получает фокус, не поднимается автоматически и может даже оставаться
+закрытым другими окнами оконной системы.
 
 @item @code{auto-raise}
-The value @code{auto-raise} should be used when your window manager has
-the focus automatically follow the position of the mouse pointer and a
-frame that gains focus is raised automatically.
+Значение @code{auto-raise} следует использовать, когда оконный менеджер
+имеет фокус, который автоматически следует за положением указателя мыши, а
+фрейм, который получает фокус, поднимается автоматически.
 @end table
 
-If this option is не-@code{nil}, Emacs moves the mouse pointer to the
-frame selected by @code{select-frame-set-input-focus}.  That function is
-used by a number of commands like, for example, @code{other-frame} and
-@code{pop-to-buffer}.
+Если эта опция - не-@code{nil}, Emacs перемещает указатель мыши на фрейм,
+выбранный @code{select-frame-set-input-focus}.  Функция используется рядом
+команд, например, @code{other-frame} и @code{pop-to-buffer}.
 
-The distinction between the values @code{t} and @code{auto-raise} is not
-needed for ``normal'' frames because the window manager usually takes
-care of raising them.  It is useful to automatically raise child frames
-via @code{mouse-autoselect-window} (@pxref{Mouse Window
-Auto-selection}).
+Различие между значениями @code{t} и @code{auto-raise} не требуется для
+``нормальных'' фреймов, потому что оконный менеджер обычно заботится об их
+повышении.  Полезно автоматически поднимать дочерние фреймы через
+@code{mouse-autoselect-window} (@pxref{Mouse Window Auto-selection}).
 
-Note that this option does not distinguish ``sloppy'' focus (where the
-frame that previously had focus retains focus as long as the mouse
-pointer does not move into another window manager window) from
-``strict'' focus (where a frame immediately loses focus when it's left
-by the mouse pointer).  Neither does it recognize whether your window
-manager supports delayed focusing or auto-raising where you can
-explicitly specify the time until a new frame gets focus or is
-auto-raised.
+Обратить внимание, что этот параметр не различает ``небрежный'' фокус (где
+фрейм, у которого ранее был фокус, сохраняет фокус, пока указатель мыши не
+перемещается в другое окно оконного менеджера) от фокуса ``строгий'' (где
+фрейм сразу теряет фокус, когда его оставляет мышь указатель).  Также не
+распознается, поддерживает ли оконный менеджер отложенную фокусировку или
+автоподъем, где можете явно указать время до тех пор, пока новый фрейм не
+получит фокус или не будет автоматически поднят.
 
-You can supply a ``focus follows mouse'' policy for individual Emacs
-windows by customizing the variable @code{mouse-autoselect-window}
+Можете предоставить политику ``фокус следует за мышью'' для отдельных окон
+Emacs, настроив переменную @code{mouse-autoselect-window}
 (@pxref{Mouse Window Auto-selection}).
 @end defopt
 
 
 @node Visibility of Frames
-@section Visibility of Frames
+@section Видимость Фреймов
 @cindex visible frame
 @cindex invisible frame
 @cindex iconified frame
 @cindex minimized frame
 @cindex frame visibility
 
-A frame on a graphical display may be @dfn{visible}, @dfn{invisible}, or
-@dfn{iconified}.  If it is visible, its contents are displayed in the
-usual manner.  If it is iconified, its contents are not displayed, but
-there is a little icon somewhere to bring the frame back into view (some
-window managers refer to this state as @dfn{minimized} rather than
-@dfn{iconified}, but from Emacs' point of view they are the same thing).
-If a frame is invisible, it is not displayed at all.
+Фрейм на графическом дисплее может иметь размер @dfn{видимый},
+@dfn{невидимый} или @dfn{иконизированный}.  Если виден, его содержимое
+отображается обычным образом.  Если обозначен значком, его содержимое не
+отображается, но где-то есть маленький значок, чтобы вернуть фрейм в поле
+зрения (некоторые оконные менеджеры называют это состояние
+@dfn{минимизированное}, а не @dfn{иконизированное}, но с точки зрения Emacs
+это одно и тоже).  Если фрейм невидим, он вообще не отображается.
 
 @cindex mapped frame
 @cindex unmapped frame
-  The concept of visibility is strongly related to that of (un-)mapped
-frames.  A frame (or, more precisely, its window-system window) is and
-becomes @dfn{mapped} when it is displayed for the first time and
-whenever it changes its state of visibility from @code{iconified} or
-@code{invisible} to @code{visible}.  Conversely, a frame is and becomes
-@dfn{unmapped} whenever it changes its status from @code{visible} to
-@code{iconified} or @code{invisible}.
+  Концепция видимости тесно связана с концепцией (не) отображенных фреймов.
+Фрейм (или, точнее, его окно оконной системы) есть и становится
+@dfn{нанесенным на карту}, когда отображается в первый раз и всякий раз,
+когда меняет свое состояние видимости с @code{иконизированного} или
+@code{невидимого} на @code{видимое}.  И наоборот, фрейм становится
+@dfn{не нанесенный на карту} всякий раз, когда он меняет свой статус с
+@code{видимого} на @code{иконизированное} или @code{невидимое}.
 
-  Visibility is meaningless on text terminals, since only the selected
-frame is actually displayed in any case.
+  Видимость не имеет смысла на текстовых терминалах, поскольку в любом
+случае фактически отображается только выбранный фрейм.
 
 @defun frame-visible-p frame
-This function returns the visibility status of frame @var{frame}.  The
-value is @code{t} if @var{frame} is visible, @code{nil} if it is
-invisible, and @code{icon} if it is iconified.
+Функция возвращает статус видимости фрейма @var{frame}.  Значение -
+@code{t}, если @var{frame} виден, @code{nil}, если он невидим, и
+@code{icon}, если он обозначен иконкой.
 
-On a text terminal, all frames are considered visible for the
-purposes of this function, even though only one frame is displayed.
+В текстовом терминале все фреймы считаются видимыми для этой функции, даже
+если отображается только один фрейм.
 @xref{Raising and Lowering}.
 @end defun
 
 @deffn Command iconify-frame &optional frame
-This function iconifies frame @var{frame}.  If you omit @var{frame}, it
-iconifies the selected frame.  This usually makes all child frames of
-@var{frame} (and their descendants) invisible (@pxref{Child Frames}).
+Функция обозначает фрейм @var{frame}.  Если не указано @var{frame},
+выбранный фрейм будет отмечен значком.  Обычно это делает все дочерние
+фреймы @var{frame} (и их потомки) невидимыми (@pxref{Child Frames}).
 @end deffn
 
 @deffn Command make-frame-visible &optional frame
-This function makes frame @var{frame} visible.  If you omit @var{frame},
-it makes the selected frame visible.  This does not raise the frame, but
-you can do that with @code{raise-frame} if you wish (@pxref{Raising and
-Lowering}).
+Функция делает видимым фрейм @var{frame}.  Если не указать @var{frame},
+выбранный кадр станет видимым.  Это не поднимает фрейм, но можно сделать это
+с помощью @code{raise-frame}, если хотите (@pxref{Raising and Lowering}).
 
-Making a frame visible usually makes all its child frames (and their
-descendants) visible as well (@pxref{Child Frames}).
+Когда фрейм становится видимым, обычно все его дочерние фреймы (и их
+потомки) также становятся видимыми (@pxref{Child Frames}).
 @end deffn
 
 @deffn Command make-frame-invisible &optional frame force
-This function makes frame @var{frame} invisible.  If you omit
-@var{frame}, it makes the selected frame invisible.  Usually, this makes
-all child frames of @var{frame} (and their descendants) invisible too
-(@pxref{Child Frames}).
+Функция делает невидимым фрейм @var{frame}.  Если опустить @var{frame},
+выбранный фрейм станет невидимым.  Обычно это делает все дочерние фреймы
+@var{frame} (и их потомки) также невидимыми (@pxref{Child Frames}).
 
-Unless @var{force} is не-@code{nil}, this function refuses to make
-@var{frame} invisible if all other frames are invisible.
+Если @var{force} не является не-@code{nil}, функция отказывается делать
+@var{frame} невидимым, если все остальные фреймы невидимы.
 @end deffn
 
-  The visibility status of a frame is also available as a frame
-parameter.  You can read or change it as such.  @xref{Management
-Parameters}.  The user can also iconify and deiconify frames with the
-window manager.  This happens below the level at which Emacs can exert
-any control, but Emacs does provide events that you can use to keep
-track of such changes.  @xref{Misc Events}.
+  Статус видимости фрейма также доступен как параметр фрейма.  Можно
+прочитать или изменить его как таковой.  @xref{Management Parameters}.
+Пользователь также может уменьшать и деактивировать фреймы с помощью
+оконного менеджера.  Это происходит ниже уровня, на котором Emacs может
+осуществлять любое управление, но Emacs действительно предоставляет события,
+которые можно использовать для отслеживания таких изменений.
+@xref{Misc Events}.
 
 @defun x-double-buffered-p &optional frame
-This function returns не-@code{nil} if @var{frame} is currently
-being rendered with double buffering.  @var{frame} defaults to the
-selected frame.
+Функция возвращает не-@code{nil}, если @var{frame} в настоящее время
+визуализируется с двойной буферизацией.  @var{frame} по умолчанию
+использует выбранный фрейм.
 @end defun
 
 
 @node Raising and Lowering
-@section Raising, Lowering and Restacking Frames
+@section Подъем, Опускание и Перестановка рам
 
 @cindex raising a frame
 @cindex lowering a frame
@@ -2935,83 +2928,86 @@ selected frame.
 @cindex frame stacking order
 @cindex frame Z-order
 @cindex Z-order
-  Most window systems use a desktop metaphor.  Part of this metaphor is
-the idea that system-level windows (representing, e.g., Emacs frames)
-are stacked in a notional third dimension perpendicular to the screen
-surface.  The order induced by stacking is total and usually referred to
-as stacking (or Z-) order.  Where the areas of two windows overlap, the
-one higher up in that order will (partially) cover the one underneath.
+  В большинстве оконных систем используется метафора рабочего стола.  Частью
+этой метафоры является идея о том, что окна системного уровня
+(представляющие, например, фреймы Emacs) располагаются в условном третьем
+измерении, перпендикулярном поверхности экрана.  Порядок, вызванный
+наложением, является полным и обычно называется порядком наложения (или Z-)
+порядком.  Там, где области двух окон перекрываются, то, что находится выше
+в этом порядке, будет (частично) закрывать нижнее.
 
-  You can @dfn{raise} a frame to the top of that order or @dfn{lower} a
-frame to its bottom by using the functions @code{raise-frame} and
-@code{lower-frame}.  You can @dfn{restack} a frame directly above or
-below another frame using the function @code{frame-restack}.
+  Можно @dfn{поднимать} фрейм вверх этого порядка или @dfn{опускать} фрейм
+вниз, используя функции @code{raise-frame} и @code{lower-frame}.  Можно
+@dfn{перекладывать заново} фрейм непосредственно над или под другим фреймом,
+используя функцию @code{frame-restack}.
 
-  Note that all functions described below will respect the adherence of
-frames (and all other window-system windows) to their respective z-group
-(@pxref{Position Parameters}).  For example, you usually cannot lower a
-frame below that of the desktop window and you cannot raise a frame
-whose @code{z-group} parameter is @code{nil} above the window-system's
-taskbar or tooltip window.
+  Обратить внимание, что все функции, описанные ниже, будут учитывать
+привязку фреймов (и всех других окон оконной системы) к их соответствующей
+z-группе (@pxref{Position Parameters}).  Например, обычно не получиться
+опустить фрейм ниже окна рабочего стола, и не выйдет поднять фрейм, параметр
+@code{z-group} которого равен @code{nil}, над панелью задач оконной системы
+или окном всплывающей подсказки.
 
 @deffn Command raise-frame &optional frame
-This function raises frame @var{frame} (default, the selected frame)
-above all other frames belonging to the same or a lower z-group as
-@var{frame}.  If @var{frame} is invisible or iconified, this makes it
-visible.  If @var{frame} is a child frame (@pxref{Child Frames}), this
-raises @var{frame} above all other child frames of its parent.
+Функция поднимает фрейм @var{frame} (по умолчанию, выбранный фрейм) над
+всеми другими фреймами, принадлежащими той же или более низкой z-группе, что
+и @var{frame}.  Если @var{frame} невидим или обозначен значком, он
+становится видимым.  Если @var{frame} является дочерним фреймом
+(@pxref{Child Frames}), это поднимает @var{frame} выше всех остальных
+дочерних фреймов своего родителя.
 @end deffn
 
 @deffn Command lower-frame &optional frame
-This function lowers frame @var{frame} (default, the selected frame)
-below all other frames belonging to the same or a higher z-group as
-@var{frame}.  If @var{frame} is a child frame (@pxref{Child Frames}),
-this lowers @var{frame} below all other child frames of its parent.
+Функция опускает фрейм @var{frame} (по умолчанию, выбранный кадр) ниже всех
+других фреймов, принадлежащих той же или более высокой z-группе, что и
+@var{frame}.  Если @var{frame} является дочерним фреймом
+(@pxref{Child Frames}), это опускает @var{frame} ниже всех остальных
+дочерних фреймов своего родителя.
 @end deffn
 
 @defun frame-restack frame1 frame2 &optional above
-This function restacks @var{frame1} below @var{frame2}.  This implies
-that if both frames are visible and their display areas overlap,
-@var{frame2} will (partially) obscure @var{frame1}.  If the optional
-third argument @var{above} is не-@code{nil}, this function restacks
-@var{frame1} above @var{frame2}.  This means that if both frames are
-visible and their display areas overlap, @var{frame1} will (partially)
-obscure @var{frame2}.
+Функция перезагружает @var{frame1} ниже @var{frame2}.  Это означает, что
+если видны оба фрейма и их области отображения перекрываются, @var{frame2}
+(частично) закроет @var{frame1}.  Если необязательный третий аргумент
+@var{above} - не-@code{nil}, эта функция помещает @var{frame1} поверх
+@var{frame2}.  Это означает, что если видны оба кадра и их области
+отображения перекрываются, @var{frame1} (частично) закроет @var{frame2}.
 
-Technically, this function may be thought of as an atomic action
-performed in two steps: The first step removes @var{frame1}'s
-window-system window from the display.  The second step reinserts
-@var{frame1}'s window into the display below (above if @var{above} is
-true) that of @var{frame2}.  Hence the position of @var{frame2} in its
-display's Z (stacking) order relative to all other frames excluding
-@var{frame1} remains unaltered.
+Технически эту функцию можно рассматривать как атомарное действие,
+выполняемое в два этапа: Первый шаг удаляет окно оконной системы
+@var{frame1} с дисплея.  На втором шаге окно @var{frame1} повторно
+вставляется в отображение ниже (вверху, если @var{above} истинно),
+отображения @var{frame2}.  Следовательно, положение @var{frame2} в Z-порядке
+отображения (наложения) относительно всех других фреймов, за исключением
+@var{frame1}, остается неизменным.
 
-Some window managers may refuse to restack windows.
+Некоторые оконные менеджеры могут отказываться переупаковывать окна.
 @end defun
 
-Note that the effect of restacking will only hold as long as neither of
-the involved frames is iconified or made invisible.  You can use the
-@code{z-group} (@pxref{Position Parameters}) frame parameter to add a
-frame to a group of frames permanently shown above or below other
-frames.  As long as a frame belongs to one of these groups, restacking
-it will only affect its relative stacking position within that group.
-The effect of restacking frames belonging to different z-groups is
-undefined.  You can list frames in their current stacking order with the
-function @code{frame-list-z-order} (@pxref{Finding All Frames}).
+Обратить внимание, что эффект перетасовки будет сохраняться только до тех
+пор, пока ни один из задействованных фреймов не будет отмечен значком или
+не станет невидимым.  Можно использовать параметр фрейма @code{z-group}
+(@pxref{Position Parameters}), чтобы добавить фрейм к группе фреймов,
+постоянно отображаемый над или под другими фреймами.  Пока фрейм принадлежит
+к одной из этих групп, перетасовка будет влиять только на его относительное
+положение в стеке внутри этой группы.  Эффект от перестановки фреймов,
+принадлежащих разным z-группам, не определен.  Можно перечислить фреймы в их
+текущем порядке наложения с помощью функции @code{frame-list-z-order}
+(@pxref{Finding All Frames}).
 
 @defopt minibuffer-auto-raise
-If this is не-@code{nil}, activation of the minibuffer raises the frame
-that the minibuffer window is in.
+Если это не-@code{nil}, активация минибуфера поднимает фрейм, в котором
+находится окно минибуфера.
 @end defopt
 
-  On window systems, you can also enable auto-raising (on frame
-selection) or auto-lowering (on frame deselection) using frame
-parameters.  @xref{Management Parameters}.
+  В оконных системах также можно включить автоматическое поднятие (при
+выборе фоейма) или автоматическое опускание (при отмене выбора фрейма) с
+помощью параметров фрейма.  @xref{Management Parameters}.
 
 @cindex top frame
-  The concept of raising and lowering frames also applies to text
-terminal frames.  On each text terminal, only the top frame is
-displayed at any one time.
+  Концепция подъема и опускания фреймов также применима к фреймам текстового
+терминала.  На каждом текстовом терминале одновременно отображается только
+верхний фрейм.
 
 @defun tty-top-frame &optional terminal
 This function returns the top frame on @var{terminal}.  @var{terminal}
