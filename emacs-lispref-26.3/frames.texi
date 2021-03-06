@@ -3010,819 +3010,821 @@ z-группе (@pxref{Position Parameters}).  Например, обычно н
 верхний фрейм.
 
 @defun tty-top-frame &optional terminal
-This function returns the top frame on @var{terminal}.  @var{terminal}
-should be a terminal object, a frame (meaning that frame's terminal),
-or @code{nil} (meaning the selected frame's terminal).  If it does not
-refer to a text terminal, the return value is @code{nil}.
+Функция возвращает верхний фрейм на @var{terminal}.  @var{terminal} должен
+быть конечным объектом, фреймом (то есть терминалом этого фрейма) или
+@code{nil} (то есть терминалом выбранного фрейма).  Если не относится к
+текстовому терминалу, возвращаемое значение - @code{nil}.
 @end defun
 
 
 @node Frame Configurations
-@section Frame Configurations
+@section Конфигурации Фреймов
 @cindex frame configuration
 
-  A @dfn{frame configuration} records the current arrangement of frames,
-all their properties, and the window configuration of each one.
-(@xref{Window Configurations}.)
+  @dfn{Конфигурация фреймов} записывает текущее расположение фреймов, все их
+свойства и конфигурацию окна каждого из них (@xref{Window Configurations}).
 
 @defun current-frame-configuration
-This function returns a frame configuration list that describes
-the current arrangement of frames and their contents.
+Функция возвращает список конфигурации фреймов, который описывает текущее
+расположение фреймов и их содержимое.
 @end defun
 
 @defun set-frame-configuration configuration &optional nodelete
-This function restores the state of frames described in
-@var{configuration}.  However, this function does not restore deleted
-frames.
+Функция восстанавливает состояние фреймов, описанное в @var{configuration}.
+Однако эта функция не восстанавливает удаленные фреймы.
 
-Ordinarily, this function deletes all existing frames not listed in
-@var{configuration}.  But if @var{nodelete} is не-@code{nil}, the
-unwanted frames are iconified instead.
+Обычно функция удаляет все существующие фреймы, не перечисленные в
+@var{configuration}.  Но если @var{nodelete} равен не-@code{nil}, вместо
+этого отображаются ненужные фреймы.
 @end defun
 
 
 @node Child Frames
-@section Child Frames
+@section Дочерние Фреймы
 @cindex child frames
 @cindex parent frames
 
-Child frames are objects halfway between windows (@pxref{Windows}) and
-``normal'' frames.  Like windows, they are attached to an owning frame.
-Unlike windows, they may overlap each other---changing the size or
-position of one child frame does not change the size or position of any
-of its sibling child frames.
+Дочерние фреймы - это объекты, расположенные посередине между фреймами
+(@pxref{Windows}) и ``нормальных'' окон.  Как и окна, они прикреплены к
+фрейму-владельцу.  В отличие от окон, могут перекрывать друг друга -
+изменение размера или положения одного дочернего фрейма не меняет размер
+или положение любого из его дочерних фреймов-братьев.
 
-  By design, operations to make or modify child frames are implemented
-with the help of frame parameters (@pxref{Frame Parameters}) without any
-specialized functions or customizable variables.  Note that child frames
-are meaningful on graphical terminals only.
+  По замыслу, операции по созданию или изменению дочерних фреймов
+реализованы с помощью параметров фрейма (@pxref{Frame Parameters}) без
+каких-либо специализированных функций или настраиваемых переменных.
+Обратить внимание, что дочерние фреймы имеют смысл только на графических
+терминалах.
 
-  To create a new child frame or to convert a normal frame into a child
-frame, set that frame's @code{parent-frame} parameter (@pxref{Frame
-Interaction Parameters}) to that of an already existing frame.  The
-frame specified by that parameter will then be the frame's parent frame
-as long as the parameter is not changed or reset.  Technically, this
-makes the child frame's window-system window a child window of the
-parent frame's window-system window.
+  Чтобы создать новый дочерний фрейм или преобразовать обычный фрейм в
+дочерний фрейм, устанавливается для параметра @code{parent-frame} этого
+фрейма (@pxref{Frame Interaction Parameters}) значение уже существующего
+фрейма.  Фрейм, указанный этим параметром, будет в этом случае родительским
+фреймом до тех пор, пока параметр не будет изменен или сброшен.  Технически
+это делает окно оконной системы дочернего фрейма дочерним окном оконной
+системы родительского фрейма.
 
 @cindex reparent frame
 @cindex nest frame
-  The @code{parent-frame} parameter can be changed at any time.  Setting
-it to another frame @dfn{reparents} the child frame.  Setting it to
-another child frame makes the frame a @dfn{nested} child frame.  Setting
-it to @code{nil} restores the frame's status as a top-level frame---a
-frame whose window-system window is a child of its display's root
-window.
+  Параметр @code{parent-frame} можно изменить в любой момент.  Установка
+значением другой фрейм @dfn{репатентирует} дочерний фрейм.  Установка
+значением другой дочерний фрейм делает фрейм дочерним @dfn{вложенным}
+фреймом.  Установка значения в @code{nil} восстанавливает статус фрейма как
+фрейм верхнего уровня - фрейм, становится окном оконной системы, которое
+является дочерним по отношению к корневому окну дисплея фрейма.
 
-  Since child frames can be arbitrarily nested, a frame can be both a
-child and a parent frame.  Also, the relative roles of child and parent
-frame may be reversed at any time (though it's usually a good idea to
-keep the size of a child frame sufficiently smaller than that of its
-parent).  An error will be signaled for the attempt to make a frame an
-ancestor of itself.
+  Поскольку дочерние фреймы могут быть вложены произвольно, фрейм может быть
+как дочерним, так и родительским.  Кроме того, относительные роли дочернего
+и родительского фреймов можно поменять местами в любое время (хотя обычно
+рекомендуется сохранять размер дочернего фрейма достаточно меньшим, чем
+фрейм его родителя).  Будет выдана ошибка при попытке сделать фрейм своим же
+предком.
 
-   Most window-systems clip a child frame at the native edges
-(@pxref{Frame Geometry}) of its parent frame---everything outside these
-edges is usually invisible.  A child frame's @code{left} and @code{top}
-parameters specify a position relative to the top-left corner of its
-parent's native frame.  When the parent frame is resized, this position
-remains conceptually unaltered.
+   Большинство оконных систем обрезают дочерний фрейм по родным краям
+(@pxref{Frame Geometry}) его родительского фрейма - все, что находится за
+пределами этих краев, обычно невидимо.  Параметры @code{left} и @code{top}
+дочернего фрейма определяют положение относительно верхнего левого угла
+родительского фрейма.  Когда размер родительского фрейма изменяется, это
+положение концептуально остается неизменным.
 
-  NS builds do not clip child frames at the parent frame's edges,
-allowing them to be positioned so they do not obscure the parent frame
-while still being visible themselves.
+  Сборки NS не обрезают дочерние фреймы по краям родительского фрейма, что
+позволяет размещать их так, чтобы они не закрывали родительский фрейм,
+оставаясь при этом видимыми сами по себе.
 
-  Usually, moving a parent frame moves along all its child frames and
-their descendants as well, keeping their relative positions unaltered.
-Note that the hook @code{move-frame-functions} (@pxref{Frame Position})
-is run for a child frame only when the position of the child frame
-relative to its parent frame changes.
+  Обычно при перемещении родительского фрейма перемещаются также все его
+дочерние фреймы и их потомки, сохраняя их относительное положение
+неизменным.  Обратить внимание, что обработчик @code{move-frame-functions}
+(@pxref{Frame Position}) запускается для дочернего фрейма только тогда,
+когда положение дочернего фрейма относительно его родительского фрейма
+изменяется.
 
-  When a parent frame is resized, its child frames conceptually retain
-their previous sizes and their positions relative to the left upper
-corner of the parent.  This means that a child frame may become
-(partially) invisible when its parent frame shrinks.  The parameter
-@code{keep-ratio} (@pxref{Frame Interaction Parameters}) can be used to
-resize and reposition a child frame proportionally whenever its parent
-frame is resized.  This may avoid obscuring parts of a frame when its
-parent frame is shrunk.
+  Когда размер родительского фрейма изменяется, его дочерние фреймы
+концептуально сохраняют свои предыдущие размеры и свое положение
+относительно левого верхнего угла родительского фрейма.  Это означает, что
+дочерний фрейм может стать (частично) невидимым, когда его родительский
+фрейм сжимается.  Параметр @code{keep-ratio}
+(@pxref{Frame Interaction Parameters}) можно использовать для
+пропорционального изменения размера и перемещения дочернего фрейма всякий
+раз, когда изменяется размер его родительского фрейма.  Это поможет избежать
+затемнения частей фрейма при сжатии его родительского фрейма.
 
-  A visible child frame always appears on top of its parent frame thus
-obscuring parts of it, except on NS builds where it may be positioned
-beneath the parent.  This is comparable to the window-system window of a
-top-level frame which also always appears on top of its parent
-window---the desktop's root window.  When a parent frame is iconified or
-made invisible (@pxref{Visibility of Frames}), its child frames are made
-invisible.  When a parent frame is deiconified or made visible, its
-child frames are made visible.  When a parent frame is about to be
-deleted (@pxref{Deleting Frames}), its child frames are recursively
-deleted before it.
+  Видимый дочерний фрейм всегда появляется поверх своего родительского
+фрейма, закрывая его части, за исключением сборок NS, где он может быть
+расположен под родительским фреймом.  Это сравнимо с окном оконной системы
+фрейма верхнего уровня, который также всегда появляется поверх своего
+родительского окна - корневого окна рабочего стола.  Когда родительский
+фрейм отображается в виде значка или становится невидимым
+(@pxref{Visibility of Frames}), его дочерние фреймы становятся невидимыми.
+Когда родительский фрейм деиконифицируется или становится видимым, его
+дочерние фреймы становятся видимыми.  Когда родительский фрейм должен быть
+удален (@pxref{Deleting Frames}), его дочерние фреймы рекурсивно удаляются
+перед ним.
 
-  Whether a child frame can have a menu or tool bar is window-system or
-window manager dependent.  Most window-systems explicitly disallow menus
-bars for child frames.  It seems advisable to disable both, menu and
-tool bars, via the frame's initial parameters settings.
+  Может ли дочерний фрейм иметь меню или панель инструментов, зависит от
+оконной системы или оконного менеджера.  Большинство оконных систем явно
+запрещают строки меню для дочерних фреймов.  Кажется целесообразным
+отключить и меню, и панели инструментов с помощью начальных настроек
+параметров фрейма.
 
-  Usually, child frames do not exhibit window manager decorations like a
-title bar or external borders (@pxref{Frame Geometry}).  When the child
-frame does not show a menu or tool bar, any other of the frame's borders
-(@pxref{Layout Parameters}) can be used instead of the external borders.
+  Обычно дочерние фреймы не имеют таких украшений оконного менеджера, как
+строка заголовка или внешние границы (@pxref{Frame Geometry}).  Когда в
+дочернем фрейме не отображается меню или панель инструментов, вместо внешних
+границ можно использовать любую другую из границ (@pxref{Layout Parameters})фрейма.
 
-  In particular, under X (but not when building with GTK+), the frame's
-outer border can be used.  On MS-Windows, specifying a non-zero outer
-border width will show a one-pixel wide external border.  Under all
-window-systems, the internal border can be used.  In either case, it's
-advisable to disable a child frame's window manager decorations with the
-@code{undecorated} frame parameter (@pxref{Management Parameters}).
+  В частности, под X (но не при построении с помощью GTK+) может
+использоваться внешняя граница фрейма.  В MS-Windows при указании ненулевой
+ширины внешней границы будет отображаться внешняя граница шириной в один
+пиксель.  Под все оконные системы можно использовать внутренний фрейм.  В
+любом случае рекомендуется отключить декорации оконного менеджера дочернего
+фрейма параметром @code{undecorated} frame (@pxref{Management Parameters}).
 
-  To resize or move an undecorated child frame with the mouse, special
-frame parameters (@pxref{Mouse Dragging Parameters}) have to be used.
-The internal border of a child frame, if present, can be used to resize
-the frame with the mouse, provided that frame has a не-@code{nil}
-@code{drag-internal-border} parameter.  If set, the @code{snap-width}
-parameter indicates the number of pixels where the frame @dfn{snaps} at
-the respective edge or corner of its parent frame.
+  Чтобы изменить размер или переместить недекорированный дочерний фрейм с
+помощью мыши, необходимо использовать специальные параметры фрейма
+(@pxref{Mouse Dragging Parameters}).  Внутренняя граница дочернего фрейма,
+если она есть, может использоваться для изменения размера фрейма с помощью
+мыши, при условии, что фрейм имеет параметр @code{drag-internal-border}
+установленный в не-@code{nil} .  Если установлено, параметр
+@code{snap-width} указывает количество пикселей, в которых регистрируется
+положение @dfn{щелчка} соответствующим крае или углу его родительского
+фрейма.
 
-  There are two ways to drag an entire child frame with the mouse: The
-@code{drag-with-mode-line} parameter, if не-@code{nil}, allows to drag
-a frame without minibuffer window (@pxref{Minibuffer Windows}) via the
-mode line area of its bottommost window.  The
-@code{drag-with-header-line} parameter, if не-@code{nil}, allows to
-drag the frame via the header line area of its topmost window.
+  Есть два способа перетащить весь дочерний фрейм с помощью мыши: Параметр
+@code{drag-with-mode-line}, если не-@code{nil}, позволяет перетащить фрейм
+без окна минибуфера (@pxref{Minibuffer Windows}) через область строки режима
+его самого нижнего окна.  Параметр @code{drag-with-header-line}, если
+не-@code{nil}, позволяет перетаскивать фрейм через область строки заголовка
+самого верхнего окна.
 
-  In order to give a child frame a draggable header or mode line, the
-window parameters @code{mode-line-format} and @code{header-line-format}
-are handy (@pxref{Window Parameters}).  These allow to remove an
-unwanted mode line (when @code{drag-with-header-line} is chosen) and to
-remove mouse-sensitive areas which might interfere with frame dragging.
+  Чтобы дать дочернему фрейму перетаскиваемый заголовок или строку режима,
+удобны параметры окна @code{mode-line-format} и @code{header-line-format}
+(@pxref{Window Parameters}).  Это позволяет удалить ненужную строку режима
+(когда выбран @code{drag-with-header-line}) и удалить чувствительные к мыши
+области, которые могут мешать перетаскиванию фрейму.
 
-  To avoid that dragging moves a frame completely out of its parent's
-native frame, something which might happen when the mouse cursor
-overshoots and makes the frame difficult to retrieve once the mouse
-button has been released, it is advisable to set the frame's
-@code{top-visible} or @code{bottom-visible} parameter correspondingly.
+  Чтобы избежать того, что перетаскивание полностью перемещает фрейм из
+собственного родительского фрейма, что может произойти, когда курсор мыши
+выходит за пределы и затрудняет извлечение фрейма после того, как кнопка
+мыши была отпущена, рекомендуется установить параметр @code{top-visible} или
+@code{bottom-visible} фрейма соответствующим образом.
 
-  The @code{top-visible} parameter specifies the number of pixels at the
-top of the frame that always remain visible within the parent's native
-frame during dragging and should be set when specifying a не-@code{nil}
-@code{drag-with-header-line} parameter.  The @code{bottom-visible}
-parameter specifies the number of pixels at the bottom of the frame that
-always remain visible within the parent's native frame during dragging
-and should be preferred when specifying a не-@code{nil}
-@code{drag-with-mode-line} parameter.
+  Параметр @code{top-visible} указывает количество пикселей в верхней части
+фрейма, которые всегда остаются видимыми в собственном фрейме родителя во
+время перетаскивания, и должен быть установлен при указании параметра
+@code{drag-with-header-line} в не-@code{nil}.  Параметр
+@code{bottom-visible} указывает количество пикселей в нижней части фрейма,
+которые всегда остаются видимыми в собственном фрейме родителя во время
+перетаскивания, и его следует использовать при указаном параметре
+@code{drag-with-mode-line} в не-@code{nil}.
 
-  When a child frame is used for displaying a buffer via
-@code{display-buffer-in-child-frame} (@pxref{Buffer Display Action
-Functions}), the frame's @code{auto-hide-function} parameter
-(@pxref{Frame Interaction Parameters}) can be set to a function, in
-order to appropriately deal with the frame when the window displaying
-the buffer shall be quit.
+  Когда дочерний фрейм используется для отображения буфера через
+@code{display-buffer-in-child-frame}
+(@pxref{Buffer Display Action Functions}), параметр
+фрейма @code{auto-hide-function} (@pxref{Frame Interaction Parameters})
+может быть установлен в функцию, чтобы должным образом работать с фреймом,
+когда окно, отображающее буфер, должно быть закрыто.
 
-  When a child frame is used during minibuffer interaction, for example,
-to display completions in a separate window, the @code{minibuffer-exit}
-parameter (@pxref{Frame Interaction Parameters}) is useful in order to
-deal with the frame when the minibuffer is exited.
+  Когда дочерний фрейм используется во время взаимодействия с минибуфером,
+например, для отображения завершений в отдельном окне, параметр
+@code{minibuffer-exit} (@pxref{Frame Interaction Parameters}) полезен для
+обработки фрейма при выходе из минибуфера.
 
-  The behavior of child frames deviates from that of top-level frames in
-a number of other ways as well.  Here we sketch a few of them:
+  Поведение дочерних фреймов также отличается от поведения фреймов верхнего
+уровня по ряду других причин.  Вот набросок некоторых из них:
 
 @itemize @bullet
 @item
-The semantics of maximizing and iconifying child frames is highly
-window-system dependent.  As a rule, applications should never invoke
-these operations on child frames.  By default, invoking
-@code{iconify-frame} on a child frame will try to iconify the top-level
-frame corresponding to that child frame instead.  To obtain a different
-behavior, users may customize the option @code{iconify-child-frame}
-described below.
+Семантика развертывания дочерних фреймов и их пиктограммы сильно зависит от
+оконной системы.  Как правило, приложения никогда не должны вызывать эти
+операции над дочерними фреймами.  По умолчанию при вызове
+@code{iconify-frame} в дочернем фрейме вместо этого будет предпринята
+попытка превратить в иконку фрейм верхнего уровня, соответствующий этому
+дочернему фрейму.  Чтобы получить другое поведение, пользователи могут
+настроить параметр @code{iconify-child-frame}, описанный ниже.
 
 @item
-Raising, lowering and restacking child frames (@pxref{Raising and
-Lowering}) or changing the @code{z-group} (@pxref{Position Parameters})
-of a child frame changes only the stacking order of child frames with
-the same parent.
+Поднятие, опускание и перетасовка дочерних фреймов
+(@pxref{Raising and Lowering}) или изменение @code{z-group}
+(@pxref{Position Parameters}) дочернего фрейма изменяет только порядок
+наложения дочерних фреймов с тем же родителем.
 
 @item
-Many window-systems are not able to change the opacity (@pxref{Font and
-Color Parameters}) of child frames.
+Многие оконные системы не могут изменять (@pxref{Font and Color Parameters})
+непрозрачности дочерних фреймов.
 
 @item
-Transferring focus from a child frame to an ancestor that is not its
-parent by clicking with the mouse in a visible part of that ancestor's
-window may fail with some window-systems.  You may have to click into
-the direct parent's window-system window first.
+Передача фокуса от дочернего фрейма к предку, не являющемуся его
+родительским, путем щелчка мышью в видимой части окна этого предка может
+завершиться ошибкой с некоторыми оконными системами.  Возможно, придется
+сначала щелкнуть окно оконной системы непосредственного родителя.
 
 @item
-Window managers might not bother to extend their focus follows mouse
-policy to child frames.  Customizing @code{mouse-autoselect-window} can
-help in this regard (@pxref{Mouse Window Auto-selection}).
+Оконные менеджеры могут не беспокоиться о расширении своего внимания, следуя
+политике мыши, на дочерние фреймы.  В этом отношении может помочь настройка
+@code{mouse-autoselect-window} (@pxref{Mouse Window Auto-selection}).
 
 @item
-Dropping (@pxref{Drag and Drop}) on child frames is not guaranteed to
-work on all window-systems.  Some will drop the object on the parent
-frame or on some ancestor instead.
+Удаление (@pxref{Drag and Drop}) дочерних фреймов не гарантируется для всех
+оконных систем.  Некоторые вместо этого отбрасывают объект на родительский
+фрейм или на какого-то предка.
 @end itemize
 
-  The following two functions can be useful when working with child and
-parent frames:
+  Следующие две функции могут быть полезны при работе с дочерними и
+родительскими фреймами:
 
 @defun frame-parent &optional frame
-This function returns the parent frame of @var{frame}.  The parent frame
-of @var{frame} is the Emacs frame whose window-system window is the
-parent window of @var{frame}'s window-system window.  If such a frame
-exists, @var{frame} is considered a child frame of that frame.
+Функция возвращает родительский фрейм @var{frame}.  Родительский фрейм
+@var{frame} - это фрейм Emacs, окно оконной системы которого является
+родительским окном окна оконной системы @var{frame}.  Если такой фрейм
+существует, @var{frame} считается его дочерним фреймом.
 
-This function returns @code{nil} if @var{frame} has no parent frame.
+Функция возвращает @code{nil}, если @var{frame} не имеет родительского
+фрейма.
 @end defun
 
 @defun frame-ancestor-p ancestor descendant
-This functions returns не-@code{nil} if @var{ancestor} is an ancestor
-of @var{descendant}.  @var{ancestor} is an ancestor of @var{descendant}
-when it is either @var{descendant}'s parent frame or it is an ancestor
-of @var{descendant}'s parent frame.  Both, @var{ancestor} and
-@var{descendant} must specify live frames.
+Функция возвращает не-@code{nil}, если @var{ancestor} является предком
+@var{descendant}.  @var{ancestor} является предком @var{descendant}, если он
+является либо родительским фреймом @var{descendant}, либо предком
+родительского фрейма @var{descendant}.  Оба параметра @var{ancestor} и
+@var{descendant} должны указывать активные фреймы.
 @end defun
 
-Note also the function @code{window-largest-empty-rectangle}
-(@pxref{Coordinates and Windows}) which can be used to inscribe a child
-frame in the largest empty area of an existing window.  This can be
-useful to avoid that a child frame obscures any text shown in that
-window.
+Обратить внимание на функцию @code{window-largest-empty-rectangle}
+(@pxref{Coordinates and Windows}), которую можно использовать для вписывания
+дочернего фрейма в самую большую пустую область существующего окна.  Это
+может быть полезно, чтобы дочерний фрейм не заслонял любой текст,
+отображаемый в этом окне.
 
-Customizing the following option can be useful to tweak the behavior of
-@code{iconify-frame} for child frames.
+Настройка следующего параметра может быть полезна для настройки поведения
+@code{iconify-frame} для дочерних фреймов.
 
 @defopt iconify-child-frame
-This option tells Emacs how to proceed when it is asked to iconify a
-child frame.  If it is @code{nil}, @code{iconify-frame} will do nothing
-when invoked on a child frame.  If it is @code{iconify-top-level}, Emacs
-will try to iconify the top-level frame that is the ancestor of this
-child frame instead.  If it is @code{make-invisible}, Emacs will try to
-make this child frame invisible instead of iconifying it.
+Опция сообщает Emacs, как действовать, когда его просят обозначить дочерний
+фрейм иконкой.  Если установлено в @code{nil}, @code{iconify-frame}, ничего
+не будет делать при вызове в дочернем фрейме.  Если установлено в
+@code{iconify-top-level}, Emacs вместо этого попытается минимальным фрейм
+верхнего уровня, который является предком этого дочернего фрейма.  Если
+установлено в @code{make-invisible}, Emacs попытается сделать этот дочерний
+фрейм невидимым вместо того, чтобы пометить его значком.
 
-Any other value means to try iconifying the child frame.  Since such an
-attempt may not be honored by all window managers and can even lead to
-making the child frame unresponsive to user actions, the default is to
-iconify the top level frame instead.
+Любое другое значение означает попытку обозначить дочерний фрейм значком.
+Так как такая попытка может быть реализована не всеми оконными менеджерами и
+даже может привести к тому, что дочерний фрейм не будет реагировать на
+действия пользователя, по умолчанию вместо этого фрейм верхнего уровня будет
+обозначаться пиктограммой.
 @end defopt
 
 
 @node Mouse Tracking
-@section Mouse Tracking
+@section Отслеживание Мыши
 @cindex mouse tracking
-@c @cindex tracking the mouse   Duplicates track-mouse
+@c @cindex отслеживание мышки Дубликат track-mouse
 
-  Sometimes it is useful to @dfn{track} the mouse, which means to display
-something to indicate where the mouse is and move the indicator as the
-mouse moves.  For efficient mouse tracking, you need a way to wait until
-the mouse actually moves.
+  Иногда полезно @dfn{отслеживание} мыши, что означает отображение
+чего-либо, чтобы указать, где находится мышь, и перемещать индикатор по мере
+движения мыши.  Для эффективного отслеживания мыши нужен способ подождать,
+пока мышь действительно начнёт перемещение.
 
-  The convenient way to track the mouse is to ask for events to represent
-mouse motion.  Then you can wait for motion by waiting for an event.  In
-addition, you can easily handle any other sorts of events that may
-occur.  That is useful, because normally you don't want to track the
-mouse forever---only until some other event, such as the release of a
-button.
+  Удобный способ отслеживания мыши - запрашивать события, представляющие
+движение мыши.  Затем можно дождаться движения, дождавшись события.  Кроме
+того, можно легко справиться с любыми другими событиями, которые могут
+произойти.  Это полезно, потому что обычно не требуется постоянно
+отслеживать мышь - только до какого-либо другого события, например,
+отпускания кнопки.
 
 @defmac track-mouse body@dots{}
-This macro executes @var{body}, with generation of mouse motion events
-enabled.  Typically, @var{body} would use @code{read-event} to read
-the motion events and modify the display accordingly.  @xref{Motion
-Events}, for the format of mouse motion events.
+Макрос выполняет @var{body} с включенной генерацией событий движения мыши.
+Обычно @var{body} использует @code{read-event} для чтения событий движения
+и соответствующего изменения отображения.  @xref{Motion Events}, для формата
+событий движения мыши.
 
-The value of @code{track-mouse} is that of the last form in @var{body}.
-You should design @var{body} to return when it sees the up-event that
-indicates the release of the button, or whatever kind of event means
-it is time to stop tracking.
+Значение @code{track-mouse} - это значение последней формы в @var{body}.
+Потребуется спроектировать @var{body} так, чтобы происходил возврат, когда
+наблюдается событие up, которое указывает на отпускание кнопки, или любое
+другое событие, означающее, что пора прекратить отслеживание.
 
-The @code{track-mouse} form causes Emacs to generate mouse motion
-events by binding the variable @code{track-mouse} to a
-не-@code{nil} value.  If that variable has the special value
-@code{dragging}, it additionally instructs the display engine to
-refrain from changing the shape of the mouse pointer.  This is
-desirable in Lisp programs that require mouse dragging across large
-portions of Emacs display, which might otherwise cause the mouse
-pointer to change its shape according to the display portion it hovers
-on (@pxref{Pointer Shape}).  Therefore, Lisp programs that need the
-mouse pointer to retain its original shape during dragging should bind
-@code{track-mouse} to the value @code{dragging} at the beginning of
-their @var{body}.
+Форма @code{track-mouse} заставляет Emacs генерировать события движения мыши
+путем привязки переменной @code{track-mouse} к значению не-@code{nil}.  Если
+эта переменная имеет специальное значение @code{dragging}, она дополнительно
+указывает механизму отображения воздерживаться от изменения формы указателя
+мыши.  Это желательно в программах Lisp, которые требуют перетаскивания
+мышью через большие части дисплея Emacs, что в противном случае могло бы
+вызвать изменение формы указателя мыши в соответствии с частью дисплея, на
+которой он наведен на (@pxref{Pointer Shape}).  Поэтому программы Lisp,
+которым требуется, чтобы указатель мыши сохранял свою исходную форму во
+время перетаскивания, должны привязать @code{track-mouse} к значению
+@code{dragging} в начале их @var{body}.
 @end defmac
 
-The usual purpose of tracking mouse motion is to indicate on the screen
-the consequences of pushing or releasing a button at the current
-position.
+Обычная цель отслеживания движения мыши - указать на экране последствия
+нажатия или отпускания кнопки в текущей позиции.
 
-In many cases, you can avoid the need to track the mouse by using
-the @code{mouse-face} text property (@pxref{Special Properties}).
-That works at a much lower level and runs more smoothly than
-Lisp-level mouse tracking.
+Во многих случаях можно избежать необходимости отслеживать мышь, используя
+текстовое свойство @code{mouse-face} (@pxref{Special Properties}).  Это
+работает на гораздо более низком уровне и работает более плавно, чем
+отслеживание мыши на уровне Lisp.
 
 @ignore
-@c These are not implemented yet.
+@c Они еще не реализованы.
 
-These functions change the screen appearance instantaneously.  The
-effect is transient, only until the next ordinary Emacs redisplay.  That
-is OK for mouse tracking, since it doesn't make sense for mouse tracking
-to change the text, and the body of @code{track-mouse} normally reads
-the events itself and does not do redisplay.
+Эти функции мгновенно изменяют внешний вид экрана.  Эффект временный, только
+до следующего обычного повторного отображения Emacs.  OK для отслеживания
+мыши, поскольку для отслеживания мыши не имеет смысла изменять текст, а
+тело @code{track-mouse} обычно считывает события само и не выполняет
+повторное отображение.
 
 @defun x-contour-region window beg end
-This function draws lines to make a box around the text from @var{beg}
-to @var{end}, in window @var{window}.
+Функция рисует линии, образуя контур вокруг текста от @var{beg} до @var{end}
+в окне @var{window}.
 @end defun
 
 @defun x-uncontour-region window beg end
-This function erases the lines that would make a box around the text
-from @var{beg} to @var{end}, in window @var{window}.  Use it to remove
-a contour that you previously made by calling @code{x-contour-region}.
+Функция стирает строки, которые образовывали бы контур вокруг текста от
+@var{beg} до @var{end}, в окне @var{window}.  Использовать, чтобы удалить
+ контур, который сделан ранее, вызвав @code{x-contour-region}.
 @end defun
 
 @defun x-draw-rectangle frame left top right bottom
-This function draws a hollow rectangle on frame @var{frame} with the
-specified edge coordinates, all measured in pixels from the inside top
-left corner.  It uses the cursor color, the one used for indicating the
-location of point.
+Функция рисует полый прямоугольник на кадре @var{frame} с указанными
+координатами края, все они измеряются в пикселях от внутреннего верхнего
+левого угла.  Используется цвет курсора, который используется для указания
+ местоположения точки.
 @end defun
 
 @defun x-erase-rectangle frame left top right bottom
-This function erases a hollow rectangle on frame @var{frame} with the
-specified edge coordinates, all measured in pixels from the inside top
-left corner.  Erasure means redrawing the text and background that
-normally belong in the specified rectangle.
+Функция стирает полый прямоугольник на фрейме @var{frame} с указанными
+координатами края, все измеряются в пикселях от внутреннего верхнего левого
+угла.  Стирание означает перерисовку текста и фона, которые обычно
+ принадлежат указанному прямоугольнику.
 @end defun
 @end ignore
 
 @node Mouse Position
-@section Mouse Position
+@section Положение Мыши
 @cindex mouse position
 @cindex position of mouse
 
-  The functions @code{mouse-position} and @code{set-mouse-position}
-give access to the current position of the mouse.
+  Функции @code{mouse-position} и @code{set-mouse-position} дают доступ к
+текущему положению мыши.
 
 @defun mouse-position
-This function returns a description of the position of the mouse.  The
-value looks like @code{(@var{frame} @var{x} . @var{y})}, where @var{x}
-and @var{y} are integers giving the (possibly rounded) position in
-multiples of the default character size of @var{frame} (@pxref{Frame
-Font}) relative to the native position of @var{frame} (@pxref{Frame
-Geometry}).
+Функция возвращает описание положения мыши.  Значение выглядит как
+@code{(@var{frame} @var{x} . @var{y})}, где @var{x} и @var{y} - целые числа,
+дающие (возможно, округленное) положение, кратное размеру символа по
+умолчанию @var{frame} (@pxref{Frame Font}) относительно исходного положения
+@var{frame} (@pxref{Frame Geometry}).
 @end defun
 
 @defvar mouse-position-function
-If не-@code{nil}, the value of this variable is a function for
-@code{mouse-position} to call.  @code{mouse-position} calls this
-function just before returning, with its normal return value as the
-sole argument, and it returns whatever this function returns to it.
+Если не-@code{nil}, значение этой переменной является функцией для вызова
+@code{mouse-position}.  @code{mouse-position} вызывает эту функцию
+непосредственно перед возвратом с ее обычным возвращаемым значением в
+качестве единственного аргумента и возвращает все, что ей возвращает эта
+функция.
 
-This abnormal hook exists for the benefit of packages like
-@file{xt-mouse.el} that need to do mouse handling at the Lisp level.
+Этот ненормальный перехватчик существует для таких пакетов, как
+@file{xt-mouse.el}, которым необходимо обрабатывать мышь на уровне Lisp.
 @end defvar
 
 @defun set-mouse-position frame x y
-This function @dfn{warps the mouse} to position @var{x}, @var{y} in
-frame @var{frame}.  The arguments @var{x} and @var{y} are integers,
-giving the position in multiples of the default character size of
-@var{frame} (@pxref{Frame Font}) relative to the native position of
-@var{frame} (@pxref{Frame Geometry}).
+Функция @dfn{деформирует мышь} в позиции @var{x}, @var{y} в фрейме
+@var{frame}.  Аргументы @var{x} и @var{y} являются целыми числами, задающими
+позицию, кратную размеру символа по умолчанию @var{frame}
+(@pxref{Frame Font}), относительно исходной позиции @var{frame}
+(@pxref{Frame Geometry}).
 
-The resulting mouse position is constrained to the native frame of
-@var{frame}.  If @var{frame} is not visible, this function does nothing.
-The return value is not significant.
+Результирующая позиция мыши ограничена собственным фреймом @var{frame}.
+Если @var{frame} не отображается, эта функция ничего не делает.
+Возвращаемое значение не имеет значения.
 @end defun
 
 @defun mouse-pixel-position
-This function is like @code{mouse-position} except that it returns
-coordinates in units of pixels rather than units of characters.
+Функция похожа на @code{mouse-position}, за исключением того, что она
+возвращает координаты в пикселях, а не в символах.
 @end defun
 
 @defun set-mouse-pixel-position frame x y
-This function warps the mouse like @code{set-mouse-position} except that
-@var{x} and @var{y} are in units of pixels rather than units of
-characters.
+Функция искажает мышь, как @code{set-mouse-position}, за исключением того,
+что @var{x} и @var{y} выражается в единицах пикселей, а не в единицах
+символов.
 
-The resulting mouse position is not constrained to the native frame of
-@var{frame}.  If @var{frame} is not visible, this function does nothing.
-The return value is not significant.
+Результирующая позиция мыши не ограничивается собственным фреймом
+@var{frame}.  Если @var{frame} не отображается, эта функция ничего не
+делает.  Возвращаемое значение не имеет значения.
 @end defun
 
-On a graphical terminal the following two functions allow the absolute
-position of the mouse cursor to be retrieved and set.
+На графическом терминале следующие две функции позволяют получить и
+установить абсолютное положение курсора мыши.
 
 @defun mouse-absolute-pixel-position
-This function returns a cons cell (@var{x} . @var{y}) of the coordinates
-of the mouse cursor position in pixels, relative to a position (0, 0) of
-the selected frame's display.
+Функция возвращает cons-ячейку (@var{x} . @var{y}) координат позиции курсора
+мыши в пикселях относительно позиции (0, 0) отображения выбранного фрейма.
 @end defun
 
 @defun set-mouse-absolute-pixel-position x y
-This function moves the mouse cursor to the position (@var{x}, @var{y}).
-The coordinates @var{x} and @var{y} are interpreted in pixels relative
-to a position (0, 0) of the selected frame's display.
+Функция перемещает курсор мыши в позицию (@var{x}, @var{y}).  Координаты
+@var{x} и @var{y} интерпретируются в пикселях относительно позиции (0, 0)
+отображения выбранного фрейма.
 @end defun
 
-The following function can tell whether the mouse cursor is currently
-visible on a frame:
+Следующая функция может определить, виден ли в данный момент курсор мыши на
+фрейме:
 
 @defun frame-pointer-visible-p &optional frame
-This predicate function returns не-@code{nil} if the mouse pointer
-displayed on @var{frame} is visible; otherwise it returns @code{nil}.
-@var{frame} omitted or @code{nil} means the selected frame.  This is
-useful when @code{make-pointer-invisible} is set to @code{t}: it
-allows you to know if the pointer has been hidden.
+Функция-предикат возвращает не-@code{nil}, если указатель мыши, отображаемый
+на @var{frame}, виден; в противном случае возвращается @code{nil}.
+@var{frame} опущено или @code{nil} означает выбранный фрейм.  Это полезно,
+когда для @code{make-pointer-invisible} установлено значение @code{t}: это
+позволяет узнать, был ли скрыт указатель.
 @xref{Mouse Avoidance,,,emacs, The Emacs Manual}.
 @end defun
 
 @need 3000
 
 @node Pop-Up Menus
-@section Pop-Up Menus
+@section Pop-Up Меню
 @cindex menus, popup
 
-  A Lisp program can pop up a menu so that the user can choose an
-alternative with the mouse.  On a text terminal, if the mouse is not
-available, the user can choose an alternative using the keyboard
-motion keys---@kbd{C-n}, @kbd{C-p}, or up- and down-arrow keys.
+  Программа Lisp может вызывать всплывающее меню, чтобы пользователь мог
+выбрать альтернативу с помощью мыши.  В текстовом терминале, если мышь
+недоступна, пользователь может выбрать альтернативу, используя клавиши
+движения клавиатуры --- @kbd{C-n}, @kbd{C-p} или up- и down-arrow.
 
 @defun x-popup-menu position menu
-This function displays a pop-up menu and returns an indication of
-what selection the user makes.
+Функция отображает всплывающее меню и возвращает информацию о том, какой
+выбор делает пользователь.
 
-The argument @var{position} specifies where on the screen to put the
-top left corner of the menu.  It can be either a mouse button event
-(which says to put the menu where the user actuated the button) or a
-list of this form:
+Аргумент @var{position} указывает, где на экране разместить левый верхний
+угол меню.  Это может быть либо событие кнопки мыши (которое говорит, что
+нужно поместить меню, в которое пользователь нажал кнопку), либо список
+такой формы:
 
 @example
 ((@var{xoffset} @var{yoffset}) @var{window})
 @end example
 
 @noindent
-where @var{xoffset} and @var{yoffset} are coordinates, measured in
-pixels, counting from the top left corner of @var{window}.  @var{window}
-may be a window or a frame.
+где @var{xoffset} и @var{yoffset} - координаты в пикселях, отсчитываемые от
+верхнего левого угла @var{window}.  @var{window} может быть окном или
+фреймом.
 
-If @var{position} is @code{t}, it means to use the current mouse
-position (or the top-left corner of the frame if the mouse is not
-available on a text terminal).  If @var{position} is @code{nil}, it
-means to precompute the key binding equivalents for the keymaps
-specified in @var{menu}, without actually displaying or popping up the
-menu.
+Если @var{position} - @code{t}, это означает использование текущего
+положения мыши (или верхнего левого угла фрейма, если мышь недоступна в
+текстовом терминале).  Если @var{position} - @code{nil}, это означает
+предварительное вычисление эквивалентов привязки ключей для ключевой карты,
+указанных в @var{menu}, без фактического отображения или всплывающего меню.
 
-The argument @var{menu} says what to display in the menu.  It can be a
-keymap or a list of keymaps (@pxref{Menu Keymaps}).  In this case, the
-return value is the list of events corresponding to the user's choice.
-This list has more than one element if the choice occurred in a
-submenu.  (Note that @code{x-popup-menu} does not actually execute the
-command bound to that sequence of events.)  On text terminals and
-toolkits that support menu titles, the title is taken from the prompt
-string of @var{menu} if @var{menu} is a keymap, or from the prompt
-string of the first keymap in @var{menu} if it is a list of keymaps
+Аргумент @var{menu} говорит, что отображать в меню.  Это может быть ключевая
+карта или список карт (@pxref{Menu Keymaps}).  В этом случае возвращаемое
+значение - это список событий, соответствующих выбору пользователя.  В этом
+списке более одного элемента, если выбор произошел в подменю. (Обратить
+внимание, что @code{x-popup-menu} фактически не выполняет команду, связанную
+с этой последовательностью событий.).  В текстовых терминалах и
+инструментах, поддерживающих заголовки меню, заголовок берется из строки
+приглашения @var{menu}, если @var{menu} - это карта, или из строки
+приглашения первая карта в @var{menu}, если это список карт
 (@pxref{Defining Menus}).
 
-Alternatively, @var{menu} can have the following form:
+В качестве альтернативы @var{menu} может иметь следующий вид:
 
 @example
 (@var{title} @var{pane1} @var{pane2}...)
 @end example
 
 @noindent
-where each pane is a list of form
+где каждая панель представляет собой список формы
 
 @example
 (@var{title} @var{item1} @var{item2}...)
 @end example
 
-Each @var{item} should be a cons cell, @code{(@var{line} . @var{value})},
-where @var{line} is a string and @var{value} is the value to return if
-that @var{line} is chosen.  Unlike in a menu keymap, a @code{nil}
-@var{value} does not make the menu item non-selectable.
-Alternatively, each @var{item} can be a string rather than a cons
-cell; this makes a non-selectable menu item.
+Каждый @var{item} должен быть cons-ячейкой,
+@code{(@var{line} . @var{value})}, где @var{line} - строка, а @var{value} -
+значение, которое нужно вернуть, если выбран эта @var{line}.  В отличие от
+карты меню,  @var{value} в @code{nil} не делает пункт меню недоступным для
+выбора.  В качестве альтернативы каждый @var{item} может быть строкой, а не
+cons-ячейкой; это делает пункт меню недоступным для выбора.
 
-If the user gets rid of the menu without making a valid choice, for
-instance by clicking the mouse away from a valid choice or by typing
-@kbd{C-g}, then this normally results in a quit and
-@code{x-popup-menu} does not return.  But if @var{position} is a mouse
-button event (indicating that the user invoked the menu with the
-mouse) then no quit occurs and @code{x-popup-menu} returns @code{nil}.
+Если пользователь избавляется от меню, не сделав правильного выбора,
+например, щелкнув мышью вдали от действительного выбора или набрав
+@kbd{C-g}, то это обычно приводит к выходу, и @code{x-popup-menu} ничего не
+возвращает.  Но если @var{position} - это событие кнопки мыши (указывающее,
+что пользователь вызвал меню с помощью мыши), тогда выхода не происходит, и
+@code{x-popup-menu} возвращает @code{nil}.
 @end defun
 
-  @strong{Usage note:} Don't use @code{x-popup-menu} to display a menu
-if you could do the job with a prefix key defined with a menu keymap.
-If you use a menu keymap to implement a menu, @kbd{C-h c} and @kbd{C-h
-a} can see the individual items in that menu and provide help for them.
-If instead you implement the menu by defining a command that calls
-@code{x-popup-menu}, the help facilities cannot know what happens inside
-that command, so they cannot give any help for the menu's items.
+  @strong{Примечание об использовании:} Не использовать @code{x-popup-menu}
+для отображения меню, если можно выполнить работу с префиксным ключом,
+определенным с помощью карты меню.  Если используется раскладка меню для
+реализации меню, @kbd{C-h c} and @kbd{C-h a} может видеть отдельные элементы
+в этом меню и предоставлять для них справку.  Если вместо этого реализуется
+меню, определяя команду, которая вызывает @code{x-popup-menu}, средства
+справки не могут знать, что происходит внутри этой команды, поэтому они не
+могут предоставить никакой помощи по элементам меню.
 
-  The menu bar mechanism, which lets you switch between submenus by
-moving the mouse, cannot look within the definition of a command to see
-that it calls @code{x-popup-menu}.  Therefore, if you try to implement a
-submenu using @code{x-popup-menu}, it cannot work with the menu bar in
-an integrated fashion.  This is why all menu bar submenus are
-implemented with menu keymaps within the parent menu, and never with
+  Механизм панели меню, который позволяет переключаться между подменю,
+перемещая мышь, не может заглянуть в определение команды, чтобы увидеть, что
+вызывает @code{x-popup-menu}.  Следовательно, если попытаться реализовать
+подменю с помощью @code{x-popup-menu}, оно не сможет работать со строкой
+меню интегрированным образом.  Вот почему все подменю строки меню
+реализованы с помощью карт меню внутри родительского меню, а не
 @code{x-popup-menu}.  @xref{Menu Bar}.
 
-  If you want a menu bar submenu to have contents that vary, you should
-still use a menu keymap to implement it.  To make the contents vary, add
-a hook function to @code{menu-bar-update-hook} to update the contents of
-the menu keymap as necessary.
+  Если требуется, чтобы строка подменю содержала разное содержимое, все
+равно нужно использовать карту меню для реализации этого.  Чтобы содержимое
+изменялось, добавляется в @code{menu-bar-update-hook} функция перехвата,
+чтобы при необходимости обновить содержимое карты меню.
 
 @node Dialog Boxes
-@section Dialog Boxes
+@section Диалоговые Окна
 @cindex dialog boxes
 
-  A dialog box is a variant of a pop-up menu---it looks a little
-different, it always appears in the center of a frame, and it has just
-one level and one or more buttons.  The main use of dialog boxes is
-for asking questions that the user can answer with ``yes'', ``no'',
-and a few other alternatives.  With a single button, they can also
-force the user to acknowledge important information.  The functions
-@code{y-or-n-p} and @code{yes-or-no-p} use dialog boxes instead of the
-keyboard, when called from commands invoked by mouse clicks.
+  Диалоговое окно - это вариант всплывающего меню - оно выглядит немного
+иначе, всегда появляется в центре фрейма и имеет только один уровень и одну
+или несколько кнопок.  В основном диалоговые окна используются для того,
+чтобы задавать вопросы, на которые пользователь может ответить с помощью
+``да'', ``нет'' и некоторых других альтернатив.  С помощью одной кнопки
+также можно пользователю подтвердить важную информацию.  Функции
+@code{y-or-n-p} и @code{yes-or-no-p} используют диалоговые окна вместо
+ключей, когда вызываются из команд, вызываемые щелчком мыши.
 
 @defun x-popup-dialog position contents &optional header
-This function displays a pop-up dialog box and returns an indication of
-what selection the user makes.  The argument @var{contents} specifies
-the alternatives to offer; it has this format:
+Функция отображает всплывающее диалоговое окно и возвращает информацию о
+том, какой выбор делает пользователь.  Аргумент @var{contents} указывает
+предлагаемые альтернативы и имеет такой формат:
 
 @example
 (@var{title} (@var{string} . @var{value})@dots{})
 @end example
 
 @noindent
-which looks like the list that specifies a single pane for
+который выглядит как список, определяющий единственную панель для
 @code{x-popup-menu}.
 
-The return value is @var{value} from the chosen alternative.
+Возвращаемое значение - @var{value} из выбранной альтернативы.
 
-As for @code{x-popup-menu}, an element of the list may be just a
-string instead of a cons cell @code{(@var{string} . @var{value})}.
-That makes a box that cannot be selected.
+Что касается @code{x-popup-menu}, элемент списка может быть просто строкой
+вместо cons-ячейки @code{(@var{string} . @var{value})}.  Это делает окно,
+которое нельзя выбрать.
 
-If @code{nil} appears in the list, it separates the left-hand items from
-the right-hand items; items that precede the @code{nil} appear on the
-left, and items that follow the @code{nil} appear on the right.  If you
-don't include a @code{nil} in the list, then approximately half the
-items appear on each side.
+Если в списке появляется @code{nil}, отделяются левые элементы от правых;
+элементы, предшествующие @code{nil}, отображаются слева, а элементы,
+следующие за @code{nil}, отображаются справа.  Если не включить @code{nil} в
+список, то примерно половина элементов появится с каждой стороны.
 
-Dialog boxes always appear in the center of a frame; the argument
-@var{position} specifies which frame.  The possible values are as in
-@code{x-popup-menu}, but the precise coordinates or the individual
-window don't matter; only the frame matters.
+Диалоговые окна всегда появляются в центре фрейма; аргумент @var{position}
+указывает, какой фрейм.  Возможные значения такие же, как в
+@code{x-popup-menu}, но точные координаты или отдельное окно здесь не имеют
+значения; имеет значение только фрейм.
 
-If @var{header} is не-@code{nil}, the frame title for the box is
-@samp{Information}, otherwise it is @samp{Question}.  The former is used
-for @code{message-box} (@pxref{message-box}).  (On text terminals, the
-box title is not displayed.)
+Если @var{header} - не-@code{nil}, заголовок фрейма для блока -
+@samp{Information}, в противном случае - @samp{Question}.  Первый
+используется для @code{message-box} (@pxref{message-box}).  (В текстовых
+терминалах заголовок поля не отображается.)
 
-In some configurations, Emacs cannot display a real dialog box; so
-instead it displays the same items in a pop-up menu in the center of the
-frame.
+В некоторых конфигурациях Emacs не может отображать настоящее диалоговое
+окно; поэтому вместо этого он отображает те же элементы во всплывающем меню
+в центре фрейма.
 
-If the user gets rid of the dialog box without making a valid choice,
-for instance using the window manager, then this produces a quit and
-@code{x-popup-dialog} does not return.
+Если пользователь избавляется от диалогового окна, не сделав правильного
+выбора, например, с помощью оконного менеджера, то это вызывает выход, и
+@code{x-popup-dialog} не возвращается.
 @end defun
 
 @node Pointer Shape
-@section Pointer Shape
+@section Форма Указателя
 @cindex pointer shape
 @cindex mouse pointer shape
 
-  You can specify the mouse pointer style for particular text or
-images using the @code{pointer} text property, and for images with the
-@code{:pointer} and @code{:map} image properties.  The values you can
-use in these properties are @code{text} (or @code{nil}), @code{arrow},
-@code{hand}, @code{vdrag}, @code{hdrag}, @code{modeline}, and
-@code{hourglass}.  @code{text} stands for the usual mouse pointer
-style used over text.
+  Можно указать стиль указателя мыши для определенного текста или
+изображений, используя свойство текста @code{pointer}, а также для
+изображений со свойствами изображения @code{:pointer} и @code{:map}.  В этих
+свойствах можно использовать значения @code{text} (или @code{nil}),
+@code{arrow}, @code{hand}, @code{vdrag}, @code{hdrag}, @code{modeline} и
+@code{hourglass}.  @code{text} обозначает обычный стиль указателя мыши,
+используемый над текстом.
 
-  Over void parts of the window (parts that do not correspond to any
-of the buffer contents), the mouse pointer usually uses the
-@code{arrow} style, but you can specify a different style (one of
-those above) by setting @code{void-text-area-pointer}.
+  Над пустыми частями окна (частями, которые не соответствуют какому-либо
+содержимому буфера) указатель мыши обычно использует стиль @code{arrow}, но
+можно указать другой стиль (один из указанных выше), установив
+@code{void-text-area-pointer}.
 
 @defopt void-text-area-pointer
-This variable specifies the mouse pointer style for void text areas.
-These include the areas after the end of a line or below the last line
-in the buffer.  The default is to use the @code{arrow} (non-text)
-pointer style.
+Переменная определяет стиль указателя мыши для пустых текстовых областей.  К
+ним относятся области после конца строки или ниже последней строки в буфере.
+По умолчанию используется стиль указателя @code{arrow} (нетекстовый).
 @end defopt
 
-  When using X, you can specify what the @code{text} pointer style
-really looks like by setting the variable @code{x-pointer-shape}.
+  При использовании X можно указать, как действительно выглядит стиль
+указателя @code{text}, установив переменную @code{x-pointer-shape}.
 
 @defvar x-pointer-shape
-This variable specifies the pointer shape to use ordinarily in the
-Emacs frame, for the @code{text} pointer style.
+Переменная определяет форму указателя, которая обычно используется во фрейме
+Emacs для стиля указателя @code{text}.
 @end defvar
 
 @defvar x-sensitive-text-pointer-shape
-This variable specifies the pointer shape to use when the mouse
-is over mouse-sensitive text.
+Переменная определяет форму указателя, используемую при наведении указателя
+мыши на чувствительный к мыши текст.
 @end defvar
 
-  These variables affect newly created frames.  They do not normally
-affect existing frames; however, if you set the mouse color of a
-frame, that also installs the current value of those two variables.
+  Переменные влияют на вновь созданные фреймы.  Обычно не влияют на
+существующие фреймы; однако, если установить цвет мыши для фрейма, это также
+установит текущее значение этих двух переменных.
 @xref{Font and Color Parameters}.
 
-  The values you can use, to specify either of these pointer shapes, are
-defined in the file @file{lisp/term/x-win.el}.  Use @kbd{M-x apropos
-@key{RET} x-pointer @key{RET}} to see a list of them.
+  Значения, которые можно использовать для указания любой из этих форм
+указателя, определены в файле @file{lisp/term/x-win.el}.  Использовать
+@kbd{M-x apropos @key{RET} x-pointer @key{RET}}, чтобы увидеть их список.
 
 @node Window System Selections
-@section Window System Selections
+@section Выбор Оконной Системы
 @cindex selection (for window systems)
 @cindex clipboard
 @cindex primary selection
 @cindex secondary selection
 
-  In window systems, such as X, data can be transferred between
-different applications by means of @dfn{selections}.  X defines an
-arbitrary number of @dfn{selection types}, each of which can store its
-own data; however, only three are commonly used: the @dfn{clipboard},
-@dfn{primary selection}, and @dfn{secondary selection}.  Other window
-systems support only the clipboard.  @xref{Cut and Paste,, Cut and
-Paste, emacs, The GNU Emacs Manual}, for Emacs commands that make use
-of these selections.  This section documents the low-level functions
-for reading and setting window-system selections.
+  В оконных системах, таких как X, данные могут передаваться между
+различными приложениями с помощью @dfn{выбора}.  X определяет произвольное
+количество @dfn{выбираемых типов}, каждый из которых может хранить свои
+собственные данные; однако обычно используются только три:
+@dfn{буфер обмена}, @dfn{первичный отбор} и @dfn{вторичный отбор}.  Другие
+оконные системы поддерживают только буфер обмена.
+@xref{Cut and Paste,, Cut and Paste, emacs, The GNU Emacs Manual}, для
+команд Emacs, которые используют этот выбор.  В этом разделе описаны
+низкоуровневые функции для чтения и настройки выбора оконной системы.
 
 @deffn Command gui-set-selection type data
-This function sets a window-system selection.  It takes two arguments:
-a selection type @var{type}, and the value to assign to it, @var{data}.
+Функция устанавливает выбор оконной системы.  Принимает два аргумента: тип
+выбора @var{type} и значение, которое ему нужно присвоить, @var{data}.
 
-@var{type} should be a symbol; it is usually one of @code{PRIMARY},
-@code{SECONDARY} or @code{CLIPBOARD}.  These are symbols with
-upper-case names, in accord with X Window System conventions.  If
-@var{type} is @code{nil}, that stands for @code{PRIMARY}.
+@var{type} должен быть символом; обычно это один из @code{PRIMARY},
+@code{SECONDARY} или @code{CLIPBOARD}.  Это символы с именами в верхнем
+регистре в соответствии с соглашениями системы X Window.  Если @var{type}
+равен @code{nil}, это означает @code{PRIMARY}.
 
-If @var{data} is @code{nil}, it means to clear out the selection.
-Otherwise, @var{data} may be a string, a symbol, an integer (or a cons
-of two integers or list of two integers), an overlay, or a cons of two
-markers pointing to the same buffer.  An overlay or a pair of markers
-stands for text in the overlay or between the markers.  The argument
-@var{data} may also be a vector of valid non-vector selection values.
+Если @var{data} равен @code{nil}, это означает очистить выделение.  В
+противном случае @var{data} может быть строкой, символом, целым числом (или
+cons-ячейкой двух целых чисел или списком из двух целых чисел), наложением
+или cons-ячейкой двух маркеров, указывающих на один и тот же буфер.
+Наложение или пара маркеров обозначают текст в наложении или между
+маркерами.  Аргумент @var{data} также может быть вектором допустимых
+значений выбора.
 
-This function returns @var{data}.
+Функция возвращает @var{data}.
 @end deffn
 
 @defun gui-get-selection &optional type data-type
-This function accesses selections set up by Emacs or by other
-programs.  It takes two optional arguments, @var{type} and
-@var{data-type}.  The default for @var{type}, the selection type, is
-@code{PRIMARY}.
+Функция обращается к выборкам, установленным Emacs или другими программами.
+Принимает два необязательных аргумента @var{type} и @var{data-type}.  По
+умолчанию для @var{type}, типа выбора, используется @code{PRIMARY}.
 
-The @var{data-type} argument specifies the form of data conversion to
-use, to convert the raw data obtained from another program into Lisp
-data.  Meaningful values include @code{TEXT}, @code{STRING},
-@code{UTF8_STRING}, @code{TARGETS}, @code{LENGTH}, @code{DELETE},
-@code{FILE_NAME}, @code{CHARACTER_POSITION}, @code{NAME},
-@code{LINE_NUMBER}, @code{COLUMN_NUMBER}, @code{OWNER_OS},
-@code{HOST_NAME}, @code{USER}, @code{CLASS}, @code{ATOM}, and
-@code{INTEGER}.  (These are symbols with upper-case names in accord
-with X conventions.)  The default for @var{data-type} is
-@code{STRING}.  Window systems other than X usually support only a
-small subset of these types, in addition to @code{STRING}.
+Аргумент @var{data-type} определяет форму преобразования данных для
+использования при преобразовании необработанных данных, полученных из другой
+программы, в данные Lisp.  Значимые значения включают @code{TEXT},
+@code{STRING}, @code{UTF8_STRING}, @code{TARGETS}, @code{LENGTH},
+@code{DELETE}, @code{FILE_NAME}, @code{CHARACTER_POSITION}, @code{NAME},
+@code{LINE_NUMBER}, @code{COLUMN_NUMBER}, @code{OWNER_OS}, @code{HOST_NAME},
+@code{USER}, @code{CLASS}, @code{ATOM} и @code{INTEGER}.  (Это символы с
+именами в верхнем регистре в соответствии с соглашениями X.).  По умолчанию
+для @var{data-type} используется @code{STRING}.  Оконные системы, отличные
+от X, обычно поддерживают лишь небольшое подмножество этих типов помимо
+@code{STRING}.
 @end defun
 
 @defopt selection-coding-system
-This variable specifies the coding system to use when reading and
-writing selections or the clipboard.  @xref{Coding
-Systems}.  The default is @code{compound-text-with-extensions}, which
-converts to the text representation that X11 normally uses.
+Переменная определяет систему кодирования, используемую при чтении и записи
+выделенных фрагментов или буфера обмена.  @xref{Coding Systems}.  По
+умолчанию используется @code{compound-text-with-extensions}, который
+преобразуется в текстовое представление, которое обычно использует X11.
 @end defopt
 
 @cindex clipboard support (for MS-Windows)
-When Emacs runs on MS-Windows, it does not implement X selections in
-general, but it does support the clipboard.  @code{gui-get-selection}
-and @code{gui-set-selection} on MS-Windows support the text data type
-only; if the clipboard holds other types of data, Emacs treats the
-clipboard as empty.  The supported data type is @code{STRING}.
+Когда Emacs работает в MS-Windows, он вообще не реализует выбор X, но
+поддерживает буфер обмена.  @code{gui-get-selection} и
+@code{gui-set-selection} в MS-Windows поддерживает только текстовый тип
+данных; если буфер обмена содержит другие типы данных, Emacs считает буфер
+обмена пустым.  Поддерживаемый тип данных - @code{STRING}.
 
-For backward compatibility, there are obsolete aliases
-@code{x-get-selection} and @code{x-set-selection}, which were the
-names of @code{gui-get-selection} and @code{gui-set-selection} before
-Emacs 25.1.
+Для обратной совместимости существуют устаревшие псевдонимы
+@code{x-get-selection} и @code{x-set-selection}, которые были именами
+@code{gui-get-selection} и @code{gui-set-selection} до Emacs 25.1.
 
 @node Drag and Drop
-@section Drag and Drop
+@section Перетащить и Отпустить
 @cindex drag and drop
 
 @vindex x-dnd-test-function
 @vindex x-dnd-known-types
-  When a user drags something from another application over Emacs, that other
-application expects Emacs to tell it if Emacs can handle the data that is
-dragged.  The variable @code{x-dnd-test-function} is used by Emacs to determine
-what to reply.  The default value is @code{x-dnd-default-test-function}
-which accepts drops if the type of the data to be dropped is present in
-@code{x-dnd-known-types}.  You can customize @code{x-dnd-test-function} and/or
-@code{x-dnd-known-types} if you want Emacs to accept or reject drops based
-on some other criteria.
+  Когда пользователь перетаскивает что-то из другого приложения через Emacs,
+это другое приложение ожидает, что Emacs сообщит, может ли Emacs обработать
+перетаскиваемые данные.  Переменная @code{x-dnd-test-function} используется
+Emacs для определения ответа.  Значение по умолчанию -
+@code{x-dnd-default-test-function}, которое допускает отбрасывание, если тип
+удаляемых данных присутствует в @code{x-dnd-known-types}.  Можно настроить
+@code{x-dnd-test-function} и/или @code{x-dnd-known-types}, если требуется,
+чтобы Emacs принимал или отклонял отбрасывание на основе других критериев.
 
 @vindex x-dnd-types-alist
-  If you want to change the way Emacs handles drop of different types
-or add a new type, customize @code{x-dnd-types-alist}.  This requires
-detailed knowledge of what types other applications use for drag and
-drop.
+  Если требуется изменить способ обработки Emacs сброса различных типов или
+добавить новый тип, настраивается @code{x-dnd-types-alist}.  Для этого
+требуется детальное знание того, какие типы используют для перетаскивания
+другие приложения.
 
 @vindex dnd-protocol-alist
-  When an URL is dropped on Emacs it may be a file, but it may also be
-another URL type (ftp, http, etc.).  Emacs first checks
-@code{dnd-protocol-alist} to determine what to do with the URL@.  If
-there is no match there and if @code{browse-url-browser-function} is
-an alist, Emacs looks for a match there.  If no match is found the
-text for the URL is inserted.  If you want to alter Emacs behavior,
-you can customize these variables.
+  Когда URL-адрес отбрасывается в Emacs, это может быть файл, но это также
+может быть URL-адрес другого типа (ftp, http и тому подобное).  Emacs
+сначала проверяет @code{dnd-protocol-alist}, чтобы определить, что делать с
+URL@.  Если там нет совпадений и если @code{browse-url-browser-function} -
+это список, Emacs ищет там совпадение.  Если совпадений не найдено,
+вставляется текст URL.  Если требуется изменить поведение Emacs, можно
+настроить эти переменные.
 
 @node Color Names
-@section Color Names
+@section Названия Цвета
 
 @cindex color names
 @cindex specify color
 @cindex numerical RGB color specification
-  A color name is text (usually in a string) that specifies a color.
-Symbolic names such as @samp{black}, @samp{white}, @samp{red}, etc.,
-are allowed; use @kbd{M-x list-colors-display} to see a list of
-defined names.  You can also specify colors numerically in forms such
-as @samp{#@var{rgb}} and @samp{RGB:@var{r}/@var{g}/@var{b}}, where
-@var{r} specifies the red level, @var{g} specifies the green level,
-and @var{b} specifies the blue level.  You can use either one, two,
-three, or four hex digits for @var{r}; then you must use the same
-number of hex digits for all @var{g} and @var{b} as well, making
-either 3, 6, 9 or 12 hex digits in all.  (See the documentation of the
-X Window System for more details about numerical RGB specification of
-colors.)
+  Название цвета - это текст (обычно в строке), определяющий цвет.
+Допускаются символьные имена, такие как @samp{black}, @samp{white},
+@samp{red} и так далее; используется @kbd{M-x list-colors-display}, чтобы
+увидеть список определенных имен.  Также можно указать цвета численно в
+таких формах, как @samp{#@var{rgb}} и @samp{RGB:@var{r}/@var{g}/@var{b}},
+где @var{r} указывает уровень красного, @var{g} указывает уровень зеленого,
+а @var{b} указывает уровень синего.  Можно использовать одну, две, три или
+четыре шестнадцатеричных цифры для @var{r}; тогда потребуется использовать
+одинаковое количество шестнадцатеричных цифр для всех @var{g} и @var{b},
+сделав всего 3, 6, 9 или 12 шестнадцатеричных цифр.  (Смотреть документацию
+системы X Window для получения более подробной информации о числовой
+спецификации цветов RGB.)
 
-  These functions provide a way to determine which color names are
-valid, and what they look like.  In some cases, the value depends on the
-@dfn{selected frame}, as described below; see @ref{Input Focus}, for the
-meaning of the term ``selected frame''.
+  Функции позволяют определить допустимые названия цветов и их внешний вид.
+В некоторых случаях значение зависит от @dfn{выбранного фрейма}, как описано
+ниже; смотреть @ref{Input Focus}, чтобы узнать значение термина
+``выбранный фрейм''.
 
-  To read user input of color names with completion, use
-@code{read-color} (@pxref{High-Level Completion, read-color}).
+  Чтобы прочитать вводимые пользователем названия цветов с завершением,
+использовать @code{read-color} (@pxref{High-Level Completion, read-color}).
 
 @defun color-defined-p color &optional frame
-This function reports whether a color name is meaningful.  It returns
-@code{t} if so; otherwise, @code{nil}.  The argument @var{frame} says
-which frame's display to ask about; if @var{frame} is omitted or
-@code{nil}, the selected frame is used.
+Функция сообщает, имеет ли значение название цвета.  Если это так,
+возвращает @code{t}; в противном случае @code{nil}.  Аргумент @var{frame}
+указывает, какой фрейм интересует; если @var{frame} опущен или @code{nil},
+используется выбранный фрейм.
 
-Note that this does not tell you whether the display you are using
-really supports that color.  When using X, you can ask for any defined
-color on any kind of display, and you will get some result---typically,
-the closest it can do.  To determine whether a frame can really display
-a certain color, use @code{color-supported-p} (see below).
+Обратить внимание, что это не говорит, действительно ли используемый
+дисплей поддерживает этот цвет.  При использовании X можно запросить любой
+определенный цвет на любом типе дисплея, и получить какой-то результат -
+обычно самый близкий из возможных.  Чтобы определить, действительно ли фрейм
+может отображать определенный цвет, используется @code{color-supported-p}
+(смотреть ниже).
 
 @findex x-color-defined-p
-This function used to be called @code{x-color-defined-p},
-and that name is still supported as an alias.
+Раньше функция называлась @code{x-color-defined-p}, и это имя все еще
+поддерживается как псевдоним.
 @end defun
 
 @defun defined-colors &optional frame
-This function returns a list of the color names that are defined
-and supported on frame @var{frame} (default, the selected frame).
-If @var{frame} does not support colors, the value is @code{nil}.
+Функция возвращает список названий цветов, которые определены и
+поддерживаются фреймом @var{frame} (по умолчанию, выбранный фрейм).  Если
+@var{frame} не поддерживает цвета, используется значение @code{nil}.
 
 @findex x-defined-colors
-This function used to be called @code{x-defined-colors},
-and that name is still supported as an alias.
+Раньше функция называлась @code{x-defined-colors}, и это имя все еще
+поддерживается как псевдоним.
 @end defun
 
 @defun color-supported-p color &optional frame background-p
-This returns @code{t} if @var{frame} can really display the color
-@var{color} (or at least something close to it).  If @var{frame} is
-omitted or @code{nil}, the question applies to the selected frame.
+Возвращает @code{t}, если @var{frame} действительно может отображать цвет
+@var{color} (или, по крайней мере, что-то близкое к нему).  Если @var{frame}
+опущено или @code{nil}, вопрос относится к выбранному фрейму.
 
-Some terminals support a different set of colors for foreground and
-background.  If @var{background-p} is не-@code{nil}, that means you are
-asking whether @var{color} can be used as a background; otherwise you
-are asking whether it can be used as a foreground.
+Некоторые терминалы поддерживают другой набор цветов для переднего плана и
+фона.  Если @var{background-p} равен не-@code{nil}, это означает, что
+спрашивается, можно ли использовать @var{color} в качестве фона; в противном
+случае спрашивается, можно ли его использовать в качестве переднего плана.
 
-The argument @var{color} must be a valid color name.
+Аргумент @var{color} должен быть допустимым именем цвета.
 @end defun
 
 @defun color-gray-p color &optional frame
-This returns @code{t} if @var{color} is a shade of gray, as defined on
-@var{frame}'s display.  If @var{frame} is omitted or @code{nil}, the
-question applies to the selected frame.  If @var{color} is not a valid
-color name, this function returns @code{nil}.
+Возвращает @code{t}, если @var{color} является оттенком серого, как
+определено на дисплее @var{frame}.  Если @var{frame} опущено или @code{nil},
+вопрос относится к выбранному фрейму.  Если @var{color} не является
+допустимым именем цвета, функция возвращает @code{nil}.
 @end defun
 
 @defun color-values color &optional frame
 @cindex rgb value
-This function returns a value that describes what @var{color} should
-ideally look like on @var{frame}.  If @var{color} is defined, the
-value is a list of three integers, which give the amount of red, the
-amount of green, and the amount of blue.  Each integer ranges in
-principle from 0 to 65535, but some displays may not use the full
-range.  This three-element list is called the @dfn{rgb values} of the
-color.
+Функция возвращает значение, описывающее, как @var{color} должен в идеале
+выглядеть на @var{frame}.  Если задан @var{color}, значение представляет
+собой список из трех целых чисел, которые задают количество красного,
+зеленого и синего.  Каждое целое число находится в диапазоне от 0 до 65535,
+но некоторые дисплеи могут не использовать весь диапазон.  Этот список из
+трех элементов называется @dfn{значениями rgb} цвета.
 
-If @var{color} is not defined, the value is @code{nil}.
+Если @var{color} не определен, используется значение @code{nil}.
 
 @example
 (color-values "black")
@@ -3837,126 +3839,128 @@ If @var{color} is not defined, the value is @code{nil}.
      @result{} nil
 @end example
 
-The color values are returned for @var{frame}'s display.  If
-@var{frame} is omitted or @code{nil}, the information is returned for
-the selected frame's display.  If the frame cannot display colors, the
-value is @code{nil}.
+Значения цвета возвращаются для отображения @var{frame}.  Если @var{frame}
+опущен или @code{nil}, информация возвращается для отображения выбранного
+фрейма.  Если фрейм не может отображать цвета, используется значение
+@code{nil}.
 
 @findex x-color-values
-This function used to be called @code{x-color-values},
-and that name is still supported as an alias.
+Раньше функция называлась @code{x-color-values}, и это имя все еще
+поддерживается как псевдоним.
 @end defun
 
 @node Text Terminal Colors
-@section Text Terminal Colors
+@section Цвета Текстовых Терминалов
 @cindex colors on text terminals
 
-  Text terminals usually support only a small number of colors, and
-the computer uses small integers to select colors on the terminal.
-This means that the computer cannot reliably tell what the selected
-color looks like; instead, you have to inform your application which
-small integers correspond to which colors.  However, Emacs does know
-the standard set of colors and will try to use them automatically.
+  Текстовые терминалы обычно поддерживают только небольшое количество
+цветов, а компьютер использует маленькие целые числа для выбора цветов на
+терминале.  Это означает, что компьютер не может достоверно определить, как
+выглядит выбранный цвет; вместо этого потребуется сообщить своему
+приложению, какие маленькие целые числа каким цветам соответствуют.  Однако
+Emacs знает стандартный набор цветов и будет пытаться использовать их
+автоматически.
 
-  The functions described in this section control how terminal colors
-are used by Emacs.
+  Функции, описанные в этом разделе, управляют тем, как Emacs использует
+цвета терминала.
 
-  Several of these functions use or return @dfn{rgb values}, described
-in @ref{Color Names}.
+  Некоторые из этих функций используют или возвращают @dfn{значения rgb},
+как описано в @ref{Color Names}.
 
-  These functions accept a display (either a frame or the name of a
-terminal) as an optional argument.  We hope in the future to make
-Emacs support different colors on different text terminals; then this
-argument will specify which terminal to operate on (the default being
-the selected frame's terminal; @pxref{Input Focus}).  At present,
-though, the @var{frame} argument has no effect.
+  Эти функции принимают отображение (либо фрейм, либо имя терминала) в
+качестве необязательного аргумента.  Есть надежда, что в будущем Emacs будет
+поддерживать разные цвета на разных текстовых терминалах; тогда этот
+аргумент будет указывать, с каким терминалом работать (по умолчанию это
+терминал выбранного фрейма; @pxref{Input Focus}).  Однако в настоящее время
+аргумент @var{frame} не действует.
 
 @defun tty-color-define name number &optional rgb frame
-This function associates the color name @var{name} with
-color number @var{number} on the terminal.
+Функция связывает название цвета @var{name} с номером цвета @var{number} на
+терминале.
 
-The optional argument @var{rgb}, if specified, is an rgb value, a list
-of three numbers that specify what the color actually looks like.
-If you do not specify @var{rgb}, then this color cannot be used by
-@code{tty-color-approximate} to approximate other colors, because
-Emacs will not know what it looks like.
+Необязательный аргумент @var{rgb}, если указан, является значением rgb,
+списком из трех чисел, которые определяют, как на самом деле выглядит цвет.
+Если не указать @var{rgb}, тогда @code{tty-color-approximate} не сможет
+использовать этот цвет для аппроксимации других цветов, потому что Emacs не
+будет знать, как он выглядит.
 @end defun
 
 @defun tty-color-clear &optional frame
-This function clears the table of defined colors for a text terminal.
+Эта функция очищает таблицу определенных цветов для текстового терминала.
 @end defun
 
 @defun tty-color-alist &optional frame
-This function returns an alist recording the known colors supported by
-a text terminal.
+Функция возвращает список с известными цветами, поддерживаемыми текстовым
+терминалом.
 
-Each element has the form @code{(@var{name} @var{number} . @var{rgb})}
-or @code{(@var{name} @var{number})}.  Here, @var{name} is the color
-name, @var{number} is the number used to specify it to the terminal.
-If present, @var{rgb} is a list of three color values (for red, green,
-and blue) that says what the color actually looks like.
+Каждый элемент имеет вид @code{(@var{name} @var{number} . @var{rgb})} или
+@code{(@var{name} @var{number})}.  Здесь @var{name} - это название цвета,
+@var{number} - это номер, используемый для его указания терминала.  Если
+присутствует, @var{rgb} - это список из трех значений цвета (для красного,
+зеленого и синего), которые определяют, как на самом деле выглядит цвет.
 @end defun
 
 @defun tty-color-approximate rgb &optional frame
-This function finds the closest color, among the known colors
-supported for @var{display}, to that described by the rgb value
-@var{rgb} (a list of color values).  The return value is an element of
+Функция находит самый близкий цвет среди известных цветов, поддерживаемых
+для @var{display}, к цвету, описанному значением rgb @var{rgb} (список
+значений цвета).  Возвращаемое значение - это элемент
 @code{tty-color-alist}.
 @end defun
 
 @defun tty-color-translate color &optional frame
-This function finds the closest color to @var{color} among the known
-colors supported for @var{display} and returns its index (an integer).
-If the name @var{color} is not defined, the value is @code{nil}.
+Функция находит ближайший к @var{color} цвет среди известных цветов,
+поддерживаемых для @var{display}, и возвращает его индекс (целое число).
+Если имя @var{color} не определено, используется значение @code{nil}.
 @end defun
 
 @node Resources
-@section X Resources
+@section X Ресурсы
 
-This section describes some of the functions and variables for
-querying and using X resources, or their equivalent on your operating
-system.  @xref{X Resources,, X Resources, emacs, The GNU Emacs
-Manual}, for more information about X resources.
+В этом разделе описаны некоторые функции и переменные для запроса и
+использования ресурсов X или их эквивалентов в операционной системе.
+@xref{X Resources,, X Resources, emacs, The GNU Emacs Manual}, для получения
+дополнительной информации о X-ресурсах.
 
 @defun x-get-resource attribute class &optional component subclass
-The function @code{x-get-resource} retrieves a resource value from the X
-Window defaults database.
+Функция @code{x-get-resource} извлекает значение ресурса из базы данных
+X Window по умолчанию.
 
-Resources are indexed by a combination of a @dfn{key} and a @dfn{class}.
-This function searches using a key of the form
-@samp{@var{instance}.@var{attribute}} (where @var{instance} is the name
-under which Emacs was invoked), and using @samp{Emacs.@var{class}} as
-the class.
+Ресурсы индексируются комбинацией @dfn{ключ} и @dfn{класс}.  Функция
+выполняет поиск, используя ключ вида @samp{@var{instance}.@var{attribute}}
+(где @var{instance} - это имя, под которым был вызван Emacs), и используя
+@samp{Emacs.@var{class}} в качестве класса.
 
-The optional arguments @var{component} and @var{subclass} add to the key
-and the class, respectively.  You must specify both of them or neither.
-If you specify them, the key is
-@samp{@var{instance}.@var{component}.@var{attribute}}, and the class is
+Необязательные аргументы @var{component} и @var{subclass} добавляются к
+ключу и классу соответственно.  Потребуется указать их оба или ни один.
+Если указать их, ключ будет
+@samp{@var{instance}.@var{component}.@var{attribute}}, а класс
 @samp{Emacs.@var{class}.@var{subclass}}.
 @end defun
 
 @defvar x-resource-class
-This variable specifies the application name that @code{x-get-resource}
-should look up.  The default value is @code{"Emacs"}.  You can examine X
-resources for other application names by binding this
-variable to some other string, around a call to @code{x-get-resource}.
+Переменная определяет имя приложения, которое должен искать
+@code{x-get-resource}.  Значение по умолчанию - @code{"Emacs"}.  Можно
+исследовать ресурсы X на предмет имен других приложений, привязав эту
+переменную к какой-либо другой строке вокруг вызова @code{x-get-resource}.
 @end defvar
 
 @defvar x-resource-name
-This variable specifies the instance name that @code{x-get-resource}
-should look up.  The default value is the name Emacs was invoked with,
-or the value specified with the @samp{-name} or @samp{-rn} switches.
+Переменная определяет имя экземпляра, который должен искать
+@code{x-get-resource}.  Значение по умолчанию - это имя, с которым был
+вызван Emacs, или значение, указанное с помощью переключателей @samp{-name}
+или @samp{-rn}.
 @end defvar
 
-To illustrate some of the above, suppose that you have the line:
+Чтобы проиллюстрировать некоторые из вышеперечисленных, предположим,
+что у есть строка:
 
 @example
 xterm.vt100.background: yellow
 @end example
 
 @noindent
-in your X resources file (whose name is usually @file{~/.Xdefaults}
-or @file{~/.Xresources}).  Then:
+в вашем файле ресурсов X (имя которого обычно @file{~/.Xdefaults} или
+@file{~/.Xresources}).  Далее:
 
 @example
 @group
@@ -3972,213 +3976,208 @@ or @file{~/.Xresources}).  Then:
 @end example
 
 @defvar inhibit-x-resources
-If this variable is не-@code{nil}, Emacs does not look up X
-resources, and X resources do not have any effect when creating new
-frames.
+Если эта переменная - не-@code{nil}, Emacs не ищет ресурсы X, а ресурсы X
+не имеют никакого эффекта при создании новых фреймов.
 @end defvar
 
 @node Display Feature Testing
-@section Display Feature Testing
+@section Тестирование Функций Дисплея
 @cindex display feature testing
 
-  The functions in this section describe the basic capabilities of a
-particular display.  Lisp programs can use them to adapt their behavior
-to what the display can do.  For example, a program that ordinarily uses
-a popup menu could use the minibuffer if popup menus are not supported.
+  Функции в этом разделе описывают основные возможности конкретного дисплея
+Программы Lisp могут использовать их для адаптации своего поведения к
+возможностям дисплея.  Например, программа, которая обычно использует
+всплывающее меню, может использовать минибуфер, если всплывающие меню не
+поддерживаются.
 
-  The optional argument @var{display} in these functions specifies which
-display to ask the question about.  It can be a display name, a frame
-(which designates the display that frame is on), or @code{nil} (which
-refers to the selected frame's display, @pxref{Input Focus}).
+  Необязательный аргумент @var{display} в этих функциях указывает, о каком
+дисплее следует задать вопрос.  Это может быть отображаемое имя, фрейм
+(который обозначает дисплей, на котором находится фрейм) или @code{nil}
+(который относится к отображению выбранного фрейма, @pxref{Input Focus}).
 
-  @xref{Color Names}, @ref{Text Terminal Colors}, for other functions to
-obtain information about displays.
+  @xref{Color Names}, @ref{Text Terminal Colors}, другие функции, чтобы
+получить информацию о дисплеях.
 
 @defun display-popup-menus-p &optional display
-This function returns @code{t} if popup menus are supported on
-@var{display}, @code{nil} if not.  Support for popup menus requires
-that the mouse be available, since the menu is popped up by clicking
-the mouse on some portion of the Emacs display.
+Функция возвращает @code{t}, если на @var{display} поддерживаются
+всплывающие меню, @code{nil} если нет.  Для поддержки всплывающих меню
+требуется, чтобы была доступна мышь, поскольку меню всплывает при щелчке
+мышью в некоторой части дисплея Emacs.
 @end defun
 
 @defun display-graphic-p &optional display
-This function returns @code{t} if @var{display} is a graphic display
-capable of displaying several frames and several different fonts at
-once.  This is true for displays that use a window system such as X,
-and false for text terminals.
+Функция возвращает @code{t}, если @var{display} - графический дисплей,
+способный отображать несколько фреймов и несколько разных шрифтов
+одновременно.  Это верно для дисплеев, использующих оконную систему, такую
+как X, и не верно для текстовых терминалов.
 @end defun
 
 @defun display-mouse-p &optional display
 @cindex mouse, availability
-This function returns @code{t} if @var{display} has a mouse available,
-@code{nil} if not.
+Функция возвращает @code{t}, если у @var{display} есть мышь, и @code{nil},
+если нет.
 @end defun
 
 @defun display-color-p &optional display
 @findex x-display-color-p
-This function returns @code{t} if the screen is a color screen.
-It used to be called @code{x-display-color-p}, and that name
-is still supported as an alias.
+Функция возвращает @code{t}, если экран цветной.  Раньше назывался
+@code{x-display-color-p}, и это имя все еще поддерживается как псевдоним.
 @end defun
 
 @defun display-grayscale-p &optional display
-This function returns @code{t} if the screen can display shades of gray.
-(All color displays can do this.)
+Функция возвращает @code{t}, если экран может отображать оттенки серого.
+(Все цветные дисплеи могут это сделать.)
 @end defun
 
 @defun display-supports-face-attributes-p attributes &optional display
 @anchor{Display Face Attribute Testing}
-This function returns не-@code{nil} if all the face attributes in
-@var{attributes} are supported (@pxref{Face Attributes}).
+Функция возвращает не-@code{nil}, если все атрибуты вида в @var{attributes}
+поддерживаются (@pxref{Face Attributes}).
 
-The definition of ``supported'' is somewhat heuristic, but basically
-means that a face containing all the attributes in @var{attributes},
-when merged with the default face for display, can be represented in a
-way that's
+Определение ``поддерживаемый'' является несколько эвристическим, но в
+основном означает, что вид отображения, содержащий все атрибуты в
+@var{attributes}, при объединении с видом по умолчанию для отображения,
+может быть представлен таким образом, чтобы
 
 @enumerate
 @item
-different in appearance than the default face, and
+отличается по внешнему виду от вида по умолчанию, и
 
 @item
-close in spirit to what the attributes specify, if not exact.
+близок по духу к тому, что указывают атрибуты, если не совсем точен.
 @end enumerate
 
-Point (2) implies that a @code{:weight black} attribute will be
-satisfied by any display that can display bold, as will
-@code{:foreground "yellow"} as long as some yellowish color can be
-displayed, but @code{:slant italic} will @emph{not} be satisfied by
-the tty display code's automatic substitution of a dim face for
-italic.
+Точка (2) подразумевает, что атрибут @code{:weight black} будет
+удовлетворяться любым дисплеем, который может отображаться полужирным
+шрифтом, как и @code{:foreground "yellow"}, пока может отображаться
+некоторый желтоватый цвет, но @code{:slant italic} будет удовлетворять
+@emph{не} при автоматической подстановке тусклого вида кодом отображения tty
+для курсива.
 @end defun
 
 @defun display-selections-p &optional display
-This function returns @code{t} if @var{display} supports selections.
-Windowed displays normally support selections, but they may also be
-supported in some other cases.
+Функция возвращает @code{t}, если @var{display} поддерживает выбор.  Оконные
+дисплеи обычно поддерживают выбор, но они также могут поддерживаться в
+некоторых других случаях.
 @end defun
 
 @defun display-images-p &optional display
-This function returns @code{t} if @var{display} can display images.
-Windowed displays ought in principle to handle images, but some
-systems lack the support for that.  On a display that does not support
-images, Emacs cannot display a tool bar.
+Функция возвращает @code{t}, если @var{display} может отображать
+изображения.  Оконные дисплеи в принципе должны обрабатывать изображения,
+но некоторые системы не поддерживают это.  На дисплее, который не
+поддерживает изображения, Emacs не может отображать панель инструментов.
 @end defun
 
 @defun display-screens &optional display
-This function returns the number of screens associated with the display.
+Функция возвращает количество экранов, связанных с дисплеем.
 @end defun
 
 @defun display-pixel-height &optional display
-This function returns the height of the screen in pixels.
-On a character terminal, it gives the height in characters.
+Функция возвращает высоту экрана в пикселях.  На символьном терминале это
+дает высоту в символах.
 
-For graphical terminals, note that on multi-monitor setups this
-refers to the pixel height for all physical monitors associated with
-@var{display}.  @xref{Multiple Terminals}.
+Для графических терминалов обратить внимание, что в настройках с несколькими
+мониторами это относится к высоте пикселей для всех физических мониторов,
+связанных с @var{display}.  @xref{Multiple Terminals}.
 @end defun
 
 @defun display-pixel-width &optional display
-This function returns the width of the screen in pixels.
-On a character terminal, it gives the width in characters.
+Функция возвращает ширину экрана в пикселях.  На символьном терминале дает
+ширину в символах.
 
-For graphical terminals, note that on multi-monitor setups this
-refers to the pixel width for all physical monitors associated with
-@var{display}.  @xref{Multiple Terminals}.
+Для графических терминалов обратить внимание, что в настройках с несколькими
+мониторами это относится к ширине в пикселях для всех физических мониторов,
+связанных с @var{display}.  @xref{Multiple Terminals}.
 @end defun
 
 @defun display-mm-height &optional display
-This function returns the height of the screen in millimeters,
-or @code{nil} if Emacs cannot get that information.
+Функция возвращает высоту экрана в миллиметрах или @code{nil}, если Emacs не
+может получить эту информацию.
 
-For graphical terminals, note that on multi-monitor setups this
-refers to the height for all physical monitors associated with
+Для графических терминалов обратить внимание, что в настройках с несколькими
+мониторами это относится к высоте для всех физических мониторов, связанных с
 @var{display}.  @xref{Multiple Terminals}.
 @end defun
 
 @defun display-mm-width &optional display
-This function returns the width of the screen in millimeters,
-or @code{nil} if Emacs cannot get that information.
+Функция возвращает ширину экрана в миллиметрах или @code{nil}, если Emacs не
+может получить эту информацию.
 
-For graphical terminals, note that on multi-monitor setups this
-refers to the width for all physical monitors associated with
+Для графических терминалов обратить внимание, что в настройках с несколькими
+мониторами это относится к ширине для всех физических мониторов, связанных с
 @var{display}.  @xref{Multiple Terminals}.
 @end defun
 
 @defopt display-mm-dimensions-alist
-This variable allows the user to specify the dimensions of graphical
-displays returned by @code{display-mm-height} and
-@code{display-mm-width} in case the system provides incorrect values.
+Переменная позволяет пользователю указать размеры графических дисплеев,
+возвращаемых @code{display-mm-height} и @code{display-mm-width}, в случае,
+если система выдаёт неверные значения.
 @end defopt
 
 @cindex backing store
 @defun display-backing-store &optional display
-This function returns the backing store capability of the display.
-Backing store means recording the pixels of windows (and parts of
-windows) that are not exposed, so that when exposed they can be
-displayed very quickly.
+Функция возвращает возможность резервного хранилища дисплея.  Резервное
+хранилище означает запись пикселей окон (и частей окон), которые не
+отображаются, чтобы при экспонировании они могли отображаться очень быстро.
 
-Values can be the symbols @code{always}, @code{when-mapped}, or
-@code{not-useful}.  The function can also return @code{nil}
-when the question is inapplicable to a certain kind of display.
+Значения могут быть символами @code{always}, @code{when-mapped} или
+@code{not-useful}.  Функция также может возвращать @code{nil}, если вопрос
+неприменим к определенному типу отображения.
 @end defun
 
 @cindex SaveUnder feature
 @defun display-save-under &optional display
-This function returns не-@code{nil} if the display supports the
-SaveUnder feature.  That feature is used by pop-up windows
-to save the pixels they obscure, so that they can pop down
-quickly.
+Функция возвращает не-@code{nil}, если дисплей поддерживает функцию
+SaveUnder.  Эта функция используется всплывающими окнами для сохранения
+скрытых пикселей, чтобы они могли быстро всплывать.
 @end defun
 
 @defun display-planes &optional display
-This function returns the number of planes the display supports.
-This is typically the number of bits per pixel.
-For a tty display, it is log to base two of the number of colors supported.
+Функция возвращает количество плоскостей, поддерживаемых дисплеем.  Обычно
+это количество бит на пиксель.  Для дисплея tty это лог для двух из числа
+поддерживаемых цветов.
 @end defun
 
 @defun display-visual-class &optional display
-This function returns the visual class for the screen.  The value is
-one of the symbols @code{static-gray} (a limited, unchangeable number
-of grays), @code{gray-scale} (a full range of grays),
-@code{static-color} (a limited, unchangeable number of colors),
-@code{pseudo-color} (a limited number of colors), @code{true-color} (a
-full range of colors), and @code{direct-color} (a full range of
-colors).
+Функция возвращает визуальный класс для экрана.  Значение представляет собой
+один из символов @code{static-gray} (ограниченное неизменное количество
+оттенков серого), @code{gray-scale} (полный диапазон оттенков серого),
+@code{static-color} (ограниченное, неизменное количество цветов),
+@code{pseudo-color} (ограниченное количество цветов), @code{true-color}
+(почти полная цветовая гамма) и @code{direct-color} (полная цветовая гамма).
 @end defun
 
 @defun display-color-cells &optional display
-This function returns the number of color cells the screen supports.
+Функция возвращает количество цветных ячеек, поддерживаемых экраном.
 @end defun
 
-  These functions obtain additional information about the window
-system in use where Emacs shows the specified @var{display}.  (Their
-names begin with @code{x-} for historical reasons.)
+  Функции получают дополнительную информацию об используемой оконной
+системе, где Emacs показывает указанный @var{display}.  (Их имена начинаются
+с @code{x-} по историческим причинам.)
 
 @defun x-server-version &optional display
-This function returns the list of version numbers of the GUI window
-system running on @var{display}, such as the X server on GNU and Unix
-systems.  The value is a list of three integers: the major and minor
-version numbers of the protocol, and the distributor-specific release
-number of the window system software itself.  On GNU and Unix systems,
-these are normally the version of the X protocol and the
-distributor-specific release number of the X server software.  On
-MS-Windows, this is the version of the Windows OS.
+Функция возвращает список номеров версий оконной системы GUI, работающей на
+@var{display}, такой как X-сервер в системах GNU и Unix.  Значение
+представляет собой список из трех целых чисел: номера основной и
+дополнительной версии протокола и номер выпуска самого программного
+обеспечения оконной системы, зависящий от дистрибьютива.  В системах GNU и
+Unix это обычно версия протокола X и номер выпуска программного обеспечения
+X-сервера для конкретного поставщика.  В MS-Windows это версия ОС Windows.
 @end defun
 
 @defun x-server-vendor &optional display
-This function returns the vendor that provided the window system
-software (as a string).  On GNU and Unix systems this really means
-whoever distributes the X server.  On MS-Windows this is the vendor ID
-string of the Windows OS (Microsoft).
+Функция возвращает поставщика, предоставившего программное обеспечение
+оконной системы (в виде строки).  В системах GNU и Unix это действительно
+означает того, кто распространяет X-сервер.  В MS-Windows это строка
+идентификатора поставщика ОС Windows (Microsoft).
 
-When the developers of X labeled software distributors as
-``vendors'', they showed their false assumption that no system could
-ever be developed and distributed noncommercially.
+Когда разработчики X обозначили дистрибьюторов программного обеспечения как
+``продавцы'', они продемонстрировали свое ложное предположение, что ни одна
+система не может быть разработана и распространена некоммерчески.
 @end defun
 
 @ignore
 @defvar x-no-window-manager
-This variable's value is @code{t} if no X window manager is in use.
+Значение этой переменной - @code{t}, если диспетчер окон X не используется.
 @end defvar
 @end ignore
