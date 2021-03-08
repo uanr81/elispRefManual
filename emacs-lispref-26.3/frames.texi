@@ -2920,7 +2920,7 @@ Emacs, настроив переменную @code{mouse-autoselect-window}
 
 
 @node Raising and Lowering
-@section Подъем, Опускание и Перестановка рам
+@section Подъем, Опускание и Перетасовка Фреймов
 
 @cindex raising a frame
 @cindex lowering a frame

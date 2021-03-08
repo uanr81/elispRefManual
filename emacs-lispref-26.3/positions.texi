@@ -3,73 +3,68 @@
 @c Copyright (C) 1990-1995, 1998-2019 Free Software Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Positions
-@chapter Positions
+@chapter Позиции
 @cindex position (in buffer)
 @cindex buffer position
 
-  A @dfn{position} is the index of a character in the text of a buffer.
-More precisely, a position identifies the place between two characters
-(or before the first character, or after the last character), so we can
-speak of the character before or after a given position.  However, we
-often speak of the character ``at'' a position, meaning the character
-after that position.
+  @dfn{Позиция} - индекс символа в тексте буфера.  Точнее, позиция
+определяет место между двумя символами (или перед первым символом, или после
+последнего символа), поэтому можно говорить о символе до или после данной
+позиции.  Однако часто говорится о символе ``в'' позиции, имея в виду символ
+после этой позиции.
 
-  Positions are usually represented as integers starting from 1, but
-can also be represented as @dfn{markers}---special objects that
-relocate automatically when text is inserted or deleted so they stay
-with the surrounding characters.  Functions that expect an argument to
-be a position (an integer), but accept a marker as a substitute,
-normally ignore which buffer the marker points into; they convert the
-marker to an integer, and use that integer, exactly as if you had
-passed the integer as the argument, even if the marker points to the
-wrong buffer.  A marker that points nowhere cannot convert to an
-integer; using it instead of an integer causes an error.
-@xref{Markers}.
+  Позиции обычно представлены как целые числа, начинающиеся с 1, но также
+могут быть представлены как @dfn{маркеры} --- специальные объекты, которые
+автоматически перемещаются при вставке или удалении текста, поэтому они
+остаются с окружающими символами.  Функции, которые ожидают, что аргумент
+будет позицией (целым числом), но принимают маркер в качестве замены, обычно
+игнорируют, в какой буфер указывает маркер; они преобразуют маркер в целое
+число и используют это целое число, как если передано целое число в качестве
+аргумента, даже если маркер указывает на неправильный буфер.  Маркер,
+который никуда не указывает, не может быть преобразован в целое число;
+использование его вместо целого числа вызывает ошибку.  @xref{Markers}.
 
-  See also the field feature (@pxref{Fields}), which provides
-functions that are used by many cursor-motion commands.
+  Смотреть также функцию поля (@pxref{Fields}), которая предоставляет
+функции, которые используются многими командами перемещения курсора.
 
 @menu
-* Point::         The special position where editing takes place.
-* Motion::        Changing point.
-* Excursions::    Temporary motion and buffer changes.
-* Narrowing::     Restricting editing to a portion of the buffer.
+* Point::         Особое место, где происходит редактирование.
+* Motion::        Точка изменения.
+* Excursions::    Временные передвижения и изменения буфера.
+* Narrowing::     Ограничение редактирования частью буфера.
 @end menu
 
 @node Point
-@section Point
+@section Точка
 @cindex point
 
-  @dfn{Point} is a special buffer position used by many editing
-commands, including the self-inserting typed characters and text
-insertion functions.  Other commands move point through the text
-to allow editing and insertion at different places.
+  @dfn{Точка} - это специальная позиция в буфере, используемая многими
+командами редактирования, включая самовставляющиеся печатные символы и
+функции вставки текста.  Другие команды перемещают точку по тексту, чтобы
+разрешить редактирование и вставку в разных местах.
 
-  Like other positions, point designates a place between two characters
-(or before the first character, or after the last character), rather
-than a particular character.  Usually terminals display the cursor over
-the character that immediately follows point; point is actually before
-the character on which the cursor sits.
+  Как и другие позиции, точка обозначает место между двумя символами (или
+перед первым символом, или после последнего символа), а не между конкретным
+символом.  Обычно терминалы отображают курсор над символом, который следует
+сразу за точкой; точка фактически стоит перед символом, на котором находится
+курсор.
 
 @cindex point with narrowing
-  The value of point is a number no less than 1, and no greater than the
-buffer size plus 1.  If narrowing is in effect (@pxref{Narrowing}), then
-point is constrained to fall within the accessible portion of the buffer
-(possibly at one end of it).
+  Значение точки - это число не меньше 1 и не больше, чем размер буфера
+плюс 1.  Если действует сужение (@pxref{Narrowing}), то точка ограничивается
+доступной частью буфера (возможно, находится на одном его конце).
 
-  Each buffer has its own value of point, which is independent of the
-value of point in other buffers.  Each window also has a value of point,
-which is independent of the value of point in other windows on the same
-buffer.  This is why point can have different values in various windows
-that display the same buffer.  When a buffer appears in only one window,
-the buffer's point and the window's point normally have the same value,
-so the distinction is rarely important.  @xref{Window Point}, for more
-details.
+  Каждый буфер имеет собственное значение точки, которое не зависит от
+значения точки в других буферах.  Каждое окно также имеет значение точки,
+которое не зависит от значения точки в других окнах того же буфера.  Вот
+почему точка может иметь разные значения в разных окнах, отображающих один
+и тот же буфер.  Когда буфер появляется только в одном окне, точка буфера и
+точка окна обычно имеют одно и то же значение, поэтому различие редко бывает
+важным.  @xref{Window Point}, подробнее.
 
 @defun point
 @cindex current buffer position
-This function returns the value of point in the current buffer,
-as an integer.
+Функция возвращает значение точки в текущем буфере в виде целого числа.
 
 @need 700
 @example
@@ -81,32 +76,29 @@ as an integer.
 @end defun
 
 @defun point-min
-This function returns the minimum accessible value of point in the
-current buffer.  This is normally 1, but if narrowing is in effect, it
-is the position of the start of the region that you narrowed to.
-(@xref{Narrowing}.)
+Функция возвращает минимально доступное значение точки в текущем буфере.
+Обычно это 1, но если действует сужение, это позиция начала области, до
+которой проведено сужение (@xref{Narrowing}).
 @end defun
 
 @defun point-max
-This function returns the maximum accessible value of point in the
-current buffer.  This is @code{(1+ (buffer-size))}, unless narrowing is
-in effect, in which case it is the position of the end of the region
-that you narrowed to.  (@xref{Narrowing}.)
+Функция возвращает максимально доступное значение точки в текущем буфере.
+Это @code{(1+ (buffer-size))}, если не действует сужение; в этом случае это
+позиция конца области, до которой проведено сужение.  (@xref{Narrowing}.)
 @end defun
 
 @defun buffer-end flag
-This function returns @code{(point-max)} if @var{flag} is greater than
-0, @code{(point-min)} otherwise.  The argument @var{flag} must be a
-number.
+Функция возвращает @code{(point-max)}, если @var{flag} больше 0, и
+@code{(point-min)} в противном случае.  Аргумент @var{flag} должен быть
+числом.
 @end defun
 
 @defun buffer-size &optional buffer
-This function returns the total number of characters in the current
-buffer.  In the absence of any narrowing (@pxref{Narrowing}),
-@code{point-max} returns a value one larger than this.
+Функция возвращает общее количество символов в текущем буфере.  В отсутствие
+сужения (@pxref{Narrowing}) @code{point-max} возвращает значение на единицу
+больше этого.
 
-If you specify a buffer, @var{buffer}, then the value is the
-size of @var{buffer}.
+Если указан буфер @var{buffer}, то значение будет размером @var{buffer}.
 
 @example
 @group
@@ -121,48 +113,45 @@ size of @var{buffer}.
 @end defun
 
 @node Motion
-@section Motion
+@section Перемещение
 @cindex motion by chars, words, lines, lists
 
-  Motion functions change the value of point, either relative to the
-current value of point, relative to the beginning or end of the buffer,
-or relative to the edges of the selected window.  @xref{Point}.
+  Функции перемещения изменяют значение точки относительно текущего значения
+точки, относительно начала или конца буфера или относительно краев
+выбранного окна.  @xref{Point}.
 
 @menu
-* Character Motion::       Moving in terms of characters.
-* Word Motion::            Moving in terms of words.
-* Buffer End Motion::      Moving to the beginning or end of the buffer.
-* Text Lines::             Moving in terms of lines of text.
-* Screen Lines::           Moving in terms of lines as displayed.
-* List Motion::            Moving by parsing lists and sexps.
-* Skipping Characters::    Skipping characters belonging to a certain set.
+* Character Motion::       Перемещение по символам.
+* Word Motion::            Перемещение по словам.
+* Buffer End Motion::      Переход к началу или концу буфера.
+* Text Lines::             Перемещение по строкам текста.
+* Screen Lines::           Перемещение по линиям, как показано.
+* List Motion::            Перемещение по спискам парсинга.
+* Skipping Characters::    Пропуск символов, определенного набора.
 @end menu
 
 @node Character Motion
-@subsection Motion by Characters
+@subsection Движение по Символам
 
-  These functions move point based on a count of characters.
-@code{goto-char} is the fundamental primitive; the other functions use
-that.
+  Эти функции перемещают точку в зависимости от количества символов.
+@code{goto-char} - фундаментальный примитив; другие функции используют это.
 
 @deffn Command goto-char position
-This function sets point in the current buffer to the value
-@var{position}.
-@c This behavior used to be documented until 2013/08.
+Функция устанавливает точку в текущем буфере на значение @var{position}.
+@c Это поведение документировалось до тех пор, пока 2013/08.
 @ignore
-If @var{position} is less than 1, it moves point to the beginning of
-the buffer.  If @var{position} is greater than the length of the
-buffer, it moves point to the end.
+Если @var{position} меньше 1, перемещается точка в начало буфера.  Если
+ @var{position} больше длины буфера, точка перемещается в конец.
 @end ignore
 
-If narrowing is in effect, @var{position} still counts from the
-beginning of the buffer, but point cannot go outside the accessible
-portion.  If @var{position} is out of range, @code{goto-char} moves
-point to the beginning or the end of the accessible portion.
+Если действует сужение, @var{position} по-прежнему считается с начала
+буфера, но точка не может выходить за пределы доступной части.  Если
+@var{position} выходит за пределы допустимого диапазона, @code{goto-char}
+перемещает точку в начало или конец доступной части.
 
-When this function is called interactively, @var{position} is the
-numeric prefix argument, if provided; otherwise it is read from the
-minibuffer.
+Когда функция вызывается в интерактивном режиме, @var{position} является
+аргументом числового префикса, если он указан; в противном случае он
+читается из минибуфера.
 
 @code{goto-char} returns @var{position}.
 @end deffn
@@ -170,117 +159,113 @@ minibuffer.
 @deffn Command forward-char &optional count
 @c @kindex beginning-of-buffer
 @c @kindex end-of-buffer
-This function moves point @var{count} characters forward, towards the
-end of the buffer (or backward, towards the beginning of the buffer, if
-@var{count} is negative).  If @var{count} is @code{nil}, the default
-is 1.
+Функция перемещает точечные символы @var{count} вперед, к концу буфера (или
+назад, к началу буфера, если @var{count} отрицательное значение).  Если
+@var{count} - @code{nil}, значение по умолчанию - 1.
 
-If this attempts to move past the beginning or end of the buffer (or
-the limits of the accessible portion, when narrowing is in effect), it
-signals an error with error symbol @code{beginning-of-buffer} or
+Если проводится попытка переместиться за начало или конец буфера (или за
+пределы доступной части, когда действует сужение), сигнализируется об ошибке
+с помощью символа ошибки @code{beginning-of-buffer} или
 @code{end-of-buffer}.
 
-In an interactive call, @var{count} is the numeric prefix argument.
+В интерактивном вызове @var{count} - это числовой префиксный аргумент.
 @end deffn
 
 @deffn Command backward-char &optional count
-This is just like @code{forward-char} except that it moves
-in the opposite direction.
+Это похоже на @code{forward-char}, за исключением того, что движение в
+противоположном направлении.
 @end deffn
 
 @node Word Motion
-@subsection Motion by Words
+@subsection Движение по Словам
 
-  The functions for parsing words described below use the syntax table
-and @code{char-script-table} to decide whether a given character is
-part of a word.  @xref{Syntax Tables}, and see @ref{Character
-Properties}.
+  Функции синтаксического анализа слов, описанные ниже, используют таблицу
+синтаксиса и @code{char-script-table}, чтобы решить, является ли данный
+символ частью слова.  @xref{Syntax Tables},  и смотреть
+@ref{Character Properties}.
 
 @deffn Command forward-word &optional count
-This function moves point forward @var{count} words (or backward if
-@var{count} is negative).  If @var{count} is omitted or @code{nil}, it
-defaults to 1.  In an interactive call, @var{count} is specified by
-the numeric prefix argument.
+Функция перемещает точку вперед по словам @var{count} (или назад, если
+@var{count} отрицательное значение).  Если @var{count} опущен или
+@code{nil}, по умолчанию используется 1.  В интерактивном вызове @var{count}
+задается аргументом числового префикса.
 
-``Moving one word'' means moving until point crosses a
-word-constituent character, which indicates the beginning of a word,
-and then continue moving until the word ends.  By default, characters
-that begin and end words, known as @dfn{word boundaries}, are defined
-by the current buffer's syntax table (@pxref{Syntax Class Table}), but
-modes can override that by setting up a suitable
-@code{find-word-boundary-function-table}, described below.  Characters
-that belong to different scripts (as defined by
-@code{char-script-table}), also define a word boundary
-(@pxref{Character Properties}).  In any case, this function cannot
-move point past the boundary of the accessible portion of the buffer,
-or across a field boundary (@pxref{Fields}).  The most common case of
-a field boundary is the end of the prompt in the minibuffer.
+``Перемещение через одно слово'' означает движение до тех пор, пока точка не
+пересечет символ, составляющий слово, что указывает на начало слова, а затем
+продолжить движение, пока слово не закончится.  По умолчанию символы,
+которые начинают и заканчивают слова, известные как @dfn{границы слова},
+определяются таблицей синтаксиса текущего буфера
+(@pxref{Syntax Class Table}), но режимы могут переопределить это, установив
+подходящий @code{find-word-boundary-function-table}, как описано ниже.
+Символы, принадлежащие разным скриптам (как определено
+@code{char-script-table}), также определяют границу слова
+(@pxref{Character Properties}).  В любом случае эта функция не может
+перемещать точку за границу доступной части буфера или за границу поля
+(@pxref{Fields}).  Самый распространенный случай границы поля - это конец
+подсказки в минибуфере.
 
-If it is possible to move @var{count} words, without being stopped
-prematurely by the buffer boundary or a field boundary, the value is
-@code{t}.  Otherwise, the return value is @code{nil} and point stops at
-the buffer boundary or field boundary.
+Если возможно переместить на @var{count} слов без преждевременного останова
+границей буфера или границей поля, значение будет @code{t}.  В противном
+случае возвращаемое значение - @code{nil}, и точка останавливается на
+границе буфера или границе поля.
 
-If @code{inhibit-field-text-motion} is non-@code{nil},
-this function ignores field boundaries.
+Если @code{inhibit-field-text-motion} равен non-@code{nil}, эта функция
+игнорирует границы поля.
 
 @end deffn
 
 @deffn Command backward-word &optional count
-This function is just like @code{forward-word}, except that it moves
-backward until encountering the front of a word, rather than forward.
+Функция аналогична @code{forward-word}, за исключением того, что
+перемещает назад, пока не встретит начало слова, а не вперед.
 @end deffn
 
 @defopt words-include-escapes
 @c Emacs 19 feature
-This variable affects the behavior of @code{forward-word} and
-@code{backward-word}, and everything that uses them.  If it is
-non-@code{nil}, then characters in the escape and character-quote
-syntax classes count as part of words.  Otherwise, they do not.
+Переменная влияет на поведение @code{forward-word} и @code{backward-word} и
+всего, что их использует.  Если non-@code{nil}, то символы в классах
+синтаксиса escape и символьных кавычек считаются частью слов.  В противном
+случае они этого не делают.
 @end defopt
 
 @defvar inhibit-field-text-motion
-If this variable is non-@code{nil}, certain motion functions including
-@code{forward-word}, @code{forward-sentence}, and
-@code{forward-paragraph} ignore field boundaries.
+Если переменная установлена в неnon-@code{nil}, некоторые функции движения, включая @code{forward-word}, @code{forward-sentence} и @code{forward-paragraph}, игнорируют границы поля.
 @end defvar
 
 @defvar find-word-boundary-function-table
-This variable affects the behavior of @code{forward-word} and
-@code{backward-word}, and everything that uses them.  Its value is a
-char-table (@pxref{Char-Tables}) of functions to search for word
-boundaries.  If a character has a non-@code{nil} entry in this table,
-then when a word starts or ends with that character, the corresponding
-function will be called with 2 arguments: @var{pos} and @var{limit}.
-The function should return the position of the other word boundary.
-Specifically, if @var{pos} is smaller than @var{limit}, then @var{pos}
-is at the beginning of a word, and the function should return the
-position after the last character of the word; otherwise, @var{pos} is
-at the last character of a word, and the function should return the
-position of that word's first character.
+Переменная влияет на поведение @code{forward-word} и @code{backward-word} и
+всего, что их использует.  Её значение представляет собой символьную таблицу
+(@pxref{Char-Tables}) функций для поиска границ слова.  Если у символа есть
+запись не-@code{nil} в этой таблице, то, когда слово начинается или
+заканчивается этим символом, будет вызываться соответствующая функция с
+двумя аргументами: @var{pos} и @var{limit}.  Функция должна возвращать
+позицию другой границы слова.  В частности, если @var{pos} меньше
+@var{limit}, то @var{pos} находится в начале слова, и функция должна
+возвращать позицию после последнего символа слова; в противном случае
+@var{pos} стоит на последнем символе слова, и функция должна возвращать
+позицию первого символа этого слова.
 @end defvar
 
 @defun forward-word-strictly &optional count
-This function is like @code{forward-word}, but it is not affected by
-@code{find-word-boundary-function-table}.  Lisp programs that should
-not change behavior when word movement is modified by modes which set
-that table, such as @code{subword-mode}, should use this function
-instead of @code{forward-word}.
+Функция похожа на @code{forward-word}, но на нее не влияет
+@code{find-word-boundary-function-table}.  Программы Lisp, которые не должны
+изменять поведение при изменении движения слова режимами, которые
+устанавливают эту таблицу, например @code{subword-mode}, должны использовать
+эту функцию вместо @code{forward-word}.
 @end defun
 
 @defun backward-word-strictly &optional count
-This function is like @code{backward-word}, but it is not affected by
-@code{find-word-boundary-function-table}.  Like with
-@code{forward-word-strictly}, use this function instead of
-@code{backward-word} when movement by words should only consider
-syntax tables.
+Функция похожа на @code{backward-word}, но на нее не влияет
+@code{find-word-boundary-function-table}.  Как и в случае с
+@code{forward-word-strictly}, использовать эту функцию вместо
+@code{backward-word}, когда перемещение по словам должно учитывать только
+таблицы синтаксиса.
 @end defun
 
 @node Buffer End Motion
-@subsection Motion to an End of the Buffer
+@subsection Движение к Концу Буфера
 @cindex move to beginning or end of buffer
 
-  To move point to the beginning of the buffer, write:
+  Чтобы переместить точку в начало буфера, пишется:
 
 @example
 @group
@@ -289,7 +274,7 @@ syntax tables.
 @end example
 
 @noindent
-Likewise, to move to the end of the buffer, use:
+Аналогичным образом, чтобы перейти к концу буфера, использовать:
 
 @example
 @group
@@ -297,388 +282,383 @@ Likewise, to move to the end of the buffer, use:
 @end group
 @end example
 
-  Here are two commands that users use to do these things.  They are
-documented here to warn you not to use them in Lisp programs, because
-they set the mark and display messages in the echo area.
+  Вот две команды, которые пользователи используют для этого.  Они
+задокументированы здесь, чтобы предупредить не использовать их в программах
+на Lisp, потому что они устанавливают метку и отображают сообщения в
+эхо-области.
 
 @deffn Command beginning-of-buffer &optional n
-This function moves point to the beginning of the buffer (or the limits
-of the accessible portion, when narrowing is in effect), setting the
-mark at the previous position (except in Transient Mark mode, if
-the mark is already active, it does not set the mark.)
+Функция перемещает точку в начало буфера (или границы доступной части, когда
+действует сужение), устанавливая метку в предыдущую позицию (за исключением
+режима Transient Mark, если метка уже активна, не установится отметка.)
 
-If @var{n} is non-@code{nil}, then it puts point @var{n} tenths of the
-way from the beginning of the accessible portion of the buffer.  In an
-interactive call, @var{n} is the numeric prefix argument, if provided;
-otherwise @var{n} defaults to @code{nil}.
+Если @var{n} равен не-@code{nil}, то точка @var{n} ставится на десятые доли
+пути от начала доступной части буфера.  В интерактивном вызове @var{n}
+является аргументом числового префикса, если указан; в противном случае для
+@var{n} по умолчанию используется @code{nil}.
 
-@strong{Warning:} Don't use this function in Lisp programs!
+@strong{Предупреждение:} Не использовать эту функцию в программах Lisp!
 @end deffn
 
 @deffn Command end-of-buffer &optional n
-This function moves point to the end of the buffer (or the limits of
-the accessible portion, when narrowing is in effect), setting the mark
-at the previous position (except in Transient Mark mode when the mark
-is already active).  If @var{n} is non-@code{nil}, then it puts point
-@var{n} tenths of the way from the end of the accessible portion of
-the buffer.
+Функция перемещает точку в конец буфера (или границы доступной части, когда
+действует сужение), устанавливая метку в предыдущую позицию (за исключением
+режима временной метки, когда метка уже активна).  Если @var{n} равен
+не-@code{nil}, то точка @var{n} ставится на десятые доли пути от конца
+доступной части буфера.
 
-In an interactive call, @var{n} is the numeric prefix argument,
-if provided; otherwise @var{n} defaults to @code{nil}.
+В интерактивном вызове @var{n} - это числовой префиксный аргумент, если он
+указан; в противном случае для @var{n} по умолчанию используется @code{nil}.
 
-@strong{Warning:} Don't use this function in Lisp programs!
+@strong{Предупреждение:} Не использовать эту функцию в программах Lisp!
 @end deffn
 
 @node Text Lines
-@subsection Motion by Text Lines
+@subsection Движение по Текстовым Строкам
 @cindex lines
 
-  Text lines are portions of the buffer delimited by newline characters,
-which are regarded as part of the previous line.  The first text line
-begins at the beginning of the buffer, and the last text line ends at
-the end of the buffer whether or not the last character is a newline.
-The division of the buffer into text lines is not affected by the width
-of the window, by line continuation in display, or by how tabs and
-control characters are displayed.
+  Текстовые строки - это части буфера, разделенные символами новой строки,
+которые рассматриваются как часть предыдущей строки.  Первая текстовая
+строка начинается в начале буфера, а последняя текстовая строка
+заканчивается в конце буфера, независимо от того, является ли последний
+символ новой строкой.  Разделение буфера на текстовые строки не зависит от
+ширины окна, продолжения строки при отображении или от того, как
+отображаются табуляция и управляющие символы.
 
 @deffn Command beginning-of-line &optional count
-This function moves point to the beginning of the current line.  With an
-argument @var{count} not @code{nil} or 1, it moves forward
-@var{count}@minus{}1 lines and then to the beginning of the line.
+Функция перемещает точку в начало текущей строки.  С аргументом @var{count},
+а не @code{nil} или 1, перемещает вперед на @var{count}@minus{}1 строк, а
+затем в начало строки.
 
-This function does not move point across a field boundary
-(@pxref{Fields}) unless doing so would move beyond there to a
-different line; therefore, if @var{count} is @code{nil} or 1, and
-point starts at a field boundary, point does not move.  To ignore
-field boundaries, either bind @code{inhibit-field-text-motion} to
-@code{t}, or use the @code{forward-line} function instead.  For
-instance, @code{(forward-line 0)} does the same thing as
-@code{(beginning-of-line)}, except that it ignores field boundaries.
+Функция не перемещает точку через границу поля (@pxref{Fields}), если это не
+переместит ее на другую строку; следовательно, если @var{count} равно
+@code{nil} или 1 и точка начинается на границе поля, точка не перемещается.
+Чтобы игнорировать границы поля, либо привязывается
+@code{inhibit-field-text-motion} к @code{t}, либо используется вместо этого
+функция @code{forward-line}.  Например, @code{(forward-line 0)} делает то же
+самое, что и @code{(beginning-of-line)}, за исключением того, что
+игнорирует границы полей.
 
-If this function reaches the end of the buffer (or of the accessible
-portion, if narrowing is in effect), it positions point there.  No error
-is signaled.
+Если функция достигает конца буфера (или доступной части, если действует
+сужение), позиционирует точку там.  Об ошибках не сообщается.
 @end deffn
 
 @defun line-beginning-position &optional count
-Return the position that @code{(beginning-of-line @var{count})}
-would move to.
+Вернуть позицию, в которую переместится
+@code{(beginning-of-line @var{count})}.
 @end defun
 
 @deffn Command end-of-line &optional count
-This function moves point to the end of the current line.  With an
-argument @var{count} not @code{nil} or 1, it moves forward
-@var{count}@minus{}1 lines and then to the end of the line.
+Функция перемещает точку в конец текущей строки.  С аргументом @var{count},
+а не @code{nil} или 1, перемещает вперед на @var{count}@minus{}1 строк, а
+затем до конца строки.
 
-This function does not move point across a field boundary
-(@pxref{Fields}) unless doing so would move beyond there to a
-different line; therefore, if @var{count} is @code{nil} or 1, and
-point starts at a field boundary, point does not move.  To ignore
-field boundaries, bind @code{inhibit-field-text-motion} to @code{t}.
+Функция не перемещает точку через границу поля (@pxref{Fields}), если это
+не переместит ее на другую строку; следовательно, если @var{count}
+установить в @code{nil} или 1 и точка начинается на границе поля, точка не
+перемещается.  Чтобы игнорировать границы поля, привязывается
+@code{inhibit-field-text-motion} к @code{t}.
 
-If this function reaches the end of the buffer (or of the accessible
-portion, if narrowing is in effect), it positions point there.  No error
-is signaled.
+Если функция достигает конца буфера (или доступной части, если действует
+сужение), позиционируется точка там.  Об ошибках не сообщается.
 @end deffn
 
 @defun line-end-position &optional count
-Return the position that @code{(end-of-line @var{count})}
-would move to.
+Вернуть позицию, в которую переместится @code{(end-of-line @var{count})}.
 @end defun
 
 @deffn Command forward-line &optional count
 @cindex beginning of line
-This function moves point forward @var{count} lines, to the beginning of
-the line following that.  If @var{count} is negative, it moves point
-@minus{}@var{count} lines backward, to the beginning of a line
-preceding that.  If @var{count} is zero, it moves point to the
-beginning of the current line.  If @var{count} is @code{nil}, that
-means 1.
+Функция перемещает точку вперед на @var{count} строк, в начало следующей за
+ними строки.  Если @var{count} отрицательно, перемещается точка на
+@minus{}@var{count} назад, в начало предыдущей строки.  Если @var{count}
+равно нулю, перемещается точка в начало текущей строки.  Если @var{count}
+равно @code{nil}, это означает 1.
 
-If @code{forward-line} encounters the beginning or end of the buffer (or
-of the accessible portion) before finding that many lines, it sets point
-there.  No error is signaled.
+Если @code{forward-line} встречает начало или конец буфера (или доступной
+части) до того, как обнаруживает такое количество строк, устанавливается там
+точка.  Об ошибках не сообщается.
 
-@code{forward-line} returns the difference between @var{count} and the
-number of lines actually moved.  If you attempt to move down five lines
-from the beginning of a buffer that has only three lines, point stops at
-the end of the last line, and the value will be 2.  As an explicit
-exception, if the last accessible line is non-empty, but has no
-newline (e.g., if the buffer ends without a newline), the function
-sets point to the end of that line, and the value returned by the
-function counts that line as one line successfully moved.
+@code{forward-line} возвращает разницу между @var{count} и количеством
+фактически перемещенных строк.  Если попытаться переместиться на пять строк
+вниз от начала буфера, который имеет только три строки, точка остановится в
+конце последней строки, и значение будет равно 2.  В качестве явного
+исключения, если последняя доступная строка не-пуста, но не имеет новой
+строки (например, если буфер заканчивается без новой строки), функция
+устанавливает точку в конец этой строки, а значение, возвращаемое функцией,
+считает эту строку одной успешно перемещенной.
 
-In an interactive call, @var{count} is the numeric prefix argument.
+В интерактивном вызове @var{count} - это числовой префиксный аргумент.
 @end deffn
 
 @defun count-lines start end
 @cindex lines in region
 @anchor{Definition of count-lines}
-This function returns the number of lines between the positions
-@var{start} and @var{end} in the current buffer.  If @var{start} and
-@var{end} are equal, then it returns 0.  Otherwise it returns at least
-1, even if @var{start} and @var{end} are on the same line.  This is
-because the text between them, considered in isolation, must contain at
-least one line unless it is empty.
+Функция возвращает количество строк между позициями @var{start} и @var{end}
+в текущем буфере.  Если @var{start} и @var{end} равны, возвращается 0.  В
+противном случае возвращается не менее 1, даже если @var{start} и @var{end}
+находятся на одной и той же строке.  Это связано с тем, что текст между
+ними, рассматриваемый изолированно, должен содержать хотя бы одну строку,
+если есть.
 @end defun
 
 @deffn Command count-words start end
 @cindex words in region
-This function returns the number of words between the positions
-@var{start} and @var{end} in the current buffer.
+Функция возвращает количество слов между позициями @var{start} и @var{end}
+в текущем буфере.
 
-This function can also be called interactively.  In that case, it
-prints a message reporting the number of lines, words, and characters
-in the buffer, or in the region if the region is active.
+Эту функцию также можно вызывать в интерактивном режиме.  В этом случае
+печатается сообщение с указанием количества строк, слов и символов в буфере
+или в регионе, если регион активен.
 @end deffn
 
 @defun line-number-at-pos &optional pos absolute
 @cindex line number
-This function returns the line number in the current buffer
-corresponding to the buffer position @var{pos}.  If @var{pos} is
-@code{nil} or omitted, the current buffer position is used. If
-@var{absolute} is @code{nil}, the default, counting starts at
-@code{(point-min)}, so the value refers to the contents of the
-accessible portion of the (potentially narrowed) buffer.  If
-@var{absolute} is non-@code{nil}, ignore any narrowing and return
-the absolute line number.
+Функция возвращает номер строки в текущем буфере, соответствующий позиции в
+буфере @var{pos}.  Если @var{pos} установленно в @code{nil} или опущено,
+используется текущая позиция буфера.  Если @var{absolute} - @code{nil}, по
+умолчанию подсчет начинается с @code{(point-min)}, поэтому значение
+относится к содержимому доступной части (потенциально суженного) буфера.
+Если @var{absolute} установленно в не-@code{nil}, игнорируется любое сужение
+и возвращайте абсолютный номер строки.
 @end defun
 
 @ignore
 @c ================
-The @code{previous-line} and @code{next-line} commands are functions
-that should not be used in programs.  They are for users and are
-mentioned here only for completeness.
+Команды @code{previous-line} и @code{next-line} - это функции, которые не
+следует использовать в программах.  Предназначаются для пользователей и
+упомянуты здесь только для полноты картины.
 
 @deffn Command previous-line count
 @cindex goal column
-This function moves point up @var{count} lines (down if @var{count}
-is negative).  In moving, it attempts to keep point in the @dfn{goal column}
-(normally the same column that it was at the beginning of the move).
+Функция перемещает точку вверх по строкам @var{count} (вниз, если
+@var{count} отрицательное значение).  При перемещении пытается сохраниться
+точка в @dfn{goal column} (обычно в том же столбце, что и в начале
+перемещения).
 
-If there is no character in the target line exactly under the current
-column, point is positioned after the character in that line which
-spans this column, or at the end of the line if it is not long enough.
+Если в целевой строке нет символа точно под текущим столбцом, точка
+помещается после символа в той строке, которая охватывает этот столбец или
+в конце строки, если она недостаточно длинна.
 
-If it attempts to move beyond the top or bottom of the buffer (or clipped
-region), then point is positioned in the goal column in the top or
-bottom line.  No error is signaled.
+Если происходит попытка выйти за пределы верхней или нижней границы буфера
+(или суженной области), то точка помещается в столбец цели в верхней или
+нижней строке.  Об ошибках не сообщается.
 
-In an interactive call, @var{count} will be the numeric
-prefix argument.
+В интерактивном вызове @var{count} будет аргументом числового префикса.
 
-The command @code{set-goal-column} can be used to create a semipermanent
-goal column to which this command always moves.  Then it does not try to
-move vertically.
+Команду @code{set-goal-column} можно использовать для создания столбца
+полупостоянной цели, к которому эта команда всегда перемещается.  Тогда не
+пытается двигаться по вертикали.
 
-If you are thinking of using this in a Lisp program, consider using
-@code{forward-line} with a negative argument instead.  It is usually easier
-to use and more reliable (no dependence on goal column, etc.).
+Если думать об использовании этого в программе Lisp, рассмотреть возможность
+использования вместо этого @code{forward-line} с отрицательным аргументом. 
+Обычно проще в использовании и надежнее (нет зависимости от столбца целей и
+так далее).
 @end deffn
 
 @deffn Command next-line count
-This function moves point down @var{count} lines (up if @var{count}
-is negative).  In moving, it attempts to keep point in the goal column
-(normally the same column that it was at the beginning of the move).
+Функция перемещает точку вниз на @var{count} строк (вверх, если @var{count}
+отрицательное значение).  При перемещении пытается сохранить точку в столбце
+цели (обычно в том же столбце, что и в начале движения).
 
-If there is no character in the target line exactly under the current
-column, point is positioned after the character in that line which
-spans this column, or at the end of the line if it is not long enough.
+Если в целевой строке нет символа точно под текущим столбцом, точка
+помещается после символа в той строке, которая охватывает этот столбец, или
+в конце строки, если она недостаточно длинна.
 
-If it attempts to move beyond the top or bottom of the buffer (or clipped
-region), then point is positioned in the goal column in the top or
-bottom line.  No error is signaled.
+Если проводится попытка выйти за пределы верхней или нижней границы буфера
+(или обрезанной области), то точка помещается в столбец цели в верхней или
+нижней строке.  Об ошибках не сообщается.
 
-In the case where the @var{count} is 1, and point is on the last
-line of the buffer (or clipped region), a new empty line is inserted at the
-end of the buffer (or clipped region) and point moved there.
+В случае, когда @var{count} равен 1, а точка находится на последней строке
+буфера (или обрезанной области), новая пустая строка вставляется в конец
+буфера (или обрезанной области) и точка перемещается туда.
 
-In an interactive call, @var{count} will be the numeric
-prefix argument.
+В интерактивном вызове @var{count} будет аргументом числового префикса.
 
-The command @code{set-goal-column} can be used to create a semipermanent
-goal column to which this command always moves.  Then it does not try to
-move vertically.
+Команду @code{set-goal-column} можно использовать для создания столбца
+полупостоянной цели, к которому эта команда всегда перемещается.  Тогда не
+проводится попытка двигаться по вертикали.
 
-If you are thinking of using this in a Lisp program, consider using
-@code{forward-line} instead.  It is usually easier
-to use and more reliable (no dependence on goal column, etc.).
+Если предполагается использование этого в программе Lisp, как кандидат
+использовать вместо этого @code{forward-line}.  Обычно это проще в
+ использовании и надежнее (нет зависимости от столбца целей и так далее).
 @end deffn
 
 @c ================
 @end ignore
 
-  Also see the functions @code{bolp} and @code{eolp} in @ref{Near Point}.
-These functions do not move point, but test whether it is already at the
-beginning or end of a line.
+  Также смотреть функции @code{bolp} и @code{eolp} в @ref{Near Point}.  Эти
+функции не перемещают точку, а проверяют, находится ли она уже в начале или
+в конце строки.
 
 @node Screen Lines
-@subsection Motion by Screen Lines
+@subsection Движение по Строкам Экрана
 @cindex screen lines, moving by
 
-  The line functions in the previous section count text lines, delimited
-only by newline characters.  By contrast, these functions count screen
-lines, which are defined by the way the text appears on the screen.  A
-text line is a single screen line if it is short enough to fit the width
-of the selected window, but otherwise it may occupy several screen
-lines.
+  Строчные функции в предыдущем разделе подсчитывают текстовые строки,
+разделенные только символами новой строки.  Напротив, эти функции
+подсчитывают строки экрана, которые определяются способом отображения текста
+на экране.  Текстовая строка - это одна экранная строка, если она достаточно
+короткая, чтобы соответствовать ширине выбранного окна, но в противном
+случае она может занимать несколько экранных строк.
 
-  In some cases, text lines are truncated on the screen rather than
-continued onto additional screen lines.  In these cases,
-@code{vertical-motion} moves point much like @code{forward-line}.
+  В некоторых случаях текстовые строки обрезаются на экране, а не
+продолжаются на дополнительных строках экрана.  В этих случаях
+@code{vertical-motion} перемещает точку так же, как @code{forward-line}.
 @xref{Truncation}.
 
-  Because the width of a given string depends on the flags that control
-the appearance of certain characters, @code{vertical-motion} behaves
-differently, for a given piece of text, depending on the buffer it is
-in, and even on the selected window (because the width, the truncation
-flag, and display table may vary between windows).  @xref{Usual
-Display}.
+  Поскольку ширина данной строки зависит от флагов, которые управляют
+появлением определенных символов, @code{vertical-motion} ведет себя
+по-разному для данного фрагмента текста, в зависимости от буфера, в котором
+находится, и даже от выбранного окна (поскольку ширина флаг усечения, и
+таблица отображения может отличаться в зависимости от окна).
+@xref{Usual Display}.
 
-  These functions scan text to determine where screen lines break, and
-thus take time proportional to the distance scanned.
+  Эти функции сканируют текст, чтобы определить, где разрываются строки
+экрана, и, таким образом, занимают время, пропорциональное сканированному
+расстоянию.
 @ignore
-If you intend to use them heavily, Emacs provides caches which may
-improve the performance of your code.  @xref{Truncation, cache-long-scans}.
+Если собираться интенсивно их использовать, Emacs предоставляет кеши,
+ которые могут улучшить производительность вашего кода.
+  @xref{Truncation, cache-long-scans}.
 @end ignore
 
 @defun vertical-motion count &optional window cur-col
-This function moves point to the start of the screen line @var{count}
-screen lines down from the screen line containing point.  If @var{count}
-is negative, it moves up instead.
+Функция перемещает точку в начало строки экрана на @var{count} вниз от
+строки экрана, содержащей точку.  Если @var{count} отрицательно, вместо
+этого перемещается вверх.
 
-The @var{count} argument can be a cons cell, @code{(@var{cols}
-. @var{lines})}, instead of an integer.  Then the function moves by
-@var{lines} screen lines, and puts point @var{cols} columns from the
-visual start of that screen line.  Note that @var{cols} are counted
-from the @emph{visual} start of the line; if the window is scrolled
-horizontally (@pxref{Horizontal Scrolling}), the column on which point
-will end is in addition to the number of columns by which the text is
-scrolled.
+Аргумент @var{count} может быть cons-ячейкой
+@code{(@var{cols} . @var{lines})} вместо целого числа.  Затем функция
+перемещается на @var{lines} экранных строк и помещает точку в @var{cols}
+столбец от визуального начала этой экранной строки.  Обратить внимание,
+что @var{cols} отсчитываются от начала @emph{визуальной} строки ; если окно
+прокручивается по горизонтали (@pxref{Horizontal Scrolling}), столбец, на
+котором будет заканчиваться точка, будет добавлен к количеству столбцов, по
+которым прокручивается текст.
 
-The return value is the number of screen lines over which point was
-moved.  The value may be less in absolute value than @var{count} if
-the beginning or end of the buffer was reached.
+Возвращаемое значение - это количество строк экрана, на которое была
+перемещена точка.  Значение может быть меньше по абсолютной величины, чем
+@var{count}, если было достигнуто начало или конец буфера.
 
-The window @var{window} is used for obtaining parameters such as the
-width, the horizontal scrolling, and the display table.  But
-@code{vertical-motion} always operates on the current buffer, even if
-@var{window} currently displays some other buffer.
+Окно @var{window} используется для получения таких параметров, как ширина,
+горизонтальная прокрутка и таблица отображения.  Но @code{vertical-motion}
+всегда работает с текущим буфером, даже если @var{window} в настоящее время
+отображает какой-то другой буфер.
 
-The optional argument @var{cur-col} specifies the current column when
-the function is called.  This is the window-relative horizontal
-coordinate of point, measured in units of font width of the frame's
-default face.  Providing it speeds up the function, especially in very
-long lines, because the function doesn't have to go back in the buffer
-in order to determine the current column.  Note that @var{cur-col} is
-also counted from the visual start of the line.
+Необязательный аргумент @var{cur-col} указывает текущий столбец при вызове
+функции.  Координата точки по горизонтали относительно окна, измеряемая в
+единицах ширины шрифта лицевой стороны фрейма по умолчанию.  Это ускоряет
+выполнение функции, особенно в очень длинных строках, потому что функции не
+нужно возвращаться в буфер, чтобы определить текущий столбец.  Обратить
+внимание, что @var{cur-col} также отсчитывается от визуального начала
+строки.
 @end defun
 
 @defun count-screen-lines &optional beg end count-final-newline window
-This function returns the number of screen lines in the text from
-@var{beg} to @var{end}.  The number of screen lines may be different
-from the number of actual lines, due to line continuation, the display
-table, etc.  If @var{beg} and @var{end} are @code{nil} or omitted,
-they default to the beginning and end of the accessible portion of the
-buffer.
+Функция возвращает количество экранных строк в тексте от @var{beg} до
+@var{end}.  Количество строк экрана может отличаться от количества
+фактических строк из-за продолжения строки, таблицы отображения и так далее.
+Если @var{beg} и @var{end} являются @code{nil} или опущены, они по умолчанию
+соответствуют началу и концу доступной части буфера.
 
-If the region ends with a newline, that is ignored unless the optional
-third argument @var{count-final-newline} is non-@code{nil}.
+Если область заканчивается новой строкой, она игнорируется, если только
+необязательный третий аргумент @var{count-final-newline} не равен
+не-@code{nil}.
 
-The optional fourth argument @var{window} specifies the window for
-obtaining parameters such as width, horizontal scrolling, and so on.
-The default is to use the selected window's parameters.
+Необязательный четвертый аргумент @var{window} указывает окно для получения
+таких параметров, как ширина, горизонтальная прокрутка и так далее.  По
+умолчанию используются параметры выбранного окна.
 
-Like @code{vertical-motion}, @code{count-screen-lines} always uses the
-current buffer, regardless of which buffer is displayed in
-@var{window}.  This makes possible to use @code{count-screen-lines} in
-any buffer, whether or not it is currently displayed in some window.
+Подобно @code{vertical-motion}, @code{count-screen-lines} всегда использует
+текущий буфер, независимо от того, какой буфер отображается в @var{window}.
+Это позволяет использовать @code{count-screen-lines} в любом буфере,
+независимо от того, отображается он в данный момент в каком-либо окне.
 @end defun
 
 @deffn Command move-to-window-line count
-This function moves point with respect to the text currently displayed
-in the selected window.  It moves point to the beginning of the screen
-line @var{count} screen lines from the top of the window; zero means
-the topmost line.  If @var{count} is negative, that specifies a
-position @w{@minus{}@var{count}} lines from the bottom (or the last
-line of the buffer, if the buffer ends above the specified screen
-position); thus, @var{count} of @minus{}1 specifies the last fully visible
-screen line of the window.
+Функция перемещает точку относительно текста, отображаемого в текущий момент
+в выбранном окне.  Перемещает точку в начало строки экрана @var{count}
+экранных строк из верхней части окна; ноль означает самую верхнюю строку.
+Если @var{count} отрицательное, это указывает позицию
+@w{@minus{}@var{count}} строки снизу (или последней строки буфера, если
+буфер заканчивается выше указанной позиции экрана); таким образом,
+@var{count} из @minus{}1 задает последнюю полностью видимую экранную строку
+окна.
 
-If @var{count} is @code{nil}, then point moves to the beginning of the
-line in the middle of the window.  If the absolute value of @var{count}
-is greater than the size of the window, then point moves to the place
-that would appear on that screen line if the window were tall enough.
-This will probably cause the next redisplay to scroll to bring that
-location onto the screen.
+Если @var{count} равен @code{nil}, то точка перемещается в начало строки в
+середине окна.  Если абсолютное значение @var{count} больше, чем размер
+окна, то точка перемещается в то место, которое появилось бы в этой строке
+экрана, если бы окно было достаточно высоким.  Это, вероятно, приведет к
+прокрутке следующего повторного отображения, чтобы отобразить это место на
+экране.
 
-In an interactive call, @var{count} is the numeric prefix argument.
+В интерактивном вызове @var{count} - это числовой префиксный аргумент.
 
-The value returned is the screen line number point has moved to,
-relative to the top line of the window.
+Возвращаемое значение - это номер строки экрана, на которую
+переместилась точка относительно верхней строки окна.
 @end deffn
 
 @vindex move-to-window-group-line-function
 @defun move-to-window-group-line count
-This function is like @code{move-to-window-line}, except that when the
-selected window is a part of a group of windows (@pxref{Window
-Group}), @code{move-to-window-group-line} will move to a position with
-respect to the entire group, not just the single window.  This
-condition holds when the buffer local variable
-@code{move-to-window-group-line-function} is set to a function.  In
-this case, @code{move-to-window-group-line} calls the function with
-the argument @var{count}, then returns its result.
+Функция похожа на @code{move-to-window-line}, за исключением того, что когда
+выбранное окно является частью группы окон, (@pxref{Window Group}),
+@code{move-to-window-group-line} переместится в позицию по отношению ко всей
+группе, а не только к одному окну.  Это условие выполняется, когда в
+локальной переменной буфера @code{move-to-window-group-line-function} задана
+функция.  В этом случае @code{move-to-window-group-line} вызывает функцию с
+аргументом @var{count}, а затем возвращает ее результат.
 @end defun
 
 @defun compute-motion from frompos to topos width offsets window
-This function scans the current buffer, calculating screen positions.
-It scans the buffer forward from position @var{from}, assuming that is
-at screen coordinates @var{frompos}, to position @var{to} or coordinates
-@var{topos}, whichever comes first.  It returns the ending buffer
-position and screen coordinates.
+Функция сканирует текущий буфер, вычисляя положение экрана.  Сканирует буфер
+вперед от позиции @var{from}, предполагая, что находится в экранных
+координатах @var{frompos}, до позиции @var{to} или координат @var{topos}, в
+зависимости от того, что наступит раньше.  Возвращается конечная позиция
+буфера и экранные координаты.
 
-The coordinate arguments @var{frompos} and @var{topos} are cons cells of
-the form @code{(@var{hpos} . @var{vpos})}.
+Координатные аргументы @var{frompos} и @var{topos} являются cons-ячейками
+вида @code{(@var{hpos} . @var{vpos})}.
 
-The argument @var{width} is the number of columns available to display
-text; this affects handling of continuation lines.  @code{nil} means
-the actual number of usable text columns in the window, which is
-equivalent to the value returned by @code{(window-width window)}.
+Аргумент @var{width} - это количество столбцов, доступных для отображения
+текста; это влияет на обработку строк продолжения.  @code{nil} означает
+фактическое количество используемых текстовых столбцов в окне, что
+эквивалентно значению, возвращаемому @code{(window-width window)}.
 
-The argument @var{offsets} is either @code{nil} or a cons cell of the
-form @code{(@var{hscroll} . @var{tab-offset})}.  Here @var{hscroll} is
-the number of columns not being displayed at the left margin; most
-callers get this by calling @code{window-hscroll}.  Meanwhile,
-@var{tab-offset} is the offset between column numbers on the screen and
-column numbers in the buffer.  This can be nonzero in a continuation
-line, when the previous screen lines' widths do not add up to a multiple
-of @code{tab-width}.  It is always zero in a non-continuation line.
+Аргумент @var{offsets} - это либо @code{nil}, либо cons-ячейка вида
+@code{(@var{hscroll} . @var{tab-offset})}.  Здесь @var{hscroll} - количество
+столбцов, не отображаемых на левом поле; большинство вызывающих абонентов
+получают это, вызывая @code{window-hscroll}.  Между тем @var{tab-offset} -
+это смещение между номерами столбцов на экране и номерами столбцов в буфере.
+Это может быть ненулевое значение в строке продолжения, когда ширина
+предыдущих строк экрана не кратна @code{tab-width}.  В непродолжительной
+строке он всегда равен нулю.
 
-The window @var{window} serves only to specify which display table to
-use.  @code{compute-motion} always operates on the current buffer,
-regardless of what buffer is displayed in @var{window}.
+Окно @var{window} служит только для указания, какую таблицу отображения
+использовать.  @code{compute-motion} всегда работает с текущим буфером,
+независимо от того, какой буфер отображается в @var{window}.
 
-The return value is a list of five elements:
+Возвращаемое значение - список из пяти элементов.:
 
 @example
 (@var{pos} @var{hpos} @var{vpos} @var{prevhpos} @var{contin})
 @end example
 
 @noindent
-Here @var{pos} is the buffer position where the scan stopped, @var{vpos}
-is the vertical screen position, and @var{hpos} is the horizontal screen
-position.
+Здесь @var{pos} - позиция в буфере, на которой остановлено сканирование,
+@var{vpos} - вертикальное положение экрана, а @var{hpos} - горизонтальное
+положение экрана.
 
-The result @var{prevhpos} is the horizontal position one character back
-from @var{pos}.  The result @var{contin} is @code{t} if the last line
-was continued after (or within) the previous character.
+Результат @var{prevhpos} - это горизонтальная позиция на один символ назад
+от @var{pos}.  Результат @var{contin} - @code{t}, если последняя строка была
+продолжена после (или внутри) предыдущего символа.
 
-For example, to find the buffer position of column @var{col} of screen line
-@var{line} of a certain window, pass the window's display start location
-as @var{from} and the window's upper-left coordinates as @var{frompos}.
-Pass the buffer's @code{(point-max)} as @var{to}, to limit the scan to
-the end of the accessible portion of the buffer, and pass @var{line} and
-@var{col} as @var{topos}.  Here's a function that does this:
+Например, чтобы найти положение в буфере столбца @var{col} строки экрана
+@var{line} определенного окна, передатm положение начала отображения окна
+как @var{from}, а координаты левого верхнего угла окна как @var{frompos}.
+Передать @code{(point-max)} буфера как @var{to}, чтобы ограничить
+сканирование до конца доступной части буфера, и передать @var{line} и
+@var{col} как @var{topos}.  Вот функция, которая делает это:
 
 @example
 (defun coordinates-of-position (col line)
@@ -691,64 +671,63 @@ the end of the accessible portion of the buffer, and pass @var{line} and
                        (selected-window))))
 @end example
 
-When you use @code{compute-motion} for the minibuffer, you need to use
-@code{minibuffer-prompt-width} to get the horizontal position of the
-beginning of the first screen line.  @xref{Minibuffer Contents}.
+Когда используется @code{compute-motion} для минибуфера, потребуется
+использовать @code{minibuffer-prompt-width}, чтобы получить горизонтальное
+положение начала первой строки экрана.  @xref{Minibuffer Contents}.
 @end defun
 
 @node List Motion
-@subsection Moving over Balanced Expressions
+@subsection Переход к Сбалансированным Выражениям
 @cindex sexp motion
 @cindex Lisp expression motion
 @cindex list motion
 @cindex balanced parenthesis motion
 
-  Here are several functions concerned with balanced-parenthesis
-expressions (also called @dfn{sexps} in connection with moving across
-them in Emacs).  The syntax table controls how these functions interpret
-various characters; see @ref{Syntax Tables}.  @xref{Parsing
-Expressions}, for lower-level primitives for scanning sexps or parts of
-sexps.  For user-level commands, see @ref{Parentheses,, Commands for
-Editing with Parentheses, emacs, The GNU Emacs Manual}.
+  Вот несколько функций, связанных с выражениями сбалансированных скобок
+(также называемых @dfn{sexps} в связи с перемещением по ним в Emacs).
+Таблица синтаксиса определяет, как эти функции интерпретируют различные
+символы; смотреть @ref{Syntax Tables}.  @xref{Parsing Expressions}, для
+примитивов нижнего уровня для сканирования выражений или их частей.
+Команды пользовательского уровня смотреть в @ref{Parentheses,, Команды для редактирования в круглых скобках, emacs, Руководство по GNU Emacs}.
 
 @deffn Command forward-list &optional arg
-This function moves forward across @var{arg} (default 1) balanced groups of
-parentheses.  (Other syntactic entities such as words or paired string
-quotes are ignored.)
+Функция перемещается вперед по сбалансированным группам скобок @var{arg}
+(по умолчанию 1).  (Другие синтаксические объекты, такие как слова или
+парные строковые кавычки, игнорируются.)
 @end deffn
 
 @deffn Command backward-list &optional arg
-This function moves backward across @var{arg} (default 1) balanced groups of
-parentheses.  (Other syntactic entities such as words or paired string
-quotes are ignored.)
+Функция перемещается назад по сбалансированным группам скобок @var{arg} (по
+умолчанию 1).  (Другие синтаксические объекты, такие как слова или парные
+строковые кавычки, игнорируются.)
 @end deffn
 
 @deffn Command up-list &optional arg escape-strings no-syntax-crossing
-This function moves forward out of @var{arg} (default 1) levels of
-parentheses.  A negative argument means move backward but still to a
-less deep spot.  If @var{escape-strings} is non-@code{nil} (as it is
-interactively), move out of enclosing strings as well.  If
-@var{no-syntax-crossing} is non-@code{nil} (as it is interactively), prefer
-to break out of any enclosing string instead of moving to the start of
-a list broken across multiple strings.  On error, location of point is
-unspecified.
+Функция перемещается вперед за пределы скобок @var{arg} (по умолчанию 1).
+Отрицательный аргумент означает движение назад, но все же в менее глубокое
+место.  Если @var{escape-strings} равен не-@code{nil} (так как он работает
+в интерактивном режиме), также выход из включающих строк.  Если
+@var{no-syntax-crossing} - это не-@code{nil} (так как это происходит в
+интерактивном режиме), предпочтительнее вырваться из любой включающей строки
+вместо перехода к началу списка, разбитого на несколько строк.  В случае
+ошибки местоположение точки не указано.
 @end deffn
 
 @deffn Command backward-up-list &optional arg escape-strings no-syntax-crossing
-This function is just like @code{up-list}, but with a negated argument.
+Функция аналогична @code{up-list}, но с отрицательным аргументом.
 @end deffn
 
 @deffn Command down-list &optional arg
-This function moves forward into @var{arg} (default 1) levels of
-parentheses.  A negative argument means move backward but still go
-deeper in parentheses (@minus{}@var{arg} levels).
+Функция перемещается вперед на уровень круглых скобок @var{arg} (по
+умолчанию 1).  Отрицательный аргумент означает движение назад, но все равно
+в скобках (уровни @minus{}@var{arg}).
 @end deffn
 
 @deffn Command forward-sexp &optional arg
-This function moves forward across @var{arg} (default 1) balanced expressions.
-Balanced expressions include both those delimited by parentheses and
-other kinds, such as words and string constants.
-@xref{Parsing Expressions}.  For example,
+Функция перемещается вперед по сбалансированным выражениям @var{arg} (по
+умолчанию 1).  Сбалансированные выражения включают как выражения,
+разделенные круглыми скобками, так и другие выражения, такие как слова и
+строковые константы.  @xref{Parsing Expressions}.  Например,
 
 @example
 @group
@@ -769,92 +748,91 @@ other kinds, such as words and string constants.
 @end deffn
 
 @deffn Command backward-sexp &optional arg
-This function moves backward across @var{arg} (default 1) balanced expressions.
+Функция перемещается назад по сбалансированным выражениям @var{arg} (по
+умолчанию 1).
 @end deffn
 
 @deffn Command beginning-of-defun &optional arg
-This function moves back to the @var{arg}th beginning of a defun.  If
-@var{arg} is negative, this actually moves forward, but it still moves
-to the beginning of a defun, not to the end of one.  @var{arg} defaults
-to 1.
+Функция возвращается к началу @var{arg}ов функции defun.  Если @var{arg}
+отрицательно, это продвигается вперед, но по-прежнему перемещается в начало
+defun, а не в конец.  @var{arg} по умолчанию 1.
 @end deffn
 
 @deffn Command end-of-defun &optional arg
-This function moves forward to the @var{arg}th end of a defun.  If
-@var{arg} is negative, this actually moves backward, but it still moves
-to the end of a defun, not to the beginning of one.  @var{arg} defaults
-to 1.
+Функция перемещается в конец @var{arg}ов defun.  Если @var{arg}
+отрицательно, это фактически перемещается назад, но все равно перемещается в
+конец defun, а не в начало.  @var{arg} по умолчанию 1.
 @end deffn
 
 @defopt defun-prompt-regexp
-If non-@code{nil}, this buffer-local variable holds a regular
-expression that specifies what text can appear before the
-open-parenthesis that starts a defun.  That is to say, a defun begins
-on a line that starts with a match for this regular expression,
-followed by a character with open-parenthesis syntax.
+Если не-@code{nil}, эта локальная в буфере переменная содержит регулярное
+выражение, определяющее, какой текст может появляться перед открывающей
+круглой скобкой, которая запускает defun.  Другими словами, defun начинается
+со строки, которая начинается с совпадения с этим регулярным выражением, за
+которым следует символ с синтаксисом с открытыми скобками.
 @end defopt
 
 @cindex \( in strings
 @defopt open-paren-in-column-0-is-defun-start
-If this variable's value is non-@code{nil}, an open parenthesis in
-column 0 is considered to be the start of a defun.  If it is
-@code{nil}, an open parenthesis in column 0 has no special meaning.
-The default is @code{t}.  If a string literal happens to have a
-parenthesis in column 0, escape it with a backslash to avoid a false
-positive.  @xref{Left Margin Paren,, Left Margin Convention, emacs,
-The GNU Emacs Manual}.
+Если значение этой переменной - не-@code{nil}, открытая скобка в столбце 0
+считается началом функции defun.  Если это @code{nil}, открывающая скобка в
+столбце 0 не имеет особого значения.  По умолчанию - @code{t}.  Если у
+строкового литерала есть скобка в столбце 0, закрывается обратной косой
+чертой, чтобы избежать ложного срабатывания.
+@xref{Left Margin Paren,, Соглашение о левом поле, emacs,
+Руководство по GNU Emacs}.
 @end defopt
 
 @defvar beginning-of-defun-function
-If non-@code{nil}, this variable holds a function for finding the
-beginning of a defun.  The function @code{beginning-of-defun}
-calls this function instead of using its normal method, passing it its
-optional argument.  If the argument is non-@code{nil}, the function
-should move back by that many functions, like
-@code{beginning-of-defun} does.
+Если не-@code{nil}, эта переменная содержит функцию для поиска начала
+функции defun.  Функция @code{beginning-of-defun} вызывает эту функцию
+вместо использования ее обычного метода, передавая ей необязательный
+аргумент.  Если аргумент - не-@code{nil}, функция должна вернуться на это
+количество функций, как это делает @code{beginning-of-defun}.
 @end defvar
 
 @defvar end-of-defun-function
-If non-@code{nil}, this variable holds a function for finding the end of
-a defun.  The function @code{end-of-defun} calls this function instead
-of using its normal method.
+Если не-@code{nil}, переменная содержит функцию для поиска конца defun.
+Функция @code{end-of-defun} вызывает эту функцию вместо использования ее
+обычного метода.
 @end defvar
 
 @node Skipping Characters
-@subsection Skipping Characters
+@subsection Пропуск Символов
 @cindex skipping characters
 
-  The following two functions move point over a specified set of
-characters.  For example, they are often used to skip whitespace.  For
-related functions, see @ref{Motion and Syntax}.
+  Следующие две функции перемещают точку над указанным набором символов.
+Например, они часто используются для пропуска пробелов.  Для связанных
+функций, смотреть @ref{Motion and Syntax}.
 
-These functions convert the set string to multibyte if the buffer is
-multibyte, and they convert it to unibyte if the buffer is unibyte, as
-the search functions do (@pxref{Searching and Matching}).
+Эти функции преобразуют заданную строку в многобайтовую, если буфер
+многобайтовый, и в однобайтный, если буфер однобайтный, как это делают
+функции поиска (@pxref{Searching and Matching}).
 
 @defun skip-chars-forward character-set &optional limit
-This function moves point in the current buffer forward, skipping over a
-given set of characters.  It examines the character following point,
-then advances point if the character matches @var{character-set}.  This
-continues until it reaches a character that does not match.  The
-function returns the number of characters moved over.
+Функция перемещает точку в текущем буфере вперед, пропуская заданный набор
+символов.  Проверяет символ, следующий за точкой, затем продвигает точку,
+если символ соответствует @var{character-set}.  Это продолжается до тех пор,
+пока не будет найден несоответствующий символ.  Функция возвращает
+количество перемещенных символов.
 
-The argument @var{character-set} is a string, like the inside of a
-@samp{[@dots{}]} in a regular expression except that @samp{]} does not
-terminate it, and @samp{\} quotes @samp{^}, @samp{-} or @samp{\}.
-Thus, @code{"a-zA-Z"} skips over all letters, stopping before the
-first nonletter, and @code{"^a-zA-Z"} skips nonletters stopping before
-the first letter (@pxref{Regular Expressions}).  Character classes
-can also be used, e.g., @code{"[:alnum:]"} (@pxref{Char Classes}).
+Аргумент @var{character-set} - это строка, как внутри @samp{[@dots{}]} 
+регулярного выражения, за исключением того, что @samp{]} не завершает его,
+а @samp{\} цитирует @samp{^}, @samp{-} или @samp{\}.  Таким образом,
+@code{"a-zA-Z"} пропускает все буквы, останавливаясь перед первой
+небуквенной буквой, а @code{"^a-zA-Z"} пропускает небуквенные символы,
+останавливаясь перед первой буквой (@pxref{Regular Expressions}).  Также
+можно использовать классы символов, например, @code{"[:alnum:]"}
+(@pxref{Char Classes}).
 
-If @var{limit} is supplied (it must be a number or a marker), it
-specifies the maximum position in the buffer that point can be skipped
-to.  Point will stop at or before @var{limit}.
+Если указан @var{limit} (это должно быть число или маркер), указывает
+максимальную позицию в буфере, в которую можно пропустить точку.  Точка
+остановится на @var{limit} или раньше.
 
-In the following example, point is initially located directly before the
-@samp{T}.  After the form is evaluated, point is located at the end of
-that line (between the @samp{t} of @samp{hat} and the newline).  The
-function skips all letters and spaces, but not newlines.
+В следующем примере точка изначально расположена непосредственно перед
+@samp{T}.  После оценки формы точка находится в конце этой строки (между
+@samp{t} @samp{hat} и новой строкой).  Функция пропускает все буквы и
+пробелы, но не символы новой строки.
 
 @example
 @group
@@ -877,51 +855,50 @@ comes back" twice.
 @end defun
 
 @defun skip-chars-backward character-set &optional limit
-This function moves point backward, skipping characters that match
-@var{character-set}, until @var{limit}.  It is just like
-@code{skip-chars-forward} except for the direction of motion.
+Функция перемещает точку назад, пропуская символы, соответствующие
+@var{character-set}, до @var{limit}.  Кака и @code{skip-chars-forward}, за
+исключением направления движения.
 
-The return value indicates the distance traveled.  It is an integer that
-is zero or less.
+Возвращаемое значение указывает пройденное расстояние.  Это целое число,
+равное нулю или меньше.
 @end defun
 
 @node Excursions
 @section Excursions
 @cindex excursion
 
-  It is often useful to move point temporarily within a localized
-portion of the program.  This is called an @dfn{excursion}, and it is
-done with the @code{save-excursion} special form.  This construct
-remembers the initial identity of the current buffer, and its value
-of point, and restores them after the excursion
-completes.  It is the standard way to move point within one part of a
-program and avoid affecting the rest of the program, and is used
-thousands of times in the Lisp sources of Emacs.
+  Часто бывает полезно временно переместить точку в локализованной части
+программы.  Это называется @dfn{excursion} и делается с помощью специальной
+формы @code{save-excursion}.  Конструкция запоминает исходный идентификатор
+текущего буфера и его значение point и восстанавливает их после завершения
+экскурсии.  Это стандартный способ перемещения точки в одной части программы
+и избегания воздействия на остальную часть программы, что тысячи раз
+используется в исходных текстах Lisp Emacs.
 
-  If you only need to save and restore the identity of the current
-buffer, use @code{save-current-buffer} or @code{with-current-buffer}
-instead (@pxref{Current Buffer}).  If you need to save or restore
-window configurations, see the forms described in @ref{Window
-Configurations} and in @ref{Frame Configurations}. @c frameset?
+  Если требуется только сохранить и восстановить идентичность текущего
+буфера, использовать @code{save-current-buffer} или
+@code{with-current-buffer} вместо (@pxref{Current Buffer}).  Если нужно
+сохранить или восстановить конфигурации окна, смотреть формы, описанные в
+@ref{Window Configurations} и в @ref{Frame Configurations}.
+@c набор фреймов?
 
 @defspec save-excursion body@dots{}
 @cindex point excursion
-This special form saves the identity of the current buffer and the
-value of point in it, evaluates @var{body}, and finally
-restores the buffer and its saved value of point.  Both saved values are
-restored even in case of an abnormal exit via
-@code{throw} or error (@pxref{Nonlocal Exits}).
+Специальная форма сохраняет идентификатор текущего буфера и значение точки в
+нем, вычисляет @var{body} и, наконец, восстанавливает буфер и его
+сохраненное значение точки.  Оба сохраненных значения восстанавливаются даже
+в случае аварийного выхода через @code{throw} или ошибку
+(@pxref{Nonlocal Exits}).
 
-The value returned by @code{save-excursion} is the result of the last
-form in @var{body}, or @code{nil} if no body forms were given.
+Значение, возвращаемое @code{save-excursion}, является результатом последней
+формы в @var{body} или @code{nil}, если не было задано никаких форм тела.
 @end defspec
 
-  Because @code{save-excursion} only saves point for the
-buffer that was current at the start of the excursion, any changes
-made to point in other buffers, during the excursion, will
-remain in effect afterward.  This frequently leads to unintended
-consequences, so the byte compiler warns if you call @code{set-buffer}
-during an excursion:
+  Поскольку @code{save-excursion} сохраняет точку только для буфера, который
+был текущим в начале экскурсии, любые изменения, внесенные в точку в других
+буферах во время экскурсии, останутся в силе и после этого.  Это часто
+приводит к непредвиденным последствиям, поэтому байт-компилятор
+предупреждает, если вызывается @code{set-buffer} во время экскурсии:
 
 @example
 Warning: Use ‘with-current-buffer’ rather than
@@ -935,7 +912,7 @@ after setting the desired current buffer, as in the following example:
 @example
 @group
 (defun append-string-to-buffer (string buffer)
-  "Append STRING to the end of BUFFER."
+  "Добавить STRING в конец BUFFER."
   (with-current-buffer buffer
     (save-excursion
       (goto-char (point-max))
@@ -944,79 +921,77 @@ after setting the desired current buffer, as in the following example:
 @end example
 
 @cindex window excursions
-  Likewise, @code{save-excursion} does not restore window-buffer
-correspondences altered by functions such as @code{switch-to-buffer}.
+  Точно так же @code{save-excursion} не восстанавливает соответствия окна и
+буфера, измененные такими функциями, как @code{switch-to-buffer}.
 
-  @strong{Warning:} Ordinary insertion of text adjacent to the saved
-point value relocates the saved value, just as it relocates all
-markers.  More precisely, the saved value is a marker with insertion
-type @code{nil}.  @xref{Marker Insertion Types}.  Therefore, when the
-saved point value is restored, it normally comes before the inserted
-text.
+  @strong{Предупреждение:} Обычная вставка текста рядом с сохраненным
+значением точки перемещает сохраненное значение так же, как перемещает все
+маркеры.  Точнее сохраненное значение - это маркер с типом вставки
+@code{nil}.  @xref{Marker Insertion Types}.  Поэтому, когда сохраненное
+значение точки восстанавливается, оно обычно появляется перед вставленным
+текстом.
 
 @defmac save-mark-and-excursion body@dots{}
 @cindex mark excursion
 @cindex point excursion
-This macro is like @code{save-excursion}, but also saves and restores
-the mark location and @code{mark-active}.  This macro does what
-@code{save-excursion} did before Emacs 25.1.
+Макрос похож на @code{save-excursion}, но также сохраняет и восстанавливает
+местоположение метки и @code{mark-active}.  Этот макрос делает то, что
+делал @code{save-excursion} до Emacs 25.1.
 @end defmac
 
 @node Narrowing
-@section Narrowing
+@section Сужение
 @cindex narrowing
 @cindex restriction (in a buffer)
 @cindex accessible portion (of a buffer)
 
-  @dfn{Narrowing} means limiting the text addressable by Emacs editing
-commands to a limited range of characters in a buffer.  The text that
-remains addressable is called the @dfn{accessible portion} of the
-buffer.
+  @dfn{Сужение} означает ограничение текста, адресуемого командами
+редактирования Emacs, ограниченным диапазоном символов в буфере.  Текст,
+который остается адресуемым, называется @dfn{доступной частью} буфера.
 
-  Narrowing is specified with two buffer positions, which become the
-beginning and end of the accessible portion.  For most editing
-commands and primitives, these positions replace the values of the
-beginning and end of the buffer.  While narrowing is in effect, no
-text outside the accessible portion is displayed, and point cannot
-move outside the accessible portion.  Note that narrowing does not
-alter actual buffer positions (@pxref{Point}); it only determines
-which positions are considered the accessible portion of the buffer.
-Most functions refuse to operate on text that is outside the
-accessible portion.
+  Сужение задается двумя позициями буфера, которые становятся началом и
+концом доступной части.  Для большинства команд редактирования и примитивов
+эти позиции заменяют значения начала и конца буфера.  Пока действует
+сужение, текст за пределами доступной части не отображается, и точка не
+может перемещаться за пределы доступной части.  Обратить внимание, что
+сужение не меняет фактических позиций буфера (@pxref{Point}); только
+определяется, какие позиции считаются доступной частью буфера.  Большинство
+функций отказываются работать с текстом, находящимся за пределами доступной
+части.
 
-  Commands for saving buffers are unaffected by narrowing; they save
-the entire buffer regardless of any narrowing.
+  На команды для сохранения буферов сужение не влияет; сохраняют весь буфер
+независимо от сужения.
 
-  If you need to display in a single buffer several very different
-types of text, consider using an alternative facility described in
-@ref{Swapping Text}.
+  Если требуется отобразить в одном буфере несколько очень разных типов
+текста, рассмотреть возможность использования альтернативного средства,
+описанного в @ref{Swapping Text}.
 
 @deffn Command narrow-to-region start end
-This function sets the accessible portion of the current buffer to start
-at @var{start} and end at @var{end}.  Both arguments should be character
-positions.
+Функция устанавливает доступную часть текущего буфера, чтобы она начиналась
+с @var{start} и заканчивалась @var{end}.  Оба аргумента должны быть
+позициями символов.
 
-In an interactive call, @var{start} and @var{end} are set to the bounds
-of the current region (point and the mark, with the smallest first).
+При интерактивном вызове @var{start} and @var{end} устанавливаются на
+границы текущего региона (точка и метка, начиная с наименьшей).
 @end deffn
 
 @deffn Command narrow-to-page &optional move-count
-This function sets the accessible portion of the current buffer to
-include just the current page.  An optional first argument
-@var{move-count} non-@code{nil} means to move forward or backward by
-@var{move-count} pages and then narrow to one page.  The variable
-@code{page-delimiter} specifies where pages start and end
+Функция устанавливает доступную часть текущего буфера, чтобы включить только
+текущую страницу.  Необязательный первый аргумент @var{move-count}
+не-@code{nil} означает перемещение вперед или назад на страницу
+@var{move-count}, а затем сужение до одной страницы.  Переменная
+@code{page-delimiter} указывает, где страницы начинаются и где заканчиваются
 (@pxref{Standard Regexps}).
 
-In an interactive call, @var{move-count} is set to the numeric prefix
-argument.
+В интерактивном вызове @var{move-count} присваивается аргумент числового
+префикса.
 @end deffn
 
 @deffn Command widen
 @cindex widening
-This function cancels any narrowing in the current buffer, so that the
-entire contents are accessible.  This is called @dfn{widening}.
-It is equivalent to the following expression:
+Функция отменяет любое сужение текущего буфера, так что доступно все
+содержимое.  Называется @dfn{расширение}.  Это эквивалентно следующему
+выражению:
 
 @example
 (narrow-to-region 1 (1+ (buffer-size)))
@@ -1024,40 +999,39 @@ It is equivalent to the following expression:
 @end deffn
 
 @defun buffer-narrowed-p
-This function returns non-@code{nil} if the buffer is narrowed, and
-@code{nil} otherwise.
+Функция возвращает не-@code{nil}, если буфер сужен, и @code{nil} в противном
+случае.
 @end defun
 
 @defspec save-restriction body@dots{}
-This special form saves the current bounds of the accessible portion,
-evaluates the @var{body} forms, and finally restores the saved bounds,
-thus restoring the same state of narrowing (or absence thereof) formerly
-in effect.  The state of narrowing is restored even in the event of an
-abnormal exit via @code{throw} or error (@pxref{Nonlocal Exits}).
-Therefore, this construct is a clean way to narrow a buffer temporarily.
+Специальная форма сохраняет текущие границы доступной части, оценивает формы
+@var{body} и, наконец, восстанавливает сохраненные границы, таким образом
+восстанавливая то же состояние сужения (или его отсутствия), которое ранее
+действовало.  Состояние сужения восстанавливается даже в случае аварийного
+выхода через @code{throw} или ошибку (@pxref{Nonlocal Exits}).
+Следовательно, эта конструкция - чистый способ временно сузить буфер.
 
-The value returned by @code{save-restriction} is that returned by the
-last form in @var{body}, or @code{nil} if no body forms were given.
+Значение, возвращаемое @code{save-restriction}, - это значение, возвращаемое
+последней формой в @var{body} или @code{nil}, если не было задано никаких
+форм тела.
 
-@c Wordy to avoid overfull hbox.  --rjc 16mar92
-@strong{Caution:} it is easy to make a mistake when using the
-@code{save-restriction} construct.  Read the entire description here
-before you try it.
+@c Многословный, чтобы избежать переполнения hbox.  --rjc 16mar92
+@strong{Осторожно:} при использовании конструкции @code{save-restriction}
+легко ошибиться.  Прочесть полное описание здесь, прежде чем попробовать.
 
-If @var{body} changes the current buffer, @code{save-restriction} still
-restores the restrictions on the original buffer (the buffer whose
-restrictions it saved from), but it does not restore the identity of the
-current buffer.
+Если @var{body} изменяет текущий буфер, @code{save-restriction} по-прежнему
+восстанавливает ограничения исходного буфера (буфера, ограничения которого
+сохранены), но не восстанавливает идентичность текущего буфера.
 
-@code{save-restriction} does @emph{not} restore point; use
-@code{save-excursion} for that.  If you use both @code{save-restriction}
-and @code{save-excursion} together, @code{save-excursion} should come
-first (on the outside).  Otherwise, the old point value would be
-restored with temporary narrowing still in effect.  If the old point
-value were outside the limits of the temporary narrowing, this would
-fail to restore it accurately.
+@code{save-restriction} @emph{не} делает точку восстановления ; использовать
+для этого @code{save-excursion}.  Если использовать оба
+@code{save-restriction} и @code{save-excursion} вместе,
+@code{save-excursion} должно быть первым (снаружи).  В противном случае
+будет восстановлено старое значение точки с сохранением временного сужения.
+Если бы старое значение точки выходило за пределы временного сужения, это
+не могло бы точно восстановить его.
 
-Here is a simple example of correct use of @code{save-restriction}:
+Вот простой пример правильного использования @code{save-restriction}:
 
 @example
 @group
