@@ -4,88 +4,88 @@
 @c Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Markers
-@chapter Markers
+@chapter Маркеры
 @cindex markers
 
-  A @dfn{marker} is a Lisp object used to specify a position in a buffer
-relative to the surrounding text.  A marker changes its offset from the
-beginning of the buffer automatically whenever text is inserted or
-deleted, so that it stays with the two characters on either side of it.
+  @dfn{Маркер} - это объект Lisp, используемый для указания позиции в буфере
+относительно окружающего текста.  Маркер автоматически изменяет свое
+смещение от начала буфера всякий раз, когда текст вставляется или удаляется,
+так что он остается с двумя символами по обе стороны от него.
 
 @menu
-* Overview of Markers::      The components of a marker, and how it relocates.
-* Predicates on Markers::    Testing whether an object is a marker.
-* Creating Markers::         Making empty markers or markers at certain places.
-* Information from Markers:: Finding the marker's buffer or character position.
-* Marker Insertion Types::   Two ways a marker can relocate when you
-                               insert where it points.
-* Moving Markers::           Moving the marker to a new buffer or position.
-* The Mark::                 How the mark is implemented with a marker.
-* The Region::               How to access the region.
+* Overview of Markers::      Компоненты маркера и способ его перемещения.
+* Predicates on Markers::    Проверка того, является ли объект маркером.
+* Creating Markers::         Изготовление пустых маркеров или маркеров в
+                                определенных местах.
+* Information from Markers:: Нахождение маркера буфера или позиции символа.
+* Marker Insertion Types::   Маркер может перемещаться двумя способами,
+                                когда вставляется туда, куда он указывает.
+* Moving Markers::           Перемещение маркера в новый буфер или позицию.
+* The Mark::                 Как наносится отметка маркером.
+* The Region::               Как получить доступ к региону.
 @end menu
 
 @node Overview of Markers
-@section Overview of Markers
+@section Обзор Маркеров
 
-  A marker specifies a buffer and a position in that buffer.  A
-marker can be used to represent a position in functions that
-require one, just as an integer could be used.  In that case, the
-marker's buffer is normally ignored.  Of course, a marker used in this
-way usually points to a position in the buffer that the function
-operates on, but that is entirely the programmer's responsibility.
-@xref{Positions}, for a complete description of positions.
+  Маркер определяет буфер и позицию в этом буфере.  Маркер может
+использоваться для представления позиции в функциях, которые требуют его,
+так же как можно использовать целое число.  В этом случае маркер буфера
+обычно игнорируется.  Конечно, используемый таким образом маркер обычно
+указывает на позицию в буфере, над которой работает функция, но это
+полностью ответственность программиста.  @xref{Positions}, полное описание
+позиций.
 
-  A marker has three attributes: the marker position, the marker
-buffer, and the insertion type.  The marker position is an integer
-that is equivalent (at a given time) to the marker as a position in
-that buffer.  But the marker's position value can change during
-the life of the marker, and often does.  Insertion and deletion of
-text in the buffer relocate the marker.  The idea is that a marker
-positioned between two characters remains between those two characters
-despite insertion and deletion elsewhere in the buffer.  Relocation
-changes the integer equivalent of the marker.
+  Маркер имеет три атрибута: положение маркера, буфер маркера и тип вставки.
+Позиция маркера - это целое число, которое эквивалентно (в данный момент)
+маркеру как позиции в этом буфере.  Но значение положения маркера может
+меняться в течение срока службы маркера, и часто это происходит.  Вставка и
+удаление текста в буфере перемещают маркер.  Идея состоит в том, что маркер,
+расположенный между двумя символами, остается между этими двумя символами,
+несмотря на вставку и удаление в другом месте буфера.  Перемещение изменяет
+целочисленный эквивалент маркера.
 
 @cindex marker relocation
-  Deleting text around a marker's position leaves the marker between the
-characters immediately before and after the deleted text.  Inserting
-text at the position of a marker normally leaves the marker either in
-front of or after the new text, depending on the marker's @dfn{insertion
-type} (@pxref{Marker Insertion Types})---unless the insertion is done
-with @code{insert-before-markers} (@pxref{Insertion}).
+  При удалении текста вокруг позиции маркера маркер остается между символами
+непосредственно перед и после удаленного текста.  Вставка текста в позицию
+маркера обычно оставляет маркер либо перед новым текстом, либо после него, в
+зависимости от @dfn{insertion type} (@pxref{Marker Insertion Types}) маркера
+--- если только вставка не выполняется с помощью
+@code{insert-before-markers} (@pxref{Insertion}).
 
 @cindex marker garbage collection
-  Insertion and deletion in a buffer must check all the markers and
-relocate them if necessary.  This slows processing in a buffer with a
-large number of markers.  For this reason, it is a good idea to make a
-marker point nowhere if you are sure you don't need it any more.
-Markers that can no longer be accessed are eventually removed
+  Вставка и удаление в буфере должны проверять все маркеры и при
+необходимости перемещать их.  Это замедляет обработку в буфере с большим
+количеством маркеров.  По этой причине рекомендуется нигде не устанавливать
+маркер, если нет уверенности, что он больше не нужен.  Маркеры, к которым
+больше нельзя получить доступ, в конечном итоге удаляются
 (@pxref{Garbage Collection}).
 
 @cindex markers as numbers
-  Because it is common to perform arithmetic operations on a marker
-position, most of these operations (including @code{+} and
-@code{-}) accept markers as arguments.  In such cases, the marker
-stands for its current position.
+  Поскольку над положением маркера обычно выполняются арифметические
+операции, большинство этих операций (включая @code{+} и @code{-}) принимают
+маркеры в качестве аргументов.  В таких случаях маркер обозначает его
+текущее положение.
 
-Here are examples of creating markers, setting markers, and moving point
-to markers:
+Вот примеры создания маркеров, установки маркеров и перемещения точки к
+маркерам:
 
 @example
 @group
-;; @r{Make a new marker that initially does not point anywhere:}
+;; @r{Сделать новый маркер, который изначально никуда не указывает:}
 (setq m1 (make-marker))
      @result{} #<marker in no buffer>
 @end group
 
 @group
-;; @r{Set @code{m1} to point between the 99th and 100th characters}
-;;   @r{in the current buffer:}
+;; @r{Установить @code{m1}, чтобы указывало между 99-м и 100-м символами}
+;;   @r{в текущем буфере:}
 (set-marker m1 100)
      @result{} #<marker at 100 in markers.texi>
 @end group
 
 @group
-;; @r{Now insert one character at the beginning of the buffer:}
+;; @r{Теперь вставить один символ в начало буфера:}
 (goto-char (point-min))
      @result{} 1
 (insert "Q")
@@ -93,14 +93,14 @@ to markers:
 @end group
 
 @group
-;; @r{@code{m1} is updated appropriately.}
+;; @r{@code{m1} обновляется соответствующим образом.}
 m1
      @result{} #<marker at 101 in markers.texi>
 @end group
 
 @group
-;; @r{Two markers that point to the same position}
-;;   @r{are not @code{eq}, but they are @code{equal}.}
+;; @r{Два маркера, указывающие на одну и ту же позицию,}
+;;   @r{не являются @code{eq}, а являются @code{equal}.}
 (setq m2 (copy-marker m1))
      @result{} #<marker at 101 in markers.texi>
 (eq m1 m2)
@@ -110,53 +110,52 @@ m1
 @end group
 
 @group
-;; @r{When you are finished using a marker, make it point nowhere.}
+;; @r{Когда закончиться использоваться маркер, он не указывает никуда.}
 (set-marker m1 nil)
      @result{} #<marker in no buffer>
 @end group
 @end example
 
 @node Predicates on Markers
-@section Predicates on Markers
+@section Предикаты по Маркерам
 @cindex predicates for markers
 @cindex markers, predicates for
 
-  You can test an object to see whether it is a marker, or whether it is
-either an integer or a marker.  The latter test is useful in connection
-with the arithmetic functions that work with both markers and integers.
+  Можно протестировать объект, чтобы узнать, является ли он маркером, целым
+числом или маркером.  Последний тест полезен в связи с арифметическими
+функциями, которые работают как с маркерами, так и с целыми числами.
 
 @defun markerp object
-This function returns @code{t} if @var{object} is a marker, @code{nil}
-otherwise.  Note that integers are not markers, even though many
-functions will accept either a marker or an integer.
+Функция возвращает @code{t}, если @var{object} является маркером, и
+@code{nil} в противном случае.  Обратить внимание, что целые числа не
+являются маркерами, хотя многие функции принимают либо маркер, либо целое
+число.
 @end defun
 
 @defun integer-or-marker-p object
-This function returns @code{t} if @var{object} is an integer or a marker,
-@code{nil} otherwise.
+Функция возвращает @code{t}, если @var{object} является целым числом или
+маркером, в противном случае - @code{nil}.
 @end defun
 
 @defun number-or-marker-p object
-This function returns @code{t} if @var{object} is a number (either
-integer or floating point) or a marker, @code{nil} otherwise.
+Функция возвращает @code{t}, если @var{object} является числом (целым или
+с плавающей точкой) или маркером, в противном случае - @code{nil}.
 @end defun
 
 @node Creating Markers
-@section Functions that Create Markers
+@section Функции, Создающие Маркеры
 @cindex creating markers
 @cindex marker creation
 
-  When you create a new marker, you can make it point nowhere, or point
-to the present position of point, or to the beginning or end of the
-accessible portion of the buffer, or to the same place as another given
-marker.
+  Когда создается новый маркер, можно сделать так, чтобы он никуда не
+указывал, или указывал на текущее положение точки, или на начало или конец
+доступной части буфера, или на то же место, что и другой заданный маркер.
 
-The next four functions all return markers with insertion type
-@code{nil}.  @xref{Marker Insertion Types}.
+Все следующие четыре функции возвращают маркеры с типом вставки @code{nil}.
+@xref{Marker Insertion Types}.
 
 @defun make-marker
-This function returns a newly created marker that does not point
-anywhere.
+Функция возвращает вновь созданный маркер, который никуда не указывает.
 
 @example
 @group
@@ -167,25 +166,24 @@ anywhere.
 @end defun
 
 @defun point-marker
-This function returns a new marker that points to the present position
-of point in the current buffer.  @xref{Point}.  For an example, see
-@code{copy-marker}, below.
+Функция возвращает новый маркер, указывающий на текущее положение точки в
+текущем буфере.  @xref{Point}.  Для примера, смотреть
+@code{copy-marker}, ниже.
 @end defun
 
 @defun point-min-marker
-This function returns a new marker that points to the beginning of the
-accessible portion of the buffer.  This will be the beginning of the
-buffer unless narrowing is in effect.  @xref{Narrowing}.
+Функция возвращает новый маркер, указывающий на начало доступной части
+буфера.  Это будет начало буфера, если не действует сужение.
+@xref{Narrowing}.
 @end defun
 
 @defun point-max-marker
-This function returns a new marker that points to the end of the
-accessible portion of the buffer.  This will be the end of the buffer
-unless narrowing is in effect.  @xref{Narrowing}.
+Функция возвращает новый маркер, указывающий на конец доступной части
+буфера.  Это будет конец буфера, если не действует сужение.
+@xref{Narrowing}.
 
-Here are examples of this function and @code{point-min-marker}, shown in
-a buffer containing a version of the source file for the text of this
-chapter.
+Вот примеры этой функции и @code{point-min-marker}, показанные в буфере,
+содержащем версию исходного файла для текста этой главы.
 
 @example
 @group
@@ -211,22 +209,21 @@ chapter.
 @end defun
 
 @defun copy-marker &optional marker-or-integer insertion-type
-If passed a marker as its argument, @code{copy-marker} returns a
-new marker that points to the same place and the same buffer as does
-@var{marker-or-integer}.  If passed an integer as its argument,
-@code{copy-marker} returns a new marker that points to position
-@var{marker-or-integer} in the current buffer.
+Если в качестве аргумента передан маркер, @code{copy-marker} возвращает
+новый маркер, указывающий на то же место и тот же буфер, что и
+@var{marker-or-integer}.  Если передано целое число в качестве аргумента,
+@code{copy-marker} возвращает новый маркер, указывающий на позицию
+@var{marker-or-integer} в текущем буфере.
 
-The new marker's insertion type is specified by the argument
-@var{insertion-type}.  @xref{Marker Insertion Types}.
+Тип вставки нового маркера определяется аргументом @var{insertion-type}.
+@xref{Marker Insertion Types}.
 
-@c This behavior used to be documented until 2013/08.
+@c Это поведение документировалось до тех пор, пока 2013/08.
 @ignore
-If passed an integer argument less than 1, @code{copy-marker} returns a
-new marker that points to the beginning of the current buffer.  If
-passed an integer argument greater than the length of the buffer,
-@code{copy-marker} returns a new marker that points to the end of the
-buffer.
+Если передан целочисленный аргумент меньше 1, @code{copy-marker} возвращает
+новый маркер, указывающий на начало текущего буфера.  Если передан
+целочисленный аргумент, превышающий длину буфера, @code{copy-marker}
+возвращает новый маркер, указывающий на конец буфера.
 @end ignore
 
 @example
@@ -241,13 +238,13 @@ buffer.
 @end group
 @end example
 
-An error is signaled if @var{marker} is neither a marker nor an
-integer.
+Об ошибке сообщается, если @var{marker} не является ни маркером, ни целым
+числом.
 @end defun
 
-  Two distinct markers are considered @code{equal} (even though not
-@code{eq}) to each other if they have the same position and buffer, or
-if they both point nowhere.
+  Два разных маркера считаются @code{equal} (хотя и не @code{eq})
+относительно друг друга, если они имеют одинаковую позицию и буфер, или
+если они оба никуда не указывают.
 
 @example
 @group
@@ -272,23 +269,22 @@ if they both point nowhere.
 @end example
 
 @node Information from Markers
-@section Information from Markers
+@section Информация с Маркеров
 @cindex marker information
 
-  This section describes the functions for accessing the components of a
-marker object.
+  В этом разделе описаны функции для доступа к компонентам объекта-маркера.
 
 @defun marker-position marker
-This function returns the position that @var{marker} points to, or
-@code{nil} if it points nowhere.
+Функция возвращает позицию, на которую указывает @var{marker}, или
+@code{nil}, если никуда не указывает.
 @end defun
 
 @defun marker-buffer marker
-This function returns the buffer that @var{marker} points into, or
-@code{nil} if it points nowhere.
+Функция возвращает буфер, на который указывает @var{marker}, или @code{nil},
+если никуда не указывает.
 
-@c FIXME: The 'buffer' argument of 'set-marker' already defaults to
-@c the current buffer, why use '(current-buffer)' explicitly here?
+@c FIXME: Аргумент 'buffer' для 'set-marker' уже по умолчанию равен
+@c текущему буферу, зачем здесь явно использовать '(current-buffer)'?
 @example
 @group
 (setq m (make-marker))
@@ -319,59 +315,56 @@ This function returns the buffer that @var{marker} points into, or
 @end defun
 
 @node Marker Insertion Types
-@section Marker Insertion Types
+@section Типы Вставки Маркеров
 
 @cindex insertion type of a marker
-  When you insert text directly at the place where a marker points,
-there are two possible ways to relocate that marker: it can point before
-the inserted text, or point after it.  You can specify which one a given
-marker should do by setting its @dfn{insertion type}.  Note that use of
-@code{insert-before-markers} ignores markers' insertion types, always
-relocating a marker to point after the inserted text.
+  Когда вставляется текст непосредственно в то место, где указывает маркер,
+есть два возможных способа переместить этот маркер: может указывать перед
+вставленным текстом или указывать после него.  Можно указать, что должен
+делать данный маркер, установив его @dfn{тип вставки}.  Обратить внимание,
+что использование @code{insert-before-markers} игнорирует типы вставки
+маркеров, всегда перемещая маркер так, чтобы он указывал после вставленного
+текста.
 
 @defun set-marker-insertion-type marker type
-This function sets the insertion type of marker @var{marker} to
-@var{type}.  If @var{type} is @code{t}, @var{marker} will advance when
-text is inserted at its position.  If @var{type} is @code{nil},
-@var{marker} does not advance when text is inserted there.
+Функция устанавливает тип вставки маркера @var{marker} в @var{type}.  Если
+@var{type} равен @code{t}, @var{marker} будет продвигаться, когда текст
+будет вставлен в его позицию.  Если @var{type} равен @code{nil},
+@var{marker} не продвигается, когда туда вставляется текст.
 @end defun
 
 @defun marker-insertion-type marker
-This function reports the current insertion type of @var{marker}.
+Функция сообщает о текущем типе вставки @var{marker}.
 @end defun
 
-All functions that create markers without accepting an argument that
-specifies the insertion type, create them with insertion type
-@code{nil} (@pxref{Creating Markers}).  Also, the mark has, by
-default, insertion type @code{nil}.
+Все функции, которые создают маркеры, не принимая аргумент, указывающий тип
+вставки, создают их с типом вставки @code{nil} (@pxref{Creating Markers}).
+Также метка по умолчанию имеет тип вставки @code{nil}.
 
 @node Moving Markers
-@section Moving Marker Positions
+@section Перемещение Позиций Маркеров
 @cindex moving markers
 @cindex marker, how to move position
 
-  This section describes how to change the position of an existing
-marker.  When you do this, be sure you know whether the marker is used
-outside of your program, and, if so, what effects will result from
-moving it---otherwise, confusing things may happen in other parts of
-Emacs.
+  В этом разделе описывается, как изменить положение существующего маркера.
+Когда это сделано, убедиться, что известно, используется ли маркер вне
+программы, и если да, то какие эффекты произойдут в результате его
+перемещения - иначе в других частях Emacs могут возникнуть проблемы.
 
 @defun set-marker marker position &optional buffer
-This function moves @var{marker} to @var{position}
-in @var{buffer}.  If @var{buffer} is not provided, it defaults to
-the current buffer.
+Функция перемещает @var{marker} в @var{position} в @var{buffer}.  Если
+@var{buffer} не указан, по умолчанию используется текущий буфер.
 
-@c This behavior used to be documented until 2013/08.
+@c Это поведение документировалось до тех пор, пока 2013/08.
 @ignore
-If @var{position} is less than 1, @code{set-marker} moves @var{marker}
-to the beginning of the buffer.  If @var{position} is greater than the
-size of the buffer (@pxref{Point}), @code{set-marker} moves marker to
-the end of the buffer.
+Если @var{position} меньше 1, @code{set-marker} перемещает @var{marker} в
+начало буфера.  Если @var{position} больше размера буфера (@pxref{Point}),
+ @code{set-marker} перемещает маркер в конец буфера.
 @end ignore
-If @var{position} is @code{nil} or a marker that points nowhere, then
-@var{marker} is set to point nowhere.
+Если @var{position} - это @code{nil} или маркер, который никуда не
+указывает, тогда @var{marker} устанавливается в никуда.
 
-The value returned is @var{marker}.
+Возвращаемое значение - @var{marker}.
 
 @example
 @group
@@ -394,80 +387,78 @@ The value returned is @var{marker}.
 @end defun
 
 @defun move-marker marker position &optional buffer
-This is another name for @code{set-marker}.
+Это другое название @code{set-marker}.
 @end defun
 
 @node The Mark
-@section The Mark
+@section Отметка
 @cindex mark, the
 @c @cindex the mark?
 
-  Each buffer has a special marker, which is designated @dfn{the
-mark}.  When a buffer is newly created, this marker exists but does
-not point anywhere; this means that the mark doesn't exist in that
-buffer yet.  Subsequent commands can set the mark.
+  У каждого буфера есть специальный маркер, который обозначается
+@dfn{отметка}.  Когда буфер создается заново, этот маркер существует, но
+нигде не указывает; это означает, что метки еще нет в этом буфере.
+Последующие команды могут ставить отметку.
 
-  The mark specifies a position to bound a range of text for many
-commands, such as @code{kill-region} and @code{indent-rigidly}.  These
-commands typically act on the text between point and the mark, which
-is called the @dfn{region}.  If you are writing a command that
-operates on the region, don't examine the mark directly; instead, use
-@code{interactive} with the @samp{r} specification.  This provides the
-values of point and the mark as arguments to the command in an
-interactive call, but permits other Lisp programs to specify arguments
-explicitly.  @xref{Interactive Codes}.
+  Метка указывает позицию для ограничения диапазона текста для многих
+команд, таких как @code{kill-region} и @code{indent-rigidly}.  Эти команды
+обычно воздействуют на текст между точкой и меткой, который называется
+@dfn{регион}.  Если пишется команда, которая работает с регионом, не
+исследуется метка напрямую; вместо этого используется @code{interactive} со
+спецификацией @samp{r}.  Это обеспечивает значения точки и метки в качестве
+аргументов команды в интерактивном вызове, но позволяет другим программам на
+Lisp явно указывать аргументы.  @xref{Interactive Codes}.
 
-  Some commands set the mark as a side-effect.  Commands should do
-this only if it has a potential use to the user, and never for their
-own internal purposes.  For example, the @code{replace-regexp} command
-sets the mark to the value of point before doing any replacements,
-because this enables the user to move back there conveniently after
-the replace is finished.
+  Некоторые команды устанавливают метку как побочный эффект.  Команды должны
+делать это только в том случае, если это может быть использовано
+пользователем, и никогда для их собственных внутренних целей.  Например,
+команда @code{replace-regexp} устанавливает метку на значение точки перед
+выполнением любых замен, потому что это позволяет пользователю удобно
+вернуться туда после завершения замены.
 
-  Once the mark exists in a buffer, it normally never ceases to
-exist.  However, it may become @dfn{inactive}, if Transient Mark mode
-is enabled.  The buffer-local variable @code{mark-active}, if
-non-@code{nil}, means that the mark is active.  A command can call the
-function @code{deactivate-mark} to deactivate the mark directly, or it
-can request deactivation of the mark upon return to the editor command
-loop by setting the variable @code{deactivate-mark} to a
-non-@code{nil} value.
+  Как только метка существует в буфере, она обычно никогда не перестает
+существовать.  Однако может стать @dfn{неактивной}, если включен режим
+Transient Mark.  Локальная в буфере переменная @code{mark-active}, если
+не-@code{nil}, означает, что метка активна.  Команда может вызвать функцию
+@code{deactivate-mark}, чтобы деактивировать метку напрямую, или она может
+запросить деактивацию метки при возврате в цикл команд редактора, установив
+для переменной @code{deactivate-mark} значение не-@code{nil}.
 
-  If Transient Mark mode is enabled, certain editing commands that
-normally apply to text near point, apply instead to the region when
-the mark is active.  This is the main motivation for using Transient
-Mark mode.  (Another is that this enables highlighting of the region
-when the mark is active.  @xref{Display}.)
+  Если включен режим временной метки, определенные команды редактирования,
+которые обычно применяются к тексту рядом с точкой, вместо этого применяются
+к области, когда метка активна.  Это основная мотивация для использования
+режима Transient Mark.  (Во-вторых, это позволяет выделить область, когда
+метка активна.  @xref{Display}.)
 
 @cindex mark ring
-  In addition to the mark, each buffer has a @dfn{mark ring} which is a
-list of markers containing previous values of the mark.  When editing
-commands change the mark, they should normally save the old value of the
-mark on the mark ring.  The variable @code{mark-ring-max} specifies the
-maximum number of entries in the mark ring; once the list becomes this
-long, adding a new element deletes the last element.
+  В дополнение к метке каждый буфер имеет @dfn{кольцо маркеров}, которое
+представляет собой список маркеров, содержащих предыдущие значения метки.
+Когда команды редактирования изменяют метку, они обычно должны сохранять
+старое значение метки в кольце меток.  Переменная @code{mark-ring-max}
+определяет максимальное количество записей в кольце отметок; как только
+список становится таким длинным, добавление нового элемента удаляет
+последний элемент.
 
-  There is also a separate global mark ring, but that is used only in a
-few particular user-level commands, and is not relevant to Lisp
-programming.  So we do not describe it here.
+  Существует также отдельный глобальный список меток, но он используется
+только в нескольких конкретных командах пользовательского уровня и не имеет
+отношения к программированию на Lisp.  Поэтому не описывается здесь.
 
 @defun mark &optional force
 @cindex current buffer mark
-This function returns the current buffer's mark position as an integer,
-or @code{nil} if no mark has ever been set in this buffer.
+Функция возвращает текущую позицию метки буфера в виде целого числа или
+@code{nil}, если в этом буфере никогда не устанавливалась метка.
 
-If Transient Mark mode is enabled, and @code{mark-even-if-inactive} is
-@code{nil}, @code{mark} signals an error if the mark is inactive.
-However, if @var{force} is non-@code{nil}, then @code{mark} disregards
-inactivity of the mark, and returns the mark position (or @code{nil})
-anyway.
+Если включен режим Transient Mark, а @code{mark-even-if-inactive} -
+@code{nil}, @code{mark} сигнализирует об ошибке, если метка неактивна.
+Однако, если @var{force} равен не-@code{nil}, то @code{mark} игнорирует
+неактивность метки и все равно возвращает позицию метки (или @code{nil}).
 @end defun
 
 @defun mark-marker
-This function returns the marker that represents the current buffer's
-mark.  It is not a copy, it is the marker used internally.  Therefore,
-changing this marker's position will directly affect the buffer's
-mark.  Don't do that unless that is the effect you want.
+Функция возвращает маркер, представляющий метку текущего буфера.  Это не
+копия, это внутренний маркер.  Следовательно, изменение положения этого
+маркера напрямую повлияет на метку буфера.  Не делать этого, если не
+требуется добиться желаемого эффекта.
 
 @example
 @group
@@ -484,29 +475,31 @@ mark.  Don't do that unless that is the effect you want.
 @end group
 @end example
 
-Like any marker, this marker can be set to point at any buffer you
-like.  If you make it point at any buffer other than the one of which
-it is the mark, it will yield perfectly consistent, but rather odd,
-results.  We recommend that you not do it!
+Как и любой маркер, этот маркер можно установить так, чтобы он указывал на
+любой буфер, который нравится.  Если сделать так, чтобы он указывал на любой
+буфер, кроме того, на котором он является меткой, это даст совершенно
+последовательные, но довольно странные результаты.  Рекомендуется не делать
+этого!
 @end defun
 
 @defun set-mark position
-This function sets the mark to @var{position}, and activates the mark.
-The old value of the mark is @emph{not} pushed onto the mark ring.
+Функция устанавливает метку в @var{position} и активирует метку.  Старое
+значение метки - @emph{не} толкается в кольцо меток.
 
-@strong{Please note:} Use this function only if you want the user to
-see that the mark has moved, and you want the previous mark position to
-be lost.  Normally, when a new mark is set, the old one should go on the
-@code{mark-ring}.  For this reason, most applications should use
-@code{push-mark} and @code{pop-mark}, not @code{set-mark}.
+@strong{Пожалуйста, обратить внимание:} Использовать эту функцию только в
+том случае, если требуется, чтобы пользователь увидел, что метка
+переместилась, и нужно, чтобы предыдущее положение метки было потеряно.
+Обычно, когда ставится новая отметка, старая должна помещаться в
+@code{mark-ring}.  По этой причине в большинстве приложений следует
+использовать @code{push-mark} и @code{pop-mark}, а не @code{set-mark}.
 
-Novice Emacs Lisp programmers often try to use the mark for the wrong
-purposes.  The mark saves a location for the user's convenience.  An
-editing command should not alter the mark unless altering the mark is
-part of the user-level functionality of the command.  (And, in that
-case, this effect should be documented.)  To remember a location for
-internal use in the Lisp program, store it in a Lisp variable.  For
-example:
+Начинающие программисты на Emacs Lisp часто пытаются использовать метку в
+неправильных целях.  Отметка сохраняет местоположение для удобства
+пользователя.  Команда редактирования не должна изменять метку, если
+изменение метки не является частью функциональных возможностей команды на
+уровне пользователя.  (И в этом случае этот эффект должен быть
+задокументирован.)  Чтобы запомнить место для внутреннего использования в
+программе на Lisp, это сохраняется в переменной Lisp.  Например:
 
 @example
 @group
@@ -518,70 +511,67 @@ example:
 @end defun
 
 @defun push-mark &optional position nomsg activate
-This function sets the current buffer's mark to @var{position}, and
-pushes a copy of the previous mark onto @code{mark-ring}.  If
-@var{position} is @code{nil}, then the value of point is used.
-@c Doesn't seem relevant.
-@c @code{push-mark} returns @code{nil}.
+Функция устанавливает текущую метку буфера в @var{position} и помещает копию
+предыдущей метки в @code{mark-ring}.  Если @var{position} равно @code{nil},
+то используется значение точки.
+@c Не кажется актуальным.  @code{push-mark} возвращает @code{nil}.
 
-The function @code{push-mark} normally @emph{does not} activate the
-mark.  To do that, specify @code{t} for the argument @var{activate}.
+Функция @code{push-mark} обычно @emph{не} активирует отметку.  Для этого
+указать @code{t} в качестве аргумента @var{activate}.
 
-A @samp{Mark set} message is displayed unless @var{nomsg} is
-non-@code{nil}.
+Сообщение @samp{Mark set} отображается, если @var{nomsg} не не-@code{nil}.
 @end defun
 
 @defun pop-mark
-This function pops off the top element of @code{mark-ring} and makes
-that mark become the buffer's actual mark.  This does not move point in
-the buffer, and it does nothing if @code{mark-ring} is empty.  It
-deactivates the mark.
+Функция извлекает верхний элемент @code{mark-ring} и делает эту метку
+фактической меткой буфера.  Это не перемещает точку в буфере и ничего не
+делает, если @code{mark-ring} пуст.  Деактивируется отметка.
 @c
-@c Seems even less relevant.
-@c The return value is not meaningful.
+@c Кажется даже менее актуальным.
+@c Возвращаемое значение не имеет смысла.
 @end defun
 
 @defopt transient-mark-mode
-This variable, if non-@code{nil}, enables Transient Mark mode.  In
-Transient Mark mode, every buffer-modifying primitive sets
-@code{deactivate-mark}.  As a consequence, most commands that modify
-the buffer also deactivate the mark.
+Переменная, если не-@code{nil}, включает режим Transient Mark.  В режиме
+Transient Mark каждый примитив, изменяющий буфер, устанавливает
+@code{deactivate-mark}.  Как следствие, большинство команд, изменяющих
+буфер, также деактивируют метку.
 
-When Transient Mark mode is enabled and the mark is active, many
-commands that normally apply to the text near point instead apply to
-the region.  Such commands should use the function @code{use-region-p}
-to test whether they should operate on the region.  @xref{The Region}.
+Когда включен режим Transient Mark и активна метка, многие команды, которые
+обычно применяются к тексту рядом с точкой, вместо этого применяются к
+области.  Такие команды должны использовать функцию @code{use-region-p},
+чтобы проверить, должны ли они работать с регионом.  @xref{The Region}.
 
-Lisp programs can set @code{transient-mark-mode} to non-@code{nil},
-non-@code{t} values to enable Transient Mark mode temporarily.  If the
-value is @code{lambda}, Transient Mark mode is automatically turned
-off after any action, such as buffer modification, that would normally
-deactivate the mark.  If the value is @w{@code{(only . @var{oldval})}},
-then @code{transient-mark-mode} is set to the value @var{oldval} after
-any subsequent command that moves point and is not shift-translated
-(@pxref{Key Sequence Input, shift-translation}), or after any other
-action that would normally deactivate the mark.
+Программы Lisp могут устанавливать для @code{transient-mark-mode} значения
+не-@code{nil}, не-@code{t}, чтобы временно включить режим Transient Mark.
+Если значение равно @code{lambda}, режим Transient Mark автоматически
+отключается после любого действия, такого как изменение буфера, которое
+обычно деактивирует метку.  Если значение равно
+@w{@code{(only . @var{oldval})}}, тогда @code{transient-mark-mode}
+устанавливается в значение @var{oldval} после любой последующей команды,
+которая перемещает точку и не переводится с помощью сдвига
+(@pxref{Key Sequence Input, shift-translation}), или после любого другого
+действия, которое обычно деактивирует метку.
 @end defopt
 
 @defopt mark-even-if-inactive
-If this is non-@code{nil}, Lisp programs and the Emacs user can use the
-mark even when it is inactive.  This option affects the behavior of
-Transient Mark mode.  When the option is non-@code{nil}, deactivation of
-the mark turns off region highlighting, but commands that use the mark
-behave as if the mark were still active.
+Если это не-@code{nil}, программы Lisp и пользователь Emacs могут
+использовать метку, даже когда она неактивна.  Эта опция влияет на поведение
+режима Transient Mark.  Когда опция - не-@code{nil}, деактивация метки
+отключает выделение области, но команды, использующие метку, ведут себя так,
+как если бы метка все еще была активной.
 @end defopt
 
 @defvar deactivate-mark
-If an editor command sets this variable non-@code{nil}, then the editor
-command loop deactivates the mark after the command returns (if
-Transient Mark mode is enabled).  All the primitives that change the
-buffer set @code{deactivate-mark}, to deactivate the mark when the
-command is finished.  Setting this variable makes it buffer-local.
+Если команда редактора устанавливает эту переменную в не-@code{nil}, то цикл
+команд редактора деактивирует метку после возврата команды (если включен
+режим Transient Mark).  Все примитивы, изменяющие буфер, устанавливают
+@code{deactivate-mark}, чтобы деактивировать отметку, когда команда
+завершена.  Установка этой переменной делает ее локальным для буфера.
 
-To write Lisp code that modifies the buffer without causing
-deactivation of the mark at the end of the command, bind
-@code{deactivate-mark} to @code{nil} around the code that does the
-modification.  For example:
+Чтобы написать код Lisp, который изменяет буфер, не вызывая деактивации
+метки в конце команды, привяжите @code{deactivate-mark} к @code{nil} вокруг
+кода, который выполняет модификацию. Например:
 
 @example
 (let (deactivate-mark)
@@ -590,27 +580,27 @@ modification.  For example:
 @end defvar
 
 @defun deactivate-mark &optional force
-If Transient Mark mode is enabled or @var{force} is non-@code{nil},
-this function deactivates the mark and runs the normal hook
-@code{deactivate-mark-hook}.  Otherwise, it does nothing.
+Если включен режим Transient Mark или @var{force} имеет значение
+не-@code{nil}, функция деактивирует метку и запускает обычный обработчик
+@code{deactivate-mark-hook}.  В противном случае ничего не происходит.
 @end defun
 
 @defvar mark-active
-The mark is active when this variable is non-@code{nil}.  This
-variable is always buffer-local in each buffer.  Do @emph{not} use the
-value of this variable to decide whether a command that normally
-operates on text near point should operate on the region instead.  Use
-the function @code{use-region-p} for that (@pxref{The Region}).
+Отметка активности, если эта переменная - не-@code{nil}.  Эта переменная
+всегда локальна в каждом буфере.  Используется значение этой переменной,
+чтобы решить, должна ли команда, которая обычно работает с текстом рядом с
+точкой, работать с регионом.  Для этого (@pxref{The Region}) используется
+функция @code{use-region-p}.
 @end defvar
 
 @defvar activate-mark-hook
 @defvarx deactivate-mark-hook
-These normal hooks are run, respectively, when the mark becomes active
-and when it becomes inactive.  The hook @code{activate-mark-hook} is
-also run at the end of the command loop if the mark is active and it
-is possible that the region may have changed.
+Эти обычные перехватчики запускаются, соответственно, когда метка становится
+активной и когда она становится неактивной.  Ловушка
+@code{activate-mark-hook} также запускается в конце цикла команд, если метка
+активна и возможно, что область изменилась.
 @ignore
-This piece of command_loop_1, run unless deactivating the mark:
+Это кусок command_loop_1, запускать если не деактивировать отметку:
   if (current_buffer != prev_buffer || MODIFF != prev_modiff)
     {
       Lisp_Object hook = intern ("activate-mark-hook");
@@ -620,25 +610,23 @@ This piece of command_loop_1, run unless deactivating the mark:
 @end defvar
 
 @defun handle-shift-selection
-This function implements the shift-selection behavior of
-point-motion commands.  @xref{Shift Selection,,, emacs, The GNU Emacs
-Manual}.  It is called automatically by the Emacs command loop
-whenever a command with a @samp{^} character in its @code{interactive}
-spec is invoked, before the command itself is executed
-(@pxref{Interactive Codes, ^}).
+Функция реализует поведение выбора сдвига для команд перемещения точки.
+@xref{Shift Selection,,, emacs, The GNU Emacs Manual}.  Вызывается
+автоматически командным циклом Emacs всякий раз, когда вызывается команда с
+символом @samp{^} в ее спецификации @code{interactive}, до того, как сама
+команда будет выполнена (@pxref{Interactive Codes, ^}).
 
-If @code{shift-select-mode} is non-@code{nil} and the current command
-was invoked via shift translation (@pxref{Key Sequence Input,
-shift-translation}), this function sets the mark and temporarily
-activates the region, unless the region was already temporarily
-activated in this way.  Otherwise, if the region has been activated
-temporarily, it deactivates the mark and restores the variable
-@code{transient-mark-mode} to its earlier value.
+Если @code{shift-select-mode} - не-@code{nil} и текущая команда была вызвана
+с помощью сдвига трансляции (@pxref{Key Sequence Input, shift-translation}),
+эта функция устанавливает метку и временно активирует регион, если регион
+уже не был временно активирован таким образом.  В противном случае, если
+область была активирована временно, она деактивирует метку и восстанавливает
+для переменной @code{transient-mark-mode} ее предыдущее значение.
 @end defun
 
 @defvar mark-ring
-The value of this buffer-local variable is the list of saved former
-marks of the current buffer, most recent first.
+Значение этой локальной переменной буфера представляет собой список
+сохраненных прежних меток текущего буфера, начиная с самых последних.
 
 @example
 @group
@@ -651,82 +639,79 @@ mark-ring
 @end defvar
 
 @defopt mark-ring-max
-The value of this variable is the maximum size of @code{mark-ring}.  If
-more marks than this are pushed onto the @code{mark-ring},
-@code{push-mark} discards an old mark when it adds a new one.
+Значение этой переменной - максимальный размер @code{mark-ring}.  Если на
+@code{mark-ring} помещается больше меток, чем указано в переменной,
+@code{push-mark} отбрасывает старую метку при добавлении новой.
 @end defopt
 
-@c There is also global-mark-ring-max, but this chapter explicitly
-@c does not talk about the global mark.
+@c Существует также global-mark-ring-max, но в этой главе
+@c явно не говорится о глобальной метке.
 
 @cindex @code{delete-selection}, symbol property
 @findex delete-selection-helper
 @findex delete-selection-pre-hook
-When Delete Selection mode (@pxref{Using Region, Delete Selection, ,
-emacs, The GNU Emacs Manual}) is enabled, commands that operate on the
-active region (a.k.a.@: ``selection'') behave slightly differently.
-This works by adding the function @code{delete-selection-pre-hook} to
-the @code{pre-command-hook} (@pxref{Command Overview}).  That function
-calls @code{delete-selection-helper} to delete the selection as
-appropriate for the command.  If you want to adapt a command to Delete
-Selection mode, put the @code{delete-selection} property on the
-function's symbol (@pxref{Symbol Plists}); commands that don't have
-this property on their symbol won't delete the selection.  This
-property can have one of several values to tailor the behavior to what
-the command is supposed to do; see the doc strings of
-@code{delete-selection-pre-hook} and @code{delete-selection-helper}
-for the details.
+Когда включен режим удаления выделения
+(@pxref{Using Region, Delete Selection, , emacs, The GNU Emacs Manual}),
+команды, работающие с активной областью (также известной как @: ``отбор''),
+ведут себя немного иначе.  Это работает путем добавления функции
+@code{delete-selection-pre-hook} в файл @code{pre-command-hook}
+(@pxref{Command Overview}).  Эта функция вызывает
+@code{delete-selection-helper}, чтобы удалить выделение, соответствующее
+команде.  Если требуется адаптировать команду к режиму «Удалить выделение»,
+поместить свойство @code{delete-selection} в символ функции
+(@pxref{Symbol Plists}); команды, у которых нет этого свойства в своем
+символе, не удаляют выделение.  Это свойство может иметь одно из нескольких
+значений для адаптации поведения к тому, что должна делать команда;
+подробности смотреть в строках документации @code{delete-selection-pre-hook}
+и @code{delete-selection-helper}.
 
 @node The Region
-@section The Region
-@c The index entry must be just "region" to make it the first hit
-@c when the user types "i region RET", because otherwise the Info
-@c reader will present substring matches in alphabetical order,
-@c putting this one near the end, with something utterly unrelated as
-@c the first hit.
+@section Регион
+@c Запись индекса должна быть просто "region", чтобы сделать ее первым
+@c попаданием, когда пользователь набирает "i region RET", потому что в
+@c противном случае читатель Info представит совпадения подстрок в
+@c алфавитном порядке, поместит эту подстроку ближе к концу, а что-то
+@c совершенно не связанное с первым.
 @cindex region
 
-  The text between point and the mark is known as @dfn{the region}.
-Various functions operate on text delimited by point and the mark, but
-only those functions specifically related to the region itself are
-described here.
+  Текст между точкой и меткой известен как @dfn{регион или область}.
+Различные функции работают с текстом, разделенным точкой и меткой, но здесь
+описаны только те функции, которые относятся к самой области.
 
-The next two functions signal an error if the mark does not point
-anywhere.  If Transient Mark mode is enabled and
-@code{mark-even-if-inactive} is @code{nil}, they also signal an error
-if the mark is inactive.
+Следующие две функции сигнализируют об ошибке, если метка никуда не
+указывает.  Если включен режим Transient Mark, а
+@code{mark-even-if-inactive} - @code{nil}, они также сигнализируют об
+ошибке, если метка неактивна.
 
 @defun region-beginning
-This function returns the position of the beginning of the region (as
-an integer).  This is the position of either point or the mark,
-whichever is smaller.
+Функция возвращает позицию начала области (как целое число).  Это положение
+точки или метки, в зависимости от того, что меньше.
 @end defun
 
 @defun region-end
-This function returns the position of the end of the region (as an
-integer).  This is the position of either point or the mark, whichever is
-larger.
+Функция возвращает позицию конца области (как целое число).  Это положение
+точки или метки, в зависимости от того, что больше.
 @end defun
 
-@c FIXME: Mention it in tips.texi?
-  Instead of using @code{region-beginning} and @code{region-end}, a
-command designed to operate on a region should normally use
-@code{interactive} with the @samp{r} specification to find the
-beginning and end of the region.  This lets other Lisp programs
-specify the bounds explicitly as arguments.  @xref{Interactive Codes}.
+@c FIXME: Упомяните об этом в tips.texi?
+  Вместо использования @code{region-beginning} и @code{region-end} команда,
+предназначенная для работы с областью, обычно должна использовать
+@code{interactive} со спецификацией @samp{r}, чтобы найти начало и конец
+области.  Это позволяет другим программам на Lisp явно указывать границы как
+аргументы.  @xref{Interactive Codes}.
 
 @defun use-region-p
-This function returns @code{t} if Transient Mark mode is enabled, the
-mark is active, and there is a valid region in the buffer.  This
-function is intended to be used by commands that operate on the
-region, instead of on text near point, when the mark is active.
+Функция возвращает @code{t}, если включен режим Transient Mark, метка
+активна и в буфере есть допустимая область.  Эта функция предназначена для
+использования командами, которые работают с областью, а не с текстом рядом с
+точкой, когда метка активна.
 
 @cindex empty region
 @vindex use-empty-active-region
-A region is valid if it has a non-zero size, or if the user option
-@code{use-empty-active-region} is non-@code{nil} (by default, it is
-@code{nil}).  The function @code{region-active-p} is similar to
-@code{use-region-p}, but considers all regions as valid.  In most
-cases, you should not use @code{region-active-p}, since if the region
-is empty it is often more appropriate to operate on point.
+Регион считается допустимым, если имеет ненулевой размер или если
+пользовательская опция @code{use-empty-active-region} имеет значение
+не-@code{nil} (по умолчанию это @code{nil}).  Функция @code{region-active-p}
+аналогична функции @code{use-region-p}, но считает допустимыми все области.
+В большинстве случаев не следует использовать @code{region-active-p},
+поскольку, если область пуста, часто более целесообразно работать с точкой.
 @end defun
