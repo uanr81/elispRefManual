@@ -1334,145 +1334,143 @@ Type RET when done reading
 @end defun
 
 @node Overlays
-@section Overlays
+@section Наложение
 @cindex overlays
-@c FIXME: mention intervals in this section?
+@c FIXME: упомянуть интервалы в этом разделе?
 
-You can use @dfn{overlays} to alter the appearance of a buffer's text on
-the screen, for the sake of presentation features.  An overlay is an
-object that belongs to a particular buffer, and has a specified
-beginning and end.  It also has properties that you can examine and set;
-these affect the display of the text within the overlay.
+Можно использовать @dfn{наложение}, чтобы изменить внешний вид текста буфера
+на экране в целях презентации.  Наложение - это объект, который принадлежит
+определенному буферу и имеет указанное начало и конец.  У него также есть
+свойства, которые можно исследовать и устанавливать; они влияют на
+отображение текста в наложении.
 
 @cindex scalability of overlays
 @cindex overlays, scalability
-The visual effect of an overlay is the same as of the corresponding
-text property (@pxref{Text Properties}).  However, due to a different
-implementation, overlays generally don't scale well (many operations
-take a time that is proportional to the number of overlays in the
-buffer).  If you need to affect the visual appearance of many portions
-in the buffer, we recommend using text properties.
+Визуальный эффект наложения такой же, как и у соответствующего текстового
+свойства (@pxref{Text Properties}).  Однако из-за другой реализации
+наложения обычно плохо масштабируются (многие операции занимают время,
+пропорциональное количеству наложений в буфере).  Если нужно повлиять на
+внешний вид многих частей в буфере, рекомендуется использовать свойства
+текста.
 
-An overlay uses markers to record its beginning and end; thus,
-editing the text of the buffer adjusts the beginning and end of each
-overlay so that it stays with the text.  When you create the overlay,
-you can specify whether text inserted at the beginning should be
-inside the overlay or outside, and likewise for the end of the overlay.
+Наложение использует маркеры для записи его начала и конца; таким образом,
+редактирование текста в буфере корректирует начало и конец каждого наложения
+так, чтобы оно оставалось с текстом.  При создании наложения можно указать,
+должен ли текст, вставленный в начале, находиться внутри наложения или
+снаружи, а также в конце наложения.
 
 @menu
-* Managing Overlays::   Creating and moving overlays.
-* Overlay Properties::  How to read and set properties.
-                          What properties do to the screen display.
-* Finding Overlays::    Searching for overlays.
+* Managing Overlays::   Создание и перемещение наложений.
+* Overlay Properties::  Как читать и устанавливать свойства.
+                          Какие свойства влияют на отображение на экране.
+* Finding Overlays::    Поиск наложений.
 @end menu
 
 @node Managing Overlays
-@subsection Managing Overlays
+@subsection Управление Наложениями
 @cindex managing overlays
 @cindex overlays, managing
 
-  This section describes the functions to create, delete and move
-overlays, and to examine their contents.  Overlay changes are not
-recorded in the buffer's undo list, since the overlays are not
-part of the buffer's contents.
+  В этом разделе описаны функции для создания, удаления и перемещения
+наложений, а также для проверки их содержимого.  Изменения наложения не
+записываются в список отмены буфера, поскольку наложения не являются частью
+содержимого буфера.
 
 @defun overlayp object
-This function returns @code{t} if @var{object} is an overlay.
+Функция возвращает @code{t}, если @var{object} является наложением.
 @end defun
 
 @defun make-overlay start end &optional buffer front-advance rear-advance
-This function creates and returns an overlay that belongs to
-@var{buffer} and ranges from @var{start} to @var{end}.  Both @var{start}
-and @var{end} must specify buffer positions; they may be integers or
-markers.  If @var{buffer} is omitted, the overlay is created in the
-current buffer.
+Функция создает и возвращает наложение, которое принадлежит @var{buffer} и
+находится в диапазоне от @var{start} до @var{end}.  И @var{start}, и
+@var{end} должны указывать позиции буфера; они могут быть целыми числами или
+маркерами.  Если @var{buffer} не указан, наложение создается в текущем
+буфере.
 
 @cindex empty overlay
 @cindex overlay, empty
-An overlay whose @var{start} and @var{end} specify the same buffer
-position is known as @dfn{empty}.  A non-empty overlay can become
-empty if the text between its @var{start} and @var{end} is deleted.
-When that happens, the overlay is by default not deleted, but you can
-cause it to be deleted by giving it the @samp{evaporate} property
+Наложение, у которого @var{start} и @var{end} задают одну и ту же позицию в
+буфере, называется @dfn{пустым}.  Непустое наложение может стать пустым,
+если удалить текст между его @var{start} и @var{end}.  Когда это происходит,
+наложение по умолчанию не удаляется, но можно вызвать его удаление, задав
+ему свойство @samp{evaporate}
 (@pxref{Overlay Properties, evaporate property}).
 
-The arguments @var{front-advance} and @var{rear-advance} specify the
-marker insertion type for the start of the overlay and for the end of
-the overlay, respectively.  @xref{Marker Insertion Types}.  If they
-are both @code{nil}, the default, then the overlay extends to include
-any text inserted at the beginning, but not text inserted at the end.
-If @var{front-advance} is non-@code{nil}, text inserted at the
-beginning of the overlay is excluded from the overlay.  If
-@var{rear-advance} is non-@code{nil}, text inserted at the end of the
-overlay is included in the overlay.
+Аргументы @var{front-advance} и @var{rear-advance} определяют тип вставки
+маркера для начала и для конца наложения соответственно.
+@xref{Marker Insertion Types}.  Если они оба имеют значение по умолчанию
+@code{nil}, то наложение расширяется, чтобы включить любой текст,
+вставленный в начале, но не текст, вставленный в конец.  Если
+@var{front-advance} равен не-@code{nil}, текст, вставленный в начале
+наложения, исключается из наложения.  Если @var{rear-advance} равен
+не-@code{nil}, текст, вставленный в конце наложения, включается в наложение.
 @end defun
 
 @defun overlay-start overlay
-This function returns the position at which @var{overlay} starts,
-as an integer.
+Функция возвращает позицию, с которой начинается @var{overlay}, в виде
+целого числа.
 @end defun
 
 @defun overlay-end overlay
-This function returns the position at which @var{overlay} ends,
-as an integer.
+Функция возвращает позицию, в которой заканчивается @var{overlay}, в виде
+целого числа.
 @end defun
 
 @defun overlay-buffer overlay
-This function returns the buffer that @var{overlay} belongs to.  It
-returns @code{nil} if @var{overlay} has been deleted.
+Функция возвращает буфер, которому принадлежит @var{overlay}.  Возвращается
+@code{nil}, если @var{overlay} был удален.
 @end defun
 
 @defun delete-overlay overlay
-This function deletes @var{overlay}.  The overlay continues to exist as
-a Lisp object, and its property list is unchanged, but it ceases to be
-attached to the buffer it belonged to, and ceases to have any effect on
-display.
+Функция удаляет @var{overlay}.  Наложение продолжает существовать как объект
+Lisp, и его список свойств не изменяется, но он перестает быть привязанным к
+буферу, которому он принадлежал, и перестает оказывать какое-либо влияние на
+отображение.
 
-A deleted overlay is not permanently disconnected.  You can give it a
-position in a buffer again by calling @code{move-overlay}.
+Удаленное наложение не отключается навсегда.  Можно снова присвоить ему
+позицию в буфере, вызовом @code{move-overlay}.
 @end defun
 
 @defun move-overlay overlay start end &optional buffer
-This function moves @var{overlay} to @var{buffer}, and places its bounds
-at @var{start} and @var{end}.  Both arguments @var{start} and @var{end}
-must specify buffer positions; they may be integers or markers.
+Функция перемещает @var{overlay} в @var{buffer} и помещает его границы в
+@var{start} и @var{end}.  Оба аргумента @var{start} и @var{end} должны
+указывать позиции буфера; они могут быть целыми числами или маркерами.
 
-If @var{buffer} is omitted, @var{overlay} stays in the same buffer it
-was already associated with; if @var{overlay} was deleted, it goes into
-the current buffer.
+Если @var{buffer} опущено, @var{overlay} остается в том же буфере, с которым
+оно уже был связано; если @var{overlay} было удалено, оно попадает в текущий
+буфер.
 
-The return value is @var{overlay}.
+Возвращаемое значение - @var{overlay}.
 
-This is the only valid way to change the endpoints of an overlay.  Do
-not try modifying the markers in the overlay by hand, as that fails to
-update other vital data structures and can cause some overlays to be
-lost.
+Это единственный допустимый способ изменить конечные точки наложения.  Не
+пытаться изменять маркеры в наложении вручную, так как это не приведет к
+обновлению других жизненно важных структур данных и может привести к
+потере некоторых наложений.
 @end defun
 
 @defun remove-overlays &optional start end name value
-This function removes all the overlays between @var{start} and
-@var{end} whose property @var{name} has the value @var{value}.  It can
-move the endpoints of the overlays in the region, or split them.
+Функция удаляет все перекрытия между @var{start} и @var{end}, свойство
+@var{name} которых имеет значение @var{value}.  Может перемещать конечные
+точки наложений в регионе или разделять их.
 
-If @var{name} is omitted or @code{nil}, it means to delete all overlays in
-the specified region.  If @var{start} and/or @var{end} are omitted or
-@code{nil}, that means the beginning and end of the buffer respectively.
-Therefore, @code{(remove-overlays)} removes all the overlays in the
-current buffer.
+Если @var{name} не указано или @code{nil}, это означает удаление всех
+наложений в указанном регионе.  Если @var{start} и/или @var{end} опущено или
+@code{nil}, это означает начало и конец буфера соответственно.
+Следовательно, @code{(remove-overlays)} удаляет все наложения в текущем
+буфере.
 @end defun
 
 @defun copy-overlay overlay
-This function returns a copy of @var{overlay}.  The copy has the same
-endpoints and properties as @var{overlay}.  However, the marker
-insertion type for the start of the overlay and for the end of the
-overlay are set to their default values (@pxref{Marker Insertion
-Types}).
+Функция возвращает копию @var{overlay}.  Копия имеет те же конечные точки и
+свойства, что и @var{overlay}.  Однако для типа вставки маркера для начала и
+для конца наложения установлены значения по умолчанию
+(@pxref{Marker Insertion Types}).
 @end defun
 
-  Here are some examples:
+  Вот несколько примеров:
 
 @example
-;; @r{Create an overlay.}
+;; @r{Создать наложение.}
 (setq foo (make-overlay 1 10))
      @result{} #<overlay from 1 to 10 in display.texi>
 (overlay-start foo)
@@ -1481,61 +1479,62 @@ Types}).
      @result{} 10
 (overlay-buffer foo)
      @result{} #<buffer display.texi>
-;; @r{Give it a property we can check later.}
+;; @r{Задать ему собственность, которую можно проверить позже.}
 (overlay-put foo 'happy t)
      @result{} t
-;; @r{Verify the property is present.}
+;; @r{Убедиться, что собственность присутствует.}
 (overlay-get foo 'happy)
      @result{} t
-;; @r{Move the overlay.}
+;; @r{Переместить наложение.}
 (move-overlay foo 5 20)
      @result{} #<overlay from 5 to 20 in display.texi>
 (overlay-start foo)
      @result{} 5
 (overlay-end foo)
      @result{} 20
-;; @r{Delete the overlay.}
+;; @r{Удалите наложение.}
 (delete-overlay foo)
      @result{} nil
-;; @r{Verify it is deleted.}
+;; @r{Убедиться, что оно удалено.}
 foo
      @result{} #<overlay in no buffer>
-;; @r{A deleted overlay has no position.}
+;; @r{Удаленное наложение не имеет позиции.}
 (overlay-start foo)
      @result{} nil
 (overlay-end foo)
      @result{} nil
 (overlay-buffer foo)
      @result{} nil
-;; @r{Undelete the overlay.}
+;; @r{Отменить удаление наложения.}
 (move-overlay foo 1 20)
      @result{} #<overlay from 1 to 20 in display.texi>
-;; @r{Verify the results.}
+;; @r{Проверить результаты.}
 (overlay-start foo)
      @result{} 1
 (overlay-end foo)
      @result{} 20
 (overlay-buffer foo)
      @result{} #<buffer display.texi>
-;; @r{Moving and deleting the overlay does not change its properties.}
+;; @r{Перемещение и удаление наложения не меняют его свойств.}
 (overlay-get foo 'happy)
      @result{} t
 @end example
 
-  Emacs stores the overlays of each buffer in two lists, divided
-around an arbitrary center position.  One list extends backwards
-through the buffer from that center position, and the other extends
-forwards from that center position.  The center position can be anywhere
-in the buffer.
+  Emacs хранит наложения каждого буфера в двух списках, разделенных вокруг
+произвольной центральной позиции.  Один список простирается назад через
+буфер из этого центрального положения, а другой - вперед из этого
+центрального положения.  Центральное положение может быть где угодно в
+буфере.
 
 @defun overlay-recenter pos
-This function recenters the overlays of the current buffer around
-position @var{pos}.  That makes overlay lookup faster for positions
-near @var{pos}, but slower for positions far away from @var{pos}.
+Функция повторно центрирует наложение текущего буфера вокруг позиции
+@var{pos}.  Это ускоряет поиск наложения для позиций около @var{pos}, но
+замедляет для позиций далеко от @var{pos}.
 @end defun
 
-  A loop that scans the buffer forwards, creating overlays, can run
-faster if you do @code{(overlay-recenter (point-max))} first.
+  Цикл, который просматривает буфер вперед, создавая наложения, может
+работать быстрее, если сначала выполнить
+@code{(overlay-recenter (point-max))}.
 
 @node Overlay Properties
 @subsection Overlay Properties
@@ -1619,7 +1618,7 @@ of @code{overlays-at}.  @xref{Finding Overlays}.
 
 @item window
 @kindex window @r{(overlay property)}
-If the @code{window} property is non-@code{nil}, then the overlay
+If the @code{window} property is не-@code{nil}, then the overlay
 applies only on that window.
 
 @item category
@@ -1771,10 +1770,10 @@ line at display-time.  @xref{Truncation}.
 
 @item evaporate
 @kindex evaporate @r{(overlay property)}
-If this property is non-@code{nil}, the overlay is deleted automatically
+If this property is не-@code{nil}, the overlay is deleted automatically
 if it becomes empty (i.e., if its length becomes zero).  If you give
 an empty overlay (@pxref{Managing Overlays, empty overlay}) a
-non-@code{nil} @code{evaporate} property, that deletes it immediately.
+не-@code{nil} @code{evaporate} property, that deletes it immediately.
 Note that, unless an overlay has this property, it will not be deleted
 when the text between its starting and ending positions is deleted
 from the buffer.
@@ -1782,7 +1781,7 @@ from the buffer.
 @item keymap
 @cindex keymap of character (and overlays)
 @kindex keymap @r{(overlay property)}
-If this property is non-@code{nil}, it specifies a keymap for a portion of the
+If this property is не-@code{nil}, it specifies a keymap for a portion of the
 text.  This keymap is used when the character after point is within the
 overlay, and takes precedence over most other keymaps.  @xref{Active Keymaps}.
 
@@ -1808,7 +1807,7 @@ Properties}.
 
 @defun overlays-at pos &optional sorted
 This function returns a list of all the overlays that cover the character at
-position @var{pos} in the current buffer.  If @var{sorted} is non-@code{nil},
+position @var{pos} in the current buffer.  If @var{sorted} is не-@code{nil},
 the list is in decreasing order of priority, otherwise it is in no particular
 order.  An overlay contains position @var{pos} if it begins at or before
 @var{pos}, and ends after @var{pos}.
@@ -1902,12 +1901,12 @@ the result.  Thus, the result can fall short of @var{width} but cannot
 go beyond it.
 
 The optional argument @var{start-column} specifies the starting column.
-If this is non-@code{nil}, then the first @var{start-column} columns of
+If this is не-@code{nil}, then the first @var{start-column} columns of
 the string are omitted from the value.  If one multi-column character in
 @var{string} extends across the column @var{start-column}, that
 character is not included.
 
-The optional argument @var{padding}, if non-@code{nil}, is a padding
+The optional argument @var{padding}, if не-@code{nil}, is a padding
 character added at the beginning and end of the result string, to extend
 it to exactly @var{width} columns.  The padding character is used at the
 end of the result if it falls short of @var{width}.  It is also used at
@@ -1915,11 +1914,11 @@ the beginning of the result if one multi-column character in
 @var{string} extends across the column @var{start-column}.
 
 @vindex truncate-string-ellipsis
-If @var{ellipsis} is non-@code{nil}, it should be a string which will
+If @var{ellipsis} is не-@code{nil}, it should be a string which will
 replace the end of @var{string} (including any padding) if it extends
 beyond @var{width}, unless the display width of @var{string} is equal
 to or less than the display width of @var{ellipsis}.  If
-@var{ellipsis} is non-@code{nil} and not a string, it stands for
+@var{ellipsis} is не-@code{nil} and not a string, it stands for
 the value of the variable @code{truncate-string-ellipsis}.
 
 @example
@@ -1942,16 +1941,16 @@ pixels.  @var{window} must be a live window and defaults to the selected
 one.  The return value is a cons of the maximum pixel-width of any text
 line and the maximum pixel-height of all text lines.
 
-The optional argument @var{from}, if non-@code{nil}, specifies the first
+The optional argument @var{from}, if не-@code{nil}, specifies the first
 text position to consider and defaults to the minimum accessible
 position of the buffer.  If @var{from} is @code{t}, it uses the minimum
 accessible position that is not a newline character.  The optional
-argument @var{to}, if non-@code{nil}, specifies the last text position
+argument @var{to}, if не-@code{nil}, specifies the last text position
 to consider and defaults to the maximum accessible position of the
 buffer.  If @var{to} is @code{t}, it uses the maximum accessible
 position that is not a newline character.
 
-The optional argument @var{x-limit}, if non-@code{nil}, specifies the
+The optional argument @var{x-limit}, if не-@code{nil}, specifies the
 maximum pixel-width that can be returned.  @var{x-limit} @code{nil} or
 omitted, means to use the pixel-width of @var{window}'s body
 (@pxref{Window Sizes}); this is useful when the caller does not intend
@@ -1962,7 +1961,7 @@ calculating the width of long lines can take some time, it's always a
 good idea to make this argument as small as needed; in particular, if
 the buffer might contain long lines that will be truncated anyway.
 
-The optional argument @var{y-limit}, if non-@code{nil}, specifies the
+The optional argument @var{y-limit}, if не-@code{nil}, specifies the
 maximum pixel-height that can be returned.  Text lines whose
 y-coordinate is beyond @var{y-limit} are ignored.  Since calculating the
 pixel-height of a large buffer can take some time, it makes sense to
@@ -1997,7 +1996,7 @@ If the optional argument @var{first} is an integer, it denotes the index
 returned.  Note that if @var{window} has a header line, the line with
 index 0 is that header line.  If @var{first} is @code{nil}, the first line to
 be considered is determined by the value of the optional argument
-@var{body}: If @var{body} is non-@code{nil}, this means to start with
+@var{body}: If @var{body} is не-@code{nil}, this means to start with
 the first line of @var{window}'s body, skipping any header line, if
 present.  Otherwise, this function will start with the first line of
 @var{window}'s glyph matrix, possibly the header line.
@@ -2005,34 +2004,34 @@ present.  Otherwise, this function will start with the first line of
 If the optional argument @var{last} is an integer, it denotes the index
 of the last line of @var{window}'s glyph matrix that shall be returned.
 If @var{last} is @code{nil}, the last line to be considered is determined by
-the value of @var{body}: If @var{body} is non-@code{nil}, this means to
+the value of @var{body}: If @var{body} is не-@code{nil}, this means to
 use the last line of @var{window}'s body, omitting @var{window}'s mode
 line, if present.  Otherwise, this means to use the last line of
 @var{window} which may be the mode line.
 
 The optional argument @var{inverse}, if @code{nil}, means that the
 y-pixel value returned for any line specifies the distance in pixels
-from the left edge (body edge if @var{body} is non-@code{nil}) of
+from the left edge (body edge if @var{body} is не-@code{nil}) of
 @var{window} to the right edge of the last glyph of that line.
-@var{inverse} non-@code{nil} means that the y-pixel value returned for
+@var{inverse} не-@code{nil} means that the y-pixel value returned for
 any line specifies the distance in pixels from the right edge of the
 last glyph of that line to the right edge (body edge if @var{body} is
-non-@code{nil}) of @var{window}.  This is useful for determining the
+не-@code{nil}) of @var{window}.  This is useful for determining the
 amount of slack space at the end of each line.
 
-The optional argument @var{left}, if non-@code{nil} means to return the
+The optional argument @var{left}, if не-@code{nil} means to return the
 x- and y-coordinates of the lower left corner of the leftmost character
 on each line.  This is the value that should be used for windows that
 mostly display text from right to left.
 
-If @var{left} is non-@code{nil} and @var{inverse} is @code{nil}, this
+If @var{left} is не-@code{nil} and @var{inverse} is @code{nil}, this
 means that the y-pixel value returned for any line specifies the
 distance in pixels from the left edge of the last (leftmost) glyph of
-that line to the right edge (body edge if @var{body} is non-@code{nil})
+that line to the right edge (body edge if @var{body} is не-@code{nil})
 of @var{window}.  If @var{left} and @var{inverse} are both
-non-@code{nil}, the y-pixel value returned for any line specifies the
+не-@code{nil}, the y-pixel value returned for any line specifies the
 distance in pixels from the left edge (body edge if @var{body} is
-non-@code{nil}) of @var{window} to the left edge of the last (leftmost)
+не-@code{nil}) of @var{window} to the left edge of the last (leftmost)
 glyph of that line.
 
 This function returns @code{nil} if the current glyph matrix of
@@ -2059,7 +2058,7 @@ This function returns the width used for displaying the line numbers
 in the selected window.  If the optional argument @var{pixelwise} is
 the symbol @code{columns}, the return value is a float number of the
 frame's canonical columns; if @var{pixelwise} is @code{t} or any other
-non-@code{nil} value, the value is an integer and is measured in
+не-@code{nil} value, the value is an integer and is measured in
 pixels.  If @var{pixelwise} is omitted or @code{nil}, the value is the
 integer number of columns of the font defined for the
 @code{line-number} face, and doesn't include the 2 columns used to pad
@@ -2144,7 +2143,7 @@ parts of Emacs text.
   On graphical terminals, you can specify the line spacing for all
 lines in a frame, using the @code{line-spacing} frame parameter
 (@pxref{Layout Parameters}).  However, if the default value of
-@code{line-spacing} is non-@code{nil}, it overrides the
+@code{line-spacing} is не-@code{nil}, it overrides the
 frame's @code{line-spacing} parameter.  An integer specifies the
 number of pixels put below lines.  A floating-point number specifies
 the spacing relative to the frame's default line height.
@@ -2203,7 +2202,7 @@ anonymous faces.  These include the functions documented in
 will use the term @dfn{face} to refer only to named faces.
 
 @defun facep object
-This function returns a non-@code{nil} value if @var{object} is a
+This function returns a не-@code{nil} value if @var{object} is a
 named face: a Lisp symbol or string which serves as a face name.
 Otherwise, it returns @code{nil}.
 @end defun
@@ -2665,7 +2664,7 @@ value using @code{set-face-attribute}; see below).
 If @var{inherit} is @code{nil}, only attributes directly defined by
 @var{face} are considered, so the return value may be
 @code{unspecified}, or a relative value.  If @var{inherit} is
-non-@code{nil}, @var{face}'s definition of @var{attribute} is merged
+не-@code{nil}, @var{face}'s definition of @var{attribute} is merged
 with the faces specified by its @code{:inherit} attribute; however the
 return value may still be @code{unspecified} or relative.  If
 @var{inherit} is a face or a list of faces, then the result is further
@@ -2687,7 +2686,7 @@ For example,
 
 @c FIXME: Add an index for "relative face attribute", maybe here?  --xfq
 @defun face-attribute-relative-p attribute value
-This function returns non-@code{nil} if @var{value}, when used as the
+This function returns не-@code{nil} if @var{value}, when used as the
 value of the face attribute @var{attribute}, is relative.  This means
 it would modify, rather than completely override, any value that comes
 from a subsequent face in the face list or that is inherited from
@@ -2802,7 +2801,7 @@ specify @var{frame}, they refer to the selected frame; @code{t} refers
 to the default data for new frames.  They return @code{unspecified} if
 the face doesn't define any value for that attribute.  If
 @var{inherit} is @code{nil}, only an attribute directly defined by the
-face is returned.  If @var{inherit} is non-@code{nil}, any faces
+face is returned.  If @var{inherit} is не-@code{nil}, any faces
 specified by its @code{:inherit} attribute are considered as well, and
 if @var{inherit} is a face or a list of faces, then they are also
 considered, until a specified attribute is found.  To ensure that the
@@ -2832,26 +2831,26 @@ This function returns the name of the background stipple pattern of face
 @end defun
 
 @defun face-bold-p face &optional frame inherit
-This function returns a non-@code{nil} value if the @code{:weight}
+This function returns a не-@code{nil} value if the @code{:weight}
 attribute of @var{face} is bolder than normal (i.e., one of
 @code{semi-bold}, @code{bold}, @code{extra-bold}, or
 @code{ultra-bold}).  Otherwise, it returns @code{nil}.
 @end defun
 
 @defun face-italic-p face &optional frame inherit
-This function returns a non-@code{nil} value if the @code{:slant}
+This function returns a не-@code{nil} value if the @code{:slant}
 attribute of @var{face} is @code{italic} or @code{oblique}, and
 @code{nil} otherwise.
 @end defun
 
 @defun face-underline-p face &optional frame inherit
-This function returns non-@code{nil} if face @var{face} specifies
-a non-@code{nil} @code{:underline} attribute.
+This function returns не-@code{nil} if face @var{face} specifies
+a не-@code{nil} @code{:underline} attribute.
 @end defun
 
 @defun face-inverse-video-p face &optional frame inherit
-This function returns non-@code{nil} if face @var{face} specifies
-a non-@code{nil} @code{:inverse-video} attribute.
+This function returns не-@code{nil} if face @var{face} specifies
+a не-@code{nil} @code{:inverse-video} attribute.
 @end defun
 
 @node Displaying Faces
@@ -2877,7 +2876,7 @@ the @code{region} face.  @xref{Standard Faces,,, emacs, The GNU Emacs
 Manual}.
 
 @item
-If the text lies within an overlay with a non-@code{nil} @code{face}
+If the text lies within an overlay with a не-@code{nil} @code{face}
 property, Emacs applies the face(s) specified by that property.  If
 the overlay has a @code{mouse-face} property and the mouse is near
 enough to the overlay, Emacs applies the face or face attributes
@@ -3068,7 +3067,7 @@ same attributes for display.
 @end defun
 
 @defun face-differs-from-default-p face &optional frame
-This returns non-@code{nil} if the face @var{face} displays
+This returns не-@code{nil} if the face @var{face} displays
 differently from the default face.
 @end defun
 
@@ -3111,13 +3110,13 @@ buffer position @var{pos}.  Collectively they should attempt to assign
 faces to the text in the current buffer starting at @var{pos}.
 
 The functions should record the faces they assign by setting the
-@code{face} property.  They should also add a non-@code{nil}
+@code{face} property.  They should also add a не-@code{nil}
 @code{fontified} property to all the text they have assigned faces to.
 That property tells redisplay that faces have been assigned to that text
 already.
 
 It is probably a good idea for the functions to do nothing if the
-character after @var{pos} already has a non-@code{nil} @code{fontified}
+character after @var{pos} already has a не-@code{nil} @code{fontified}
 property, but this is not required.  If one function overrides the
 assignments made by a previous one, the properties after the last
 function finishes are the ones that really matter.
@@ -3318,13 +3317,13 @@ size as @var{reference-face} (a face name) currently is on the frame
 @var{frame}.
 
 The optional argument @var{maximum} sets a limit on how many fonts to
-return.  If it is non-@code{nil}, then the return value is truncated
+return.  If it is не-@code{nil}, then the return value is truncated
 after the first @var{maximum} matching fonts.  Specifying a small
 value for @var{maximum} can make this function much faster, in cases
 where many fonts match the pattern.
 
 The optional argument @var{width} specifies a desired font width.  If
-it is non-@code{nil}, the function only returns those fonts whose
+it is не-@code{nil}, the function only returns those fonts whose
 characters are (on average) @var{width} times as wide as
 @var{reference-face}.
 @end defun
@@ -3351,7 +3350,7 @@ The first five elements correspond to face attributes; if you
 specify these attributes for a face, it will use this font.
 
 The last three elements give additional information about the font.
-@var{fixed-p} is non-@code{nil} if the font is fixed-pitch.
+@var{fixed-p} is не-@code{nil} if the font is fixed-pitch.
 @var{full} is the full name of the font, and
 @var{registry-and-encoding} is a string giving the registry and
 encoding of the font.
@@ -3387,10 +3386,10 @@ The new fontset has two names, one long and one short.  The long name is
 @var{fontpattern} in its entirety.  The short name is
 @samp{fontset-@var{alias}}.  You can refer to the fontset by either
 name.  If a fontset with the same name already exists, an error is
-signaled, unless @var{noerror} is non-@code{nil}, in which case this
+signaled, unless @var{noerror} is не-@code{nil}, in which case this
 function does nothing.
 
-If optional argument @var{style-variant-p} is non-@code{nil}, that says
+If optional argument @var{style-variant-p} is не-@code{nil}, that says
 to create bold, italic and bold-italic variants of the fontset as well.
 These variant fontsets do not have a short name, only a long one, which
 is made by altering @var{fontpattern} to indicate the bold and/or italic
@@ -3496,7 +3495,7 @@ for example, to avoid expensive system-wide search for fonts for
 characters that have no glyphs, like those from the Unicode Private
 Use Area (PUA).
 
-The optional argument @var{add}, if non-@code{nil}, specifies how to
+The optional argument @var{add}, if не-@code{nil}, specifies how to
 add @var{font-spec} to the font specifications previously set.  If it
 is @code{prepend}, @var{font-spec} is prepended.  If it is
 @code{append}, @var{font-spec} is appended.  By default,
@@ -3536,7 +3535,7 @@ entities}.
 Return @code{t} if @var{object} is a font object, font spec, or font
 entity.  Otherwise, return @code{nil}.
 
-The optional argument @var{type}, if non-@code{nil}, determines the
+The optional argument @var{type}, if не-@code{nil}, determines the
 exact type of Lisp object to check for.  In that case, @var{type}
 should be one of @code{font-object}, @code{font-spec}, or
 @code{font-entity}.
@@ -3651,11 +3650,11 @@ it defaults to the selected frame.
 This function returns a list of all font entities that match the font
 spec @var{font-spec}.
 
-The optional argument @var{frame}, if non-@code{nil}, specifies the
+The optional argument @var{frame}, if не-@code{nil}, specifies the
 frame on which the fonts are to be displayed.  The optional argument
-@var{num}, if non-@code{nil}, should be an integer that specifies the
+@var{num}, if не-@code{nil}, should be an integer that specifies the
 maximum length of the returned list.  The optional argument
-@var{prefer}, if non-@code{nil}, should be another font spec, which is
+@var{prefer}, if не-@code{nil}, should be another font spec, which is
 used to control the order of the returned list; the returned font
 entities are sorted in order of decreasing closeness to that font
 spec.
@@ -3704,7 +3703,7 @@ matching @var{font}.  @xref{Fonts,,, emacs, The GNU Emacs Manual}, for
 information about XLFDs.  If the name is too long for an XLFD (which
 can contain at most 255 characters), the function returns @code{nil}.
 
-If the optional argument @var{fold-wildcards} is non-@code{nil},
+If the optional argument @var{fold-wildcards} is не-@code{nil},
 consecutive wildcards in the XLFD are folded into one.
 @end defun
 
@@ -3884,18 +3883,18 @@ of fringes in windows showing that buffer.
 
 @defvar fringes-outside-margins
 The fringes normally appear between the display margins and the window
-text.  If the value is non-@code{nil}, they appear outside the display
+text.  If the value is не-@code{nil}, they appear outside the display
 margins.  @xref{Display Margins}.
 @end defvar
 
 @defvar left-fringe-width
-This variable, if non-@code{nil}, specifies the width of the left
+This variable, if не-@code{nil}, specifies the width of the left
 fringe in pixels.  A value of @code{nil} means to use the left fringe
 width from the window's frame.
 @end defvar
 
 @defvar right-fringe-width
-This variable, if non-@code{nil}, specifies the width of the right
+This variable, if не-@code{nil}, specifies the width of the right
 fringe in pixels.  A value of @code{nil} means to use the right fringe
 width from the window's frame.
 @end defvar
@@ -3919,7 +3918,7 @@ If @var{window} is @code{nil}, the selected window is used.
 The argument @var{left} specifies the width in pixels of the left
 fringe, and likewise @var{right} for the right fringe.  A value of
 @code{nil} for either one stands for the default width.  If
-@var{outside-margins} is non-@code{nil}, that specifies that fringes
+@var{outside-margins} is не-@code{nil}, that specifies that fringes
 should appear outside of the display margins.
 
 If @var{window} is not large enough to accommodate fringes of the
@@ -3950,7 +3949,7 @@ etc.
 @defopt indicate-empty-lines
 @cindex fringes, and empty line indication
 @cindex empty lines, indicating
-When this is non-@code{nil}, Emacs displays a special glyph in the
+When this is не-@code{nil}, Emacs displays a special glyph in the
 fringe of each empty line at the end of the buffer, on graphical
 displays.  @xref{Fringes}.  This variable is automatically
 buffer-local in every buffer.
@@ -4010,7 +4009,7 @@ indicator.
 Used for truncation and continuation lines.
 
 @item @code{up}, @code{down}, @code{top}, @code{bottom}, @code{top-bottom}
-Used when @code{indicate-buffer-boundaries} is non-@code{nil}:
+Used when @code{indicate-buffer-boundaries} is не-@code{nil}:
 @code{up} and @code{down} indicate a buffer boundary lying above or
 below the window edge; @code{top} and @code{bottom} indicate the
 topmost and bottommost buffer text line; and @code{top-bottom}
@@ -4018,7 +4017,7 @@ indicates where there is just one line of text in the buffer.
 
 @item @code{empty-line}
 Used to indicate empty lines when @code{indicate-empty-lines} is
-non-@code{nil}.
+не-@code{nil}.
 
 @item @code{overlay-arrow}
 Used for overlay arrows (@pxref{Overlay Arrow}).
@@ -4057,7 +4056,7 @@ bitmaps are used to represent the cursor in the fringe depending on
 the current buffer's cursor type.
 
 @defopt overflow-newline-into-fringe
-If this is non-@code{nil}, lines exactly as wide as the window (not
+If this is не-@code{nil}, lines exactly as wide as the window (not
 counting the final newline character) are not continued.  Instead,
 when point is at the end of the line, the cursor appears in the right
 fringe.
@@ -4169,7 +4168,7 @@ containing position @var{pos} in window @var{window}.  The return
 value has the form @code{(@var{left} @var{right} @var{ov})}, where @var{left}
 is the symbol for the fringe bitmap in the left fringe (or @code{nil}
 if no bitmap), @var{right} is similar for the right fringe, and @var{ov}
-is non-@code{nil} if there is an overlay arrow in the left fringe.
+is не-@code{nil} if there is an overlay arrow in the left fringe.
 
 The value is @code{nil} if @var{pos} is not visible in @var{window}.
 If @var{window} is @code{nil}, that stands for the selected window.
@@ -4192,8 +4191,8 @@ corresponds to one pixel of the bitmap, where the low bit corresponds
 to the rightmost pixel of the bitmap.
 
 The height is normally the length of @var{bits}.  However, you
-can specify a different height with non-@code{nil} @var{height}.  The width
-is normally 8, but you can specify a different width with non-@code{nil}
+can specify a different height with не-@code{nil} @var{height}.  The width
+is normally 8, but you can specify a different width with не-@code{nil}
 @var{width}.  The width must be an integer between 1 and 16.
 
 The argument @var{align} specifies the positioning of the bitmap
@@ -4203,7 +4202,7 @@ or @code{bottom}.
 
 The @var{align} argument may also be a list @code{(@var{align}
 @var{periodic})} where @var{align} is interpreted as described above.
-If @var{periodic} is non-@code{nil}, it specifies that the rows in
+If @var{periodic} is не-@code{nil}, it specifies that the rows in
 @code{bits} should be repeated enough times to reach the specified
 height.
 @end defun
@@ -4301,7 +4300,7 @@ parameter @code{scroll-bar-height} specifies how high they are
 @vindex horizontal-scroll-bars-available-p
    Horizontal scroll bars are not available on all platforms.  The
 function @code{horizontal-scroll-bars-available-p} which takes no
-argument returns non-@code{nil} if they are available on your system.
+argument returns не-@code{nil} if they are available on your system.
 
    The following three functions take as argument a live frame which
 defaults to the selected one.
@@ -4857,7 +4856,7 @@ before @code{height}.
 package it in another list of the form
 @code{(when @var{condition} . @var{spec})}.
 Then the specification @var{spec} applies only when
-@var{condition} evaluates to a non-@code{nil} value.  During the
+@var{condition} evaluates to a не-@code{nil} value.  During the
 evaluation, @code{object} is bound to the string or buffer having the
 conditional @code{display} property.  @code{position} and
 @code{buffer-position} are bound to the position within @code{object}
@@ -5023,7 +5022,7 @@ available, use @code{image-type-available-p}.
 @end defvar
 
 @defun image-type-available-p type
-This function returns non-@code{nil} if images of type @var{type} can
+This function returns не-@code{nil} if images of type @var{type} can
 be loaded and displayed.  @var{type} must be an image type symbol.
 
 For image types whose support libraries are statically linked, this
@@ -5376,7 +5375,7 @@ image descriptor properties:
 
 @table @code
 @item :background @var{background}
-@var{background}, if non-@code{nil}, should be a string specifying a
+@var{background}, if не-@code{nil}, should be a string specifying a
 color, which is used as the image's background color if the image
 supports transparency.  If the value is @code{nil}, it defaults to the
 frame's background color.
@@ -5648,7 +5647,7 @@ Supports the @code{:index} property.  @xref{Multi-Frame Images}.
 This function creates and returns an image descriptor which uses the
 data in @var{file-or-data}.  @var{file-or-data} can be a file name or
 a string containing the image data; @var{data-p} should be @code{nil}
-for the former case, non-@code{nil} for the latter case.
+for the former case, не-@code{nil} for the latter case.
 
 The optional argument @var{type} is a symbol specifying the image type.
 If @var{type} is omitted or @code{nil}, @code{create-image} tries to
@@ -5755,7 +5754,7 @@ the directory in which @var{image} was found, followed by the value of
 @code{load-path}.  If @var{path} is given, it is used instead of
 @code{load-path}.
 
-If @var{no-error} is non-@code{nil} and a suitable path can't be
+If @var{no-error} is не-@code{nil} and a suitable path can't be
 found, don't signal an error.  Instead, return a list of directories as
 before, except that @code{nil} appears in place of the image directory.
 
@@ -5862,7 +5861,7 @@ This removes only images that were put into @var{buffer} the way
 @cindex size of image
 This function returns the size of an image as a pair
 @w{@code{(@var{width} . @var{height})}}.  @var{spec} is an image
-specification.  @var{pixels} non-@code{nil} means return sizes measured
+specification.  @var{pixels} не-@code{nil} means return sizes measured
 in pixels, otherwise return sizes measured in the default character size
 of @var{frame} (@pxref{Frame Font}).  @var{frame} is the frame on which
 the image will be displayed.  @var{frame} @code{nil} or omitted means
@@ -5927,7 +5926,7 @@ A multi-frame image has a property @code{:index}, whose value is an
 integer (counting from 0) that specifies which frame is being displayed.
 
 @defun image-multi-frame-p image
-This function returns non-@code{nil} if @var{image} contains more than
+This function returns не-@code{nil} if @var{image} contains more than
 one frame.  The actual return value is a cons @code{(@var{nimages}
 . @var{delay})}, where @var{nimages} is the number of frames and
 @var{delay} is the delay in seconds between them, or @code{nil}
@@ -5944,7 +5943,7 @@ This function returns the index of the current frame number for
 @defun image-show-frame image n &optional nocheck
 This function switches @var{image} to frame number @var{n}.  It
 replaces a frame number outside the valid range with that of the end
-of the range, unless @var{nocheck} is non-@code{nil}.  If @var{image}
+of the range, unless @var{nocheck} is не-@code{nil}.  If @var{image}
 does not contain a frame with the specified number, the image displays
 as a hollow box.
 @end defun
@@ -6136,7 +6135,7 @@ xwidget is created.
 @defun set-xwidget-query-on-exit-flag xwidget flag
 This function allows you to arrange that Emacs will ask the user for
 confirmation before exiting or before killing a buffer that has
-@var{xwidget} associated with it.  If @var{flag} is non-@code{nil},
+@var{xwidget} associated with it.  If @var{flag} is не-@code{nil},
 Emacs will query the user, otherwise it will not.
 @end defun
 
@@ -6234,7 +6233,7 @@ on this button, @xref{Clickable Text}.
 
 @item button
 @kindex button @r{(button property)}
-All buttons have a non-@code{nil} @code{button} property, which may be useful
+All buttons have a не-@code{nil} @code{button} property, which may be useful
 in finding regions of text that comprise buttons (which is what the
 standard button functions do).
 @end table
@@ -6362,7 +6361,7 @@ Set @var{button}'s @var{prop} property to @var{val}.
 @defun button-activate button &optional use-mouse-action
 Call @var{button}'s @code{action} property (i.e., invoke the function
 that is the value of that property, passing it the single argument
-@var{button}).  If @var{use-mouse-action} is non-@code{nil}, try to
+@var{button}).  If @var{use-mouse-action} is не-@code{nil}, try to
 invoke the button's @code{mouse-action} property instead of
 @code{action}; if the button has no @code{mouse-action} property, use
 @code{action} as normal.
@@ -6415,7 +6414,7 @@ additionally available in the keymap stored in
 @code{button-buffer-map}; a mode which uses buttons may want to use
 @code{button-buffer-map} as a parent keymap for its keymap.
 
-If the button has a non-@code{nil} @code{follow-link} property, and
+If the button has a не-@code{nil} @code{follow-link} property, and
 @code{mouse-1-click-follows-link} is set, a quick @key{mouse-1} click
 will also activate the @code{push-button} command.
 @xref{Clickable Text}.
@@ -6423,7 +6422,7 @@ will also activate the @code{push-button} command.
 @deffn Command push-button &optional pos use-mouse-action
 Perform the action specified by a button at location @var{pos}.
 @var{pos} may be either a buffer position or a mouse-event.  If
-@var{use-mouse-action} is non-@code{nil}, or @var{pos} is a
+@var{use-mouse-action} is не-@code{nil}, or @var{pos} is a
 mouse-event (@pxref{Mouse Events}), try to invoke the button's
 @code{mouse-action} property instead of @code{action}; if the button
 has no @code{mouse-action} property, use @code{action} as normal.
@@ -6436,20 +6435,20 @@ nothing and return @code{nil}, otherwise return @code{t}.
 @deffn Command forward-button n &optional wrap display-message
 Move to the @var{n}th next button, or @var{n}th previous button if
 @var{n} is negative.  If @var{n} is zero, move to the start of any
-button at point.  If @var{wrap} is non-@code{nil}, moving past either
+button at point.  If @var{wrap} is не-@code{nil}, moving past either
 end of the buffer continues from the other end.  If
-@var{display-message} is non-@code{nil}, the button's help-echo string
-is displayed.  Any button with a non-@code{nil} @code{skip} property
+@var{display-message} is не-@code{nil}, the button's help-echo string
+is displayed.  Any button with a не-@code{nil} @code{skip} property
 is skipped over.  Returns the button found.
 @end deffn
 
 @deffn Command backward-button n &optional wrap display-message
 Move to the @var{n}th previous button, or @var{n}th next button if
 @var{n} is negative.  If @var{n} is zero, move to the start of any
-button at point.  If @var{wrap} is non-@code{nil}, moving past either
+button at point.  If @var{wrap} is не-@code{nil}, moving past either
 end of the buffer continues from the other end.  If
-@var{display-message} is non-@code{nil}, the button's help-echo string
-is displayed.  Any button with a non-@code{nil} @code{skip} property
+@var{display-message} is не-@code{nil}, the button's help-echo string
+is displayed.  Any button with a не-@code{nil} @code{skip} property
 is skipped over.  Returns the button found.
 @end deffn
 
@@ -6457,7 +6456,7 @@ is skipped over.  Returns the button found.
 @defunx previous-button pos &optional count-current
 Return the next button after (for @code{next-button}) or before (for
 @code{previous-button}) position @var{pos} in the current buffer.  If
-@var{count-current} is non-@code{nil}, count any button at @var{pos}
+@var{count-current} is не-@code{nil}, count any button at @var{pos}
 in the search, instead of starting at the next button.
 @end defun
 
@@ -6570,7 +6569,7 @@ Ewoc package's internal mechanisms).
 
 Normally, a newline is automatically inserted after the header,
 the footer and every node's textual description.  If @var{nosep}
-is non-@code{nil}, no newline is inserted.  This may be useful for
+is не-@code{nil}, no newline is inserted.  This may be useful for
 displaying an entire ewoc on a single line, for example, or for
 making nodes invisible by arranging for @var{pretty-printer}
 to do nothing for those nodes.
@@ -6678,13 +6677,13 @@ Any @var{args} are passed to @var{predicate}.
 @defun ewoc-collect ewoc predicate &rest args
 This calls @var{predicate} for each data element in @var{ewoc}
 and returns a list of those elements for which @var{predicate}
-returns non-@code{nil}.  The elements in the list are ordered
+returns не-@code{nil}.  The elements in the list are ordered
 as in the buffer.  Any @var{args} are passed to @var{predicate}.
 @end defun
 
 @defun ewoc-map map-function ewoc &rest args
 This calls @var{map-function} for each data element in @var{ewoc} and
-updates those nodes for which @var{map-function} returns non-@code{nil}.
+updates those nodes for which @var{map-function} returns не-@code{nil}.
 Any @var{args} are passed to @var{map-function}.
 @end defun
 
@@ -6918,7 +6917,7 @@ ends the preceding line and starts a new line.
 The non-printable @dfn{@acronym{ASCII} control characters}---character
 codes 0 through 31, as well as the @key{DEL} character (character code
 127)---display in one of two ways according to the variable
-@code{ctl-arrow}.  If this variable is non-@code{nil} (the default),
+@code{ctl-arrow}.  If this variable is не-@code{nil} (the default),
 these characters are displayed as sequences of two glyphs, where the
 first glyph is @samp{^} (a display table can specify a glyph to use
 instead of @samp{^}); e.g., the @key{DEL} character is displayed as
@@ -6966,7 +6965,7 @@ mode line using the new values, call the function
 @defopt ctl-arrow
 @cindex control characters in display
 This buffer-local variable controls how control characters are
-displayed.  If it is non-@code{nil}, they are displayed as a caret
+displayed.  If it is не-@code{nil}, they are displayed as a caret
 followed by the character: @samp{^A}.  If it is @code{nil}, they are
 displayed as octal escapes: a backslash followed by three octal
 digits, as in @samp{\001}.
@@ -7046,7 +7045,7 @@ border.
 @end table
 
   For example, here is how to construct a display table that mimics
-the effect of setting @code{ctl-arrow} to a non-@code{nil} value
+the effect of setting @code{ctl-arrow} to a не-@code{nil} value
 (@pxref{Glyphs}, for the function @code{make-glyph-code}):
 
 @example
@@ -7148,7 +7147,7 @@ following functions are used to manipulate glyph codes:
 This function returns a glyph code representing char @var{char} with
 face @var{face}.  If @var{face} is omitted or @code{nil}, the glyph
 uses the default face; in that case, the glyph code is an integer.  If
-@var{face} is non-@code{nil}, the glyph code is not necessarily an
+@var{face} is не-@code{nil}, the glyph code is not necessarily an
 integer object.
 @end defun
 
@@ -7167,7 +7166,7 @@ actually displayed on text terminals.  This feature is semi-obsolete;
 use @code{glyphless-char-display} instead (@pxref{Glyphless Chars}).
 
 @defvar glyph-table
-The value of this variable, if non-@code{nil}, is the current glyph
+The value of this variable, if не-@code{nil}, is the current glyph
 table.  It takes effect only on character terminals; on graphical
 displays, all glyphs are displayed literally.  The glyph table should
 be a vector whose @var{g}th element specifies how to display glyph
@@ -7246,7 +7245,7 @@ character that cannot be displayed with any available font, or cannot
 be encoded by the terminal's coding system.  Its value should be one
 of the above display methods, except @code{zero-width} or a cons cell.
 
-If a character has a non-@code{nil} entry in an active display table,
+If a character has a не-@code{nil} entry in an active display table,
 the display table takes effect; in this case, Emacs does not consult
 @code{glyphless-char-display} at all.
 @end defvar
@@ -7309,7 +7308,7 @@ appropriate (@pxref{Errors}).
 @cindex keyboard macro termination
 This function beeps, or flashes the screen (see @code{visible-bell} below).
 It also terminates any keyboard macro currently executing unless
-@var{do-not-terminate} is non-@code{nil}.
+@var{do-not-terminate} is не-@code{nil}.
 @end defun
 
 @defun beep &optional do-not-terminate
@@ -7318,16 +7317,16 @@ This is a synonym for @code{ding}.
 
 @defopt visible-bell
 This variable determines whether Emacs should flash the screen to
-represent a bell.  Non-@code{nil} means yes, @code{nil} means no.
+represent a bell.  не-@code{nil} means yes, @code{nil} means no.
 This is effective on graphical displays, and on text terminals
 provided the terminal's Termcap entry defines the visible bell
 capability (@samp{vb}).
 @end defopt
 
 @defopt ring-bell-function
-If this is non-@code{nil}, it specifies how Emacs should ring the
+If this is не-@code{nil}, it specifies how Emacs should ring the
 bell.  Its value should be a function of no arguments.  If this is
-non-@code{nil}, it takes precedence over the @code{visible-bell}
+не-@code{nil}, it takes precedence over the @code{visible-bell}
 variable.
 @end defopt
 
@@ -7437,7 +7436,7 @@ This abnormal hook is a list of functions to call when Emacs needs to
 display a tooltip.  Each function is called with a single argument
 @var{event} which is a copy of the last mouse movement event.  If a
 function on this list actually displays the tooltip, it should return
-non-@code{nil}, and then the rest of the functions will not be
+не-@code{nil}, and then the rest of the functions will not be
 called.  The default value of this variable is a single function
 @code{tooltip-help-tips}.
 @end defvar
@@ -7501,7 +7500,7 @@ the UBA, which requires to perform line wrapping before reordering
 text for display.
 
 @defvar bidi-display-reordering
-If the value of this buffer-local variable is non-@code{nil} (the
+If the value of this buffer-local variable is не-@code{nil} (the
 default), Emacs performs bidirectional reordering for display.  The
 reordering affects buffer text, as well as display strings and overlay
 strings from text and overlay properties in the buffer (@pxref{Overlay
@@ -7517,7 +7516,7 @@ and header lines (@pxref{Header Lines}).
 
 @cindex unibyte buffers, and bidi reordering
   Emacs never reorders the text of a unibyte buffer, even if
-@code{bidi-display-reordering} is non-@code{nil} in the buffer.  This
+@code{bidi-display-reordering} is не-@code{nil} in the buffer.  This
 is because unibyte buffers contain raw bytes, not characters, and thus
 lack the directionality properties required for reordering.
 Therefore, to test whether text in a buffer will be reordered for
@@ -7571,14 +7570,14 @@ lines, i.e., lines that consist entirely of zero or more whitespace
 characters followed by a newline.
 
 @defvar bidi-paragraph-start-re
-If non-@code{nil}, this variable's value should be a regular
+If не-@code{nil}, this variable's value should be a regular
 expression matching a line that starts or separates two paragraphs.
 The regular expression is always matched after a newline, so it is
 best to anchor it, i.e., begin it with a @code{"^"}.
 @end defvar
 
 @defvar bidi-paragraph-separate-re
-If non-@code{nil}, this variable's value should be a regular
+If не-@code{nil}, this variable's value should be a regular
 expression matching a line separates two paragraphs.  The regular
 expression is always matched after a newline, so it is best to anchor
 it, i.e., begin it with a @code{"^"}.
@@ -7618,7 +7617,7 @@ This function returns the paragraph direction at point in the named
 @code{left-to-right} or @code{right-to-left}.  If @var{buffer} is
 omitted or @code{nil}, it defaults to the current buffer.  If the
 buffer-local value of the variable @code{bidi-paragraph-direction} is
-non-@code{nil}, the returned value will be identical to that value;
+не-@code{nil}, the returned value will be identical to that value;
 otherwise, the returned value reflects the paragraph direction
 determined dynamically by Emacs.  For buffers whose value of
 @code{bidi-display-reordering} is @code{nil} as well as unibyte
@@ -7755,7 +7754,7 @@ to display as left-to-right.  If it finds no such characters in the
 specified region of text, it returns @code{nil}.
 
 The optional argument @var{object} specifies which text to search, and
-defaults to the current buffer.  If @var{object} is non-@code{nil}, it
+defaults to the current buffer.  If @var{object} is не-@code{nil}, it
 can be some other buffer, or it can be a string or a window.  If it is
 a string, the function searches that string.  If it is a window, the
 function searches the buffer displayed in that window.  If a buffer
@@ -7787,6 +7786,6 @@ This function works similar to @code{buffer-substring} (@pxref{Buffer
 Contents}), but it prepends and appends to the copied text bidi
 directional control characters necessary to preserve the visual
 appearance of the text when it is inserted at another place.  Optional
-argument @var{no-properties}, if non-@code{nil}, means remove the text
+argument @var{no-properties}, if не-@code{nil}, means remove the text
 properties from the copy of the text.
 @end defun
