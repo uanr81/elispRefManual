@@ -2483,31 +2483,29 @@ REVERSE (не-nil означает обратный порядок),\
 @end deffn
 
 @node Relative Indent
-@subsection Indentation Relative to Previous Lines
+@subsection Отступ Относительно Предыдущих Строк
 
-  This section describes two commands that indent the current line
-based on the contents of previous lines.
+  В этом разделе описаны две команды, которые изменяют отступ текущей строки
+на основе содержимого предыдущих строк.
 
 @deffn Command indent-relative &optional unindented-ok
-This command inserts whitespace at point, extending to the same
-column as the next @dfn{indent point} of the previous nonblank line.  An
-indent point is a non-whitespace character following whitespace.  The
-next indent point is the first one at a column greater than the current
-column of point.  For example, if point is underneath and to the left of
-the first non-blank character of a line of text, it moves to that column
-by inserting whitespace.
+Команда вставляет пробел в точку, расширяясь до того же столбца, что и
+следующий @dfn{точка отступа} предыдущей непустой строки.  Точка отступа -
+это непробельный символ, следующий за пробелом.  Следующая точка отступа -
+это первая точка в столбце, большем, чем текущий столбец точки.  Например,
+если точка находится под и слева от первого непустого символа строки текста,
+она перемещается в этот столбец, вставляя пробел.
 
-If the previous nonblank line has no next indent point (i.e., none at a
-great enough column position), @code{indent-relative} either does
-nothing (if @var{unindented-ok} is не-@code{nil}) or calls
-@code{tab-to-tab-stop}.  Thus, if point is underneath and to the right
-of the last column of a short line of text, this command ordinarily
-moves point to the next tab stop by inserting whitespace.
+Если у предыдущей непустой строки нет следующей точки отступа (то есть нет в
+достаточно большой позиции столбца), @code{indent-relative} либо ничего не
+делает (если @var{unindented-ok} равен не-@code{nil}), либо вызывает
+@code{tab-to-tab-stop}.  Таким образом, если точка находится под и справа от
+последнего столбца короткой строки текста, эта команда обычно перемещает
+точку на следующую позицию табуляции, вставляя пробел.
 
-The return value of @code{indent-relative} is unpredictable.
+Возвращаемое значение @code{indent-relative} непредсказуемо.
 
-In the following example, point is at the beginning of the second
-line:
+В следующем примере точка находится в начале второй строки:
 
 @example
 @group
@@ -2517,8 +2515,7 @@ line:
 @end example
 
 @noindent
-Evaluation of the expression @code{(indent-relative nil)} produces the
-following:
+Оценка выражения @code{(indent-relative nil)} дает следующее:
 
 @example
 @group
@@ -2527,7 +2524,7 @@ following:
 @end group
 @end example
 
-  In this next example, point is between the @samp{m} and @samp{p} of
+  В следующем примере точка находится между @samp{m} и @samp{p} в
 @samp{jumped}:
 
 @example
@@ -2538,8 +2535,7 @@ The quick brown fox jum@point{}ped.
 @end example
 
 @noindent
-Evaluation of the expression @code{(indent-relative nil)} produces the
-following:
+Оценка выражения @code{(indent-relative nil)} дает следующее:
 
 @example
 @group
@@ -2550,93 +2546,97 @@ The quick brown fox jum  @point{}ped.
 @end deffn
 
 @deffn Command indent-relative-first-indent-point
-@comment !!SourceFile indent.el
-This command indents the current line like the previous nonblank line,
-by calling @code{indent-relative} with @code{t} as the
-@var{first-only} argument.  The return value is unpredictable.
+@comment !!ИсходныйФайл indent.el
+Команда делает отступ для текущей строки, как и для предыдущей непустой
+строки, вызывая @code{indent-relative} с @code{t} в качестве аргумента
+@var{first-only}.  Возвращаемое значение непредсказуемо.
 
-If the previous nonblank line has no indent points beyond the current
-column, this command does nothing.
+Если в предыдущей непустой строке нет точек отступа за пределами текущего
+столбца, эта команда ничего не делает.
 @end deffn
 
 @node Indent Tabs
-@subsection Adjustable Tab Stops
+@subsection Регулируемые Упоры для Табуляции
 @cindex tabs stops for indentation
 
-  This section explains the mechanism for user-specified tab stops
-and the mechanisms that use and set them.  The name ``tab stops'' is
-used because the feature is similar to that of the tab stops on a
-typewriter.  The feature works by inserting an appropriate number of
-spaces and tab characters to reach the next tab stop column; it does not
-affect the display of tab characters in the buffer (@pxref{Usual
-Display}).  Note that the @key{TAB} character as input uses this tab
-stop feature only in a few major modes, such as Text mode.
+  В этом разделе объясняется механизм для указанных пользователем позиций
+табуляции, а также механизмы, которые их используют и устанавливают.  Имя
+``табуляция'' используется потому, что функция аналогична функциям табуляции
+на пишущей машинке.  Эта функция работает путем вставки соответствующего
+количества пробелов и символов табуляции для перехода к следующему столбцу с
+табуляцией; не влияет на отображение символов табуляции в буфере
+(@pxref{Usual Display}).  Обратить внимание, что символ @key{TAB} в качестве
+входных данных использует эту функцию табуляции только в нескольких основных
+режимах, таких как текстовый режим.
 @xref{Tab Stops,,, emacs, The GNU Emacs Manual}.
 
 @deffn Command tab-to-tab-stop
-This command inserts spaces or tabs before point, up to the next tab
-stop column defined by @code{tab-stop-list}.
+Команда вставляет пробелы или табуляцию перед точкой до следующего столбца
+табуляции, определяемого @code{tab-stop-list}.
 @end deffn
 
 @defopt tab-stop-list
-This variable defines the tab stop columns used by @code{tab-to-tab-stop}.
-It should be either @code{nil}, or a list of increasing integers,
-which need not be evenly spaced.  The list is implicitly
-extended to infinity through repetition of the interval between the
-last and penultimate elements (or @code{tab-width} if the list has
-fewer than two elements).  A value of @code{nil} means a tab stop
-every @code{tab-width} columns.
+Переменная определяет столбцы табуляции, используемые
+@code{tab-to-tab-stop}.  Это должно быть либо @code{nil}, либо список
+возрастающих целых чисел, которые не должны быть равномерно распределены.
+Список неявно расширяется до бесконечности путем повторения интервала между
+последним и предпоследним элементами (или @code{tab-width}, если в списке
+меньше двух элементов).  Значение @code{nil} означает табуляцию в каждом
+столбце @code{tab-width}.
 
-Use @kbd{M-x edit-tab-stops} to edit the location of tab stops interactively.
+Использовать @kbd{M-x edit-tab-stops} для интерактивного редактирования
+расположения позиций табуляции.
 @end defopt
 
 @node Motion by Indent
-@subsection Indentation-Based Motion Commands
+@subsection Команды Движения на Основе Отступов
 
-  These commands, primarily for interactive use, act based on the
-indentation in the text.
+  Эти команды, в первую очередь для интерактивного использования, действуют
+на основе отступов в тексте.
 
 @deffn Command back-to-indentation
-@comment !!SourceFile simple.el
-This command moves point to the first non-whitespace character in the
-current line (which is the line in which point is located).  It returns
+@comment !!ИсходныйФайл simple.el
+Команда перемещает точку к первому непробельному символу в текущей строке
+(которая является строкой, в которой расположена точка).  Возвращается
 @code{nil}.
 @end deffn
 
 @deffn Command backward-to-indentation &optional arg
-@comment !!SourceFile simple.el
-This command moves point backward @var{arg} lines and then to the
-first nonblank character on that line.  It returns @code{nil}.
-If @var{arg} is omitted or @code{nil}, it defaults to 1.
+@comment !!ИсходныйФайл simple.el
+Команда перемещает точку назад по строкам @var{arg}, а затем к первому
+непустому символу в этой строке.  Возвращается @code{nil}.  Если @var{arg}
+опущен или @code{nil}, по умолчанию используется 1.
 @end deffn
 
 @deffn Command forward-to-indentation &optional arg
-@comment !!SourceFile simple.el
-This command moves point forward @var{arg} lines and then to the first
-nonblank character on that line.  It returns @code{nil}.
-If @var{arg} is omitted or @code{nil}, it defaults to 1.
+@comment !!ИсходныйФайл simple.el
+Команда перемещает точку вперед по строкам @var{arg}, а затем к первому
+непустому символу в этой строке.  Возвращается @code{nil}.  Если @var{arg}
+опущен или @code{nil}, по умолчанию используется 1.
 @end deffn
 
 @node Case Changes
-@section Case Changes
+@section Изменения Регистра
 @cindex case conversion in buffers
 
-  The case change commands described here work on text in the current
-buffer.  @xref{Case Conversion}, for case conversion functions that work
-on strings and characters.  @xref{Case Tables}, for how to customize
-which characters are upper or lower case and how to convert them.
+  Команды изменения регистра, описанные здесь, работают с текстом в текущем
+буфере.  @xref{Case Conversion} для функций преобразования регистра, которые
+работают со строками и символами.  @xref{Case Tables}, о том, как настроить,
+какие символы должны быть в верхнем или нижнем регистре и как их
+преобразовать.
 
 @deffn Command capitalize-region start end
-This function capitalizes all words in the region defined by
-@var{start} and @var{end}.  To capitalize means to convert each word's
-first character to upper case and convert the rest of each word to lower
-case.  The function returns @code{nil}.
+Функция использует все слова в области, определенной @var{start} и
+@var{end}, с заглавной буквы.  Использование заглавных букв означает
+преобразование первого символа каждого слова в верхний регистр и
+преобразование остальной части каждого слова в нижний регистр.  Функция
+возвращает @code{nil}.
 
-If one end of the region is in the middle of a word, the part of the
-word within the region is treated as an entire word.
+Если один конец области находится в середине слова, часть слова внутри
+области рассматривается как целое слово.
 
-When @code{capitalize-region} is called interactively, @var{start} and
-@var{end} are point and the mark, with the smallest first.
+Когда @code{capitalize-region} вызывается интерактивно, @var{start} и
+@var{end} - это точка и метка, начиная с наименьшей.
 
 @example
 @group
@@ -2657,239 +2657,232 @@ This Is The Contents Of The 5th Foo.
 @end deffn
 
 @deffn Command downcase-region start end
-This function converts all of the letters in the region defined by
-@var{start} and @var{end} to lower case.  The function returns
-@code{nil}.
+Функция преобразует все буквы в области, определенной @var{start} и
+@var{end}, в нижний регистр.  Функция возвращает @code{nil}.
 
-When @code{downcase-region} is called interactively, @var{start} and
-@var{end} are point and the mark, with the smallest first.
+Когда @code{downcase-region} вызывается интерактивно, @var{start} и
+@var{end} - это точка и метка, начиная с наименьшей.
 @end deffn
 
 @deffn Command upcase-region start end
-This function converts all of the letters in the region defined by
-@var{start} and @var{end} to upper case.  The function returns
-@code{nil}.
+Функция преобразует все буквы в области, определенной @var{start} и
+@var{end}, в верхний регистр.  Функция возвращает @code{nil}.
 
-When @code{upcase-region} is called interactively, @var{start} and
-@var{end} are point and the mark, with the smallest first.
+Когда @code{upcase-region} вызывается интерактивно, @var{start} и @var{end}
+- это точка и метка, начиная с наименьшей.
 @end deffn
 
 @deffn Command capitalize-word count
-This function capitalizes @var{count} words after point, moving point
-over as it does.  To capitalize means to convert each word's first
-character to upper case and convert the rest of each word to lower case.
-If @var{count} is negative, the function capitalizes the
-@minus{}@var{count} previous words but does not move point.  The value
-is @code{nil}.
+Функция вводит слова @var{count} после точки с заглавной буквы, перемещая
+точку при этом.  Использование заглавных букв означает преобразование
+первого символа каждого слова в верхний регистр и преобразование остальной
+части каждого слова в нижний регистр.  Если @var{count} отрицательно,
+функция использует предыдущие слова @minus{}@var{count} с заглавной буквы,
+но не перемещает точку.  Возвращается значение @code{nil}.
 
-If point is in the middle of a word, the part of the word before point
-is ignored when moving forward.  The rest is treated as an entire word.
+Если точка находится в середине слова, при движении вперед часть слова перед
+точкой игнорируется.  Остальное рассматривается как целое слово.
 
-When @code{capitalize-word} is called interactively, @var{count} is
-set to the numeric prefix argument.
+Когда @code{capitalize-word} вызывается интерактивно, @var{count}
+устанавливается как префиксный числовой аргумент.
 @end deffn
 
 @deffn Command downcase-word count
-This function converts the @var{count} words after point to all lower
-case, moving point over as it does.  If @var{count} is negative, it
-converts the @minus{}@var{count} previous words but does not move point.
-The value is @code{nil}.
+Функция преобразует слова @var{count} после точки во все строчные буквы,
+перемещая точку при этом.  Если @var{count} отрицательно, преобразуются
+предыдущие слова @minus{}@var{count}, но не перемещается точка. Возвращаемое
+значение @code{nil}.
 
-When @code{downcase-word} is called interactively, @var{count} is set
-to the numeric prefix argument.
+Когда @code{downcase-word} вызывается интерактивно, @var{count}
+устанавливается как префиксный числовой аргумент.
 @end deffn
 
 @deffn Command upcase-word count
-This function converts the @var{count} words after point to all upper
-case, moving point over as it does.  If @var{count} is negative, it
-converts the @minus{}@var{count} previous words but does not move point.
-The value is @code{nil}.
+Функция преобразует слова @var{count} после точки в верхний регистр,
+перемещая точку при этом.  Если @var{count} отрицательно, преобразует
+предыдущие слова @minus{}@var{count}, но не перемещает точку.  Возвращаемое
+значение @code{nil}.
 
-When @code{upcase-word} is called interactively, @var{count} is set to
-the numeric prefix argument.
+Когда @code{upcase-word} вызывается в интерактивном режиме, @var{count}
+устанавливается числовым префиксным аргументом.
 @end deffn
 
 @node Text Properties
-@section Text Properties
+@section Свойства Текста
 @cindex text properties
 @cindex attributes of text
 @cindex properties of text
 
-  Each character position in a buffer or a string can have a @dfn{text
-property list}, much like the property list of a symbol (@pxref{Property
-Lists}).  The properties belong to a particular character at a
-particular place, such as, the letter @samp{T} at the beginning of this
-sentence or the first @samp{o} in @samp{foo}---if the same character
-occurs in two different places, the two occurrences in general have
-different properties.
+  Каждая позиция символа в буфере или строке может иметь
+@dfn{список свойств текста}, что очень похоже на список свойств символа
+(@pxref{Property Lists}).  Свойства принадлежат конкретному символу в
+определенном месте, например, букве @samp{С} в начале этого предложения или
+первому @samp{o} в @samp{foo} --- если один и тот же символ встречается в
+двух разных местах, два вхождения обычно имеют разные характеристики.
 
-  Each property has a name and a value.  Both of these can be any Lisp
-object, but the name is normally a symbol.  Typically each property
-name symbol is used for a particular purpose; for instance, the text
-property @code{face} specifies the faces for displaying the character
-(@pxref{Special Properties}).  The usual way to access the property
-list is to specify a name and ask what value corresponds to it.
+  У каждого свойства есть имя и значение.  Оба они могут быть любым объектом
+Lisp, но имя обычно является символом.  Обычно каждый символ имени свойства
+используется для определенной цели; например, текстовое свойство @code{face}
+определяет вид для отображения символа (@pxref{Special Properties}).
+Обычный способ получить доступ к списку свойств - указать имя и спросить,
+какое значение ему соответствует.
 
-  If a character has a @code{category} property, we call it the
-@dfn{property category} of the character.  It should be a symbol.  The
-properties of the symbol serve as defaults for the properties of the
-character.
+  Если у символа есть свойство @code{категория}, называется это
+@dfn{категория свойств} символа.  Это должно быть символ.  Свойства символа
+служат по умолчанию для свойств символа.
 
-  Copying text between strings and buffers preserves the properties
-along with the characters; this includes such diverse functions as
-@code{substring}, @code{insert}, and @code{buffer-substring}.
+  Копирование текста между строками и буферами сохраняет свойства вместе с
+символами; сюда входят такие разнообразные функции, как @code{substring},
+@code{insert} и @code{buffer-substring}.
 
 @menu
-* Examining Properties::   Looking at the properties of one character.
-* Changing Properties::    Setting the properties of a range of text.
-* Property Search::        Searching for where a property changes value.
-* Special Properties::     Particular properties with special meanings.
-* Format Properties::      Properties for representing formatting of text.
-* Sticky Properties::      How inserted text gets properties from
-                             neighboring text.
-* Lazy Properties::        Computing text properties in a lazy fashion
-                             only when text is examined.
-* Clickable Text::         Using text properties to make regions of text
-                             do something when you click on them.
-* Fields::                 The @code{field} property defines
-                             fields within the buffer.
-* Not Intervals::          Why text properties do not use
-                             Lisp-visible text intervals.
+* Examining Properties::   Глядя на свойства одного символа.
+* Changing Properties::    Установка свойств диапазона текста.
+* Property Search::        Поиск места изменения значения свойства.
+* Special Properties::     Особые свойства со специальными значениями.
+* Format Properties::      Свойства для представления форматирования текста.
+* Sticky Properties::      Как вставленный текст получает свойства от
+                              соседнего текста.
+* Lazy Properties::        Вычисление свойств текста ленивым способом только
+                              при проверке текста.
+* Clickable Text::         Использование свойств текста, чтобы области
+                              текста что-то делали, когда происходит
+                              нажатие на них.
+* Fields::                 Свойство @code{field} определяет поля в буфере.
+* Not Intervals::          Почему текстовые свойства не используют видимые
+                              в Lisp текстовые интервалы.
 @end menu
 
 @node Examining Properties
-@subsection Examining Text Properties
+@subsection Изучение Свойств Текста
 @cindex examining text properties
 @cindex text properties, examining
 
-  The simplest way to examine text properties is to ask for the value of
-a particular property of a particular character.  For that, use
-@code{get-text-property}.  Use @code{text-properties-at} to get the
-entire property list of a character.  @xref{Property Search}, for
-functions to examine the properties of a number of characters at once.
+  Самый простой способ проверить свойства текста - это спросить значение
+определенного свойства конкретного символа.  Для этого использовать
+@code{get-text-property}.  Использовать @code{text-properties-at}, чтобы
+получить полный список свойств символа.  @xref{Property Search}, чтобы
+функции проверяли свойства сразу нескольких символов.
 
-  These functions handle both strings and buffers.  Keep in mind that
-positions in a string start from 0, whereas positions in a buffer start
-from 1.
+  Функции обрабатывают как строки, так и буферы.  Имейте в виду, что позиции
+в строке начинаются с 0, а позиции в буфере - с 1.
 
 @defun get-text-property pos prop &optional object
-This function returns the value of the @var{prop} property of the
-character after position @var{pos} in @var{object} (a buffer or
-string).  The argument @var{object} is optional and defaults to the
-current buffer.
+Функция возвращает значение свойства @var{prop} символа после позиции
+@var{pos} в @var{object} (буфер или строка).  Аргумент @var{object} является
+необязательным и по умолчанию соответствует текущему буферу.
 
-If there is no @var{prop} property strictly speaking, but the character
-has a property category that is a symbol, then @code{get-text-property} returns
-the @var{prop} property of that symbol.
+Если, строго говоря, нет свойства @var{prop}, но у символа есть категория
+свойств, которая является символом, то @code{get-text-property} возвращает
+свойство @var{prop} этого символа.
 @end defun
 
 @defun get-char-property position prop &optional object
-This function is like @code{get-text-property}, except that it checks
-overlays first and then text properties.  @xref{Overlays}.
+Функция похожа на @code{get-text-property}, за исключением того, что сначала
+проверяет наложения, а затем свойства текста.  @xref{Overlays}.
 
-The argument @var{object} may be a string, a buffer, or a window.  If
-it is a window, then the buffer displayed in that window is used for
-text properties and overlays, but only the overlays active for that
-window are considered.  If @var{object} is a buffer, then overlays in
-that buffer are considered first, in order of decreasing priority,
-followed by the text properties.  If @var{object} is a string, only
-text properties are considered, since strings never have overlays.
+Аргумент @var{object} может быть строкой, буфером или окном.  Если это окно,
+то буфер, отображаемый в этом окне, используется для свойств текста и
+наложений, но учитываются только наложения, активные для этого окна.  Если
+@var{object} является буфером, то сначала рассматриваются наложения в этом
+буфере в порядке убывания приоритета, а затем свойства текста.  Если
+@var{object} является строкой, учитываются только текстовые свойства,
+поскольку строки никогда не имеют наложений.
 @end defun
 
 @defun get-pos-property position prop &optional object
-This function is like @code{get-char-property}, except that it pays
-attention to properties' stickiness and overlays' advancement settings
-instead of the property of the character at (i.e., right after)
-@var{position}.
+Функция похожа на @code{get-char-property}, за исключением того, что она
+обращает внимание на закрепление свойств и настройки продвижения наложения,
+а не на свойство символа в (то есть сразу после) @var{position}.
 @end defun
 
 @defun get-char-property-and-overlay position prop &optional object
-This is like @code{get-char-property}, but gives extra information
-about the overlay that the property value comes from.
+Похоже на @code{get-char-property}, но дает дополнительную информацию о
+наложении, из которого происходит значение свойства.
 
-Its value is a cons cell whose @sc{car} is the property value, the
-same value @code{get-char-property} would return with the same
-arguments.  Its @sc{cdr} is the overlay in which the property was
-found, or @code{nil}, if it was found as a text property or not found
-at all.
+Его значением является cons-ячейка, @sc{car} которой является значением
+свойства, то же значение @code{get-char-property} вернет с теми же
+аргументами.  Его @sc{cdr} - это наложение, в котором свойство было найдено
+или @code{nil}, если оно было найдено как текстовое свойство или не найдено
+вообще.
 
-If @var{position} is at the end of @var{object}, both the @sc{car} and
-the @sc{cdr} of the value are @code{nil}.
+Если @var{position} стоит в конце @var{object}, @sc{car} и @sc{cdr} значения
+будут @code{nil}.
 @end defun
 
 @defvar char-property-alias-alist
-This variable holds an alist which maps property names to a list of
-alternative property names.  If a character does not specify a direct
-value for a property, the alternative property names are consulted in
-order; the first не-@code{nil} value is used.  This variable takes
-precedence over @code{default-text-properties}, and @code{category}
-properties take precedence over this variable.
+Переменная содержит список, который сопоставляет имена свойств со списком
+альтернативных имен свойств.  Если символ не указывает прямое значение
+свойства, альтернативные имена свойств просматриваются по порядку;
+используется первое значение не-@code{nil}.  Эта переменная имеет приоритет
+над @code{default-text-properties} и @code{category}, свойства имеют
+приоритет над этой переменной.
 @end defvar
 
 @defun text-properties-at position &optional object
-This function returns the entire property list of the character at
-@var{position} in the string or buffer @var{object}.  If @var{object} is
-@code{nil}, it defaults to the current buffer.
+Функция возвращает весь список свойств символа по адресу @var{position} в
+строке или буфере @var{object}.  Если @var{object} равен @code{nil}, по
+умолчанию используется текущий буфер.
 @end defun
 
 @defvar default-text-properties
-This variable holds a property list giving default values for text
-properties.  Whenever a character does not specify a value for a
-property, neither directly, through a category symbol, or through
-@code{char-property-alias-alist}, the value stored in this list is
-used instead.  Here is an example:
+Переменная содержит список свойств, содержащий значения по умолчанию для
+свойств текста.  Всякий раз, когда символ не указывает значение свойства ни
+напрямую, ни через символ категории, ни через
+@code{char-property-alias-alist}, вместо него используется значение,
+хранящееся в этом списке.  Вот пример:
 
 @example
 (setq default-text-properties '(foo 69)
       char-property-alias-alist nil)
-;; @r{Make sure character 1 has no properties of its own.}
+;; @r{Убедится, что символ 1 не имеет собственных свойств.}
 (set-text-properties 1 2 nil)
-;; @r{What we get, when we ask, is the default value.}
+;; @r{Когда спрашивается, получается значение по умолчанию.}
 (get-text-property 1 'foo)
      @result{} 69
 @end example
 @end defvar
 
 @node Changing Properties
-@subsection Changing Text Properties
+@subsection Изменение Свойств Текста
 @cindex changing text properties
 @cindex text properties, changing
 
-  The primitives for changing properties apply to a specified range of
-text in a buffer or string.  The function @code{set-text-properties}
-(see end of section) sets the entire property list of the text in that
-range; more often, it is useful to add, change, or delete just certain
-properties specified by name.
+  Примитивы для изменения свойств применяются к указанному диапазону текста
+в буфере или строке.  Функция @code{set-text-properties} (смотреть конец
+раздела) устанавливает весь список свойств текста в этом диапазоне; чаще
+бывает полезно добавлять, изменять или удалять только определенные свойства,
+указанные по имени.
 
-  Since text properties are considered part of the contents of the
-buffer (or string), and can affect how a buffer looks on the screen,
-any change in buffer text properties marks the buffer as modified.
-Buffer text property changes are undoable also (@pxref{Undo}).
-Positions in a string start from 0, whereas positions in a buffer
-start from 1.
+  Поскольку текстовые свойства считаются частью содержимого буфера (или
+строки) и могут влиять на то, как буфер выглядит на экране, любое изменение
+свойств текста буфера помечает буфер как измененный.  Изменения свойств
+текста буфера отменяются также (@pxref{Undo}).  Позиции в строке начинаются
+с 0, тогда как позиции в буфере начинаются с 1.
 
 @defun put-text-property start end prop value &optional object
-This function sets the @var{prop} property to @var{value} for the text
-between @var{start} and @var{end} in the string or buffer @var{object}.
-If @var{object} is @code{nil}, it defaults to the current buffer.
+Функция устанавливает для свойства @var{prop} значение @var{value} для
+текста между @var{start} и @var{end} в строке или буфере @var{object}.  Если
+@var{object} равен @code{nil}, по умолчанию используется текущий буфер.
 @end defun
 
 @defun add-text-properties start end props &optional object
-This function adds or overrides text properties for the text between
-@var{start} and @var{end} in the string or buffer @var{object}.  If
-@var{object} is @code{nil}, it defaults to the current buffer.
+Функция добавляет или отменяет свойства текста для текста между @var{start}
+и @var{end} в строке или буфере @var {object}. Если @var{object} равен
+@code{nil}, по умолчанию используется текущий буфер.
 
-The argument @var{props} specifies which properties to add.  It should
-have the form of a property list (@pxref{Property Lists}): a list whose
-elements include the property names followed alternately by the
-corresponding values.
+Аргумент @var{props} указывает, какие свойства нужно добавить.  Должен иметь
+форму списка свойств (@pxref{Property Lists}): список, элементы которого
+включают имена свойств, за которыми поочередно следуют соответствующие
+значения.
 
-The return value is @code{t} if the function actually changed some
-property's value; @code{nil} otherwise (if @var{props} is @code{nil} or
-its values agree with those in the text).
+Возвращаемое значение - @code{t}, если функция действительно изменила
+значение некоторого свойства; @code{nil} в противном случае (если
+@var{props} равен @code{nil} или его значения соответствуют значениям в
+тексте).
 
-For example, here is how to set the @code{comment} and @code{face}
-properties of a range of text:
+Например, вот как установить свойства @code{comment} и @code{face} для
+диапазона текста:
 
 @example
 (add-text-properties @var{start} @var{end}
@@ -2898,73 +2891,73 @@ properties of a range of text:
 @end defun
 
 @defun remove-text-properties start end props &optional object
-This function deletes specified text properties from the text between
-@var{start} and @var{end} in the string or buffer @var{object}.  If
-@var{object} is @code{nil}, it defaults to the current buffer.
+Функция удаляет указанные свойства текста из текста между @var{start} и
+@var{end} в строке или в буфере @var{object}.  Если @var{object} равен
+@code{nil}, по умолчанию используется текущий буфер.
 
-The argument @var{props} specifies which properties to delete.  It
-should have the form of a property list (@pxref{Property Lists}): a list
-whose elements are property names alternating with corresponding values.
-But only the names matter---the values that accompany them are ignored.
-For example, here's how to remove the @code{face} property.
+Аргумент @var{props} указывает, какие свойства нужно удалить.  Должен иметь
+форму списка свойств (@pxref{Property Lists}): список, элементами которого
+являются имена свойств, чередующиеся с соответствующими значениями.  Но
+имеют значение только имена - значения, сопровождающие их, игнорируются.
+Например, вот как удалить свойство @code{face}.
 
 @example
 (remove-text-properties @var{start} @var{end} '(face nil))
 @end example
 
-The return value is @code{t} if the function actually changed some
-property's value; @code{nil} otherwise (if @var{props} is @code{nil} or
-if no character in the specified text had any of those properties).
+Возвращаемое значение - @code{t}, если функция действительно изменила
+значение некоторого свойства; @code{nil} в противном случае (если
+@var{props} имеет значение @code{nil} или ни один символ в указанном тексте
+не имеет этих свойств).
 
-To remove all text properties from certain text, use
-@code{set-text-properties} and specify @code{nil} for the new property
-list.
+Чтобы удалить все свойства текста из определенного текста, использовать
+@code{set-text-properties} и указать @code{nil} для нового списка свойств.
 @end defun
 
 @defun remove-list-of-text-properties start end list-of-properties &optional object
-Like @code{remove-text-properties} except that
-@var{list-of-properties} is a list of property names only, not an
-alternating list of property names and values.
+Подобно @code{remove-text-properties}, за исключением того, что
+@var{list-of-properties} - это только список имен свойств, а не чередующийся
+список имен и значений свойств.
 @end defun
 
 @defun set-text-properties start end props &optional object
-This function completely replaces the text property list for the text
-between @var{start} and @var{end} in the string or buffer @var{object}.
-If @var{object} is @code{nil}, it defaults to the current buffer.
+Функция полностью заменяет список свойств текста для текста между
+@var{start} и @var{end} в строке или буфере @var{object}.  Если @var{object}
+равен @code{nil}, по умолчанию используется текущий буфер.
 
-The argument @var{props} is the new property list.  It should be a list
-whose elements are property names alternating with corresponding values.
+Аргумент @var{props} - это новый список свойств.  Должен быть список,
+элементами которого являются имена свойств, чередующиеся с соответствующими
+значениями.
 
-After @code{set-text-properties} returns, all the characters in the
-specified range have identical properties.
+После возврата @code{set-text-properties} все символы в указанном диапазоне
+имеют идентичные свойства.
 
-If @var{props} is @code{nil}, the effect is to get rid of all properties
-from the specified range of text.  Here's an example:
+Если @var{props} равен @code{nil}, эффект состоит в том, чтобы избавиться от
+всех свойств из указанного диапазона текста. Вот пример:
 
 @example
 (set-text-properties @var{start} @var{end} nil)
 @end example
 
-Do not rely on the return value of this function.
+Не полагаться на возвращаемое значение этой функции.
 @end defun
 
 @defun add-face-text-property start end face &optional appendp object
-This function acts on the text between @var{start} and @var{end},
-adding the face @var{face} to the @code{face} text property.
-@var{face} should be a valid value for the @code{face} property
-(@pxref{Special Properties}), such as a face name or an anonymous face
-(@pxref{Faces}).
+Функция работает с текстом между @var{start} and @var{end}, добавляя вид
+@var{face} к свойству текста @code{face}.  @var{face} должно быть допустимым
+значением для свойства @code{face} (@pxref{Special Properties}), например
+именем вода отображения или анонимным видом (@pxref{Faces}).
 
-If any text in the region already has a не-@code{nil} @code{face} property,
-those face(s) are retained.  This function sets the @code{face}
-property to a list of faces, with @var{face} as the first element (by
-default) and the pre-existing faces as the remaining elements.  If the
-optional argument @var{appendp} is не-@code{nil}, @var{face} is
-appended to the end of the list instead.  Note that in a face list,
-the first occurring value for each attribute takes precedence.
+Если какой-либо текст в области уже имеет свойство не-@code{nil}
+@code{face}, эти коррективы сохраняются.  Функция устанавливает свойство
+@code{face} для списка видов, с @var{face} в качестве первого элемента (по
+умолчанию) и ранее существовавших видов в качестве оставшихся элементов.
+Если необязательный аргумент @var{appendp} - не-@code{nil}, вместо этого в
+конец списка добавляется @var{face}.  Обратить внимание, что в списке видов
+первое встречающееся значение для каждого атрибута имеет приоритет.
 
-For example, the following code would assign an italicized green face
-to the text between @var{start} and @var{end}:
+Например, в следующем коде текст между @var{start} и @var{end} будет
+выделен зеленым курсивом:
 
 @example
 (add-face-text-property @var{start} @var{end} 'italic)
@@ -2972,20 +2965,20 @@ to the text between @var{start} and @var{end}:
 (add-face-text-property @var{start} @var{end} '(:foreground "green"))
 @end example
 
-The optional argument @var{object}, if не-@code{nil}, specifies a
-buffer or string to act on, rather than the current buffer.  If
-@var{object} is a string, then @var{start} and @var{end} are
-zero-based indices into the string.
+Необязательный аргумент @var{object}, если не-@code{nil}, указывает буфер
+или строку, с которой нужно работать, а не текущий буфер.  Если @var{object}
+- строка, то @var{start} и @var{end} - это индексы строки с отсчетом от
+нуля.
 @end defun
 
-  The easiest way to make a string with text properties is with
+  Самый простой способ создать строку с текстовыми свойствами - использовать
 @code{propertize}:
 
 @defun propertize string &rest properties
-This function returns a copy of @var{string} with the text properties
-@var{properties} added.  These properties apply to all the characters
-in the string that is returned.  Here is an example that constructs a
-string with a @code{face} property and a @code{mouse-face} property:
+Функция возвращает копию @var{string} с добавленными текстовыми свойствами
+@var{properties}.  Эти свойства применяются ко всем символам в возвращаемой
+строке.  Вот пример, который создает строку со свойством @code{face} и
+@code{mouse-face}:
 
 @smallexample
 (propertize "foo" 'face 'italic
@@ -2993,9 +2986,9 @@ string with a @code{face} property and a @code{mouse-face} property:
      @result{} #("foo" 0 3 (mouse-face bold-italic face italic))
 @end smallexample
 
-To put different properties on various parts of a string, you can
-construct each part with @code{propertize} and then combine them with
-@code{concat}:
+Чтобы присвоить разные свойства различным частям строки, можно построить
+каждую часть с помощью @code{propertize}, а затем объединить их с
+@code{concat}.:
 
 @smallexample
 (concat
@@ -3011,59 +3004,57 @@ construct each part with @code{propertize} and then combine them with
 @end smallexample
 @end defun
 
-  @xref{Buffer Contents}, for the function
-@code{buffer-substring-no-properties}, which copies text from the
-buffer but does not copy its properties.
+  @xref{Buffer Contents}, для функции @code{buffer-substring-no-properties},
+которая копирует текст из буфера, но не копирует его свойства.
 
 @findex with-silent-modifications
-  If you wish to add text properties to a buffer or remove them
-without marking the buffer as modified, you can wrap the calls above
-in the @code{with-silent-modifications} macro.  @xref{Buffer
-Modification}.
+  Если требуется добавить текстовые свойства в буфер или удалить их, не
+отмечая буфер как измененный, можно заключить приведенные выше вызовы в
+макрос @code{with-silent-modifications}.  @xref{Buffer Modification}.
 
 @node Property Search
-@subsection Text Property Search Functions
+@subsection Функции Поиска Текстовых Свойств
 @cindex searching text properties
 @cindex text properties, searching
 
-  In typical use of text properties, most of the time several or many
-consecutive characters have the same value for a property.  Rather than
-writing your programs to examine characters one by one, it is much
-faster to process chunks of text that have the same property value.
+  При типичном использовании текстовых свойств большую часть времени
+несколько или много последовательных символов имеют одно и то же значение
+для свойства.  Вместо того, чтобы писать свои программы для изучения
+символов по одному, гораздо быстрее обрабатывать фрагменты текста с
+одинаковым значением свойства.
 
-  Here are functions you can use to do this.  They use @code{eq} for
-comparing property values.  In all cases, @var{object} defaults to the
-current buffer.
+  Вот функции, которые можно использовать для этого.  Они используют
+@code{eq} для сравнения значений свойств.  Во всех случаях @var{object} по
+умолчанию соответствует текущему буферу.
 
-  For good performance, it's very important to use the @var{limit}
-argument to these functions, especially the ones that search for a
-single property---otherwise, they may spend a long time scanning to the
-end of the buffer, if the property you are interested in does not change.
+  Для хорошей производительности очень важно использовать аргумент
+@var{limit} для этих функций, особенно для тех, которые ищут одно свойство -
+иначе они могут потратить много времени на сканирование до конца буфера,
+если это свойство вас интересует тогда аргумент не используется.
 
-  These functions do not move point; instead, they return a position (or
-@code{nil}).  Remember that a position is always between two characters;
-the position returned by these functions is between two characters with
-different properties.
+  Эти функции не перемещают точку; вместо этого они возвращают позицию (или
+@code{nil}).  Помнить, что позиция всегда находится между двумя символами;
+позиция, возвращаемая этими функциями, находится между двумя символами с
+разными свойствами.
 
 @defun next-property-change pos &optional object limit
-The function scans the text forward from position @var{pos} in the
-string or buffer @var{object} until it finds a change in some text
-property, then returns the position of the change.  In other words, it
-returns the position of the first character beyond @var{pos} whose
-properties are not identical to those of the character just after
-@var{pos}.
+Функция просматривает текст вперед от позиции @var{pos} в строке или буфере
+@var{object} до тех пор, пока не обнаружит изменение в некотором свойстве
+текста, а затем возвращает позицию изменения.  Другими словами, возвращается
+позиция первого символа после @var{pos}, свойства которого не идентичны
+свойствам символа сразу после @var{pos}.
 
-If @var{limit} is не-@code{nil}, then the scan ends at position
-@var{limit}.  If there is no property change before that point, this
-function returns @var{limit}.
+Если @var{limit} равен не-@code{nil}, то сканирование заканчивается на
+позиции @var{limit}.  Если до этого момента не было изменений свойств, эта
+функция возвращает @var{limit}.
 
-The value is @code{nil} if the properties remain unchanged all the way
-to the end of @var{object} and @var{limit} is @code{nil}.  If the value
-is не-@code{nil}, it is a position greater than or equal to @var{pos}.
-The value equals @var{pos} only when @var{limit} equals @var{pos}.
+Значение @code{nil}, если свойства остаются неизменными до конца
+@var{object}, а @var{limit} - @code{nil}.  Если значение равно
+не-@code{nil}, это позиция больше или равна @var{pos}.  Значение равно
+@var{pos} только тогда, когда @var{limit} равно @var{pos}.
 
-Here is an example of how to scan the buffer by chunks of text within
-which all properties are constant:
+Вот пример того, как сканировать буфер фрагментами текста, в котором все
+свойства постоянны:
 
 @smallexample
 (while (not (eobp))
@@ -3071,613 +3062,598 @@ which all properties are constant:
         (next-change
          (or (next-property-change (point) (current-buffer))
              (point-max))))
-    @r{Process text from point to @var{next-change}@dots{}}
+    @r{Обработать текст от точки до @var{next-change}@dots{}}
     (goto-char next-change)))
 @end smallexample
 @end defun
 
 @defun previous-property-change pos &optional object limit
-This is like @code{next-property-change}, but scans back from @var{pos}
-instead of forward.  If the value is не-@code{nil}, it is a position
-less than or equal to @var{pos}; it equals @var{pos} only if @var{limit}
-equals @var{pos}.
+Это похоже на @code{next-property-change}, но сканирует назад от @var{pos},
+а не вперед.  Если значение равно не-@code{nil}, тогда позиция меньше или
+равна @var{pos}; равняется @var{pos}, только если @var{limit} равен
+@var{pos}.
 @end defun
 
 @defun next-single-property-change pos prop &optional object limit
-The function scans text for a change in the @var{prop} property, then
-returns the position of the change.  The scan goes forward from
-position @var{pos} in the string or buffer @var{object}.  In other
-words, this function returns the position of the first character
-beyond @var{pos} whose @var{prop} property differs from that of the
-character just after @var{pos}.
+Функция сканирует текст на предмет изменения свойства @var{prop}, а затем
+возвращает позицию изменения.  Сканирование идет вперед с позиции @var{pos}
+в строке или буфере @var{object}.  Другими словами, функция возвращает
+позицию первого символа после @var{pos}, свойство @var{prop} которого
+отличается от свойства символа сразу после @var{pos}.
 
-If @var{limit} is не-@code{nil}, then the scan ends at position
-@var{limit}.  If there is no property change before that point,
-@code{next-single-property-change} returns @var{limit}.
+Если @var{limit} равен не-@code{nil}, то сканирование заканчивается на
+позиции @var{limit}.  Если до этой точки не было изменений свойств,
+@code{next-single-property-change} возвращает @var{limit}.
 
-The value is @code{nil} if the property remains unchanged all the way to
-the end of @var{object} and @var{limit} is @code{nil}.  If the value is
-не-@code{nil}, it is a position greater than or equal to @var{pos}; it
-equals @var{pos} only if @var{limit} equals @var{pos}.
+Значение @code{nil}, если свойство остается неизменным до конца @var{object}
+и @var{limit} @code{nil}.  Если значение равно не-@code{nil}, тогда позиция
+больше или равна @var{pos}; и равна @var{pos}, только если @var{limit}
+равняется @var{pos}.
 @end defun
 
 @defun previous-single-property-change pos prop &optional object limit
-This is like @code{next-single-property-change}, but scans back from
-@var{pos} instead of forward.  If the value is не-@code{nil}, it is a
-position less than or equal to @var{pos}; it equals @var{pos} only if
-@var{limit} equals @var{pos}.
+Это похоже на @code{next-single-property-change}, но сканирует назад от
+@var{pos}, а не вперед.  Если значение равно не-@code{nil}, тогда позиция
+меньше или равна @var{pos}; равняется @var{pos}, только если @var{limit}
+равняется @var{pos}.
 @end defun
 
 @defun next-char-property-change pos &optional limit
-This is like @code{next-property-change} except that it considers
-overlay properties as well as text properties, and if no change is
-found before the end of the buffer, it returns the maximum buffer
-position rather than @code{nil} (in this sense, it resembles the
-corresponding overlay function @code{next-overlay-change}, rather than
-@code{next-property-change}).  There is no @var{object} operand
-because this function operates only on the current buffer.  It returns
-the next address at which either kind of property changes.
+Это похоже на @code{next-property-change}, за исключением того, что он
+учитывает свойства наложения, а также свойства текста, и, если не обнаружено
+никаких изменений до конца буфера, возвращается максимальная позиция буфера,
+а не @code{nil} (в этом смысле напоминает соответствующую функцию наложения
+@code{next-overlay-change} , а не @code{next-property-change}).  Операнда
+@var{object} нет, потому что эта функция работает только с текущим буфером.
+Возвращается следующий адрес, по которому изменяется любой вид свойства.
 @end defun
 
 @defun previous-char-property-change pos &optional limit
-This is like @code{next-char-property-change}, but scans back from
-@var{pos} instead of forward, and returns the minimum buffer
-position if no change is found.
+Это похоже на @code{next-char-property-change}, но сканируется назад от
+@var{pos}, а не вперед, и возвращается минимальная позиция в буфере, если
+изменений не обнаружено.
 @end defun
 
 @defun next-single-char-property-change pos prop &optional object limit
-This is like @code{next-single-property-change} except that it
-considers overlay properties as well as text properties, and if no
-change is found before the end of the @var{object}, it returns the
-maximum valid position in @var{object} rather than @code{nil}.  Unlike
-@code{next-char-property-change}, this function @emph{does} have an
-@var{object} operand; if @var{object} is not a buffer, only
-text-properties are considered.
+Это похоже на @code{next-single-property-change}, за исключением того, что
+учитываются свойства наложения, а также свойства текста, и если не
+обнаружено никаких изменений до конца @var{object}, возвращается максимально
+допустимая позиция в @var{object}, а не @code{nil}.  В отличие от
+@code{next-char-property-change}, эта функция @emph{использует} операнд
+@var{object}; если @var{object} не является буфером, рассматриваются только
+свойства текста.
 @end defun
 
 @defun previous-single-char-property-change pos prop &optional object limit
-This is like @code{next-single-char-property-change}, but scans back
-from @var{pos} instead of forward, and returns the minimum valid
-position in @var{object} if no change is found.
+Это похоже на @code{next-single-char-property-change}, но сканируется назад
+от @var{pos}, а не вперед, и возвращается минимальная допустимая позиция в
+@var{object}, если никаких изменений не обнаружено.
 @end defun
 
 @defun text-property-any start end prop value &optional object
-This function returns не-@code{nil} if at least one character between
-@var{start} and @var{end} has a property @var{prop} whose value is
-@var{value}.  More precisely, it returns the position of the first such
-character.  Otherwise, it returns @code{nil}.
+Функция возвращает не-@code{nil}, если хотя бы один символ между @var{start}
+и @var{end} имеет свойство @var{prop}, значение которого равно @var{value}.
+Точнее, возвращается позиция первого такого символа.  В противном случае
+возвращает @code{nil}.
 
-The optional fifth argument, @var{object}, specifies the string or
-buffer to scan.  Positions are relative to @var{object}.  The default
-for @var{object} is the current buffer.
+Необязательный пятый аргумент @var{object} указывает строку или буфер для
+сканирования.  Позиции относительно @var{object}.  По умолчанию для
+@var{object} используется текущий буфер.
 @end defun
 
 @defun text-property-not-all start end prop value &optional object
-This function returns не-@code{nil} if at least one character between
-@var{start} and @var{end} does not have a property @var{prop} with value
-@var{value}.  More precisely, it returns the position of the first such
-character.  Otherwise, it returns @code{nil}.
+Функция возвращает не-@code{nil}, если хотя бы один символ между @var{start}
+и @var{end} не имеет свойства @var{prop} со значением @var{value}.  Точнее,
+возвращается позиция первого такого символа.  В противном случае
+возвращается @code{nil}.
 
-The optional fifth argument, @var{object}, specifies the string or
-buffer to scan.  Positions are relative to @var{object}.  The default
-for @var{object} is the current buffer.
+Необязательный пятый аргумент @var{object} указывает строку или буфер для
+сканирования.  Позиции относительно @var{object}.  По умолчанию для
+@var{object} используется текущий буфер.
 @end defun
 
 @node Special Properties
-@subsection Properties with Special Meanings
+@subsection Свойства с Особым Значением
 
-  Here is a table of text property names that have special built-in
-meanings.  The following sections list a few additional special property
-names that control filling and property inheritance.  All other names
-have no standard meaning, and you can use them as you like.
+  Вот таблица имен текстовых свойств, которые имеют специальные встроенные
+значения.  В следующих разделах перечислены несколько дополнительных имен
+специальных свойств, которые управляют заполнением и наследованием свойств.
+Все остальные имена не имеют стандартного значения, и можно использовать их
+по своему усмотрению.
 
-  Note: the properties @code{composition}, @code{display},
-@code{invisible} and @code{intangible} can also cause point to move to
-an acceptable place, after each Emacs command.  @xref{Adjusting
-Point}.
+  Примечание: свойства @code{composition}, @code{display}, @code{invisible}
+и @code{intangible} также могут вызывать перемещение точки в приемлемое
+место после каждой команды Emacs.  @xref{Adjusting Point}.
 
 @table @code
 @cindex property category of text character
-@c FIXME: Isn't @kindex for keyboard commands?
-@kindex category @r{(text property)}
+@c FIXME: Не @kindex для клавиатурных команд?
+@kindex category @r{(свойства текста)}
 @item category
-If a character has a @code{category} property, we call it the
-@dfn{property category} of the character.  It should be a symbol.  The
-properties of this symbol serve as defaults for the properties of the
-character.
+Если у символа есть свойство @code{category}, называется оно
+@dfn{категория свойств} символа.  Это должно быть символом.  Свойства этого
+символа служат по умолчанию для свойств символа.
 
 @item face
 @cindex face codes of text
-@kindex face @r{(text property)}
-The @code{face} property controls the appearance of the character
-(@pxref{Faces}).  The value of the property can be the following:
+@kindex face @r{(свойство текста)}
+Свойство @code{face} управляет внешним видом символа (@pxref{Faces}).
+Оценка свойства может быть следующей:
 
 @itemize @bullet
 @item
-A face name (a symbol or string).
+Имя вида (символ или строка).
 
 @item
-An anonymous face: a property list of the form @code{(@var{keyword}
-@var{value} @dots{})}, where each @var{keyword} is a face attribute
-name and @var{value} is a value for that attribute.
+Анонимный вид: список свойств в форме
+@code{(@var{keyword} @var{value} @dots{})}, где каждый @var{keyword} - это
+имя атрибута вида, а @var{value} - значение этого атрибута.
 
 @item
-A list of faces.  Each list element should be either a face name or an
-anonymous face.  This specifies a face which is an aggregate of the
-attributes of each of the listed faces.  Faces occurring earlier in
-the list have higher priority.
+Список видов.  Каждый элемент списка должен быть либо именем вида, либо
+анонимным видом.  Это определяет вид, который является совокупностью
+атрибутов каждого из перечисленных видов.  Виды представления, встречающиеся
+раньше в списке, имеют более высокий приоритет.
 
 @item
-A cons cell of the form @code{(foreground-color . @var{color-name})}
-or @code{(background-color . @var{color-name})}.  This specifies the
-foreground or background color, similar to @code{(:foreground
-@var{color-name})} or @code{(:background @var{color-name})}.  This
-form is supported for backward compatibility only, and should be
-avoided.
+Конс-ячейка вида @code{(foreground-color . @var{color-name})} или
+@code{(background-color . @var{color-name})}.  Определяет цвет переднего
+плана или фона, аналогично @code{(:foreground @var{color-name})} или
+@code{(:background @var{color-name})}.  Эта форма поддерживается только для
+обратной совместимости, и ее следует избегать.
 @end itemize
 
-Font Lock mode (@pxref{Font Lock Mode}) works in most buffers by
-dynamically updating the @code{face} property of characters based on
-the context.
+Режим блокировки шрифта (@pxref{Font Lock Mode}) работает в большинстве
+буферов, динамически обновляя свойство @code{face} символов в зависимости от
+контекста.
 
-The @code{add-face-text-property} function provides a convenient way
-to set this text property.  @xref{Changing Properties}.
+Функция @code{add-face-text-property} предоставляет удобный способ
+установить это свойство текста.  @xref{Changing Properties}.
 
 @item font-lock-face
-@kindex font-lock-face @r{(text property)}
-This property specifies a value for the @code{face} property that Font
-Lock mode should apply to the underlying text.  It is one of the
-fontification methods used by Font Lock mode, and is useful for
-special modes that implement their own highlighting.
-@xref{Precalculated Fontification}.  When Font Lock mode is disabled,
-@code{font-lock-face} has no effect.
+@kindex font-lock-face @r{(текстовое свойство)}
+Свойство определяет значение свойства @code{face}, которое режим Font Lock
+должен применять к базовому тексту.  Это один из методов фонирования,
+используемых в режиме Font Lock, и полезен для специальных режимов, которые
+реализуют собственное выделение.  @xref{Precalculated Fontification}.  Когда
+режим Font Lock отключен, @code{font-lock-face} не действует.
 
 @item mouse-face
-@kindex mouse-face @r{(text property)}
-This property is used instead of @code{face} when the mouse is on or
-near the character.  For this purpose, ``near'' means that all text
-between the character and where the mouse is have the same
-@code{mouse-face} property value.
+@kindex mouse-face @r{(текстовое свойство)}
+Cвойство используется вместо @code{face}, когда указатель мыши находится на
+символе или рядом с ним.  Для этого «возле» означает, что весь текст между
+символом и местом, где находится мышь, имеет одинаковое значение свойства
+@code{mouse-face}.
 
-Emacs ignores all face attributes from the @code{mouse-face} property
-that alter the text size (e.g., @code{:height}, @code{:weight}, and
-@code{:slant}).  Those attributes are always the same as for the
-unhighlighted text.
+Emacs игнорирует все атрибуты вида из свойства @code{mouse-face}, которые
+изменяют размер текста (например, @code{:height}, @code{:weight} и
+@code{:slant}).  Эти атрибуты всегда такие же, как и для невыделенного
+текста.
 
 @item fontified
-@kindex fontified @r{(text property)}
-This property says whether the text is ready for display.  If
-@code{nil}, Emacs's redisplay routine calls the functions in
-@code{fontification-functions} (@pxref{Auto Faces}) to prepare this
-part of the buffer before it is displayed.  It is used internally by
-the just-in-time font locking code.
+@kindex fontified @r{(текстовое свойство)}
+Свойство сообщает, готов ли текст к отображению.  Если @code{nil}, процедура
+повторного отображения Emacs вызывает функции в
+@code{fontification-functions} (@pxref{Auto Faces}) для подготовки этой
+части буфера перед ее отображением.  Используется внутри кода своевременной
+блокировки шрифтов.
 
 @item display
-This property activates various features that change the
-way text is displayed.  For example, it can make text appear taller
-or shorter, higher or lower, wider or narrow, or replaced with an image.
+Свойство активирует различные функции, которые изменяют способ отображения
+текста.  Например, с его помощью текст может казаться выше или короче, выше
+или ниже, шире или уже или заменяться изображением.
 @xref{Display Property}.
 
 @item help-echo
-@kindex help-echo @r{(text property)}
+@kindex help-echo @r{(текстовое свойство)}
 @cindex tooltip for help strings
 @anchor{Text help-echo}
-If text has a string as its @code{help-echo} property, then when you
-move the mouse onto that text, Emacs displays that string in the echo
-area, or in the tooltip window (@pxref{Tooltips}).
+Если текст имеет строку в качестве свойства @code{help-echo}, тогда, когда
+наводится указатель мыши на этот текст, Emacs отображает эту строку в
+эхо-области или в окне всплывающей подсказки (@pxref{Tooltips}).
 
-If the value of the @code{help-echo} property is a function, that
-function is called with three arguments, @var{window}, @var{object} and
-@var{pos} and should return a help string or @code{nil} for
-none.  The first argument, @var{window} is the window in which
-the help was found.  The second, @var{object}, is the buffer, overlay or
-string which had the @code{help-echo} property.  The @var{pos}
-argument is as follows:
+Если значением свойства @code{help-echo} является функция, эта функция
+вызывается с тремя аргументами, @var{window}, @var{object} и @var{pos}, и
+возвращает строку справки или @code{nil}, если справки нет.  Первый аргумент
+@var{window} - это окно, в котором была найдена справка.  Второй,
+@var{object}, представляет собой буфер, оверлей или строку, имеющую свойство
+@code{help-echo}.  Аргумент @var{pos} выглядит следующим образом:
 
 @itemize @bullet{}
 @item
-If @var{object} is a buffer, @var{pos} is the position in the buffer.
+Если @var{object} - буфер, @var{pos} - позиция в буфере.
 @item
-If @var{object} is an overlay, that overlay has a @code{help-echo}
-property, and @var{pos} is the position in the overlay's buffer.
+Если @var{object} - наложение, имеет свойство
+@code{help-echo}, а @var{pos} - позиция в буфере наложения.
 @item
-If @var{object} is a string (an overlay string or a string displayed
-with the @code{display} property), @var{pos} is the position in that
-string.
+Если @var{object} - строка (строка наложения или строка, отображаемая
+со свойством @code{display}), @var{pos} - позиция в этой строке.
 @end itemize
 
-If the value of the @code{help-echo} property is neither a function nor
-a string, it is evaluated to obtain a help string.
+Если значение свойства @code{help-echo} не является ни функцией, ни строкой,
+оно оценивается для получения строки справки.
 
-You can alter the way help text is displayed by setting the variable
+Можно изменить способ отображения текста справки, установив переменную
 @code{show-help-function} (@pxref{Help display}).
 
-This feature is used in the mode line and for other active text.
+Функция используется в строке режима и для другого активного текста.
 
 @item keymap
 @cindex keymap of character
-@kindex keymap @r{(text property)}
-The @code{keymap} property specifies an additional keymap for
-commands.  When this keymap applies, it is used for key lookup before
-the minor mode keymaps and before the buffer's local map.
-@xref{Active Keymaps}.  If the property value is a symbol, the
-symbol's function definition is used as the keymap.
+@kindex keymap @r{(текстовое свойство)}
+Свойство @code{ключевая карта} определяет дополнительную карту для команд.
+Когда применяется эта карта, она используется для поиска ключей перед
+картами вспомогательного режима и перед локальной картой буфера.
+@xref{Active Keymaps}.  Если значением свойства является символ, определение
+функции символа используется в качестве ключевой карты.
 
-The property's value for the character before point applies if it is
-не-@code{nil} and rear-sticky, and the property's value for the
-character after point applies if it is не-@code{nil} and
-front-sticky.  (For mouse clicks, the position of the click is used
-instead of the position of point.)
+Значение свойства для символа перед точкой применяется, если оно
+не-@code{nil} и наследуется сзади, и значение свойства для символа после
+точки применяется, если это не-@code{nil} и наследуется спереди.  (Для
+щелчков мышью вместо положения точки используется позиция щелчка.)
 
 @item local-map
-@kindex local-map @r{(text property)}
-This property works like @code{keymap} except that it specifies a
-keymap to use @emph{instead of} the buffer's local map.  For most
-purposes (perhaps all purposes), it is better to use the @code{keymap}
-property.
+@kindex local-map @r{(текстовое свойство)}
+Свойство работает так же, как @code{keymap}, за исключением того,
+что оно указывает таблицу ключей для использования @emph{вместо} локальной
+карты буфера.  Для большинства целей (возможно, для всех) лучше использовать
+свойство @code{keymap}.
 
 @item syntax-table
-The @code{syntax-table} property overrides what the syntax table says
-about this particular character.  @xref{Syntax Properties}.
+Свойство @code{syntax-table} отменяет то, что таблица синтаксиса сообщает об
+этом конкретном символе.  @xref{Syntax Properties}.
 
 @item read-only
 @cindex read-only character
-@kindex read-only @r{(text property)}
-If a character has the property @code{read-only}, then modifying that
-character is not allowed.  Any command that would do so gets an error,
-@code{text-read-only}.  If the property value is a string, that string
-is used as the error message.
+@kindex read-only @r{(свойство текста)}
+Если у символа есть свойство @code{read-only}, то изменение этого символа не
+допускается.  Любая команда, которая это сделает, получит ошибку
+@code{text-read-only}.  Если значение свойства является строкой, эта строка
+используется как сообщение об ошибке.
 
-Insertion next to a read-only character is an error if inserting
-ordinary text there would inherit the @code{read-only} property due to
-stickiness.  Thus, you can control permission to insert next to
-read-only text by controlling the stickiness.  @xref{Sticky Properties}.
+Вставка рядом с символом, доступным только для чтения, является ошибкой,
+если вставка обычного текста туда унаследует свойство @code{read-only} из-за
+липкости.  Таким образом, вы можете контролировать разрешение на вставку
+рядом с текстом, доступным только для чтения, контролируя закрепление.
+@xref{Sticky Properties}.
 
-Since changing properties counts as modifying the buffer, it is not
-possible to remove a @code{read-only} property unless you know the
-special trick: bind @code{inhibit-read-only} to a не-@code{nil} value
-and then remove the property.  @xref{Read Only Buffers}.
+Поскольку изменение свойств считается изменением буфера, невозможно удалить
+свойство @code{read-only}, если не знать специальный трюк: привязать
+@code{inhibit-read-only} к значению не-@code{nil}, а затем удалить свойство.
+@xref{Read Only Buffers}.
 
 @item inhibit-read-only
-@kindex inhibit-read-only @r{(text property)}
-Characters that have the property @code{inhibit-read-only} can be
-edited even in read-only buffers.  @xref{Read Only Buffers}.
+@kindex inhibit-read-only @r{(свойство текста)}
+Символы со свойством @code{inhibit-read-only} можно редактировать даже в
+буферах только для чтения.  @xref{Read Only Buffers}.
 
 @item invisible
-@kindex invisible @r{(text property)}
-A не-@code{nil} @code{invisible} property can make a character invisible
-on the screen.  @xref{Invisible Text}, for details.
+@kindex invisible @r{(свойство текста)}
+Свойство не-@code{nil} @code{invisible} может сделать символ невидимым на
+экране.  @xref{Invisible Text}, для деталей.
 
 @item intangible
-@kindex intangible @r{(text property)}
-If a group of consecutive characters have equal and не-@code{nil}
-@code{intangible} properties, then you cannot place point between them.
-If you try to move point forward into the group, point actually moves to
-the end of the group.  If you try to move point backward into the group,
-point actually moves to the start of the group.
+@kindex intangible @r{(свойство текста)}
+Если группа последовательных символов имеет свойства equal и не-@code{nil}
+@code{intangible}, то не выйдет разместить между ними точку.  Если
+попытаться переместить точку в группу, точка фактически переместится в конец
+группы.  Если попытаться переместить точку назад в группу, точка фактически
+переместится в начало группы.
 
-If consecutive characters have unequal не-@code{nil}
-@code{intangible} properties, they belong to separate groups; each
-group is separately treated as described above.
+Если последовательные символы имеют неодинаковые свойства не-@code{nil}
+@code{intangible}, они принадлежат отдельным группам; каждая группа
+обрабатывается отдельно, как описано выше.
 
-When the variable @code{inhibit-point-motion-hooks} is не-@code{nil}
-(as it is by default), the @code{intangible} property is ignored.
+Когда переменная @code{inhibit-point-motion-hooks} равна не-@code{nil} (как
+по умолчанию), свойство @code{intangible} игнорируется.
 
-Beware: this property operates at a very low level, and affects a lot of code
-in unexpected ways.  So use it with extreme caution.  A common misuse is to put
-an intangible property on invisible text, which is actually unnecessary since
-the command loop will move point outside of the invisible text at the end of
-each command anyway.  @xref{Adjusting Point}.  For these reasons, this
-property is obsolete; use the @code{cursor-intangible} property instead.
+Осторожно: свойство работает на очень низком уровне и неожиданным образом
+влияет на большой объем кода.  Поэтому использовать его с особой
+осторожностью.  Распространенное неправильное использование - наложение
+неотображаемого свойства на невидимый текст, что на самом деле не нужно,
+поскольку цикл команд в любом случае перемещает точку за пределы невидимого
+текста в конце каждой команды.  @xref{Adjusting Point}.  По этим причинам
+это свойство устарело; вместо этого использовать свойство
+@code{cursor-intangible}.
 
 @item cursor-intangible
 @kindex cursor-intangible @r{(text property)}
 @findex cursor-intangible-mode
-When the minor mode @code{cursor-intangible-mode} is turned on, point
-is moved away from any position that has a не-@code{nil}
-@code{cursor-intangible} property, just before redisplay happens.
+Когда включен второстепенный режим @code{cursor-intangible-mode}, точка
+перемещается из любой позиции, имеющей свойство не-@code{nil}
+@code{cursor-intangible}, непосредственно перед повторным отображением.
 
 @vindex cursor-sensor-inhibit
-When the variable @code{cursor-sensor-inhibit} is не-@code{nil}, the
-@code{cursor-intangible} property and the
-@code{cursor-sensor-functions} property (described below) are ignored.
+Когда переменная @code{cursor-sensor-inhibit} равна не-@code{nil}, свойства
+@code{cursor-intangible} и @code{cursor-sensor-functions} (описанные ниже)
+игнорируются.
 
 @item field
-@kindex field @r{(text property)}
-Consecutive characters with the same @code{field} property constitute a
-@dfn{field}.  Some motion functions including @code{forward-word} and
-@code{beginning-of-line} stop moving at a field boundary.
+@kindex field @r{(свойство текста)}
+Последовательные символы с одним и тем же свойством @code{field} составляют
+@dfn{поле}.  Некоторые функции движения, включая @code{forward-word} и
+@code{beginning-of-line}, преостанавливают движение на границе поля.
 @xref{Fields}.
 
 @item cursor
-@kindex cursor @r{(text property)}
-Normally, the cursor is displayed at the beginning or the end of any
-overlay and text property strings present at the current buffer
-position.  You can place the cursor on any desired character of these
-strings by giving that character a не-@code{nil} @code{cursor} text
-property.  In addition, if the value of the @code{cursor} property is
-an integer, it specifies the number of buffer's character
-positions, starting with the position where the overlay or the
-@code{display} property begins, for which the cursor should be
-displayed on that character.  Specifically, if the value of the
-@code{cursor} property of a character is the number @var{n}, the
-cursor will be displayed on this character for any buffer position in
-the range @code{[@var{ovpos}..@var{ovpos}+@var{n})}, where @var{ovpos}
-is the overlay's starting position given by @code{overlay-start}
-(@pxref{Managing Overlays}), or the position where the @code{display}
-text property begins in the buffer.
+@kindex cursor @r{(свойство текста)}
+Обычно курсор отображается в начале или в конце любых строк свойств
+наложения и текста, присутствующих в текущей позиции буфера.  Можно
+поместить курсор на любой желаемый символ этих строк, присвоив этому символу
+текстовое свойство @code{cursor} в не-@code{nil}.  Кроме того, если значение
+свойства @code{cursor} является целым числом, оно определяет количество
+позиций символа буфера, начиная с позиции, где начинается наложение или
+свойство @code{display}, для которого курсор должен отображаться на этом
+символе.  В частности, если значением свойства символа @code{cursor}
+является число @var{n}, курсор будет отображаться на этом символе для любой
+позиции буфера в диапазоне @code{[@var{ovpos}..@var{ovpos}+@var{n})}, где
+@var{ovpos} - начальная позиция наложения, заданная @code{overlay-start}
+(@pxref{Managing Overlays}), или позиция, в которой текстовое свойство
+@code{display} начинается в буфере.
 
-In other words, the string character with the @code{cursor} property
-of any не-@code{nil} value is the character where to display the
-cursor.  The value of the property says for which buffer positions to
-display the cursor there.  If the value is an integer @var{n},
-the cursor is displayed there when point is anywhere between the
-beginning of the overlay or @code{display} property and @var{n}
-positions after that.  If the value is anything else and
-не-@code{nil}, the cursor is displayed there only when point is at
-the beginning of the @code{display} property or at
-@code{overlay-start}.
+Другими словами, строковый символ со свойством @code{cursor} установленным в
+не-@code{nil} - означает символ, на котором отображается курсор.  Значение
+свойства говорит, для каких позиций в буфере нужно отображать курсор.  Если
+значение является целым числом @var{n}, курсор отображается там, когда точка
+находится где-то между началом наложения или свойства @code{display} и
+позициями @var{n} после этого.  Если значение равно любому другому и
+не-@code{nil}, курсор отображается там только тогда, когда точка находится в
+начале свойства @code{display} или в @code{overlay-start}.
 
 @cindex cursor position for @code{display} properties and overlays
-When the buffer has many overlay strings (e.g., @pxref{Overlay
-Properties, before-string}) that conceal some of the buffer text or
-@code{display} properties that are strings, it is a good idea to use
-the @code{cursor} property on these strings to cue the Emacs display
-about the places where to put the cursor while traversing these
-strings.  This directly communicates to the display engine where the
-Lisp program wants to put the cursor, or where the user would expect
-the cursor, when point is located on some buffer position that is
-``covered'' by the display or overlay string.
+Когда в буфере есть много строк с наложением (например,
+@pxref{Overlay Properties, before-string}), которые скрывают некоторый текст
+буфера или свойства @code{display}, которые являются строками, рекомендуется
+использовать свойство @code{cursor} для этих строк, чтобы указать на дисплее
+Emacs места, где нужно поместить курсор при перемещении по этим строкам.
+Это напрямую сообщает механизму отображения, где программа на Lisp хочет
+поместить курсор или где пользователь ожидает курсор, когда точка находится
+в некоторой позиции буфера, которая является ``покрытой'' строкой
+отображения или наложения.
 
 @item pointer
-@kindex pointer @r{(text property)}
-This specifies a specific pointer shape when the mouse pointer is over
-this text or image.  @xref{Pointer Shape}, for possible pointer
-shapes.
+@kindex pointer @r{(свойство текста)}
+Определяет конкретную форму указателя, когда указатель мыши находится над
+этим текстом или изображением.  @xref{Pointer Shape}, для возможных форм
+указателя.
 
 @item line-spacing
-@kindex line-spacing @r{(text property)}
-A newline can have a @code{line-spacing} text or overlay property that
-controls the height of the display line ending with that newline.  The
-property value overrides the default frame line spacing and the buffer
-local @code{line-spacing} variable.  @xref{Line Height}.
-
-@item line-height
-@kindex line-height @r{(text property)}
-A newline can have a @code{line-height} text or overlay property that
-controls the total height of the display line ending in that newline.
+@kindex line-spacing @r{(свойство текста)}
+Новая строка может иметь текст @code{line-spacing} или свойство наложения,
+которое управляет высотой отображаемой строки, заканчивающейся этой новой
+строкой.  Значение свойства переопределяет межстрочный интервал между
+кадрами по умолчанию и локальную переменную @code{line-spacing} буфера.
 @xref{Line Height}.
 
-@item wrap-prefix
-If text has a @code{wrap-prefix} property, the prefix it defines will
-be added at display time to the beginning of every continuation line
-due to text wrapping (so if lines are truncated, the wrap-prefix is
-never used).  It may be a string or an image (@pxref{Other Display
-Specs}), or a stretch of whitespace such as specified by the
-@code{:width} or @code{:align-to} display properties (@pxref{Specified
-Space}).
+@item line-height
+@kindex line-height @r{(свойство текста)}
+Новая строка может иметь текст @code{line-height} или свойство наложения,
+которое управляет общей высотой отображаемой строки, заканчивающейся этой
+новой строкой.  @xref{Line Height}.
 
-A wrap-prefix may also be specified for an entire buffer using the
-@code{wrap-prefix} buffer-local variable (however, a
-@code{wrap-prefix} text-property takes precedence over the value of
-the @code{wrap-prefix} variable).  @xref{Truncation}.
+@item wrap-prefix
+Если текст имеет свойство @code{wrap-prefix}, префикс, который определяет,
+будет добавлен во время отображения в начало каждой строки продолжения из-за
+переноса текста (поэтому, если строки усекаются, префикс переноса никогда не
+используется).  Это может быть строка или изображение
+(@pxref{Other Display Specs}), или отрезок пробелов, например, указанный в
+свойствах отображения @code{:width} или @code{:align-to}
+(@pxref{Specified Space}).
+
+Также можно указать префикс переноса для всего буфера, используя локальную
+переменную @code{wrap-prefix} в буфере (однако текстовое свойство
+@code{wrap-prefix} имеет приоритет над значением переменной
+@code{wrap-prefix}).  @xref{Truncation}.
 
 @item line-prefix
-If text has a @code{line-prefix} property, the prefix it defines will
-be added at display time to the beginning of every non-continuation
-line.  It may be a string or an image (@pxref{Other Display
-Specs}), or a stretch of whitespace such as specified by the
-@code{:width} or @code{:align-to} display properties (@pxref{Specified
-Space}).
+Если текст имеет свойство @code{line-prefix}, префикс, который он
+определяет, будет добавлен во время отображения в начало каждой строки, не
+являющейся продолжением.  Это может быть строка или изображение
+(@pxref{Other Display Specs}), или отрезок пробелов, например, указанный в
+свойствах отображения @code{:width} или @code{:align-to}
+(@pxref{Specified Space}).
 
-A line-prefix may also be specified for an entire buffer using the
-@code{line-prefix} buffer-local variable (however, a
-@code{line-prefix} text-property takes precedence over the value of
-the @code{line-prefix} variable).  @xref{Truncation}.
+Префикс строки также может быть указан для всего буфера с помощью локальной
+переменной @code{line-prefix} в буфере (однако текстовое свойство
+@code{line-prefix} имеет приоритет над значением переменной
+@code{line-prefix}).  @xref{Truncation}.
 
 @item modification-hooks
 @cindex change hooks for a character
 @cindex hooks for changing a character
 @kindex modification-hooks @r{(text property)}
-If a character has the property @code{modification-hooks}, then its
-value should be a list of functions; modifying that character calls
-all of those functions before the actual modification.  Each function
-receives two arguments: the beginning and end of the part of the
-buffer being modified.  Note that if a particular modification hook
-function appears on several characters being modified by a single
-primitive, you can't predict how many times the function will
-be called.
-Furthermore, insertion will not modify any existing character, so this
-hook will only be run when removing some characters, replacing them
-with others, or changing their text-properties.
+Если у символа есть свойство @code{modification-hooks}, то его значением
+должен быть список функций; изменение этого символа вызывает все эти функции
+перед фактическим изменением.  Каждая функция получает два аргумента: начало
+и конец изменяемой части буфера.  Обратить внимание: если конкретная функция
+перехвата модификации появляется на нескольких символах, изменяемых одним
+примитивом, не получится предсказать, сколько раз функция будет вызываться.
+Кроме того, вставка не изменит какой-либо существующий символ, поэтому эта
+ловушка будет запускаться только при удалении некоторых символов, замене их
+другими или изменении их текстовых свойств.
 
-If these functions modify the buffer, they should bind
-@code{inhibit-modification-hooks} to @code{t} around doing so, to
-avoid confusing the internal mechanism that calls these hooks.
+Если эти функции модифицируют буфер, должны привязать
+@code{inhibit-modification-hooks} к @code{t} вокруг этого, чтобы избежать
+путаницы во внутреннем механизме, вызывающем эти перехватчики.
 
-Overlays also support the @code{modification-hooks} property, but the
-details are somewhat different (@pxref{Overlay Properties}).
+Наложения также поддерживают свойство @code{modification-hooks}, но детали
+несколько отличаются от (@pxref{Overlay Properties}).
 
 @item insert-in-front-hooks
 @itemx insert-behind-hooks
-@kindex insert-in-front-hooks @r{(text property)}
-@kindex insert-behind-hooks @r{(text property)}
-The operation of inserting text in a buffer also calls the functions
-listed in the @code{insert-in-front-hooks} property of the following
-character and in the @code{insert-behind-hooks} property of the
-preceding character.  These functions receive two arguments, the
-beginning and end of the inserted text.  The functions are called
-@emph{after} the actual insertion takes place.
+@kindex insert-in-front-hooks @r{(свойство текста)}
+@kindex insert-behind-hooks @r{(свойство текста)}
+Операция вставки текста в буфер также вызывает функции, перечисленные в
+свойстве @code{insert-in-front-hooks} следующего символа и в свойстве
+@code{insert-behind-hooks} предыдущего символа.  Эти функции получают два
+аргумента: начало и конец вставленного текста.  Функции вызываются
+@emph{после}, и происходит фактическая вставка.
 
-See also @ref{Change Hooks}, for other hooks that are called
-when you change text in a buffer.
+Смотреть также @ref{Change Hooks}, чтобы узнать о других перехватчиках,
+которые вызываются при изменении текста в буфере.
 
 @item point-entered
 @itemx point-left
 @cindex hooks for motion of point
-@kindex point-entered @r{(text property)}
-@kindex point-left @r{(text property)}
-The special properties @code{point-entered} and @code{point-left}
-record hook functions that report motion of point.  Each time point
-moves, Emacs compares these two property values:
+@kindex point-entered @r{(свойство текста)}
+@kindex point-left @r{(свойство текста)}
+Специальные свойства @code{point-entered} и @code{point-left} записывают
+функции перехвата, сообщающие о движении точки.  Каждый раз, когда точка
+перемещается, Emacs сравнивает эти два значения свойств:
 
 @itemize @bullet
 @item
-the @code{point-left} property of the character after the old location,
-and
+свойство @code{point-left} символа после старого местоположения и
 @item
-the @code{point-entered} property of the character after the new
-location.
+свойство @code{point-entered} символа после нового местоположения.
 @end itemize
 
 @noindent
-If these two values differ, each of them is called (if not @code{nil})
-with two arguments: the old value of point, and the new one.
+Если эти два значения различаются, каждое из них вызывается (если не
+@code{nil}) с двумя аргументами: старым значением точки и новым.
 
-The same comparison is made for the characters before the old and new
-locations.  The result may be to execute two @code{point-left} functions
-(which may be the same function) and/or two @code{point-entered}
-functions (which may be the same function).  In any case, all the
-@code{point-left} functions are called first, followed by all the
-@code{point-entered} functions.
+Такое же сравнение проводится для символов до старой и новой локаций.
+Результатом может быть выполнение двух функций @code{point-left} (которые
+могут быть одной и той же функцией) и/или двух функций @code{point-entered}
+(которые могут быть одной и той же функцией).  В любом случае сначала
+вызываются все функции @code{point-left}, а затем все функции
+@code{point-entered}.
 
-It is possible to use @code{char-after} to examine characters at various
-buffer positions without moving point to those positions.  Only an
-actual change in the value of point runs these hook functions.
+Можно использовать @code{char-after} для проверки символов в различных
+позициях буфера, не перемещая точку в эти позиции.  Эти функции-перехватчики
+запускаются только при фактическом изменении значения точки.
 
-The variable @code{inhibit-point-motion-hooks} by default inhibits
-running the @code{point-left} and @code{point-entered} hooks, see
+Переменная @code{inhibit-point-motion-hooks} по умолчанию запрещает запуск
+перехватчиков @code{point-left} и @code{point-entered}, смотреть
 @ref{Inhibit point motion hooks}.
 
-These properties are obsolete; please use
-@code{cursor-sensor-functions} instead.
+Эти свойства устарели; использовать вместо этого
+@code{cursor-sensor-functions}.
 
 @item cursor-sensor-functions
-@kindex cursor-sensor-functions @r{(text property)}
+@kindex cursor-sensor-functions @r{(свойство текста)}
 @findex cursor-sensor-mode
-This special property records a list of functions that react to cursor
-motion.  Each function in the list is called, just before redisplay,
-with 3 arguments: the affected window, the previous known position of
-the cursor, and one of the symbols @code{entered} or @code{left},
-depending on whether the cursor is entering the text that has this
-property or leaving it.  The functions are called only when the minor
-mode @code{cursor-sensor-mode} is turned on.
+Специальное свойство записывает список функций, которые реагируют на
+движение курсора.  Каждая функция в списке вызывается непосредственно перед
+повторным отображением с 3 аргументами: затронутым окном, предыдущей
+известной позицией курсора и одним из символов @code{entered} или
+@code{left}, в зависимости от того, вводит ли курсор текст, имеющий это
+свойство или нет.  Функции вызываются только при включенном второстепенном
+режиме @code{cursor-sensor-mode}.
 
-When the variable @code{cursor-sensor-inhibit} is не-@code{nil}, the
-@code{cursor-sensor-functions} property is ignored.
+Когда переменная @code{cursor-sensor-inhibit} равна не-@code{nil}, свойство
+@code{cursor-sensor-functions} игнорируется.
 
 @item composition
-@kindex composition @r{(text property)}
-This text property is used to display a sequence of characters as a
-single glyph composed from components.  But the value of the property
-itself is completely internal to Emacs and should not be manipulated
-directly by, for instance, @code{put-text-property}.
+@kindex composition @r{(свойство текста)}
+Текстовое свойство используется для отображения последовательности символов
+в виде единого глифа, состоящего из компонентов.  Но значение самого
+свойства является полностью внутренним для Emacs и не должно напрямую
+изменяться, например, @code{put-text-property}.
 
 @end table
 
 @defvar inhibit-point-motion-hooks
-@anchor{Inhibit point motion hooks} When this obsolete variable is
-не-@code{nil}, @code{point-left} and @code{point-entered} hooks are
-not run, and the @code{intangible} property has no effect.  Do not set
-this variable globally; bind it with @code{let}.  Since the affected
-properties are obsolete, this variable's default value is @code{t}, to
-effectively disable them.
+@anchor{Inhibit point motion hooks} Когда эта устаревшая переменная -
+не-@code{nil}, перехватчики @code{point-left} и @code{point-entered} не
+запускаются, и свойство @code{intangible} не действует.  Не устанавливать
+эту переменную глобально; привязать его с помощью @code{let}.  Поскольку
+затронутые свойства устарели, значение этой переменной по умолчанию -
+@code{t}, чтобы эффективно их отключить.
 @end defvar
 
 @defvar show-help-function
-@anchor{Help display} If this variable is не-@code{nil}, it specifies a
-function called to display help strings.  These may be @code{help-echo}
-properties, menu help strings (@pxref{Simple Menu Items},
-@pxref{Extended Menu Items}), or tool bar help strings (@pxref{Tool
-Bar}).  The specified function is called with one argument, the help
-string to display, which is passed through
-@code{substitute-command-keys} before being given to the function; see
-@ref{Keys in Documentation}.  Tooltip mode (@pxref{Tooltips,,, emacs,
-The GNU Emacs Manual}) provides an example.
+@anchor{Help display} Если эта переменная - не-@code{nil}, она определяет
+функцию, вызываемую для отображения строк справки.  Это могут быть свойства
+@code{help-echo}, строки справки меню (@pxref{Simple Menu Items},
+@pxref{Extended Menu Items}) или строки справки панели инструментов
+(@pxref{Tool Bar}).  Указанная функция вызывается с одним аргументом -
+отображаемой строкой справки, которая передается через
+@code{substitute-command-keys} перед передачей в функцию; смотреть
+@ref{Keys in Documentation}.  В режиме всплывающей подсказки в
+(@pxref{Tooltips,,, emacs, The GNU Emacs Manual}) приведен пример.
 @end defvar
 
 @node Format Properties
-@subsection Formatted Text Properties
+@subsection Свойства Форматированного Текста
 
-  These text properties affect the behavior of the fill commands.  They
-are used for representing formatted text.  @xref{Filling}, and
+  Эти текстовые свойства влияют на поведение команд заливки.  Они
+используются для представления форматированного текста.  @xref{Filling} и
 @ref{Margins}.
 
 @table @code
 @item hard
-If a newline character has this property, it is a ``hard'' newline.
-The fill commands do not alter hard newlines and do not move words
-across them.  However, this property takes effect only if the
-@code{use-hard-newlines} minor mode is enabled.  @xref{Hard and Soft
+Если символ новой строки имеет это свойство, это ``жесткий'' перевод строки.
+Команды заполнения не изменяют жесткие символы новой строки и не перемещают
+слова по ним.  Однако это свойство действует только в том случае, если
+включен второстепенный режим @code{use-hard-newlines}.  @xref{Hard and Soft
 Newlines,, Hard and Soft Newlines, emacs, The GNU Emacs Manual}.
 
 @item right-margin
-This property specifies an extra right margin for filling this part of the
-text.
+Cвойство определяет дополнительное правое поле для заполнения этой части
+текста.
 
 @item left-margin
-This property specifies an extra left margin for filling this part of the
-text.
+Cвойство определяет дополнительное левое поле для заполнения этой части
+текста.
 
 @item justification
-This property specifies the style of justification for filling this part
-of the text.
+Cвойство определяет стиль выравнивания для заполнения этой части текста.
 @end table
 
 @node Sticky Properties
-@subsection Stickiness of Text Properties
+@subsection Стабильность Cвойств Текста
 @cindex sticky text properties
 @cindex inheritance, text property
 
-  Self-inserting characters, the ones that get inserted into a buffer
-when the user types them (@pxref{Commands for Insertion}), normally
-take on the same properties as the preceding character.  This is
-called @dfn{inheritance} of properties.
+  Самовставляющиеся символы, те, которые вставляются в буфер, когда
+пользователь вводит их (@pxref{Commands for Insertion}), обычно приобретают
+те же свойства, что и предыдущий символ.  Это называется @dfn{наследование}
+свойств.
 
-  By contrast, a Lisp program can do insertion with inheritance or without,
-depending on the choice of insertion primitive.  The ordinary text
-insertion functions, such as @code{insert}, do not inherit any
-properties.  They insert text with precisely the properties of the
-string being inserted, and no others.  This is correct for programs
-that copy text from one context to another---for example, into or out
-of the kill ring.  To insert with inheritance, use the special
-primitives described in this section.  Self-inserting characters
-inherit properties because they work using these primitives.
+  Напротив, программа на Lisp может выполнять вставку с наследованием или
+без, в зависимости от выбора примитива вставки.  Обычные функции вставки
+текста, такие как @code{вставить}, не наследуют никаких свойств.  Они
+вставляют текст с точно такими же свойствами вставляемой строки и никакими
+другими.  Это верно для программ, которые копируют текст из одного контекста
+в другой - например, в список уничтожений или из него.  Для вставки с
+наследованием использовать специальные примитивы, описанные в этом разделе.
+Самовставляющиеся символы наследуют свойства, потому что они работают с
+этими примитивами.
 
-  When you do insertion with inheritance, @emph{which} properties are
-inherited, and from where, depends on which properties are @dfn{sticky}.
-Insertion after a character inherits those of its properties that are
-@dfn{rear-sticky}.  Insertion before a character inherits those of its
-properties that are @dfn{front-sticky}.  When both sides offer different
-sticky values for the same property, the previous character's value
-takes precedence.
+  Когда выполняется вставка с наследованием, свойства @emph{которое}
+наследуются, это зависит от того откуда и какие свойства являются
+@dfn{наследуемыми}.  Вставка после символа наследует те из его свойств, которые являются @dfn{наследуемыми сзади}.  Вставка перед символом наследует те
+его свойства, которые являются @dfn{наследуемыми спереди}.  Когда обе
+стороны предлагают разные наследуемые значения для одного и того же
+свойства, значение предыдущего символа имеет приоритет.
 
-  By default, a text property is rear-sticky but not front-sticky; thus,
-the default is to inherit all the properties of the preceding character,
-and nothing from the following character.
+  По умолчанию свойство текста наследуется сзади, но не наследуется
+спереди; таким образом, по умолчанию наследуются все свойства предыдущего
+символа и ничего от следующего символа.
 
-  You can control the stickiness of various text properties with two
-specific text properties, @code{front-sticky} and @code{rear-nonsticky},
-and with the variable @code{text-property-default-nonsticky}.  You can
-use the variable to specify a different default for a given property.
-You can use those two text properties to make any specific properties
-sticky or nonsticky in any particular part of the text.
+  Можно управлять закреплением различных свойств текста с помощью двух
+конкретных свойств текста: @code{front-sticky} и @code{rear-nonsticky} и
+переменной @code{text-property-default-nonsticky}.  Можно использовать
+переменную, чтобы указать другое значение по умолчанию для данного свойства.
+Можно использовать эти два свойства текста, чтобы сделать любые определенные
+свойства наследуемыми или ненаследуемыми в любой конкретной части текста.
 
-  If a character's @code{front-sticky} property is @code{t}, then all
-its properties are front-sticky.  If the @code{front-sticky} property is
-a list, then the sticky properties of the character are those whose
-names are in the list.  For example, if a character has a
-@code{front-sticky} property whose value is @code{(face read-only)},
-then insertion before the character can inherit its @code{face} property
-and its @code{read-only} property, but no others.
+  Если свойство @code{front-sticky} символа - @code{t}, то все его свойства
+наследуются спереди.  Если свойство @code{front-sticky} является списком, то
+наследуемые свойства символа - это те, чьи имена находятся в списке.
+Например, если у символа есть свойство @code{front-sticky}, значение
+которого равно @code{(face read-only)}, то вставка перед символом может
+унаследовать его свойство @code{face} и свойство @code{read-only}, но
+никакие другие.
 
-  The @code{rear-nonsticky} property works the opposite way.  Most
-properties are rear-sticky by default, so the @code{rear-nonsticky}
-property says which properties are @emph{not} rear-sticky.  If a
-character's @code{rear-nonsticky} property is @code{t}, then none of its
-properties are rear-sticky.  If the @code{rear-nonsticky} property is a
-list, properties are rear-sticky @emph{unless} their names are in the
-list.
+  Свойство @code{rear-nonsticky} работает наоборот.  По умолчанию
+большинство свойств наследуются сзади, поэтому свойство
+@code{rear-nonsticky} указывает, какие свойства @emph{не} наследуются сзади.
+Если свойство @code{rear-nonsticky} символа - @code{t}, то ни одно из его
+свойств не является наследуемым.  Если свойство @code{rear-nonsticky}
+является списком, свойства наследуются сзади @emph{пока не} находятся их
+имена в списке.
 
 @defvar text-property-default-nonsticky
 This variable holds an alist which defines the default rear-stickiness
