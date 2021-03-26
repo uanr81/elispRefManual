@@ -3656,111 +3656,106 @@ Cвойство определяет стиль выравнивания для 
 имена в списке.
 
 @defvar text-property-default-nonsticky
-This variable holds an alist which defines the default rear-stickiness
-of various text properties.  Each element has the form
-@code{(@var{property} . @var{nonstickiness})}, and it defines the
-stickiness of a particular text property, @var{property}.
+Эта переменная содержит список, который определяет заднее наследуемость по
+умолчанию для различных свойств текста.  Каждый элемент имеет форму
+@code{(@var{property} . @var{nonstickiness})}, и определяет закрепление
+определенного свойства текста, @var{property}.
 
-If @var{nonstickiness} is не-@code{nil}, this means that the property
-@var{property} is rear-nonsticky by default.  Since all properties are
-front-nonsticky by default, this makes @var{property} nonsticky in both
-directions by default.
+Если @var{nonstickiness} равен не-@code{nil}, это означает, что свойство
+@var{property} по умолчанию не наследуется сзади.  Поскольку все свойства по
+умолчанию не наследуемые, это делает @var{property} по умолчанию не
+наследуемым в обоих направлениях.
 
-The text properties @code{front-sticky} and @code{rear-nonsticky}, when
-used, take precedence over the default @var{nonstickiness} specified in
-@code{text-property-default-nonsticky}.
+Текстовые свойства @code{front-sticky} и @code{rear-nonsticky} при их
+использовании имеют приоритет над @var{nonstickiness} по умолчанию,
+указанным в @code{text-property-default-nonsticky}.
 @end defvar
 
-  Here are the functions that insert text with inheritance of properties:
+  Вот функции, которые вставляют текст с наследованием свойств:
 
 @defun insert-and-inherit &rest strings
-Insert the strings @var{strings}, just like the function @code{insert},
-but inherit any sticky properties from the adjoining text.
+Вставить строки @var{strings}, как в функции @code{insert}, но унаследовать
+любые наследуемые свойства от смежного текста.
 @end defun
 
 @defun insert-before-markers-and-inherit &rest strings
-Insert the strings @var{strings}, just like the function
-@code{insert-before-markers}, but inherit any sticky properties from the
-adjoining text.
+Вставить строки @var{strings}, как с функцией @code{insert-before-markers},
+но унаследовать любые наследуемые свойства от смежного текста.
 @end defun
 
-  @xref{Insertion}, for the ordinary insertion functions which do not
-inherit.
+  @xref{Insertion}, для обычных функций вставки, которые не наследуются.
 
 @node Lazy Properties
-@subsection Lazy Computation of Text Properties
+@subsection Ленивое Вычисление Свойств Текста
 
-  Instead of computing text properties for all the text in the buffer,
-you can arrange to compute the text properties for parts of the text
-when and if something depends on them.
+  Вместо вычисления свойств текста для всего текста в буфере можно
+организовать вычисление свойств текста для частей текста, когда и если от
+них что-то зависит.
 
-  The primitive that extracts text from the buffer along with its
-properties is @code{buffer-substring}.  Before examining the properties,
-this function runs the abnormal hook @code{buffer-access-fontify-functions}.
+  Примитивом, который извлекает текст из буфера вместе со своими свойствами,
+является @code{buffer-substring}.  Перед исследованием свойств эта функция
+запускает ненормальную ловушку @code{buffer-access-fontify-functions}.
 
 @defvar buffer-access-fontify-functions
-This variable holds a list of functions for computing text properties.
-Before @code{buffer-substring} copies the text and text properties for a
-portion of the buffer, it calls all the functions in this list.  Each of
-the functions receives two arguments that specify the range of the
-buffer being accessed.  (The buffer itself is always the current
-buffer.)
+Переменная содержит список функций для вычисления свойств текста.  Прежде
+чем @code{buffer-substring} скопирует текст и свойства текста для части
+буфера, вызываются все функции в этом списке.  Каждая из функций получает
+два аргумента, определяющих диапазон доступного буфера.  (Сам буфер всегда
+является текущим буфером.)
 @end defvar
 
-  The function @code{buffer-substring-no-properties} does not call these
-functions, since it ignores text properties anyway.
+  Функция @code{buffer-substring-no-properties} не вызывает эти функции, так
+как в любом случае игнорирует свойства текста.
 
-  In order to prevent the hook functions from being called more than
-once for the same part of the buffer, you can use the variable
+  Чтобы функции ловушки не вызывались более одного раза для одной и той же
+части буфера, можно использовать переменную
 @code{buffer-access-fontified-property}.
 
 @defvar buffer-access-fontified-property
-If this variable's value is не-@code{nil}, it is a symbol which is used
-as a text property name.  A не-@code{nil} value for that text property
-means the other text properties for this character have already been
-computed.
+Если значение этой переменной - не-@code{nil}, это символ, который
+используется в качестве имени текстового свойства.  Значение не-@code{nil}
+для этого текстового свойства означает, что другие текстовые свойства для
+этого символа уже вычислены.
 
-If all the characters in the range specified for @code{buffer-substring}
-have a не-@code{nil} value for this property, @code{buffer-substring}
-does not call the @code{buffer-access-fontify-functions} functions.  It
-assumes these characters already have the right text properties, and
-just copies the properties they already have.
+Если все символы в диапазоне, указанном для @code{buffer-substring}, имеют
+значение не-@code{nil} для этого свойства, @code{buffer-substring} не
+вызывает функции @code{buffer-access-fontify-functions}.  Предполагается,
+что эти символы уже имеют нужные текстовые свойства, и просто копируются те
+свойства, которые у них уже есть.
 
-The normal way to use this feature is that the
-@code{buffer-access-fontify-functions} functions add this property, as
-well as others, to the characters they operate on.  That way, they avoid
-being called over and over for the same text.
+Обычный способ использования этой функции состоит в том, что функции
+@code{buffer-access-fontify-functions} добавляют это свойство, а также
+другие свойства к символам, с которыми они работают.  Таким образом, они
+избегают многократных повторений одного и того же текста.
 @end defvar
 
 @node Clickable Text
-@subsection Defining Clickable Text
+@subsection Определение Интерактивного Текста
 @cindex clickable text
 @cindex follow links
 @cindex mouse-1
 
-  @dfn{Clickable text} is text that can be clicked, with either the
-mouse or via a keyboard command, to produce some result.  Many major
-modes use clickable text to implement textual hyper-links, or
-@dfn{links} for short.
+  @dfn{Clickable text} - это текст, по которому можно щелкнуть мышью или
+используя клавиатурную команду для получения определенного результата.  Во
+многих основных режимах для реализации текстовых гиперссылок используется
+интерактивный текст, или сокращенно @dfn{ссылки}.
 
-  The easiest way to insert and manipulate links is to use the
-@code{button} package.  @xref{Buttons}.  In this section, we will
-explain how to manually set up clickable text in a buffer, using text
-properties.  For simplicity, we will refer to the clickable text as a
-@dfn{link}.
+  Самый простой способ вставлять ссылки и манипулировать ими - использовать
+пакет @code{button}.  @xref{Buttons}.  В этом разделе объясняется, как
+вручную настроить интерактивный текст в буфере, используя свойства текста.
+Для простоты называется интерактивный текст @dfn{ссылка}.
 
-  Implementing a link involves three separate steps: (1) indicating
-clickability when the mouse moves over the link; (2) making @key{RET}
-or @kbd{mouse-2} on that link do something; and (3) setting up a
-@code{follow-link} condition so that the link obeys
-@code{mouse-1-click-follows-link}.
+  Реализация ссылки включает три отдельных шага: (1) указание кликабельности
+при перемещении мыши по ссылке; (2) заставить @key{RET} или @kbd{mouse-2} по
+этой ссылке что-то делать; и (3) установка условия @code{follow-link}, чтобы
+ссылка подчинялась @code{mouse-1-click-follows-link}.
 
-  To indicate clickability, add the @code{mouse-face} text property to
-the text of the link; then Emacs will highlight the link when the
-mouse moves over it.  In addition, you should define a tooltip or echo
-area message, using the @code{help-echo} text property.  @xref{Special
-Properties}.  For instance, here is how Dired indicates that file
-names are clickable:
+  Чтобы указать интерактивность, добавляется текстовое свойство
+@code{mouse-face} к тексту ссылки; тогда Emacs будет выделять ссылку при
+наведении на нее мыши.  Кроме того, потребуется определить всплывающую
+подсказку или сообщение эхо-области, используя текстовое свойство
+@code{help-echo}.  @xref{Special Properties}.  Например, вот как Dired
+указывает, что имена файлов кликабельны:
 
 @smallexample
  (if (dired-move-to-filename)
@@ -3773,15 +3768,15 @@ names are clickable:
          help-echo "mouse-2: visit this file in other window")))
 @end smallexample
 
-  To make the link clickable, bind @key{RET} and @kbd{mouse-2} to
-commands that perform the desired action.  Each command should check
-to see whether it was called on a link, and act accordingly.  For
-instance, Dired's major mode keymap binds @kbd{mouse-2} to the
-following command:
+  Чтобы ссылка была интерактивной, привязывается @key{RET} и @kbd{mouse-2} к
+командам, выполняющим желаемое действие.  Каждая команда должна проверять,
+вызывалась ли она по ссылке, и действовать соответствующим образом.
+Например, карта основного режима Dired связывает @kbd{mouse-2} со следующей
+командой:
 
 @smallexample
 (defun dired-mouse-find-file-other-window (event)
-  "In Dired, visit the file or directory name you click on."
+  "В Dired перейти к файлу или каталогу, по которому произведен щелчок."
   (interactive "e")
   (let ((window (posn-window (event-end event)))
         (pos (posn-point (event-end event)))
@@ -3802,13 +3797,13 @@ following command:
 @end smallexample
 
 @noindent
-This command uses the functions @code{posn-window} and
-@code{posn-point} to determine where the click occurred, and
-@code{dired-get-file-for-visit} to determine which file to visit.
+Команда использует функции @code{posn-window} и @code{posn-point}, чтобы
+определить, где произошел щелчок, и @code{dired-get-file-for-visit}, чтобы
+определить, какой файл посетить.
 
-  Instead of binding the mouse command in a major mode keymap, you can
-bind it within the link text, using the @code{keymap} text property
-(@pxref{Special Properties}).  For instance:
+  Вместо привязки команды мыши к карте основного режима ее можно привязать к
+тексту ссылки, используя текстовое свойство @code{keymap}
+(@pxref{Special Properties}).  Например:
 
 @example
 (let ((map (make-sparse-keymap)))
@@ -3817,52 +3812,50 @@ bind it within the link text, using the @code{keymap} text property
 @end example
 
 @noindent
-With this method, you can easily define different commands for
-different links.  Furthermore, the global definition of @key{RET} and
-@kbd{mouse-2} remain available for the rest of the text in the buffer.
+С помощью этого метода можно легко определить разные команды для разных
+ссылок.  Более того, глобальное определение @key{RET} и @kbd{mouse-2}
+остается доступным для остального текста в буфере.
 
 @vindex mouse-1-click-follows-link
-  The basic Emacs command for clicking on links is @kbd{mouse-2}.
-However, for compatibility with other graphical applications, Emacs
-also recognizes @kbd{mouse-1} clicks on links, provided the user
-clicks on the link quickly without moving the mouse.  This behavior is
-controlled by the user option @code{mouse-1-click-follows-link}.
+  Основная команда Emacs для щелчка по ссылкам - @kbd{mouse-2}.  Однако для
+совместимости с другими графическими приложениями Emacs также распознает
+щелчки @kbd{mouse-1} по ссылкам при условии, что пользователь щелкает ссылку
+быстро, не перемещая мышь.  Это поведение контролируется пользовательской
+опцией @code{mouse-1-click-follows-link}.
 @xref{Mouse References,,, emacs, The GNU Emacs Manual}.
 
 @kindex follow-link @r{(text or overlay property)}
-  To set up the link so that it obeys
-@code{mouse-1-click-follows-link}, you must either (1) apply a
-@code{follow-link} text or overlay property to the link text, or (2)
-bind the @code{follow-link} event to a keymap (which can be a major
-mode keymap or a local keymap specified via the @code{keymap} text
-property).  The value of the @code{follow-link} property, or the
-binding for the @code{follow-link} event, acts as a condition for
-the link action.  This condition tells Emacs two things: the
-circumstances under which a @kbd{mouse-1} click should be regarded as
-occurring inside the link, and how to compute an action code
-that says what to translate the @kbd{mouse-1} click into.  The link
-action condition can be one of the following:
+  Чтобы настроить ссылку таким образом, чтобы она подчинялась
+@code{mouse-1-click-follows-link}, потребуется либо (1) применить свойство
+@code{follow-link} текста или наложение к тексту ссылки, либо (2) привязать
+событие @code{follow-link} к ключевой карте (которая может быть картой
+основного режима или локальной картой, указанной через текстовое свойство
+@code{keymap}).  Значение свойства @code{follow-link} или привязка для
+события @code{follow-link} действует как условие для действия ссылки.  Это
+условие сообщает Emacs две вещи: обстоятельства, при которых щелчок
+@kbd{mouse-1} должен рассматриваться как происходящий внутри ссылки, и как
+вычислить код действия, который говорит, во что переводить щелчок
+@kbd{mouse-1}.  Условие действия ссылки может быть одним из следующих:
 
 @table @asis
 @item @code{mouse-face}
-If the condition is the symbol @code{mouse-face}, a position is inside
-a link if there is a не-@code{nil} @code{mouse-face} property at that
-position.  The action code is always @code{t}.
+Если условием является символ @code{mouse-face}, позиция находится внутри
+ссылки, если в этой позиции есть свойство не-@code{nil} @code{mouse-face}.
+Код действия всегда @code{t}.
 
-For example, here is how Info mode handles @key{mouse-1}:
+Например, вот как режим info обрабатывает @key{mouse-1}:
 
 @smallexample
 (define-key Info-mode-map [follow-link] 'mouse-face)
 @end smallexample
 
 @item a function
-If the condition is a function, @var{func}, then a position @var{pos}
-is inside a link if @code{(@var{func} @var{pos})} evaluates to
-не-@code{nil}.  The value returned by @var{func} serves as the action
-code.
+Если условие является функцией @var{func}, тогда позиция @var{pos} находится
+внутри ссылки, если @code{(@var{func} @var{pos})} оценивается как
+не-@code{nil}.  Значение, возвращаемое @var{func}, служит кодом действия.
 
-For example, here is how pcvs enables @kbd{mouse-1} to follow links on
-file names only:
+Например, вот как pcvs позволяет @kbd{mouse-1} переходить по ссылкам только
+по именам файлов:
 
 @smallexample
 (define-key map [follow-link]
@@ -3871,35 +3864,29 @@ file names only:
 @end smallexample
 
 @item anything else
-If the condition value is anything else, then the position is inside a
-link and the condition itself is the action code.  Clearly, you should
-specify this kind of condition only when applying the condition via a
-text or property overlay on the link text (so that it does not apply
-to the entire buffer).
+Если значение условия - любое другое, то позиция находится внутри ссылки, а
+само условие является кодом действия. Ясно, что вы должны указывать этот вид
+условия только при применении условия через текст или наложение свойств в
+тексте ссылки (чтобы оно не применялось ко всему буферу).
 @end table
 
 @noindent
-The action code tells @kbd{mouse-1} how to follow the link:
+Код действия сообщает @kbd{mouse-1}, как перейти по ссылке:
 
 @table @asis
 @item a string or vector
-If the action code is a string or vector, the @kbd{mouse-1} event is
-translated into the first element of the string or vector; i.e., the
-action of the @kbd{mouse-1} click is the local or global binding of
-that character or symbol.  Thus, if the action code is @code{"foo"},
-@kbd{mouse-1} translates into @kbd{f}.  If it is @code{[foo]},
-@kbd{mouse-1} translates into @key{foo}.
+Если код действия является строкой или вектором, событие @kbd{mouse-1}
+транслируется в первый элемент строки или вектора; то есть действие щелчка
+@kbd{mouse-1} является локальной или глобальной привязкой этого символа.
+Таким образом, если код действия - @code{"foo"}, @kbd{mouse-1} преобразуется
+в @kbd{f}.  Если это @code{[foo]}, @kbd{mouse-1} переводится в @key{foo}.
 
 @item anything else
-For any other не-@code{nil} action code, the @kbd{mouse-1} event is
-translated into a @kbd{mouse-2} event at the same position.
+Для любого другого кода действия не-@code{nil} событие @kbd{mouse-1}
+транслируется в событие @kbd{mouse-2} в той же позиции.
 @end table
 
-  To define @kbd{mouse-1} to activate a button defined with
-@code{define-button-type}, give the button a @code{follow-link}
-property.  The property value should be a link action condition, as
-described above.  @xref{Buttons}.  For example, here is how Help mode
-handles @kbd{mouse-1}:
+  Чтобы определить @kbd{mouse-1} для активации кнопки, определенной с помощью @code{define-button-type}, присвойте кнопке свойство @code{follow-link}. Значение свойства должно быть условием действия ссылки, как описано выше. @xref{Buttons}. Например, вот как режим справки обрабатывает @kbd{mouse-1}:
 
 @smallexample
 (define-button-type 'help-xref
@@ -3907,15 +3894,15 @@ handles @kbd{mouse-1}:
   'action #'help-button-action)
 @end smallexample
 
-  To define @kbd{mouse-1} on a widget defined with
-@code{define-widget}, give the widget a @code{:follow-link} property.
-The property value should be a link action condition, as described
-above.  For example, here is how the @code{link} widget specifies that
-a @key{mouse-1} click shall be translated to @key{RET}:
+  Чтобы определить @kbd{mouse-1} для виджета, определенного с помощью
+@code{define-widget}, присваивается виджету свойство @code{:follow-link}.
+Значение свойства должно быть условием действия ссылки, как описано выше.
+Например, вот как виджет @code{link} указывает, что клик @key{mouse-1}
+переводится в @key{RET}:
 
 @smallexample
 (define-widget 'link 'item
-  "An embedded link."
+  "Встроенная ссылка."
   :button-prefix 'widget-link-prefix
   :button-suffix 'widget-link-suffix
   :follow-link "\C-m"
@@ -3924,199 +3911,192 @@ a @key{mouse-1} click shall be translated to @key{RET}:
 @end smallexample
 
 @defun mouse-on-link-p pos
-This function returns не-@code{nil} if position @var{pos} in the
-current buffer is on a link.  @var{pos} can also be a mouse event
-location, as returned by @code{event-start} (@pxref{Accessing Mouse}).
+Функция возвращает не-@code{nil}, если позиция @var{pos} в текущем буфере
+находится на ссылке.  @var{pos} также может быть местоположением события
+мыши, возвращаемым @code{event-start} (@pxref{Accessing Mouse}).
 @end defun
 
 @node Fields
-@subsection Defining and Using Fields
+@subsection Определение и Использование Полей
 @cindex fields
 
-  A field is a range of consecutive characters in the buffer that are
-identified by having the same value (comparing with @code{eq}) of the
-@code{field} property (either a text-property or an overlay property).
-This section describes special functions that are available for
-operating on fields.
+  Поле - это диапазон последовательных символов в буфере, которые
+идентифицируются по тому же значению (по сравнению с @code{eq}) свойства
+@code{field} (либо текстовые свойства, либо свойства наложения).  В этом
+разделе описаны специальные функции, доступные для работы с полями.
 
-  You specify a field with a buffer position, @var{pos}.  We think of
-each field as containing a range of buffer positions, so the position
-you specify stands for the field containing that position.
+  Указывается поле с буферной позицией @var{pos}.  Предпологается, что
+каждое поле содержит диапазон позиций буфера, поэтому указанная позиция
+соответствует полю, содержащему эту позицию.
 
-  When the characters before and after @var{pos} are part of the same
-field, there is no doubt which field contains @var{pos}: the one those
-characters both belong to.  When @var{pos} is at a boundary between
-fields, which field it belongs to depends on the stickiness of the
-@code{field} properties of the two surrounding characters (@pxref{Sticky
-Properties}).  The field whose property would be inherited by text
-inserted at @var{pos} is the field that contains @var{pos}.
+  Когда символы до и после @var{pos} являются частью одного и того же поля,
+нет сомнений в том, какое поле содержит @var{pos}: то, которому принадлежат
+оба этих символа.  Когда @var{pos} находится на границе между полями, то
+какому полю он принадлежит, зависит от наследования свойств @code{field}
+двух окружающих символов (@pxref{Sticky Properties}).  Поле, свойство
+которого будет унаследовано текстом, вставленным в @var{pos}, - это поле,
+содержащее @var{pos}.
 
-  There is an anomalous case where newly inserted text at @var{pos}
-would not inherit the @code{field} property from either side.  This
-happens if the previous character's @code{field} property is not
-rear-sticky, and the following character's @code{field} property is not
-front-sticky.  In this case, @var{pos} belongs to neither the preceding
-field nor the following field; the field functions treat it as belonging
-to an empty field whose beginning and end are both at @var{pos}.
+  Существует аномальный случай, когда вновь вставленный текст в @var{pos} не
+наследует свойство @code{field} ни с одной стороны.  Это происходит, если
+свойство @code{field} предыдущего символа не является наследуемым сзади, а
+свойство @code{field} следующего символа не является наследуемым спереди. В
+этом случае @var{pos} не принадлежит ни предыдущему, ни следующему полю;
+функции поля рассматривают его как принадлежащее пустому полю, начало и
+конец которого находятся в @var{pos}.
 
-  In all of these functions, if @var{pos} is omitted or @code{nil}, the
-value of point is used by default.  If narrowing is in effect, then
-@var{pos} should fall within the accessible portion.  @xref{Narrowing}.
+  Во всех этих функциях, если @var{pos} опущен или @code{nil}, значение
+точки используется по умолчанию.  Если действует сужение, то @var{pos}
+должен попадать в доступную часть.  @xref{Narrowing}.
 
 @defun field-beginning &optional pos escape-from-edge limit
-This function returns the beginning of the field specified by @var{pos}.
+Эта функция возвращает начало поля, указанного в @var{pos}.
 
-If @var{pos} is at the beginning of its field, and
-@var{escape-from-edge} is не-@code{nil}, then the return value is
-always the beginning of the preceding field that @emph{ends} at @var{pos},
-regardless of the stickiness of the @code{field} properties around
-@var{pos}.
+Если @var{pos} находится в начале своего поля, а @var{escape-from-edge} -
+не-@code{nil}, то возвращаемое значение всегда является началом предыдущего
+поля, которое @emph{заканчивается} в @var{pos}, независимо от наследуемых
+свойств @code{field} вокруг @var{pos}.
 
-If @var{limit} is не-@code{nil}, it is a buffer position; if the
-beginning of the field is before @var{limit}, then @var{limit} will be
-returned instead.
+Если @var{limit} равен не-@code{nil}, это позиция буфера; если начало поля
+перед @var{limit}, то вместо этого @var{limit} будет возвращено.
 @end defun
 
 @defun field-end &optional pos escape-from-edge limit
-This function returns the end of the field specified by @var{pos}.
+Эта функция возвращает конец поля, указанного в @var{pos}.
 
-If @var{pos} is at the end of its field, and @var{escape-from-edge} is
-не-@code{nil}, then the return value is always the end of the following
-field that @emph{begins} at @var{pos}, regardless of the stickiness of
-the @code{field} properties around @var{pos}.
+Если @var{pos} находится в конце своего поля, а @var{escape-from-edge} -
+не-@code{nil}, то возвращаемое значение всегда является концом следующего
+поля, которое @emph{начинается} в @var{pos}, независимо от наследуемых
+свойств @code{field} вокруг @var{pos}.
 
-If @var{limit} is не-@code{nil}, it is a buffer position; if the end
-of the field is after @var{limit}, then @var{limit} will be returned
-instead.
+Если @var{limit} равен не-@code{nil}, это позиция буфера; если конец поля
+находится после @var{limit}, вместо этого будет возвращено @var{limit}.
 @end defun
 
 @defun field-string &optional pos
-This function returns the contents of the field specified by @var{pos},
-as a string.
+Функция возвращает содержимое поля, указанного в @var{pos}, в виде строки.
 @end defun
 
 @defun field-string-no-properties &optional pos
-This function returns the contents of the field specified by @var{pos},
-as a string, discarding text properties.
+Функция возвращает содержимое поля, указанного в @var{pos}, в виде строки,
+отбрасывая текстовые свойства.
 @end defun
 
 @defun delete-field &optional pos
-This function deletes the text of the field specified by @var{pos}.
+Функция удаляет текст поля, указанного в @var{pos}.
 @end defun
 
 @defun constrain-to-field new-pos old-pos &optional escape-from-edge only-in-line inhibit-capture-property
-This function constrains @var{new-pos} to the field that
-@var{old-pos} belongs to---in other words, it returns the position
-closest to @var{new-pos} that is in the same field as @var{old-pos}.
+Функция ограничивает @var{new-pos} полем, которому принадлежит @var{old-pos}
+- другими словами, возвращает позицию, ближайшую к @var{new-pos}, которая
+находится в том же поле, что и @var{old-pos}.
 
-If @var{new-pos} is @code{nil}, then @code{constrain-to-field} uses
-the value of point instead, and moves point to the resulting position
-in addition to returning that position.
+Если @var{new-pos} равен @code{nil}, тогда @code{constrain-to-field}
+использует вместо этого значение point и перемещает точку в результирующую
+позицию в дополнение к возврату этой позиции.
 
-If @var{old-pos} is at the boundary of two fields, then the acceptable
-final positions depend on the argument @var{escape-from-edge}.  If
-@var{escape-from-edge} is @code{nil}, then @var{new-pos} must be in
-the field whose @code{field} property equals what new characters
-inserted at @var{old-pos} would inherit.  (This depends on the
-stickiness of the @code{field} property for the characters before and
-after @var{old-pos}.)  If @var{escape-from-edge} is не-@code{nil},
-@var{new-pos} can be anywhere in the two adjacent fields.
-Additionally, if two fields are separated by another field with the
-special value @code{boundary}, then any point within this special
-field is also considered to be on the boundary.
+Если @var{old-pos} находится на границе двух полей, то приемлемые конечные
+позиции зависят от аргумента @var{escape-from-edge}.  Если
+@var{escape-from-edge} равен @code{nil}, то @var{new-pos} должен находиться
+в поле, свойство @code{field} которого унаследовано для новых символов,
+вставленных в @var{old-pos}.  (Это зависит от закрепления свойства
+@code{field} для символов до и после @var{old-pos}.)  Если
+@var{escape-from-edge} имеет значение не-@code{nil}, @var{new-pos} может
+быть где угодно в двух соседних полях.  Кроме того, если два поля разделены
+другим полем со специальным значением @code{boundary}, то любая точка в этом
+специальном поле также считается находящейся на границе.
 
-Commands like @kbd{C-a} with no argument, that normally move backward
-to a specific kind of location and stay there once there, probably
-should specify @code{nil} for @var{escape-from-edge}.  Other motion
-commands that check fields should probably pass @code{t}.
+Команды вроде @kbd{C-a} без аргументов, которые обычно возвращаются в
+определенное место и остаются там, вероятно, должны указывать @code{nil} для
+@var{escape-from-edge}.  Другие команды движения, которые проверяют поля,
+вероятно, должны передавать @code{t}.
 
-If the optional argument @var{only-in-line} is не-@code{nil}, and
-constraining @var{new-pos} in the usual way would move it to a different
-line, @var{new-pos} is returned unconstrained.  This used in commands
-that move by line, such as @code{next-line} and
-@code{beginning-of-line}, so that they respect field boundaries only in
-the case where they can still move to the right line.
+Если необязательный аргумент @var{only-in-line} - не-@code{nil}, ограничение
+@var{new-pos} обычным способом переместит его на другую строку,
+@var{new-pos} возвращается без ограничений.  Это используется в командах,
+перемещающихся по строкам, таких как @code{next-line} и
+@code{beginning-of-line}, так что они соблюдают границы поля только в том
+случае, если они все еще могут перемещаться на правую строку.
 
-If the optional argument @var{inhibit-capture-property} is
-не-@code{nil}, and @var{old-pos} has a не-@code{nil} property of that
-name, then any field boundaries are ignored.
+Если необязательный аргумент @var{inhibit-capture-property} - не-@code{nil},
+а @var{old-pos} имеет свойство не-@code{nil} с таким именем, то любые
+границы поля игнорируются.
 
-You can cause @code{constrain-to-field} to ignore all field boundaries
-(and so never constrain anything) by binding the variable
-@code{inhibit-field-text-motion} to a не-@code{nil} value.
+Можно заставить @code{constrain-to-field} игнорировать все границы поля (и
+поэтому никогда ничего не ограничивать), привязав переменную
+@code{inhibit-field-text-motion} к значению не-@code{nil}.
 @end defun
 
 @node Not Intervals
-@subsection Why Text Properties are not Intervals
+@subsection Почему Свойства Текста не Являются Интервалами
 @cindex intervals
 
-  Some editors that support adding attributes to text in the buffer do
-so by letting the user specify intervals within the text, and adding
-the properties to the intervals.  Those editors permit the user or the
-programmer to determine where individual intervals start and end.  We
-deliberately provided a different sort of interface in Emacs Lisp to
-avoid certain paradoxical behavior associated with text modification.
+  Некоторые редакторы, поддерживающие добавление атрибутов к тексту в
+буфере, делают это, позволяя пользователю указывать интервалы в тексте и
+добавляя свойства к интервалам.  Эти редакторы позволяют пользователю или
+программисту определять, где начинаются и заканчиваются отдельные интервалы.
+Сознательно предоставлен в Emacs Lisp интерфейс другого типа, чтобы избежать
+определенного парадоксального поведения, связанного с модификацией текста.
 
-  If the actual subdivision into intervals is meaningful, that means you
-can distinguish between a buffer that is just one interval with a
-certain property, and a buffer containing the same text subdivided into
-two intervals, both of which have that property.
+  Если фактическое разделение на интервалы имеет смысл, это означает, что
+можно различать буфер, который представляет собой всего один интервал с
+определенным свойством, и буфер, содержащий тот же текст, разделенный на два
+интервала, оба из которых имеют это свойство.
 
-  Suppose you take the buffer with just one interval and kill part of
-the text.  The text remaining in the buffer is one interval, and the
-copy in the kill ring (and the undo list) becomes a separate interval.
-Then if you yank back the killed text, you get two intervals with the
-same properties.  Thus, editing does not preserve the distinction
-between one interval and two.
+  Предпологается, берется буфер всего с одним интервалом и убивается часть
+текста.  Текст, оставшийся в буфере, составляет один интервал, а копия в
+списке уничтожения (и списке отмены) становится отдельным интервалом.
+Затем, если возвращается убитый текст и получается два интервала с
+одинаковыми свойствами.  Таким образом, редактирование не сохраняет различия
+между одним интервалом и двумя.
 
-  Suppose we attempt to fix this problem by coalescing the two intervals when
-the text is inserted.  That works fine if the buffer originally was a
-single interval.  But suppose instead that we have two adjacent
-intervals with the same properties, and we kill the text of one interval
-and yank it back.  The same interval-coalescence feature that rescues
-the other case causes trouble in this one: after yanking, we have just
-one interval.  Once again, editing does not preserve the distinction
-between one interval and two.
+  Предпологается решение этой проблемы, объединяя два интервала при вставке
+текста.  Это нормально работает, если буфер изначально был одним интервалом.
+Но предположим, что вместо этого есть два соседних интервала с одинаковыми
+свойствами, и уничтожается текст одного интервала и возвращается обратно.
+Та же самая функция слияния интервалов, которая спасает другой случай,
+вызывает проблемы в этом случае: после восстановления у остается только один
+интервал.  Еще раз, редактирование не сохраняет различия между одним
+интервалом и двумя.
 
-  Insertion of text at the border between intervals also raises
-questions that have no satisfactory answer.
+  Вставка текста на границе между интервалами также вызывает вопросы, на
+которые нет удовлетворительного ответа.
 
-  However, it is easy to arrange for editing to behave consistently
-for questions of the form, ``What are the properties of text at this
-buffer or string position?''  So we have decided these are the only
-questions that make sense; we have not implemented asking questions
-about where intervals start or end.
+  Тем не менее, легко организовать последовательное редактирование для
+вопросов формы ``Каковы свойства текста в этом буфере или позиции строки?''.
+Итак, решается, что это единственные вопросы, которые имеют смысл; не
+реализована возможность задавать вопросы о том, где начинаются или
+заканчиваются интервалы.
 
-  In practice, you can usually use the text property search functions in
-place of explicit interval boundaries.  You can think of them as finding
-the boundaries of intervals, assuming that intervals are always
-coalesced whenever possible.  @xref{Property Search}.
+  На практике обычно можно использовать функции поиска текстовых свойств
+вместо явных границ интервала.  Можно думать о них как о нахождении границ
+интервалов, предполагая, что интервалы всегда объединяются, когда это
+возможно.  @xref{Property Search}.
 
-  Emacs also provides explicit intervals as a presentation feature; see
-@ref{Overlays}.
+  Emacs также предоставляет явные интервалы в качестве функции
+представления; смотреть @ref{Overlays}.
 
 @node Substitution
-@section Substituting for a Character Code
+@section Замена Кода Символа
 @cindex replace characters in region
 @cindex substitute characters
 
-  The following functions replace characters within a specified region
-based on their character codes.
+  Следующие функции заменяют символы в указанной области на основе их кодов
+символов.
 
 @defun subst-char-in-region start end old-char new-char &optional noundo
 @cindex replace characters
-This function replaces all occurrences of the character @var{old-char}
-with the character @var{new-char} in the region of the current buffer
-defined by @var{start} and @var{end}.
+Функция заменяет все вхождения символа @var{old-char} на символ
+@var{new-char} в области текущего буфера, определяемой @var{start} и
+@var{end}.
 
 @cindex undo avoidance
-If @var{noundo} is не-@code{nil}, then @code{subst-char-in-region} does
-not record the change for undo and does not mark the buffer as modified.
-This was useful for controlling the old selective display feature
+Если @var{noundo} равен не-@code{nil}, то @code{subst-char-in-region} не
+записывает изменение для отмены и не отмечает буфер как измененный.  Это
+было полезно для управления старой функцией выборочного отображения
 (@pxref{Selective Display}).
 
-@code{subst-char-in-region} does not move point and returns
-@code{nil}.
+@code{subst-char-in-region} не перемещает точку и возвращает @code{nil}.
 
 @example
 @group
@@ -4137,344 +4117,335 @@ ThXs Xs the contents of the buffer before.
 @end defun
 
 @deffn Command translate-region start end table
-This function applies a translation table to the characters in the
-buffer between positions @var{start} and @var{end}.
+Функция применяет таблицу трансляции к символам в буфере между позициями
+@var{start} и @var{end}.
 
-The translation table @var{table} is a string or a char-table;
-@code{(aref @var{table} @var{ochar})} gives the translated character
-corresponding to @var{ochar}.  If @var{table} is a string, any
-characters with codes larger than the length of @var{table} are not
-altered by the translation.
+Таблица трансляции @var{table} - это строка или таблица символов;
+@code{(aref @var{table} @var{ochar})} дает переведенный символ,
+соответствующий @var{ochar}.  Если @var{table} является строкой, любые
+символы с кодами, превышающими длину @var{table}, не изменяются при
+трансляции.
 
-The return value of @code{translate-region} is the number of
-characters that were actually changed by the translation.  This does
-not count characters that were mapped into themselves in the
-translation table.
+Возвращаемое значение @code{translate-region} - это количество символов,
+которые были фактически изменены трансляцией.  При этом не учитываются
+символы, которые были сопоставлены сами с собой в таблице транслирования.
 @end deffn
 
 @node Registers
-@section Registers
+@section Регистры
 @cindex registers
 
-  A register is a sort of variable used in Emacs editing that can hold a
-variety of different kinds of values.  Each register is named by a
-single character.  All @acronym{ASCII} characters and their meta variants
-(but with the exception of @kbd{C-g}) can be used to name registers.
-Thus, there are 255 possible registers.  A register is designated in
-Emacs Lisp by the character that is its name.
+  Регистр - это своего рода переменная, используемая при редактировании
+Emacs, которая может содержать множество различных типов значений.  Каждый
+регистр назван одним символом.  Все символы @acronym{ASCII} и их мета
+варианты (но за исключением @kbd{C-g}) могут использоваться для именования
+регистров.  Таким образом, существует 255 возможных регистров.  Регистр
+обозначается в Emacs Lisp символом, который является его именем.
 
 @defvar register-alist
-This variable is an alist of elements of the form @code{(@var{name} .
-@var{contents})}.  Normally, there is one element for each Emacs
-register that has been used.
+Переменная представляет собой список элементов вида
+@code{(@var{name} . @var{contents})}.  Обычно на каждый использованный
+регистр Emacs приходится по одному элементу.
 
-The object @var{name} is a character (an integer) identifying the
-register.
+Объект @var{name} - это символ (целое число), идентифицирующий регистр.
 @end defvar
 
-  The @var{contents} of a register can have several possible types:
+  @var{contents} реестра может иметь несколько возможных типов:
 
 @table @asis
 @item a number
-A number stands for itself.  If @code{insert-register} finds a number
-in the register, it converts the number to decimal.
+Число означает само себя.  Если @code{insert-register} находит число в
+регистре, преобразуется число в десятичное.
 
 @item a marker
-A marker represents a buffer position to jump to.
+Маркер представляет позицию буфера, к которой нужно перейти.
 
 @item a string
-A string is text saved in the register.
+Строка - это текст, сохраненный в регистре.
 
 @item a rectangle
 @cindex rectangle, as contents of a register
-A rectangle is represented by a list of strings.
+Прямоугольник представлен списком строк.
 
 @item @code{(@var{window-configuration} @var{position})}
-This represents a window configuration to restore in one frame, and a
-position to jump to in the current buffer.
+Представляет конфигурацию окна для восстановления в одном кадре и позицию
+для перехода в текущем буфере.
 
-@c FIXME: Mention frameset here.
+@c FIXME: Упомяните здесь набор фреймов.
 @item @code{(@var{frame-configuration} @var{position})}
-This represents a frame configuration to restore, and a position
-to jump to in the current buffer.
+Представляет конфигурацию кадра для восстановления и позицию для перехода в
+текущем буфере.
 
 @item (file @var{filename})
-This represents a file to visit; jumping to this value visits file
-@var{filename}.
+Представляет собой файл для посещения; переход на это значение обращается к
+файлу @var{filename}.
 
 @item (file-query @var{filename} @var{position})
-This represents a file to visit and a position in it; jumping to this
-value visits file @var{filename} and goes to buffer position
-@var{position}.  Restoring this type of position asks the user for
-confirmation first.
+Представляет собой файл для посещения и позицию в нем; переход на это
+значение после обращения к файлу @var{filename} в буферную позицию
+@var{position}.  При восстановлении позиции этого типа у пользователя
+сначала запрашивается подтверждение.
 @end table
 
-  The functions in this section return unpredictable values unless
-otherwise stated.
+  Функции в этом разделе возвращают непредсказуемые значения, если не
+указано иное.
 
 @defun get-register reg
-This function returns the contents of the register
-@var{reg}, or @code{nil} if it has no contents.
+Функция возвращает содержимое регистра @var{reg} или @code{nil}, если в нем
+нет содержимого.
 @end defun
 
 @defun set-register reg value
-This function sets the contents of register @var{reg} to @var{value}.
-A register can be set to any value, but the other register functions
-expect only certain data types.  The return value is @var{value}.
+Функция устанавливает содержимое регистра @var{reg} в @var{value}.  Регистру
+можно присвоить любое значение, но другие функции регистра ожидают только
+определенных типов данных.  Возвращаемое значение - @var{value}.
 @end defun
 
 @deffn Command view-register reg
-This command displays what is contained in register @var{reg}.
+Команда отображает то, что содержится в регистре @var{reg}.
 @end deffn
 
 @deffn Command insert-register reg &optional beforep
-This command inserts contents of register @var{reg} into the current
-buffer.
+Команда вставляет содержимое регистра @var{reg} в текущий буфер.
 
-Normally, this command puts point before the inserted text, and the
-mark after it.  However, if the optional second argument @var{beforep}
-is не-@code{nil}, it puts the mark before and point after.
+Обычно команда ставит точку перед вставленным текстом, а метку - после него.
+Однако, если необязательный второй аргумент @var{beforep} - не-@code{nil},
+ставится метка перед и точку после.
 
-When called interactively, the command defaults to putting point after
-text, and a prefix argument inverts this behavior.
+При интерактивном вызове команда по умолчанию ставит точку после текста, а
+префиксный аргумент инвертирует это поведение.
 
-If the register contains a rectangle, then the rectangle is inserted
-with its upper left corner at point.  This means that text is inserted
-in the current line and underneath it on successive lines.
+Если регистр содержит прямоугольник, то этот прямоугольник вставляется так,
+чтобы его верхний левый угол находился в точке.  Это означает, что текст
+вставляется в текущую строку и под ней в последующих строках.
 
-If the register contains something other than saved text (a string) or
-a rectangle (a list), currently useless things happen.  This may be
-changed in the future.
+Если регистр содержит что-то кроме сохраненного текста (строки) или
+прямоугольника (списка), в настоящее время происходят бесполезные вещи.  Это
+может быть изменено в будущем.
 @end deffn
 
 @defun register-read-with-preview prompt
 @cindex register preview
-This function reads and returns a register name, prompting with
-@var{prompt} and possibly showing a preview of the existing registers
-and their contents.  The preview is shown in a temporary window, after
-the delay specified by the user option @code{register-preview-delay},
-if its value and @code{register-alist} are both не-@code{nil}.  The
-preview is also shown if the user requests help (e.g., by typing the
-help character).  We recommend that all interactive commands which
-read register names use this function.
+Функция считывает и возвращает имя регистра, запрашивая @var{prompt} и,
+возможно, показывая предварительный просмотр существующих регистров и их
+содержимого.  Предварительный просмотр отображается во временном окне после
+задержки, заданной пользовательской опцией @code{register-preview-delay},
+если его значение и @code{register-alist} оба равны не-@code{nil}.
+Предварительный просмотр также отображается, если пользователь запрашивает
+помощь (например, вводя символ справки).  Рекомендуется, чтобы все
+интерактивные команды, считывающие имена регистров, использовали эту
+функцию.
 @end defun
 
 @node Transposition
-@section Transposition of Text
+@section Транспонирование Текста
 
-  This function can be used to transpose stretches of text:
+  Эта функция может использоваться для транспонирования фрагментов текста:
 
 @defun transpose-regions start1 end1 start2 end2 &optional leave-markers
-This function exchanges two nonoverlapping portions of the buffer (if
-they overlap, the function signals an error).  Arguments @var{start1}
-and @var{end1} specify the bounds of one portion and arguments
-@var{start2} and @var{end2} specify the bounds of the other portion.
+Функция меняет местами две неперекрывающиеся части буфера (если они
+перекрываются, функция сигнализирует об ошибке).  Аргументы @var{start1} и
+@var{end1} определяют границы одной части, а аргументы @var{start2} и
+@var{end2} определяют границы другой части.
 
-Normally, @code{transpose-regions} relocates markers with the transposed
-text; a marker previously positioned within one of the two transposed
-portions moves along with that portion, thus remaining between the same
-two characters in their new position.  However, if @var{leave-markers}
-is не-@code{nil}, @code{transpose-regions} does not do this---it leaves
-all markers unrelocated.
+Обычно @code{transpose-regions} перемещает маркеры с транспонированным
+текстом; маркер, ранее помещенный в одну из двух транспонированных частей,
+перемещается вместе с этой частью, таким образом, оставаясь между теми же
+двумя символами в их новой позиции.  Однако, если @var{leave-markers}
+установленно в не-@code{nil}, @code{transpose-regions} не делает этого -
+оставляет все маркеры нерасположенными.
 @end defun
 
 @node Replacing
-@section Replacing Buffer Text
+@section Замена Текста в Буфере
 
-  You can use the following function to replace the text of one buffer
-with the text of another buffer:
+  Можно использовать следующую функцию для замены текста одного буфера
+текстом другого буфера:
 
 @deffn Command replace-buffer-contents source
-This function replaces the accessible portion of the current buffer
-with the accessible portion of the buffer @var{source}.  @var{source}
-may either be a buffer object or the name of a buffer.  When
-@code{replace-buffer-contents} succeeds, the text of the accessible
-portion of the current buffer will be equal to the text of the
-accessible portion of the @var{source} buffer.  This function attempts
-to keep point, markers, text properties, and overlays in the current
-buffer intact.  One potential case where this behavior is useful is
-external code formatting programs: they typically write the
-reformatted text into a temporary buffer or file, and using
-@code{delete-region} and @code{insert-buffer-substring} would destroy
-these properties.  However, the latter combination is typically
-faster.  @xref{Deletion}, and @ref{Insertion}.
+Функция заменяет доступную часть текущего буфера доступной частью буфера
+@var{source}.  @var{source} может быть либо объектом буфера, либо именем
+буфера.  Когда @code{replace-buffer-contents} завершается успешно, текст
+доступной части текущего буфера будет равен тексту доступной части буфера
+@var{source}.  Функция пытается сохранить точку, маркеры, свойства текста и
+наложения в текущем буфере без изменений.  Один из возможных случаев, когда
+такое поведение полезно, - это программы форматирования внешнего кода: они
+обычно записывают переформатированный текст во временный буфер или файл, а
+использование @code{delete-region} и @code{insert-buffer-substring}
+уничтожит эти свойства.  Однако последняя комбинация обычно быстрее.
+@xref{Deletion} и @ref{Insertion}.
 @end deffn
 
 @node Decompression
-@section Dealing With Compressed Data
+@section Работа со Сжатыми Данными
 
-When @code{auto-compression-mode} is enabled, Emacs automatically
-uncompresses compressed files when you visit them, and automatically
-recompresses them if you alter and save them.  @xref{Compressed
-Files,,, emacs, The GNU Emacs Manual}.
+Когда включен @code{auto-compression-mode}, Emacs автоматически
+распаковывает сжатые файлы, когда они посещаются и автоматически повторно
+сжимает их, если они изменяются и сохраняются.
+@xref{Compressed Files,,, emacs, GNU Emacs Руководство}.
 
-The above feature works by calling an external executable (e.g.,
-@command{gzip}).  Emacs can also be compiled with support for built-in
-decompression using the zlib library, which is faster than calling an
-external program.
+Вышеупомянутая функция работает путем вызова внешнего исполняемого файла
+(например, @command{gzip}).  Emacs также может быть скомпилирован с
+поддержкой встроенной декомпрессии с использованием библиотеки zlib, что
+быстрее, чем вызов внешней программы.
 
 @defun zlib-available-p
-This function returns не-@code{nil} if built-in zlib decompression is
-available.
+Функция возвращает не-@code{nil}, если доступна встроенная распаковка zlib.
 @end defun
 
 @defun zlib-decompress-region start end
-This function decompresses the region between @var{start} and
-@var{end}, using built-in zlib decompression.  The region should
-contain data that were compressed with gzip or zlib.  On success, the
-function replaces the contents of the region with the decompressed
-data.  On failure, the function leaves the region unchanged and
-returns @code{nil}.  This function can be called only in unibyte
-buffers.
+Функция распаковывает область между @var{start} и @var{end}, используя
+встроенную декомпрессию zlib.  Область должна содержать данные, сжатые с
+помощью gzip или zlib.  В случае успеха функция заменяет содержимое области
+распакованными данными.  В случае неудачи функция оставляет регион без
+изменений и возвращает @code{nil}.  Функция может быть вызвана только в
+однобайтовых буферах.
 @end defun
 
 
 @node Base 64
-@section Base 64 Encoding
+@section Base 64 Кодирование
 @cindex base 64 encoding
 
-  Base 64 code is used in email to encode a sequence of 8-bit bytes as
-a longer sequence of @acronym{ASCII} graphic characters.  It is defined in
-Internet RFC@footnote{
-An RFC, an acronym for @dfn{Request for Comments}, is a numbered
-Internet informational document describing a standard.  RFCs are
-usually written by technical experts acting on their own initiative,
-and are traditionally written in a pragmatic, experience-driven
-manner.
-}2045.  This section describes the functions for
-converting to and from this code.
+  Код Base 64 используется в электронной почте для кодирования
+последовательности 8-битных байтов как более длинной последовательности
+графических символов @acronym{ASCII}.  Определяется в Internet RFC@footnote{
+RFC, аббревиатура от @dfn{Запрос Комментариев}, представляет собой
+пронумерованный информационный документ в Интернете, описывающий стандарт.
+RFC обычно пишутся техническими экспертами, действующими по собственной
+инициативе, и традиционно пишутся в прагматичной манере, основанной на
+опыте.}2045.  В этом разделе описаны функции преобразования в этот код и
+обратно.
 
 @deffn Command base64-encode-region beg end &optional no-line-break
-This function converts the region from @var{beg} to @var{end} into base
-64 code.  It returns the length of the encoded text.  An error is
-signaled if a character in the region is multibyte, i.e., in a
-multibyte buffer the region must contain only characters from the
-charsets @code{ascii}, @code{eight-bit-control} and
-@code{eight-bit-graphic}.
+Функция преобразует область от @var{beg} до @var{end} в код base 64.
+Возвращает длину закодированного текста.  Ошибка сигнализируется, если
+символ в области является многобайтовым, т.е. в многобайтовом буфере область
+должна содержать только символы из кодировок @code{ascii},
+@code{eight-bit-control} и @code{eight-bit-graphic}.
 
-Normally, this function inserts newline characters into the encoded
-text, to avoid overlong lines.  However, if the optional argument
-@var{no-line-break} is не-@code{nil}, these newlines are not added, so
-the output is just one long line.
+Обычно функция вставляет символы новой строки в закодированный текст, чтобы
+избежать слишком длинных строк.  Однако, если необязательный аргумент
+@var{no-line-break} - не-@code{nil}, эти символы новой строки не
+добавляются, поэтому на выходе получается только одна длинная строка.
 @end deffn
 
 @defun base64-encode-string string &optional no-line-break
-This function converts the string @var{string} into base 64 code.  It
-returns a string containing the encoded text.  As for
-@code{base64-encode-region}, an error is signaled if a character in the
-string is multibyte.
+Функция преобразует строку @var{string} в код base 64.  Возвращает строку,
+содержащую закодированный текст.  Что касается @code{base64-encode-region},
+ошибка выдается, если символ в строке многобайтовый.
 
-Normally, this function inserts newline characters into the encoded
-text, to avoid overlong lines.  However, if the optional argument
-@var{no-line-break} is не-@code{nil}, these newlines are not added, so
-the result string is just one long line.
+Обычно функция вставляет символы новой строки в закодированный текст, чтобы
+избежать слишком длинных строк.  Однако, если необязательный аргумент
+@var{no-line-break} - не-@code{nil}, эти новые строки не добавляются,
+поэтому строка результата представляет собой единственную длинную строку.
 @end defun
 
 @deffn Command base64-decode-region beg end
-This function converts the region from @var{beg} to @var{end} from base
-64 code into the corresponding decoded text.  It returns the length of
-the decoded text.
+Функция преобразует область от @var{beg} до @var{end} из кода base 64 в
+соответствующий декодированный текст.  Возвращает длину декодированного
+текста.
 
-The decoding functions ignore newline characters in the encoded text.
+Функции декодирования игнорируют символы новой строки в закодированном
+тексте.
 @end deffn
 
 @defun base64-decode-string string
-This function converts the string @var{string} from base 64 code into
-the corresponding decoded text.  It returns a unibyte string containing the
-decoded text.
+Функция преобразует строку @var{string} из кода base 64 в соответствующий
+декодированный текст.  Возвращается однобайтная строка, содержащая
+декодированный текст.
 
-The decoding functions ignore newline characters in the encoded text.
+Функции декодирования игнорируют символы новой строки в закодированном
+тексте.
 @end defun
 
 @node Checksum/Hash
-@section Checksum/Hash
+@section Контрольная Сумма/Хэш
 @cindex MD5 checksum
 @cindex SHA hash
 @cindex hash, cryptographic
 @cindex cryptographic hash
 
-  Emacs has built-in support for computing @dfn{cryptographic hashes}.
-A cryptographic hash, or @dfn{checksum}, is a digital fingerprint
-of a piece of data (e.g., a block of text) which can be used to check
-that you have an unaltered copy of that data.
+  Emacs имеет встроенную поддержку вычисления @dfn{криптографических хешей}.
+Криптографический хеш или @dfn{checksum} - это цифровой отпечаток фрагмента
+данных (например, блока текста), который можно использовать для проверки
+наличия неизмененной копии этих данных.
 
 @cindex message digest
-  Emacs supports several common cryptographic hash algorithms: MD5,
-SHA-1, SHA-2, SHA-224, SHA-256, SHA-384 and SHA-512.  MD5 is the
-oldest of these algorithms, and is commonly used in @dfn{message
-digests} to check the integrity of messages transmitted over a
-network.  MD5 is not collision resistant (i.e., it is possible to
-deliberately design different pieces of data which have the same MD5
-hash), so you should not used it for anything security-related.  A
-similar theoretical weakness also exists in SHA-1.  Therefore, for
-security-related applications you should use the other hash types,
-such as SHA-2.
+  Emacs поддерживает несколько распространенных алгоритмов
+криптографического хеширования: MD5, SHA-1, SHA-2, SHA-224, SHA-256, SHA-384
+и SHA-512.  MD5 является самым старым из этих алгоритмов и обычно
+используется в @dfn{дайджестах сообщений} для проверки целостности
+сообщений, передаваемых по сети.  MD5 не устойчив к коллизиям (то есть можно
+намеренно создавать разные фрагменты данных с одинаковым хешем MD5), поэтому
+не нужно использовать его для чего-либо, связанного с безопасностью.
+Аналогичная теоретическая слабость существует и в SHA-1.  Следовательно, для
+приложений, связанных с безопасностью, потребуется использовать другие типы
+хешей, такие как SHA-2.
 
 @defun secure-hash-algorithms
-This function returns a list of symbols representing algorithms that
-@code{secure-hash} can use.
+Функция возвращает список символов, представляющих алгоритмы, которые может
+использовать @code{secure-hash}.
 @end defun
 
 @defun secure-hash algorithm object &optional start end binary
-This function returns a hash for @var{object}.  The argument
-@var{algorithm} is a symbol stating which hash to compute: one of
-@code{md5}, @code{sha1}, @code{sha224}, @code{sha256}, @code{sha384}
-or @code{sha512}.  The argument @var{object} should be a buffer or a
-string.
+Функция возвращает хеш для @var{object}.  Аргумент @var{algorithm} - это
+символ, указывающий, какой хэш вычислить: один из @code{md5}, @code{sha1},
+@code{sha224}, @code{sha256}, @code{sha384} или @code{sha512}.  Аргумент
+@var{object} должен быть буфером или строкой.
 
-The optional arguments @var{start} and @var{end} are character
-positions specifying the portion of @var{object} to compute the
-message digest for.  If they are @code{nil} or omitted, the hash is
-computed for the whole of @var{object}.
+Необязательные аргументы @var{start} и @var{end} - это позиции символов,
+определяющие часть @var{object}, для которой вычисляется дайджест сообщения.
+Если они равны @code{nil} или опущены, хеш вычисляется для всего
+@var{object}.
 
-If the argument @var{binary} is omitted or @code{nil}, the function
-returns the @dfn{text form} of the hash, as an ordinary Lisp string.
-If @var{binary} is не-@code{nil}, it returns the hash in @dfn{binary
-form}, as a sequence of bytes stored in a unibyte string.
+Если аргумент @var{binary} опущен или @code{nil}, функция возвращает
+@dfn{текстовую форму} хэша как обычную строку Lisp.  Если @var{binary} -
+не-@code{nil}, возвращаетcz хэш в @dfn{двоичной формы} как
+последовательность байтов, хранящуюся в однобайтовой строке.
 
-This function does not compute the hash directly from the internal
-representation of @var{object}'s text (@pxref{Text Representations}).
-Instead, it encodes the text using a coding system (@pxref{Coding
-Systems}), and computes the hash from that encoded text.  If
-@var{object} is a buffer, the coding system used is the one which
-would be chosen by default for writing the text into a file.  If
-@var{object} is a string, the user's preferred coding system is used
-(@pxref{Recognize Coding,,, emacs, GNU Emacs Manual}).
+Функция не вычисляет хэш непосредственно из внутреннего представления
+текста @var{object} (@pxref{Text Representations}).  Вместо этого кодируется
+текст, используя систему кодирования (@pxref{Coding Systems}), и вычисляет
+хэш из этого закодированного текста.  Если @var{object} является буфером,
+используется система кодирования, которая будет выбрана по умолчанию для
+записи текста в файл.  Если @var{object} является строкой, используется
+предпочитаемая пользователем система кодирования
+(@pxref{Recognize Coding,,, emacs, Руководство GNU Emacs}).
 @end defun
 
 @defun md5 object &optional start end coding-system noerror
-This function returns an MD5 hash.  It is semi-obsolete, since for
-most purposes it is equivalent to calling @code{secure-hash} with
-@code{md5} as the @var{algorithm} argument.  The @var{object},
-@var{start} and @var{end} arguments have the same meanings as in
-@code{secure-hash}.
+Функция возвращает хеш MD5.  Он наполовину устарел, поскольку для
+большинства целей он эквивалентен вызову @code{secure-hash} с @code{md5} в
+качестве аргумента @var{algorithm}.  Аргументы @var{object}, @var{start} и
+@var{end} имеют то же значение, что и в @code{secure-hash}.
 
-If @var{coding-system} is не-@code{nil}, it specifies a coding system
-to use to encode the text; if omitted or @code{nil}, the default
-coding system is used, like in @code{secure-hash}.
+Если @var{coding-system} - не-@code{nil}, он указывает систему кодирования,
+используемую для кодирования текста; если опущен или @code{nil},
+используется система кодирования по умолчанию, как в @code{secure-hash}.
 
-Normally, @code{md5} signals an error if the text can't be encoded
-using the specified or chosen coding system.  However, if
-@var{noerror} is не-@code{nil}, it silently uses @code{raw-text}
-coding instead.
+Обычно @code{md5} сигнализирует об ошибке, если текст не может быть
+закодирован с использованием указанной или выбранной системы кодирования.
+Однако, если @var{noerror} равен не-@code{nil}, вместо этого используется
+кодировка @code{raw-text}.
 @end defun
 
 @defun buffer-hash &optional buffer-or-name
-Return a hash of @var{buffer-or-name}.  If @code{nil}, this defaults
-to the current buffer.  As opposed to @code{secure-hash}, this
-function computes the hash based on the internal representation of the
-buffer, disregarding any coding systems.  It's therefore only useful
-when comparing two buffers running in the same Emacs, and is not
-guaranteed to return the same hash between different Emacs versions.
-It should be somewhat more efficient on larger buffers than
-@code{secure-hash} is, and should not allocate more memory.
-@c Note that we do not document what hashing function we're using, or
-@c even whether it's a cryptographic hash, since that may change
-@c according to what we find useful.
+Возвращается хеш @var{buffer-or-name}.  Если @code{nil}, по умолчанию
+используется текущий буфер.  В отличие от @code{secure-hash}, эта функция
+вычисляет хэш на основе внутреннего представления буфера, игнорируя
+какие-либо системы кодирования.  Поэтому это полезно только при сравнении
+двух буферов, работающих в одном и том же Emacs, и не гарантируется возврат
+одного и того же хэша между разными версиями Emacs.  Должно быть несколько
+более эффективным для буферов большего размера, чем @code{secure-hash}, и
+не должно выделяться больше памяти.
+@c Обратить внимание, что не документируется, какая хеширующая функция
+@c используется или, даже если это криптографический хеш, поскольку это
+@c может измениться в зависимости от того, что считается полезным.
 @end defun
 
 @node GnuTLS Cryptography
-@section GnuTLS Cryptography
+@section Криптография GnuTLS
 @cindex MD5 checksum
 @cindex SHA hash
 @cindex hash, cryptographic
@@ -4484,15 +4455,16 @@ It should be somewhat more efficient on larger buffers than
 @cindex symmetric cipher
 @cindex cipher, symmetric
 
-If compiled with GnuTLS, Emacs offers built-in cryptographic support.
-Following the GnuTLS API terminology, the available tools are digests,
-MACs, symmetric ciphers, and AEAD ciphers.
+Если Emacs скомпилирован с помощью GnuTLS, он предлагает встроенную
+криптографическую поддержку.  Следуя терминологии API GnuTLS, доступными
+инструментами являются дайджесты, MAC-адреса, симметричные шифры и шифры
+AEAD.
 
-The terms used herein, such as IV (Initialization Vector), require
-some familiarity with cryptography and will not be defined in detail.
-Please consult @uref{https://www.gnutls.org/} for specific
-documentation which may help you understand the terminology and
-structure of the GnuTLS library.
+Используемые здесь термины, такие как IV (вектор инициализации), требуют
+некоторого знакомства с криптографией и не будут определяться подробно.
+Обратиться к @uref{https://www.gnutls.org/} для получения конкретной
+документации, которая может помочь понять терминологию и структуру
+библиотеки GnuTLS.
 
 @menu
 * Format of GnuTLS Cryptography Inputs::
@@ -4500,207 +4472,209 @@ structure of the GnuTLS library.
 @end menu
 
 @node Format of GnuTLS Cryptography Inputs
-@subsection Format of GnuTLS Cryptography Inputs
+@subsection Формат Входных Данных Криптографии GnuTLS
 @cindex format of gnutls cryptography inputs
 @cindex gnutls cryptography inputs format
 
-The inputs to GnuTLS cryptographic functions can be specified in
-several ways, both as primitive Emacs Lisp types or as lists.
+Входные данные для криптографических функций GnuTLS могут быть указаны
+несколькими способами, как в виде примитивных типов Emacs Lisp, так и в
+виде списков.
 
-The list form is currently similar to how @code{md5} and
-@code{secure-hash} operate.
+Форма списка в настоящее время похожа на то, как работают @code{md5} и
+@code{secure-hash}.
 
 @table @code
 @item @var{buffer}
-Simply passing a buffer as input means the whole buffer should be used.
+Простая передача буфера в качестве ввода означает, что следует использовать
+весь буфер.
 
 @item @var{string}
-A string as input will be used directly.  It may be modified by the
-function (unlike most other Emacs Lisp functions) to reduce the chance
-of exposing sensitive data after the function does its work.
+Строка в качестве ввода будет использоваться напрямую.  Может быть изменено
+функцией (в отличие от большинства других функций Emacs Lisp), чтобы
+уменьшить вероятность раскрытия конфиденциальных данных после того, как
+функция выполнит свою работу.
 
 @item (@var{buffer-or-string} @var{start} @var{end} @var{coding-system} @var{noerror})
-This specifies a buffer or a string as described above, but an
-optional range can be specified with @var{start} and @var{end}.
+Определяет буфер или строку, как описано выше, но необязательный диапазон
+может быть указан с помощью @var{start} и @var{end}.
 
-In addition an optional @var{coding-system} can be specified if needed.
+Кроме того, при необходимости можно указать необязательный
+@var{coding-system}.
 
-The last optional item, @var{noerror}, overrides the normal error when
-the text can't be encoded using the specified or chosen coding system.
-When @var{noerror} is не-@code{nil}, this function silently uses
-@code{raw-text} coding instead.
+Последний необязательный элемент, @var{noerror}, отменяет обычную ошибку,
+когда текст не может быть закодирован с использованием указанной или
+выбранной системы кодирования.  Когда @var{noerror} равен не-@code{nil}, эта
+функция вместо этого использует кодировку @code{raw-text}.
 
 @item (@code{iv-auto} @var{length})
-This will generate an IV (Initialization Vector) of the specified
-length using the GnuTLS @code{GNUTLS_RND_NONCE} generator and pass it
-to the function.  This ensures that the IV is unpredictable and
-unlikely to be reused in the same session.  The actual value of the IV
-is returned by the function as described below.
+Это сгенерирует IV (вектор инициализации) указанной длины с помощью
+генератора GnuTLS @code{GNUTLS_RND_NONCE} и передаст его функции.  Это
+гарантирует, что IV будет непредсказуемым и вряд ли будет повторно
+использован в том же сеансе.  Фактическое значение IV возвращается функцией,
+как описано ниже.
 
 @end table
 
 @node GnuTLS Cryptographic Functions
-@subsection GnuTLS Cryptographic Functions
+@subsection Криптографические Функции GnuTLS
 @cindex gnutls cryptographic functions
 
 @defun gnutls-digests
-This function returns the alist of the GnuTLS digest algorithms.
+Эта функция возвращает список алгоритмов дайджеста GnuTLS.
 
-Each entry has a key which represents the algorithm, followed by a
-plist with internal details about the algorithm.  The plist will have
-@code{:type gnutls-digest-algorithm} and also will have the key
-@code{:digest-algorithm-length 64} to indicate the size, in bytes, of
-the resulting digest.
+У каждой записи есть ключ, который представляет алгоритм, за которым следует
+список с внутренними деталями алгоритма.  Список будет иметь
+@code{:type gnutls-digest-algorithm} и ключ
+@code{:digest-algorithm-length 64} для указания размера в байтах
+результирующего дайджеста.
 
-There is a name parallel between GnuTLS MAC and digest algorithms but
-they are separate things internally and should not be mixed.
+Существует параллель имен между GnuTLS MAC и алгоритмами дайджеста, но они
+внутренне разные и не должны смешиваться.
 @end defun
 
 @defun gnutls-hash-digest digest-method input
-The @var{digest-method} can be the whole plist from
-@code{gnutls-digests}, or just the symbol key, or a string with the
-name of that symbol.
+@var{digest-method} может быть целым списком из @code{gnutls-digests}, или
+только ключом символа, или строкой с именем этого символа.
 
-The @var{input} can be specified as a buffer or string or in other
-ways (@pxref{Format of GnuTLS Cryptography Inputs}).
+@var{input} можно указать как буфер, строку или другими способами
+(@pxref{Format of GnuTLS Cryptography Inputs}).
 
-This function returns @code{nil} on error, and signals a Lisp error if
-the @var{digest-method} or @var{input} are invalid.  On success, it
-returns a list of a binary string (the output) and the IV used.
+Функция возвращает @code{nil} при ошибке и сигнализирует об ошибке Lisp,
+если @var{digest-method} или @var{input} недопустимы.  В случае успеха он
+возвращает список из двоичной строки (выход) и использованного IV.
 @end defun
 
 @defun gnutls-macs
-This function returns the alist of the GnuTLS MAC algorithms.
+Функция возвращает список алгоритмов MAC GnuTLS.
 
-Each entry has a key which represents the algorithm, followed by a
-plist with internal details about the algorithm.  The plist will have
-@code{:type gnutls-mac-algorithm} and also will have the keys
+У каждой записи есть ключ, который представляет алгоритм, за которым следует
+список с внутренними деталями алгоритма.  Список будет иметь
+@code{:type gnutls-mac-algorithm}, а также ключи
 @code{:mac-algorithm-length} @code{:mac-algorithm-keysize}
-@code{:mac-algorithm-noncesize} to indicate the size, in bytes, of the
-resulting hash, the key, and the nonce respectively.
+@code{:mac-algorithm-noncesize}, чтобы указать размер в байтах
+результирующего хэша, ключа и одноразового номера соответственно.
 
-The nonce is currently unused and only some MACs support it.
+Одноразовый номер в настоящее время не используется, и только некоторые
+MAC-адреса поддерживают его.
 
-There is a name parallel between GnuTLS MAC and digest algorithms but
-they are separate things internally and should not be mixed.
+Существует параллель имен между GnuTLS MAC и алгоритмами дайджеста, но они
+внутренне разные и не должны смешиваться.
 @end defun
 
 @defun gnutls-hash-mac hash-method key input
-The @var{hash-method} can be the whole plist from
-@code{gnutls-macs}, or just the symbol key, or a string with the
-name of that symbol.
+@var{hash-method} может быть целым списком из @code{gnutls-macs}, или только
+ключом символа, или строкой с именем этого символа.
 
-The @var{key} can be specified as a buffer or string or in other ways
-(@pxref{Format of GnuTLS Cryptography Inputs}).  The @var{key} will be
-wiped after use if it's a string.
+@var{key} можно указать как буфер, строку или другими способами
+(@pxref{Format of GnuTLS Cryptography Inputs}).  @var{key} будет удален
+после использования, если это строка.
 
-The @var{input} can be specified as a buffer or string or in other
-ways (@pxref{Format of GnuTLS Cryptography Inputs}).
+@var{input} можно указать как буфер, строку или другими способами
+(@pxref{Format of GnuTLS Cryptography Inputs}).
 
-This function returns @code{nil} on error, and signals a Lisp error if
-the @var{hash-method} or @var{key} or @var{input} are invalid.
+Функция возвращает @code{nil} при ошибке и сигнализирует об ошибке Lisp,
+если @var{hash-method}, @var{key} или @var{input} недопустимы.
 
-On success, it returns a list of a binary string (the output) and the
-IV used.
+В случае успеха возвращается список из двоичной строки (выход) и
+использованного IV.
 @end defun
 
 @defun gnutls-ciphers
-This function returns the alist of the GnuTLS ciphers.
+Функция возвращает список шифров GnuTLS.
 
-Each entry has a key which represents the cipher, followed by a plist
-with internal details about the algorithm.  The plist will have
-@code{:type gnutls-symmetric-cipher} and also will have the keys
-@code{:cipher-aead-capable} set to @code{nil} or @code{t} to indicate
-AEAD capability; and @code{:cipher-tagsize} @code{:cipher-blocksize}
-@code{:cipher-keysize} @code{:cipher-ivsize} to indicate the size, in
-bytes, of the tag, block size of the resulting data, the key, and the
-IV respectively.
+Каждая запись имеет ключ, представляющий шифр, за которым следует список с
+внутренними подробностями об алгоритме.  Plist будет иметь
+@code{:type gnutls-symmetric-cipher}, а также ключи
+@code{:cipher-aead-capable} будут иметь значение @code{nil} или @code{t},
+чтобы указать возможность AEAD; и @code{:cipher-tagsize}
+@code{:cipher-blocksize} @code{:cipher-keysize} @code{:cipher-ivsize} для
+указания размера тега в байтах, размера блока результирующих данных, ключа и
+IV соответственно.
 @end defun
 
 @defun gnutls-symmetric-encrypt cipher key iv input &optional aead_auth
-The @var{cipher} can be the whole plist from
-@code{gnutls-ciphers}, or just the symbol key, or a string with the
-name of that symbol.
+@var{cipher} может быть целым списком из @code{gnutls-ciphers}, или только
+ключом символа, или строкой с именем этого символа.
 
-The @var{key} can be specified as a buffer or string or in other ways
-(@pxref{Format of GnuTLS Cryptography Inputs}).  The @var{key} will be
-wiped after use if it's a string.
+@var{key} можно указать как буфер, строку или другими способами
+(@pxref{Format of GnuTLS Cryptography Inputs}).  @var{key} будет удален
+после использования, если это строка.
 
-The @var{iv} and @var{input} and the optional @var{aead_auth} can be
-specified as a buffer or string or in other ways (@pxref{Format of
-GnuTLS Cryptography Inputs}).
+@var{iv} и @var{input} и необязательный @var{aead_auth} можно указать как
+буфер, строку или другими способами
+(@pxref{Format of GnuTLS Cryptography Inputs}).
 
-@var{aead_auth} is only checked with AEAD ciphers, that is, ciphers whose
-plist has @code{:cipher-aead-capable t}.  Otherwise it's ignored.
+@var{aead_auth} проверяется только с шифрами AEAD, то есть шифрами, у
+которых в plist есть @code{:cipher-aead-capable t}.  В противном случае
+игнорируется.
 
-This function returns @code{nil} on error, and signals a Lisp error if
-the @var{cipher} or @var{key}, @var{iv}, or @var{input} are invalid,
-or if @var{aead_auth} was specified with an AEAD cipher and was
-invalid.
+Функция возвращает @code{nil} в случае ошибки и сигнализирует об ошибке
+Lisp, если @var{cipher} или @var{key}, @var{iv} или @var{input} недопустимы,
+или если @var{aead_auth} был указан с шифром AEAD и был недопустимым.
 
-On success, it returns a list of a binary string (the output) and the
-IV used.
+В случае успеха он возвращает список двоичной строки (вывод) и
+используемого IV.
 @end defun
 
 @defun gnutls-symmetric-decrypt cipher key iv input &optional aead_auth
-The @var{cipher} can be the whole plist from
-@code{gnutls-ciphers}, or just the symbol key, or a string with the
-name of that symbol.
+@var{cipher} может быть целым списком из @code{gnutls-ciphers}, или только
+ключом символа, или строкой с именем этого символа.
 
-The @var{key} can be specified as a buffer or string or in other ways
-(@pxref{Format of GnuTLS Cryptography Inputs}).  The @var{key} will be
-wiped after use if it's a string.
+@var{key} можно указать как буфер, строку или другими способами
+(@pxref{Format of GnuTLS Cryptography Inputs}).  @var{key} будет удален
+после использования, если это строка.
 
-The @var{iv} and @var{input} and the optional @var{aead_auth} can be
-specified as a buffer or string or in other ways (@pxref{Format of
-GnuTLS Cryptography Inputs}).
+@var{iv} и @var{input} и необязательный @var{aead_auth} можно указать как
+буфер, строку или другими способами
+(@pxref{Format of GnuTLS Cryptography Inputs}).
 
-@var{aead_auth} is only checked with AEAD ciphers, that is, ciphers whose
-plist has @code{:cipher-aead-capable t}.  Otherwise it's ignored.
+@var{aead_auth} проверяется только с шифрами AEAD, то есть шифрами, у
+которых в plist есть @code{:cipher-aead-capable t}.  В противном случае
+игнорируется.
 
-This function returns @code{nil} on decryption error, and signals a
-Lisp error if the @var{cipher} or @var{key}, @var{iv}, or @var{input}
-are invalid, or if @var{aead_auth} was specified with an AEAD cipher
-and was invalid.
+Эта функция возвращает @code{nil} при ошибке дешифрования и сигнализирует
+об ошибке Lisp, если @var{cipher} или @var{key}, @var{iv} или @var{input}
+недопустимы, или если @var{aead_auth} был указан с шифром AEAD и был
+недопустимым.
 
-On success, it returns a list of a binary string (the output) and the
-IV used.
+В случае успеха он возвращает список из двоичной строки (выход) и
+использованного IV.
 @end defun
 
 @node Parsing HTML/XML
-@section Parsing HTML and XML
+@section Разбор HTML и XML
 @cindex parsing html
 
-When Emacs is compiled with libxml2 support, the following functions
-are available to parse HTML or XML text into Lisp object trees.
+Когда Emacs скомпилирован с поддержкой libxml2, доступны следующие функции
+для синтаксического анализа текста HTML или XML в деревьях объектов Lisp.
 
 @defun libxml-parse-html-region start end &optional base-url discard-comments
-This function parses the text between @var{start} and @var{end} as
-HTML, and returns a list representing the HTML @dfn{parse tree}.  It
-attempts to handle real-world HTML by robustly coping with syntax
-mistakes.
+Функция анализирует текст между @var{start} и @var{end} как HTML и
+возвращает список, представляющий @dfn{дерево синтаксического анализа} HTML.
+Пытается обрабатывать реальный HTML, надежно исправляя синтаксические
+ошибки.
 
-The optional argument @var{base-url}, if не-@code{nil}, should be a
-string specifying the base URL for relative URLs occurring in links.
+Необязательный аргумент @var{base-url}, если не-@code{nil}, должен быть
+строкой, определяющей базовый URL для относительных URL-адресов,
+встречающихся в ссылках.
 
-If the optional argument @var{discard-comments} is не-@code{nil},
-then the parse tree is created without any comments.
+Если необязательный аргумент @var{discard-comments} - не-@code{nil}, то
+дерево синтаксического анализа создается без комментариев.
 
-In the parse tree, each HTML node is represented by a list in which
-the first element is a symbol representing the node name, the second
-element is an alist of node attributes, and the remaining elements are
-the subnodes.
+В дереве синтаксического анализа каждый узел HTML представлен списком, в
+котором первый элемент является символом, представляющим имя узла, второй
+элемент - списком атрибутов узла, а остальные элементы - подузлами.
 
-The following example demonstrates this.  Given this (malformed) HTML
-document:
+Следующий пример демонстрирует это. Учитывая этот (искаженный) документ
+HTML:
 
 @example
 <html><head></head><body width=101><div class=thing>Foo<div>Yes
 @end example
 
 @noindent
-A call to @code{libxml-parse-html-region} returns this @acronym{DOM}
-(document object model):
+Вызов @code{libxml-parse-html-region} возвращает этот @acronym{DOM}
+(объектную модель документа):
 
 @example
 (html nil
@@ -4715,35 +4689,36 @@ A call to @code{libxml-parse-html-region} returns this @acronym{DOM}
 
 @cindex rendering html
 @defun shr-insert-document dom
-This function renders the parsed HTML in @var{dom} into the current
-buffer.  The argument @var{dom} should be a list as generated by
-@code{libxml-parse-html-region}.  This function is, e.g., used by
+Функция отображает проанализированный HTML в @var{dom} в текущий буфер.
+Аргумент @var{dom} должен быть списком, сгенерированным
+@code{libxml-parse-html-region}.  Эту функцию, например, использует
 @ref{Top, EWW,, eww, The Emacs Web Wowser Manual}.
 @end defun
 
 @cindex parsing xml
 @defun libxml-parse-xml-region start end &optional base-url discard-comments
-This function is the same as @code{libxml-parse-html-region}, except
-that it parses the text as XML rather than HTML (so it is stricter
-about syntax).
+Функция аналогична @code{libxml-parse-html-region}, за исключением того, что
+она анализирует текст как XML, а не как HTML (так что синтаксис здесь
+строже).
 @end defun
 
 @menu
-* Document Object Model:: Access, manipulate and search the @acronym{DOM}.
+* Document Object Model:: Доступ, управление и поиск в @acronym{DOM}.
 @end menu
 
 @node Document Object Model
-@subsection Document Object Model
+@subsection Объектная Модель Документа
 @cindex HTML DOM
 @cindex XML DOM
 @cindex DOM
 @cindex Document Object Model
 
-The @acronym{DOM} returned by @code{libxml-parse-html-region} (and the
-other @acronym{XML} parsing functions) is a tree structure where each
-node has a node name (called a @dfn{tag}), and optional key/value
-@dfn{attribute} list, and then a list of @dfn{child nodes}.  The child
-nodes are either strings or @acronym{DOM} objects.
+@acronym{DOM}, возвращаемый @code{libxml-parse-html-region} (и другими
+функциями синтаксического анализа @acronym{XML}), представляет собой
+древовидную структуру, в которой каждый узел имеет имя узла (называемое
+@dfn{тег}) и необязательный список ключей/значений @dfn{атрибутов}, а затем
+список @dfn{дочерних узлов}.  Дочерние узлы являются либо строками, либо
+объектами @acronym{DOM}.
 
 @example
 (body ((width . "101"))
@@ -4754,24 +4729,23 @@ nodes are either strings or @acronym{DOM} objects.
 @end example
 
 @defun dom-node tag &optional attributes &rest children
-This function creates a @acronym{DOM} node of type @var{tag}.  If
-given, @var{attributes} should be a key/value pair list.
-If given, @var{children} should be @acronym{DOM} nodes.
+Функция создает узел @acronym{DOM} типа @var{tag}.  Если задан,
+@var{attributes} должен быть списком пар ключ/значение.  Если задано,
+@var{children} должно быть узлами @acronym{DOM}.
 @end defun
 
-The following functions can be used to work with this structure.  Each
-function takes a @acronym{DOM} node, or a list of nodes.  In the
-latter case, only the first node in the list is used.
+Следующие функции могут использоваться для работы с этой структурой.  Каждая
+функция принимает узел @acronym{DOM} или список узлов.  В последнем случае
+используется только первый узел в списке.
 
-Simple accessors:
+Простые аксессуары:
 
 @table @code
 @item dom-tag @var{node}
-Return the @dfn{tag} (also called ``node name'') of the node.
+Вернуть @dfn{tag} (также называемый ``имя узла'') узла.
 
 @item dom-attr @var{node} @var{attribute}
-Return the value of @var{attribute} in the node.  A common usage
-would be:
+Вернуть значение @var{attribute} в узле.  Обычное использование было бы:
 
 @lisp
 (dom-attr img 'href)
@@ -4779,54 +4753,55 @@ would be:
 @end lisp
 
 @item dom-children @var{node}
-Return all the children of the node.
+Вернуть все дочерние узлы узла.
 
 @item dom-non-text-children @var{node}
-Return all the non-string children of the node.
+Вернуть все дочерние элементы узла, не являющиеся строковыми.
 
 @item dom-attributes @var{node}
-Return the key/value pair list of attributes of the node.
+Вернуть список пар ключ/значение атрибутов узла.
 
 @item dom-text @var{node}
-Return all the textual elements of the node as a concatenated string.
+Вернуть все текстовые элементы узла в виде объединенной строки.
 
 @item dom-texts @var{node}
-Return all the textual elements of the node, as well as the textual
-elements of all the children of the node, recursively, as a
-concatenated string.  This function also takes an optional separator
-to be inserted between the textual elements.
+Рекурсивно вернуть все текстовые элементы узла, а также текстовые элементы
+всех дочерних узлов узла в виде объединенной строки.  Эта функция также
+принимает дополнительный разделитель, который нужно вставить между
+текстовыми элементами.
 
 @item dom-parent @var{dom} @var{node}
-Return the parent of @var{node} in @var{dom}.
+Вернуть родительский объект @var{node} в @var{dom}.
 
 @item dom-remove @var{dom} @var{node}
-Remove @var{node} from @var{dom}.
+Убрать @var{node} из @var{dom}.
 @end table
 
-The following are functions for altering the @acronym{DOM}.
+Ниже приведены функции для изменения файла @acronym{DOM}.
 
 @table @code
 @item dom-set-attribute @var{node} @var{attribute} @var{value}
-Set the @var{attribute} of the node to @var{value}.
+Установить @var{attribute} узла в @var{value}.
 
 @item dom-append-child @var{node} @var{child}
-Append @var{child} as the last child of @var{node}.
+Добавить @var{child} в качестве последнего потомка @var{node}.
 
 @item dom-add-child-before @var{node} @var{child} @var{before}
-Add @var{child} to @var{node}'s child list before the @var{before}
-node.  If @var{before} is @code{nil}, make @var{child} the first child.
+Добавить @var{child} в дочерний список @var{node} перед узлом @var{before}.
+Если @var{before} - это @code{nil}, сделать @var{child} первым дочерним
+элементом.
 
 @item dom-set-attributes @var{node} @var{attributes}
-Replace all the attributes of the node with a new key/value list.
+Заменить все атрибуты узла новым списком ключей/значений.
 @end table
 
-The following are functions for searching for elements in the
-@acronym{DOM}.  They all return lists of matching nodes.
+Ниже приведены функции для поиска элементов в файле @acronym{DOM}.  Все они
+возвращают списки совпадающих узлов.
 
 @table @code
 @item dom-by-tag @var{dom} @var{tag}
-Return all nodes in @var{dom} that are of type @var{tag}.  A typical
-use would be:
+Вернуть все узлы в @var{dom}, которые имеют тип @var{tag}.  Типичное
+использование было бы:
 
 @lisp
 (dom-by-tag dom 'td)
@@ -4834,45 +4809,44 @@ use would be:
 @end lisp
 
 @item dom-by-class @var{dom} @var{match}
-Return all nodes in @var{dom} that have class names that match
-@var{match}, which is a regular expression.
+Вернуть все узлы в @var{dom}, имена классов которых соответствуют
+@var{match}, что является регулярным выражением.
 
 @item dom-by-style @var{dom} @var{style}
-Return all nodes in @var{dom} that have styles that match @var{match},
-which is a regular expression.
+Вернуть все узлы в @var{dom}, стили которых соответствуют @var{match},
+что является регулярным выражением.
 
 @item dom-by-id @var{dom} @var{style}
-Return all nodes in @var{dom} that have IDs that match @var{match},
-which is a regular expression.
+Вернуть все узлы в @var{dom}, идентификаторы которых совпадают с
+@var{match}, что является регулярным выражением.
 
 @item dom-strings @var{dom}
-Return all strings in @var{dom}.
+Вернуть все строки в @var{dom}.
 
 @end table
 
-Utility functions:
+Служебные функции:
 
 @table @code
 @item dom-pp @var{dom} &optional @var{remove-empty}
-Pretty-print @var{dom} at point.  If @var{remove-empty}, don't print
-textual nodes that just contain white-space.
+Довольно-напечатать @var{dom} в точке.  Если @var{remove-empty}, не
+печатать текстовые узлы, которые просто содержат пробелы.
 @end table
 
 
 @node Atomic Changes
-@section Atomic Change Groups
+@section Группы Атомарных Изменений
 @cindex atomic changes
 
-  In database terminology, an @dfn{atomic} change is an indivisible
-change---it can succeed entirely or it can fail entirely, but it
-cannot partly succeed.  A Lisp program can make a series of changes to
-one or several buffers as an @dfn{atomic change group}, meaning that
-either the entire series of changes will be installed in their buffers
-or, in case of an error, none of them will be.
+  В терминологии базы данных @dfn{атомарное} изменение является неделимым
+изменением - оно может быть успешным или полностью неудачным, но не может
+быть частично успешным.  Программа на Lisp может вносить серию изменений в
+один или несколько буферов как @dfn{группу атомарных изменений}, что
+означает, что либо вся серия изменений будет установлена в их буферы, либо,
+в случае ошибки, ни одно из них не будет установлено.
 
-  To do this for one buffer, the one already current, simply write a
-call to @code{atomic-change-group} around the code that makes the
-changes, like this:
+  Чтобы сделать это для одного буфера, уже текущего, просто пишется вызов
+@code{atomic-change-group} вокруг кода, который вносит изменения, например:
 
 @example
 (atomic-change-group
@@ -4881,170 +4855,171 @@ changes, like this:
 @end example
 
 @noindent
-If an error (or other nonlocal exit) occurs inside the body of
-@code{atomic-change-group}, it unmakes all the changes in that buffer
-that were during the execution of the body.  This kind of change group
-has no effect on any other buffers---any such changes remain.
+Если ошибка (или другой нелокальный выход) происходит внутри тела
+@code{atomic-change-group}, отменяются все изменения в этом буфере, которые
+были во время выполнения тела.  Такая группа изменений не влияет на другие
+буферы - любые такие изменения остаются.
 
-  If you need something more sophisticated, such as to make changes in
-various buffers constitute one atomic group, you must directly call
-lower-level functions that @code{atomic-change-group} uses.
+  Если требуется что-то более сложное, например, чтобы внести изменения в
+различные буферы, составляющие одну атомарную группу, потребуется напрямую
+вызывать функции нижнего уровня, которые использует
+@code{atomic-change-group}.
 
 @defun prepare-change-group &optional buffer
-This function sets up a change group for buffer @var{buffer}, which
-defaults to the current buffer.  It returns a handle that
-represents the change group.  You must use this handle to activate the
-change group and subsequently to finish it.
+Функция устанавливает группу изменений для буфера @var{buffer}, который по
+умолчанию равен текущему буферу.  Возвращается дескриптор, представляющий
+группу изменений.  Требуется использовать этот дескриптор, чтобы
+активировать группу изменений и впоследствии завершить ее.
 @end defun
 
-  To use the change group, you must @dfn{activate} it.  You must do
-this before making any changes in the text of @var{buffer}.
+  Чтобы использовать группу изменений, потребуется @dfn{активировать} её.
+Нужно сделать это перед тем, как вносить какие-либо изменения в текст
+@var{buffer}.
 
 @defun activate-change-group handle
 This function activates the change group that @var{handle} designates.
 @end defun
 
-  After you activate the change group, any changes you make in that
-buffer become part of it.  Once you have made all the desired changes
-in the buffer, you must @dfn{finish} the change group.  There are two
-ways to do this: you can either accept (and finalize) all the changes,
-or cancel them all.
+  После активации группы изменений любые изменения, которые вносятся в этот
+буфер, становятся ее частью.  После того, как внесены все желаемые изменения
+в буфер, требуется @dfn{финализировать} группу изменений.  Это можно сделать
+двумя способами: можно либо принять (и завершить) все изменения, либо
+отменить их все.
 
 @defun accept-change-group handle
-This function accepts all the changes in the change group specified by
-@var{handle}, making them final.
+Функция принимает все изменения в группе изменений, указанной @var{handle},
+делая их завершенными.
 @end defun
 
 @defun cancel-change-group handle
-This function cancels and undoes all the changes in the change group
-specified by @var{handle}.
+Функция отменяет все изменения в группе изменений, указанной @var{handle}.
 @end defun
 
-  Your code should use @code{unwind-protect} to make sure the group is
-always finished.  The call to @code{activate-change-group} should be
-inside the @code{unwind-protect}, in case the user types @kbd{C-g}
-just after it runs.  (This is one reason why
-@code{prepare-change-group} and @code{activate-change-group} are
-separate functions, because normally you would call
-@code{prepare-change-group} before the start of that
-@code{unwind-protect}.)  Once you finish the group, don't use the
-handle again---in particular, don't try to finish the same group
-twice.
+  Код должен использовать @code{unwind-protect}, чтобы группа всегда была
+завершенной.  Вызов @code{activate-change-group} должен находиться внутри
+@code{unwind-protect}, на случай, если пользователь наберет @kbd{C-g} сразу
+после его запуска.  (Это одна из причин, по которой
+@code{prepare-change-group} и @code{activate-change-group} являются
+отдельными функциями, потому что обычно вызывается
+@code{prepare-change-group} перед началом этого @code{unwind-protect}.)
+После завершения группы не использовать дескриптор снова - в частности, не
+пытаться дважды завершить одну и ту же группу.
 
-  To make a multibuffer change group, call @code{prepare-change-group}
-once for each buffer you want to cover, then use @code{nconc} to
-combine the returned values, like this:
+  Чтобы создать группу изменения мультибуфера, вызвать
+@code{prepare-change-group} один раз для каждого буфера, который требуется
+охватить, затем использовать @code{nconc} для объединения возвращаемых
+значений, как здеся:
 
 @example
 (nconc (prepare-change-group buffer-1)
        (prepare-change-group buffer-2))
 @end example
 
-You can then activate the multibuffer change group with a single call
-to @code{activate-change-group}, and finish it with a single call to
-@code{accept-change-group} or @code{cancel-change-group}.
+Затем можно активировать группу изменения мультибуфера одним вызовом
+@code{activate-change-group} и завершить его одним вызовом
+@code{accept-change-group} или @code{cancel-change-group}.
 
-  Nested use of several change groups for the same buffer works as you
-would expect.  Non-nested use of change groups for the same buffer
-will get Emacs confused, so don't let it happen; the first change
-group you start for any given buffer should be the last one finished.
+  Вложенное использование нескольких групп изменений для одного и того же
+буфера работает, как и следовало ожидать.  Использование невложенных групп
+изменений для одного и того же буфера запутает Emacs, так что не позволять
+этому случиться; первая группа изменений, которая запускается для любого
+заданного буфера, должна быть последней завершенной.
 
 @node Change Hooks
-@section Change Hooks
+@section Изменение Перехватчиков
 @cindex change hooks
 @cindex hooks for text changes
 
-  These hook variables let you arrange to take notice of changes in
-buffers (or in a particular buffer, if you make them buffer-local).
-See also @ref{Special Properties}, for how to detect changes to
-specific parts of the text.
+  Эти переменные-ловушки позволяют отслеживать изменения в буферах (или в
+конкретном буфере, если сделать их локальными для буфера).  Смотреть также
+@ref{Special Properties}, чтобы узнать, как обнаружить изменения в
+определенных частях текста.
 
-  The functions you use in these hooks should save and restore the match
-data if they do anything that uses regular expressions; otherwise, they
-will interfere in bizarre ways with the editing operations that call
-them.
+  Функции, которые используются в этих перехватчиках, должны сохранять и
+восстанавливать данные соответствия, если они делают что-либо, использующее
+регулярные выражения; в противном случае они будут причудливым образом
+вмешиваться в вызывающие их операции редактирования.
 
 @defvar before-change-functions
-This variable holds a list of functions to call when Emacs is about to
-modify a buffer.  Each function gets two arguments, the beginning and
-end of the region that is about to change, represented as integers.
-The buffer that is about to change is always the current buffer when
-the function is called.
+Переменная содержит список функций, вызываемых, когда Emacs собирается
+изменить буфер.  Каждая функция получает два аргумента: начало и конец
+области, которая собирается измениться, представленных в виде целых чисел.
+Буфер, который собирается измениться, всегда является текущим буфером при
+вызове функции.
 @end defvar
 
 @defvar after-change-functions
-This variable holds a list of functions to call after Emacs modifies a
-buffer.  Each function receives three arguments: the beginning and end
-of the region just changed, and the length of the text that existed
-before the change.  All three arguments are integers.  The buffer that
-has been changed is always the current buffer when the function is
-called.
+Переменная содержит список функций, вызываемых после того, как Emacs
+модифицирует буфер.  Каждая функция получает три аргумента: начало и конец
+только что измененной области и длину текста, существовавшего до изменения.
+Все три аргумента являются целыми числами.  Буфер, который был изменен,
+всегда является текущим буфером при вызове функции.
 
-The length of the old text is the difference between the buffer
-positions before and after that text as it was before the change.  As
-for the changed text, its length is simply the difference between the
-first two arguments.
+Длина старого текста - это разница между позициями буфера до и после этого
+текста, как это было до изменения.  Что касается измененного текста, его
+длина - это просто разница между первыми двумя аргументами.
 @end defvar
 
-  Output of messages into the @file{*Messages*} buffer does not call
-these functions, and neither do certain internal buffer changes, such
-as changes in buffers created by Emacs internally for certain jobs,
-that should not be visible to Lisp programs.
+  Вывод сообщений в буфер @file{*Messages*} не вызывает эти функции, как и
+некоторые изменения внутреннего буфера, такие как изменения в буферах,
+созданных внутри Emacs для определенных заданий, которые не должны быть
+видны программам на Lisp.
 
-The vast majority of buffer changing primitives will call
-@code{before-change-functions} and @code{after-change-functions} in
-balanced pairs, once for each change, where the arguments to these
-hooks exactly delimit the change being made.  Yet, hook functions
-should not rely on this always being the case, because some complex
-primitives call @code{before-change-functions} once before making
-changes, and then call @code{after-change-functions} zero or more
-times, depending on how many individual changes the primitive is
-making.  When that happens, the arguments to
-@code{before-change-functions} will enclose a region in which the
-individual changes are made, but won't necessarily be the minimal such
-region, and the arguments to each successive call of
-@code{after-change-functions} will then delimit the part of text being
-changed exactly.  In general, we advise to use either before- or the
-after-change hooks, but not both.
+Подавляющее большинство примитивов изменения буфера будут вызывать
+@code{before-change-functions} и @code{after-change-functions} в
+сбалансированных парах, по одному разу для каждого изменения, где аргументы
+этих перехватчиков точно ограничивают вносимое изменение.  Тем не менее,
+функции-перехватчики не должны полагаться на это всегда, потому что
+некоторые сложные примитивы вызывают @code{before-change-functions} один раз
+перед внесением изменений, а затем вызывают @code{after-change-functions}
+ноль или более раз, в зависимости от того, сколько отдельных изменений
+вносит примитив.  Когда это произойдет, аргументы
+@code{before-change-functions} будут заключать в себя область, в которой
+производятся отдельные изменения, но не обязательно будет минимальной такой
+областью, и аргументы для каждого последующего вызова
+@code{after-change-functions} будут точно ограничивать изменяемую часть
+текста.  В общем, советуется использовать перехватчики до или после смены,
+но не одновременно.
 
 @defmac combine-after-change-calls body@dots{}
-The macro executes @var{body} normally, but arranges to call the
-after-change functions just once for a series of several changes---if
-that seems safe.
+Макрос обычно выполняет @var{body}, но организует вызов функций после
+изменения только один раз для серии из нескольких изменений - если это
+кажется безопасным.
 
-If a program makes several text changes in the same area of the buffer,
-using the macro @code{combine-after-change-calls} around that part of
-the program can make it run considerably faster when after-change hooks
-are in use.  When the after-change hooks are ultimately called, the
-arguments specify a portion of the buffer including all of the changes
-made within the @code{combine-after-change-calls} body.
+Если программа вносит несколько изменений текста в одну и ту же область
+буфера, использование макроса @code{combine-after-change-calls} вокруг этой
+части программы может значительно ускорить ее выполнение при использовании
+перехватчиков после изменения.  Когда в конечном итоге вызываются
+перехватчики после изменения, аргументы определяют часть буфера, включая все
+изменения, сделанные в теле @code{combine-after-change-calls}.
 
-@strong{Warning:} You must not alter the values of
-@code{after-change-functions} within
-the body of a @code{combine-after-change-calls} form.
+@strong{Предупреждение:} Не требуется изменять значения
+@code{after-change-functions} в теле формы
+@code{combine-after-change-calls}.
 
-@strong{Warning:} if the changes you combine occur in widely scattered
-parts of the buffer, this will still work, but it is not advisable,
-because it may lead to inefficient behavior for some change hook
-functions.
+@strong{Предупреждение:} если изменения, которые объединяются, происходят в
+сильно разбросанных частях буфера, это все равно будет работать, но это не
+рекомендуется, потому что это может привести к неэффективному поведению
+некоторых функций ловушки изменений.
 @end defmac
 
 @defvar first-change-hook
-This variable is a normal hook that is run whenever a buffer is changed
-that was previously in the unmodified state.
+Переменная - обычная ловушка, которая запускается всякий раз, когда
+изменяется буфер, который ранее находился в неизмененном состоянии.
 @end defvar
 
 @defvar inhibit-modification-hooks
-If this variable is не-@code{nil}, all of the change hooks are
-disabled; none of them run.  This affects all the hook variables
-described above in this section, as well as the hooks attached to
-certain special text properties (@pxref{Special Properties}) and overlay
-properties (@pxref{Overlay Properties}).
+Если переменная - не-@code{nil}, все перехватчики изменений отключены; никто
+из них не вызывется.  Это влияет на все переменные ловушки, описанные выше в
+этом разделе, а также на ловушки, прикрепленные к определенным специальным
+свойствам текста (@pxref{Special Properties}) и свойствам наложения
+(@pxref{Overlay Properties}).
 
-Also, this variable is bound to не-@code{nil} while running those
-same hook variables, so that by default modifying the buffer from
-a modification hook does not cause other modification hooks to be run.
-If you do want modification hooks to be run in a particular piece of
-code that is itself run from a modification hook, then rebind locally
-@code{inhibit-modification-hooks} to @code{nil}.
+Кроме того, эта переменная привязана к не-@code{nil} при запуске тех же
+переменных ловушки, так что по умолчанию изменение буфера из ловушки
+модификации не вызывает запуск других ловушек модификации.  Если
+действительно требуется, чтобы обработчики модификации запускались в
+конкретном фрагменте кода, который сам запускается из обработчика
+модификации, то локально повторно привязать
+@code{inhibit-modification-hooks} к @code{nil}.
 @end defvar
