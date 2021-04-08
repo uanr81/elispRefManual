@@ -3,387 +3,388 @@
 @c Copyright (C) 1998-1999, 2001-2019 Free Software Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Non-ASCII Characters
-@chapter Non-@acronym{ASCII} Characters
+@chapter Не-@acronym{ASCII} Символы
 @cindex multibyte characters
 @cindex characters, multi-byte
 @cindex non-@acronym{ASCII} characters
 
-  This chapter covers the special issues relating to characters and
-how they are stored in strings and buffers.
+  В этой главе рассматриваются специальные вопросы, касающиеся символов и их
+хранения в строках и буферах.
 
 @menu
-* Text Representations::    How Emacs represents text.
-* Disabling Multibyte::     Controlling whether to use multibyte characters.
-* Converting Representations::  Converting unibyte to multibyte and vice versa.
-* Selecting a Representation::  Treating a byte sequence as unibyte or multi.
-* Character Codes::         How unibyte and multibyte relate to
-                                codes of individual characters.
-* Character Properties::    Character attributes that define their
-                                behavior and handling.
-* Character Sets::          The space of possible character codes
-                                is divided into various character sets.
-* Scanning Charsets::       Which character sets are used in a buffer?
-* Translation of Characters::   Translation tables are used for conversion.
-* Coding Systems::          Coding systems are conversions for saving files.
-* Input Methods::           Input methods allow users to enter various
-                                non-ASCII characters without special keyboards.
-* Locales::                 Interacting with the POSIX locale.
+* Text Representations::    Как Emacs представляет текст.
+* Disabling Multibyte::     Контроль использования многобайтовых символов.
+* Converting Representations::  Преобразование юнибайта в мультибайт и
+                                    наоборот.
+* Selecting a Representation::  Обработка байтовой последовательности как
+                                    однобайтовой или многобайтовой.
+* Character Codes::         Как юнибайт и мультибайт соотносятся с кодами
+                                отдельных символов.
+* Character Properties::    Атрибуты символов, определяющие их поведение и
+                                обращение с ними.
+* Character Sets::          Пространство возможных кодов символов разделено
+                                на различные наборы символов.
+* Scanning Charsets::       Какие наборы символов используются в буфере?
+* Translation of Characters:: Для конвертации используются таблицы
+                                 трансляции.
+* Coding Systems:: Системы кодирования - это преобразования для сохранения
+                       файлов.
+* Input Methods::           Методы ввода позволяют пользователям вводить
+                                различные символы, отличные от ASCII, без
+                                специальной ключевой карты.
+* Locales::                 Взаимодействие с локалью POSIX.
 @end menu
 
 @node Text Representations
-@section Text Representations
+@section Текстовые Представления
 @cindex text representation
 
-  Emacs buffers and strings support a large repertoire of characters
-from many different scripts, allowing users to type and display text
-in almost any known written language.
+  Буферы и строки Emacs поддерживают большой набор символов из множества
+различных сценариев, позволяя пользователям вводить и отображать текст
+практически на любом известном письменном языке.
 
 @cindex character codepoint
 @cindex codespace
 @cindex Unicode
-  To support this multitude of characters and scripts, Emacs closely
-follows the @dfn{Unicode Standard}.  The Unicode Standard assigns a
-unique number, called a @dfn{codepoint}, to each and every character.
-The range of codepoints defined by Unicode, or the Unicode
-@dfn{codespace}, is @code{0..#x10FFFF} (in hexadecimal notation),
-inclusive.  Emacs extends this range with codepoints in the range
-@code{#x110000..#x3FFFFF}, which it uses for representing characters
-that are not unified with Unicode and @dfn{raw 8-bit bytes} that
-cannot be interpreted as characters.  Thus, a character codepoint in
-Emacs is a 22-bit integer.
+  Для поддержки этого множества символов и скриптов Emacs строго следует
+@dfn{Стандарту Юникода}.  Стандарт Unicode присваивает каждому символу
+уникальный номер, называемый @dfn{кодовая точка}.  Диапазон кодовых точек,
+определенных Unicode или Unicode @dfn{кодовым пространством}, составляет
+@code{0..#x10FFFF} (в шестнадцатеричной системе счисления) включительно.
+Emacs расширяет этот диапазон кодовыми точками в диапазоне
+@code{#x110000..#x3FFFFF}, который использует для представления символов, не
+унифицированных с Unicode, и @dfn{raw 8-bit bytes}, которые не могут быть
+интерпретированы как символы.  Таким образом, код символа в Emacs является
+22-битным целым числом.
 
 @cindex internal representation of characters
 @cindex characters, representation in buffers and strings
 @cindex multibyte text
-  To conserve memory, Emacs does not hold fixed-length 22-bit numbers
-that are codepoints of text characters within buffers and strings.
-Rather, Emacs uses a variable-length internal representation of
-characters, that stores each character as a sequence of 1 to 5 8-bit
-bytes, depending on the magnitude of its codepoint@footnote{
-This internal representation is based on one of the encodings defined
-by the Unicode Standard, called @dfn{UTF-8}, for representing any
-Unicode codepoint, but Emacs extends UTF-8 to represent the additional
-codepoints it uses for raw 8-bit bytes and characters not unified with
-Unicode.}.  For example, any @acronym{ASCII} character takes up only 1
-byte, a Latin-1 character takes up 2 bytes, etc.  We call this
-representation of text @dfn{multibyte}.
+  Для экономии памяти Emacs не хранит 22-битные числа фиксированной длины,
+которые являются кодовыми точками текстовых символов в буферах и строках.
+Напротив, Emacs использует внутреннее представление символов переменной
+длины, в котором каждый символ хранится в виде последовательности от 1 до 5
+8-битных байтов, в зависимости от величины его кодовой точки@footnote{Это
+внутреннее представление основано на одной из кодировок, определенных
+стандартом Unicode, называемой @dfn{UTF-8}, для представления любой кодовой
+точки Unicode, но Emacs расширяет UTF-8 для представления дополнительных
+кодовых точек, которые он использует для необработанных 8-битных байтов и
+символов, не унифицированных с Unicode}.  Например, любой символ
+@acronym{ASCII} занимает только 1 байт, символ Latin-1 занимает 2 байта и
+так далее.  Называется это представлением  @dfn{многобайтного} текста.
 
-  Outside Emacs, characters can be represented in many different
-encodings, such as ISO-8859-1, GB-2312, Big-5, etc.  Emacs converts
-between these external encodings and its internal representation, as
-appropriate, when it reads text into a buffer or a string, or when it
-writes text to a disk file or passes it to some other process.
+  Вне Emacs символы могут быть представлены во многих различных кодировках,
+таких как ISO-8859-1, GB-2312, Big-5 и так далее.  Emacs преобразует эти
+внешние кодировки в свое внутреннее представление, когда это необходимо,
+когда читается текст в буфер или строку, или когда он записывается текст в
+файл на диске или передается текст другому процессу.
 
-  Occasionally, Emacs needs to hold and manipulate encoded text or
-binary non-text data in its buffers or strings.  For example, when
-Emacs visits a file, it first reads the file's text verbatim into a
-buffer, and only then converts it to the internal representation.
-Before the conversion, the buffer holds encoded text.
+  Иногда Emacs необходимо хранить и обрабатывать закодированный текст или
+двоичные нетекстовые данные в своих буферах или строках.  Например, когда
+Emacs посещает файл, он сначала дословно считывает текст файла в буфер и
+только затем преобразует его во внутреннее представление.  Перед
+преобразованием в буфере хранится закодированный текст.
 
 @cindex unibyte text
-  Encoded text is not really text, as far as Emacs is concerned, but
-rather a sequence of raw 8-bit bytes.  We call buffers and strings
-that hold encoded text @dfn{unibyte} buffers and strings, because
-Emacs treats them as a sequence of individual bytes.  Usually, Emacs
-displays unibyte buffers and strings as octal codes such as
-@code{\237}.  We recommend that you never use unibyte buffers and
-strings except for manipulating encoded text or binary non-text data.
+  Для Emacs закодированный текст на самом деле не является текстом, а скорее
+последовательностью необработанных 8-битных байтов.  Вызываются буферы и
+строки, содержащие закодированный @dfn{многобайтовые} текст, буферы и
+строки, потому что Emacs обрабатывает их как последовательность отдельных
+байтов.  Обычно Emacs отображаются однобайтовые буферы и строки в виде
+восьмеричных кодов, таких как @code{37}.  Рекомендуется никогда не
+использовать однобайтовые буферы и строки, за исключением операций с
+закодированным текстом или двоичными нетекстовыми данными.
 
-  In a buffer, the buffer-local value of the variable
-@code{enable-multibyte-characters} specifies the representation used.
-The representation for a string is determined and recorded in the string
-when the string is constructed.
+  В буфере значение локальной переменной буфера
+@code{enable-multibyte-characters} определяет используемое представление.
+Представление строки определяется и записывается в строке при ее построении.
 
 @defvar enable-multibyte-characters
-This variable specifies the current buffer's text representation.
-If it is non-@code{nil}, the buffer contains multibyte text; otherwise,
-it contains unibyte encoded text or binary non-text data.
+Переменная определяет текстовое представление текущего буфера.  Если это
+не-@code{nil}, буфер содержит многобайтовый текст; в противном случае
+содержится однобайтный текст или двоичные нетекстовые данные.
 
-You cannot set this variable directly; instead, use the function
-@code{set-buffer-multibyte} to change a buffer's representation.
+Не выйдет установить эту переменную напрямую; вместо этого используется
+функция @code{set-buffer-multibyte}, чтобы изменить представление буфера.
 @end defvar
 
 @defun position-bytes position
-Buffer positions are measured in character units.  This function
-returns the byte-position corresponding to buffer position
-@var{position} in the current buffer.  This is 1 at the start of the
-buffer, and counts upward in bytes.  If @var{position} is out of
-range, the value is @code{nil}.
+Позиции буфера измеряются в символьных единицах.  Функция возвращает позицию
+байта, соответствующую положению @var{position} в текущем буфере.  Это 1 в
+начале буфера и увеличивается в байтах.  Если @var{position} вне допустимого
+диапазона, значение @code{nil}.
 @end defun
 
 @defun byte-to-position byte-position
-Return the buffer position, in character units, corresponding to given
-@var{byte-position} in the current buffer.  If @var{byte-position} is
-out of range, the value is @code{nil}.  In a multibyte buffer, an
-arbitrary value of @var{byte-position} can be not at character
-boundary, but inside a multibyte sequence representing a single
-character; in this case, this function returns the buffer position of
-the character whose multibyte sequence includes @var{byte-position}.
-In other words, the value does not change for all byte positions that
-belong to the same character.
+Возвращает позицию буфера в символьных единицах, соответствующую данному
+@var{byte-position} в текущем буфере.  Если @var{byte-position} вне
+допустимого диапазона, значение @code{nil}.  В многобайтовом буфере
+произвольное значение @var{byte-position} может находиться не на границе
+символа, а внутри многобайтовой последовательности, представляющей один
+символ; в этом случае эта функция возвращает позицию в буфере символа,
+многобайтовая последовательность которого включает @var{byte-position}.
+Другими словами, значение не изменяется для всех позиций байтов,
+принадлежащих одному и тому же символу.
 @end defun
 
 @cindex convert file byte to buffer position
 @cindex convert buffer position to file byte
-  The following two functions are useful when a Lisp program needs to
-map buffer positions to byte offsets in a file visited by the buffer.
+  Следующие две функции полезны, когда программе на Lisp необходимо
+сопоставить позиции буфера с байтовыми смещениями в файле, который посещает
+буфер.
 
 @defun bufferpos-to-filepos position &optional quality coding-system
-This function is similar to @code{position-bytes}, but instead of byte
-position in the current buffer it returns the offset from the
-beginning of the current buffer's file of the byte that corresponds to
-the given character @var{position} in the buffer.  The conversion
-requires to know how the text is encoded in the buffer's file; this is
-what the @var{coding-system} argument is for, defaulting to the value
-of @code{buffer-file-coding-system}.  The optional argument
-@var{quality} specifies how accurate the result should be; it should
-be one of the following:
+Функция похожа на @code{position-bytes}, но вместо позиции байта в текущем
+буфере возвращает смещение от начала файла текущего буфера, соответствующего
+данному символу @var{position} в буфере.  Для преобразования необходимо
+знать, как кодируется текст в файле буфера; это то, для чего нужен аргумент
+@var{coding-system}, по умолчанию значение @code{buffer-file-coding-system}.
+Необязательный аргумент @var{quality} указывает, насколько точным должен
+быть результат; это должно быть одно из следующих:
 
 @table @code
 @item exact
-The result must be accurate.  The function may need to encode and
-decode a large part of the buffer, which is expensive and can be slow.
+Результат должен быть точным.  Функция может нуждаться в кодировании и
+декодировании большой части буфера, что дорого и может быть медленным.
 @item approximate
-The value can be an approximation.  The function may avoid expensive
-processing and return an inexact result.
+Значение может быть приблизительным.  Функция может избежать дорогостоящей
+обработки и вернуть неточный результат.
 @item nil
-If the exact result needs expensive processing, the function will
-return @code{nil} rather than an approximation.  This is the default
-if the argument is omitted.
+Если точный результат требует дорогостоящей обработки, функция вернет
+@code{nil}, а не приближение.  Это значение по умолчанию, если аргумент
+опущен.
 @end table
 @end defun
 
 @defun filepos-to-bufferpos byte &optional quality coding-system
-This function returns the buffer position corresponding to a file
-position specified by @var{byte}, a zero-base byte offset from the
-file's beginning.  The function performs the conversion opposite to
-what @code{bufferpos-to-filepos} does.  Optional arguments
-@var{quality} and @var{coding-system} have the same meaning and values
-as for @code{bufferpos-to-filepos}.
+Функция возвращает позицию в буфере, соответствующую позиции файла,
+заданной параметром @var{byte}, смещением нулевого байта от начала файла.
+Функция выполняет преобразование, противоположное тому, что делает
+@code{bufferpos-to-filepos}.  Необязательные аргументы @var{quality} и
+@var{coding-system} имеют то же значение, что и @code{bufferpos-to-filepos}.
 @end defun
 
 @defun multibyte-string-p string
-Return @code{t} if @var{string} is a multibyte string, @code{nil}
-otherwise.  This function also returns @code{nil} if @var{string} is
-some object other than a string.
+Вернуть @code{t}, если @var{string} многобайтовая строка, в противном случае
+- @code{nil}.  Эта функция также возвращает @code{nil}, если @var{string} -
+это какой-то объект, отличный от строки.
 @end defun
 
 @defun string-bytes string
 @cindex string, number of bytes
-This function returns the number of bytes in @var{string}.
-If @var{string} is a multibyte string, this can be greater than
+Функция возвращает количество байтов в @var{string}.  Если @var{string} -
+многобайтовая строка, это может быть больше, чем
 @code{(length @var{string})}.
 @end defun
 
 @defun unibyte-string &rest bytes
-This function concatenates all its argument @var{bytes} and makes the
-result a unibyte string.
+Функция объединяет все свои аргументы @var{bytes} и делает результат
+однобайтной строкой.
 @end defun
 
 @node Disabling Multibyte
-@section Disabling Multibyte Characters
+@section Отключение Многобайтовых Символов
 @cindex disabling multibyte
 
-  By default, Emacs starts in multibyte mode: it stores the contents
-of buffers and strings using an internal encoding that represents
-non-@acronym{ASCII} characters using multi-byte sequences.  Multibyte
-mode allows you to use all the supported languages and scripts without
-limitations.
+  По умолчанию Emacs запускается в многобайтовом режиме: он сохраняет
+содержимое буферов и строк, используя внутреннюю кодировку, которая
+представляет символы не-@acronym{ASCII} с использованием многобайтовых
+последовательностей.  Многобайтовый режим позволяет использовать все
+поддерживаемые языки и скрипты без ограничений.
 
 @cindex turn multibyte support on or off
-  Under very special circumstances, you may want to disable multibyte
-character support, for a specific buffer.
-When multibyte characters are disabled in a buffer, we call
-that @dfn{unibyte mode}.  In unibyte mode, each character in the
-buffer has a character code ranging from 0 through 255 (0377 octal); 0
-through 127 (0177 octal) represent @acronym{ASCII} characters, and 128
-(0200 octal) through 255 (0377 octal) represent non-@acronym{ASCII}
-characters.
+  В особых обстоятельствах можно отключить поддержку многобайтовых символов
+для определенного буфера.  Когда многобайтовые символы в буфере отключены,
+это называется @dfn{однобайтовый режим}.  В однобайтовом режиме каждый
+символ в буфере имеет код символа в диапазоне от 0 до 255 (0377
+восьмеричный); От 0 до 127 (0177 в восьмеричной системе) представляют
+символы @acronym{ASCII}, а от 128 (восьмеричной формы 0200) до 255
+(восьмеричные цифры 0377) представляют символы не-@acronym{ASCII}.
 
-  To edit a particular file in unibyte representation, visit it using
-@code{find-file-literally}.  @xref{Visiting Functions}.  You can
-convert a multibyte buffer to unibyte by saving it to a file, killing
-the buffer, and visiting the file again with
-@code{find-file-literally}.  Alternatively, you can use @kbd{C-x
-@key{RET} c} (@code{universal-coding-system-argument}) and specify
-@samp{raw-text} as the coding system with which to visit or save a
-file.  @xref{Text Coding, , Specifying a Coding System for File Text,
-emacs, GNU Emacs Manual}.  Unlike @code{find-file-literally}, finding
-a file as @samp{raw-text} doesn't disable format conversion,
-uncompression, or auto mode selection.
+  Чтобы отредактировать конкретный файл в представлении unibyte, посетить
+его, используя @code{find-file-literally}.  @xref{Visiting Functions}.
+Можно преобразовать многобайтовый буфер в однобайтный, сохранив его в файл,
+уничтожив буфер и снова посетив файл с помощью @code{find-file-literally}.
+В качестве альтернативы вы можете использовать @kbd{C-x @key{RET} c}
+(@code{universal-coding-system-argument}) и указать @samp{raw-text} в
+качестве системы кодирования, с помощью которой следует посещать или
+сохранять файл.  @xref{Text Coding, , Specifying a Coding System for File Text, emacs, GNU Emacs Manual}.  В отличие от @code{find-file-literally},
+поиск файла как @samp{raw-text} не отключает преобразование формата,
+распаковку или автоматический выбор режима.
 
-@c See https://debbugs.gnu.org/11226 for lack of unibyte tooltip.
+@c See https://debbugs.gnu.org/11226 из-за отсутствия всплывающей подсказки.
 @vindex enable-multibyte-characters
-The buffer-local variable @code{enable-multibyte-characters} is
-non-@code{nil} in multibyte buffers, and @code{nil} in unibyte ones.
-The mode line also indicates whether a buffer is multibyte or not.
-With a graphical display, in a multibyte buffer, the portion of the
-mode line that indicates the character set has a tooltip that (amongst
-other things) says that the buffer is multibyte.  In a unibyte buffer,
-the character set indicator is absent.  Thus, in a unibyte buffer
-(when using a graphical display) there is normally nothing before the
-indication of the visited file's end-of-line convention (colon,
-backslash, etc.), unless you are using an input method.
+Локальная в буфере переменная @code{enable-multibyte-characters} - это
+не-@code{nil} в многобайтовых буферах и @code{nil} в однобайтовых.  Строка
+режима также указывает, является ли буфер многобайтовым или нет.  При
+графическом отображении в многобайтовом буфере часть строки режима, которая
+указывает набор символов, имеет всплывающую подсказку, которая (среди
+прочего) говорит, что буфер многобайтовый.  В однобайтовом буфере индикатор
+набора символов отсутствует.  Таким образом, в однобайтовом буфере (при
+использовании графического дисплея) обычно нет ничего перед указанием
+соглашения о конце строки посещаемого файла (двоеточие, обратная косая черта
+и так далее), если не используется метод ввода.
 
 @findex toggle-enable-multibyte-characters
-You can turn off multibyte support in a specific buffer by invoking the
-command @code{toggle-enable-multibyte-characters} in that buffer.
+Можно отключить поддержку многобайтовых данных в определенном буфере,
+вызвав команду @code{toggle-enable-multibyte-characters} в этом буфере.
 
 @node Converting Representations
-@section Converting Text Representations
+@section Преобразование Текстовых Представлений
 
-  Emacs can convert unibyte text to multibyte; it can also convert
-multibyte text to unibyte, provided that the multibyte text contains
-only @acronym{ASCII} and 8-bit raw bytes.  In general, these
-conversions happen when inserting text into a buffer, or when putting
-text from several strings together in one string.  You can also
-explicitly convert a string's contents to either representation.
+  Emacs может преобразовывать однобайтовый текст в многобайтовый; также
+может преобразовывать многобайтовый текст в однобайтный, при условии, что
+многобайтовый текст содержит только @acronym{ASCII} и 8-битные
+необработанные байты.  Как правило, эти преобразования происходят при
+вставке текста в буфер или при объединении текста из нескольких строк в одну
+строку.  Также можно явно преобразовать содержимое строки в любое
+представление.
 
-  Emacs chooses the representation for a string based on the text from
-which it is constructed.  The general rule is to convert unibyte text
-to multibyte text when combining it with other multibyte text, because
-the multibyte representation is more general and can hold whatever
-characters the unibyte text has.
+  Emacs выбирает представление строки на основе текста, из которого она
+построена.  Общее правило - преобразовывать однобайтовый текст в
+многобайтовый текст при объединении его с другим многобайтовым текстом,
+потому что многобайтовое представление является более общим и может
+содержать любые символы, которые есть в однобайтовом тексте.
 
-  When inserting text into a buffer, Emacs converts the text to the
-buffer's representation, as specified by
-@code{enable-multibyte-characters} in that buffer.  In particular, when
-you insert multibyte text into a unibyte buffer, Emacs converts the text
-to unibyte, even though this conversion cannot in general preserve all
-the characters that might be in the multibyte text.  The other natural
-alternative, to convert the buffer contents to multibyte, is not
-acceptable because the buffer's representation is a choice made by the
-user that cannot be overridden automatically.
+  При вставке текста в буфер Emacs преобразует текст в представление буфера,
+как указано в @code{enable-multibyte-characters} в этом буфере.  В
+частности, когда вставляется многобайтовый текст в однобайтный буфер, Emacs
+преобразует текст в однобайтный, даже если это преобразование не может в
+целом сохранить все символы, которые могут быть в многобайтовом тексте.
+Другая естественная альтернатива - преобразование содержимого буфера в
+многобайтовое - неприемлема, поскольку представление буфера - это выбор,
+сделанный пользователем, который не может быть переопределен автоматически.
 
-  Converting unibyte text to multibyte text leaves @acronym{ASCII}
-characters unchanged, and converts bytes with codes 128 through 255 to
-the multibyte representation of raw eight-bit bytes.
+  При преобразовании однобайтового текста в многобайтовый текст символы
+@acronym{ASCII} остаются неизменными, а байты с кодами от 128 до 255
+преобразуются в многобайтовое представление необработанных восьмибитных
+байтов.
 
-  Converting multibyte text to unibyte converts all @acronym{ASCII}
-and eight-bit characters to their single-byte form, but loses
-information for non-@acronym{ASCII} characters by discarding all but
-the low 8 bits of each character's codepoint.  Converting unibyte text
-to multibyte and back to unibyte reproduces the original unibyte text.
+  Преобразование многобайтового текста в однобайтный преобразует все символы
+@acronym{ASCII} и восьмибитные символы в их однобайтовую форму, но теряет
+информацию для символов не-@acronym{ASCII}, отбрасывая все, кроме младших 8
+бит кодовой точки каждого символа.  Преобразование однобайтового текста в
+многобайтный и обратно в однобайтный воспроизводит исходный однобайтный
+текст.
 
-The next two functions either return the argument @var{string}, or a
-newly created string with no text properties.
+Следующие две функции либо возвращают аргумент @var{string}, либо вновь
+созданную строку без текстовых свойств.
 
 @defun string-to-multibyte string
-This function returns a multibyte string containing the same sequence
-of characters as @var{string}.  If @var{string} is a multibyte string,
-it is returned unchanged.  The function assumes that @var{string}
-includes only @acronym{ASCII} characters and raw 8-bit bytes; the
-latter are converted to their multibyte representation corresponding
-to the codepoints @code{#x3FFF80} through @code{#x3FFFFF}, inclusive
-(@pxref{Text Representations, codepoints}).
+Функция возвращает многобайтовую строку, содержащую ту же последовательность
+символов, что и @var{string}.  Если @var{string} является многобайтовой
+строкой, она возвращается без изменений.  Функция предполагает, что
+@var{string} включает только символы @acronym{ASCII} и необработанные
+8-битные байты; последние преобразуются в их многобайтовое представление,
+соответствующее кодовым точкам от @code{#x3FFF80} до @code{#x3FFFFF},
+включая (@pxref{Text Representations, codepoints}).
 @end defun
 
 @defun string-to-unibyte string
-This function returns a unibyte string containing the same sequence of
-characters as @var{string}.  It signals an error if @var{string}
-contains a non-@acronym{ASCII} character.  If @var{string} is a
-unibyte string, it is returned unchanged.  Use this function for
-@var{string} arguments that contain only @acronym{ASCII} and eight-bit
-characters.
+Функция возвращает однобайтную строку, содержащую ту же последовательность
+символов, что и @var{string}.  Сигнализирует об ошибке, если @var{string}
+содержит символ не-@acronym{ASCII}.  Если @var{string} - это однобайтная
+строка, она возвращается без изменений.  Использовать эту функцию для
+аргументов @var{string}, которые содержат только символы @acronym{ASCII} и
+восьмибитные символы.
 @end defun
 
 @defun byte-to-string byte
 @cindex byte to string
-This function returns a unibyte string containing a single byte of
-character data, @var{byte}.  It signals an error if @var{byte} is not
-an integer between 0 and 255.
+Функция возвращает однобайтную строку, содержащую один байт символьных
+данных, @var{byte}.  Сигнализирует об ошибке, если @var{byte} не является
+целым числом от 0 до 255.
 @end defun
 
 @defun multibyte-char-to-unibyte char
-This converts the multibyte character @var{char} to a unibyte
-character, and returns that character.  If @var{char} is neither
-@acronym{ASCII} nor eight-bit, the function returns @minus{}1.
+Преобразует многобайтовый символ @var{char} в однобайтовый символ и
+возвращает этот символ.  Если @var{char} не является ни @acronym{ASCII}, ни
+восьмибитным, функция возвращает @minus{}1.
 @end defun
 
 @defun unibyte-char-to-multibyte char
-This convert the unibyte character @var{char} to a multibyte
-character, assuming @var{char} is either @acronym{ASCII} or raw 8-bit
-byte.
+Преобразует однобайтный символ @var{char} в многобайтовый символ,
+предполагая, что @var{char} является либо @acronym{ASCII}, либо
+необработанным 8-битным байтом.
 @end defun
 
 @node Selecting a Representation
-@section Selecting a Representation
+@section Выбор Представления
 
-  Sometimes it is useful to examine an existing buffer or string as
-multibyte when it was unibyte, or vice versa.
+  Иногда полезно проверить существующий буфер или строку как многобайтовые,
+если они были однобайтовыми, или наоборот.
 
 @defun set-buffer-multibyte multibyte
-Set the representation type of the current buffer.  If @var{multibyte}
-is non-@code{nil}, the buffer becomes multibyte.  If @var{multibyte}
-is @code{nil}, the buffer becomes unibyte.
+Установить тип представления текущего буфера.  Если @var{multibyte} равен
+не-@code{nil}, буфер становится многобайтовым.  Если @var{multibyte} равен
+@code{nil}, буфер становится однобайтовым.
 
-This function leaves the buffer contents unchanged when viewed as a
-sequence of bytes.  As a consequence, it can change the contents
-viewed as characters; for instance, a sequence of three bytes which is
-treated as one character in multibyte representation will count as
-three characters in unibyte representation.  Eight-bit characters
-representing raw bytes are an exception.  They are represented by one
-byte in a unibyte buffer, but when the buffer is set to multibyte,
-they are converted to two-byte sequences, and vice versa.
+Функция оставляет содержимое буфера неизменным, если рассматривать его как
+последовательность байтов.  Как следствие, может изменять содержимое,
+рассматриваемое как символы; например, последовательность из трех байтов,
+которая рассматривается как один символ в многобайтовом представлении, будет
+считаться тремя символами в однобайтовом представлении.  Исключением
+являются восьмибитовые символы, представляющие необработанные байты.  Они
+представлены одним байтом в однобайтовом буфере, но когда буфер установлен
+на многобайтовый, они преобразуются в двухбайтовые последовательности, и
+наоборот.
 
-This function sets @code{enable-multibyte-characters} to record which
-representation is in use.  It also adjusts various data in the buffer
-(including overlays, text properties and markers) so that they cover the
-same text as they did before.
+Функция устанавливает @code{enable-multibyte-characters} для записи того,
+какое представление используется.  Также регулируются различные данные в
+буфере (включая наложения, свойства текста и маркеры), чтобы они покрывали
+тот же текст, что и раньше.
 
-This function signals an error if the buffer is narrowed, since the
-narrowing might have occurred in the middle of multibyte character
-sequences.
+Функция сигнализирует об ошибке, если буфер сужается, поскольку сужение
+могло произойти в середине многобайтовых последовательностей символов.
 
-This function also signals an error if the buffer is an indirect
-buffer.  An indirect buffer always inherits the representation of its
-base buffer.
+Функция также сигнализирует об ошибке, если буфер является косвенным.
+Косвенный буфер всегда наследует представление своего базового буфера.
 @end defun
 
 @defun string-as-unibyte string
-If @var{string} is already a unibyte string, this function returns
-@var{string} itself.  Otherwise, it returns a new string with the same
-bytes as @var{string}, but treating each byte as a separate character
-(so that the value may have more characters than @var{string}); as an
-exception, each eight-bit character representing a raw byte is
-converted into a single byte.  The newly-created string contains no
-text properties.
+Если @var{string} уже является строкой unibyte, эта функция сама возвращает
+@var{string}.  В противном случае возвращает новую строку с теми же байтами,
+что и @var{string}, но обрабатывает каждый байт как отдельный символ (так
+что значение может иметь больше символов, чем @var{string}); как исключение,
+каждый восьмибитовый символ, представляющий необработанный байт,
+преобразуется в один байт.  Вновь созданная строка не содержит текстовых
+свойств.
 @end defun
 
 @defun string-as-multibyte string
-If @var{string} is a multibyte string, this function returns
-@var{string} itself.  Otherwise, it returns a new string with the same
-bytes as @var{string}, but treating each multibyte sequence as one
-character.  This means that the value may have fewer characters than
-@var{string} has.  If a byte sequence in @var{string} is invalid as a
-multibyte representation of a single character, each byte in the
-sequence is treated as a raw 8-bit byte.  The newly-created string
-contains no text properties.
+Если @var{string} - многобайтовая строка, функция сама возвращает
+@var{string}.  В противном случае возвращает новую строку с теми же байтами,
+что и @var{string}, но обрабатывает каждую многобайтовую последовательность
+как один символ.  Это означает, что в значении может быть меньше символов,
+чем в @var{string}.  Если последовательность байтов в @var{string}
+недопустима как многобайтовое представление одного символа, каждый байт в
+последовательности рассматривается как необработанный 8-битный байт.  Вновь
+созданная строка не содержит текстовых свойств.
 @end defun
 
 @node Character Codes
-@section Character Codes
+@section Коды Символов
 @cindex character codes
 
-  The unibyte and multibyte text representations use different
-character codes.  The valid character codes for unibyte representation
-range from 0 to @code{#xFF} (255)---the values that can fit in one
-byte.  The valid character codes for multibyte representation range
-from 0 to @code{#x3FFFFF}.  In this code space, values 0 through
-@code{#x7F} (127) are for @acronym{ASCII} characters, and values
-@code{#x80} (128) through @code{#x3FFF7F} (4194175) are for
-non-@acronym{ASCII} characters.
+  В однобайтовых и многобайтовых текстовых представлениях используются
+разные коды символов.  Допустимые коды символов для однобайтового
+представления находятся в диапазоне от 0 до @code{#xFF} (255) --- значения,
+которые могут поместиться в один байт.  Допустимые коды символов для
+многобайтового представления варьируются от 0 до @code{#x3FFFFF}.  В этом
+кодовом пространстве значения от 0 до @code{#x7F} (127) предназначены для
+символов @acronym{ASCII}, а значения от @code{#x80} (128) до
+@code{#x3FFF7F} (4194175) - для символов не-@acronym{ASCII}.
 
-  Emacs character codes are a superset of the Unicode standard.
-Values 0 through @code{#x10FFFF} (1114111) correspond to Unicode
-characters of the same codepoint; values @code{#x110000} (1114112)
-through @code{#x3FFF7F} (4194175) represent characters that are not
-unified with Unicode; and values @code{#x3FFF80} (4194176) through
-@code{#x3FFFFF} (4194303) represent eight-bit raw bytes.
+  Коды символов Emacs - это надмножество стандарта Unicode.  Значения от 0
+до @code{#x10FFFF} (1114111) соответствуют символам Unicode той же кодовой
+точки; значения @code{#x110000} (1114112) - @code{#x3FFF7F} (4194175)
+представляют символы, не унифицированные с Unicode; а значения от
+@code{#x3FFF80} (4194176) до @code{#x3FFFFF} (4194303) представляют собой
+восьмибитовые необработанные байты.
 
 @defun characterp charcode
-This returns @code{t} if @var{charcode} is a valid character, and
-@code{nil} otherwise.
+Возвращает @code{t}, если @var{charcode} является допустимым символом, и
+@code{nil} в противном случае.
 
 @example
 @group
@@ -404,8 +405,8 @@ This returns @code{t} if @var{charcode} is a valid character, and
 @cindex maximum value of character codepoint
 @cindex codepoint, largest value
 @defun max-char
-This function returns the largest value that a valid character
-codepoint can have.
+Функция возвращает наибольшее значение, которое может иметь допустимый код
+символа.
 
 @example
 @group
@@ -420,9 +421,9 @@ codepoint can have.
 @end defun
 
 @defun char-from-name string &optional ignore-case
-This function returns the character whose Unicode name is @var{string}.
-If @var{ignore-case} is non-@code{nil}, case is ignored in @var{string}.
-This function returns @code{nil} if @var{string} does not name a character.
+Функция возвращает символ, имя которого в Юникоде - @var{string}.  Если
+@var{ignore-case} равен не-@code{nil}, регистр в @var{string} игнорируется.
+Функция возвращает @code{nil}, если @var{string} не называет символ.
 
 @example
 ;; U+03A3
@@ -432,220 +433,213 @@ This function returns @code{nil} if @var{string} does not name a character.
 @end defun
 
 @defun get-byte &optional pos string
-This function returns the byte at character position @var{pos} in the
-current buffer.  If the current buffer is unibyte, this is literally
-the byte at that position.  If the buffer is multibyte, byte values of
-@acronym{ASCII} characters are the same as character codepoints,
-whereas eight-bit raw bytes are converted to their 8-bit codes.  The
-function signals an error if the character at @var{pos} is
-non-@acronym{ASCII}.
+Функция возвращает байт в позиции символа @var{pos} в текущем буфере.  Если
+текущий буфер однобайтный, это буквально байт в этой позиции.  Если буфер
+многобайтовый, байтовые значения символов @acronym{ASCII} совпадают с
+кодовыми точками символов, тогда как восьмибитовые необработанные байты
+преобразуются в свои 8-битные коды.  Функция сигнализирует об ошибке, если
+символ в @var{pos} - не-@acronym{ASCII}.
 
-The optional argument @var{string} means to get a byte value from that
-string instead of the current buffer.
+Необязательный аргумент @var{string} означает получение байтового значения
+из этой строки вместо текущего буфера.
 @end defun
 
 @node Character Properties
-@section Character Properties
+@section Свойства Символа
 @cindex character properties
-A @dfn{character property} is a named attribute of a character that
-specifies how the character behaves and how it should be handled
-during text processing and display.  Thus, character properties are an
-important part of specifying the character's semantics.
+@dfn{Символьное свойство } - это именованный атрибут символа, который
+определяет, как символ ведет себя и как с ним следует обращаться во время
+обработки и отображения текста.  Таким образом, свойства символа являются
+важной частью определения семантики символа.
 
-@c FIXME: Use the latest URI of this chapter?
+@c FIXME: Используйте последний URI этой главы?
 @c http://www.unicode.org/versions/latest/ch04.pdf
-  On the whole, Emacs follows the Unicode Standard in its implementation
-of character properties.  In particular, Emacs supports the
-@uref{http://www.unicode.org/reports/tr23/, Unicode Character Property
-Model}, and the Emacs character property database is derived from the
-Unicode Character Database (@acronym{UCD}).  See the
-@uref{http://www.unicode.org/versions/latest/ch04.pdf, Character
-Properties chapter of the Unicode Standard}, for a detailed
-description of Unicode character properties and their meaning.  This
-section assumes you are already familiar with that chapter of the
-Unicode Standard, and want to apply that knowledge to Emacs Lisp
-programs.
+  В целом Emacs следует стандарту Unicode в реализации свойств символов.  В
+частности, Emacs поддерживает @uref{http://www.unicode.org/reports/tr23/, Unicode Character Property Model}, а база данных символьных свойств Emacs
+является производной от базы данных символов Unicode (@acronym{UCD}).
+Подробное описание свойств символов Юникода и их значения смотреть в
+@uref{http://www.unicode.org/versions/latest/ch04.pdf, Character Properties chapter of the Unicode Standard}.  В этом разделе предполагается, что уже
+есть знакомство с этой главой стандарта Unicode и требуется применить эти
+знания к программам Emacs Lisp.
 
-  In Emacs, each property has a name, which is a symbol, and a set of
-possible values, whose types depend on the property; if a character
-does not have a certain property, the value is @code{nil}.  As a
-general rule, the names of character properties in Emacs are produced
-from the corresponding Unicode properties by downcasing them and
-replacing each @samp{_} character with a dash @samp{-}.  For example,
-@code{Canonical_Combining_Class} becomes
-@code{canonical-combining-class}.  However, sometimes we shorten the
-names to make their use easier.
+  В Emacs каждое свойство имеет имя, которое является символом, и набор
+возможных значений, типы которых зависят от свойства; если у символа нет
+определенного свойства, значение будет @code{nil}.  Как правило, имена
+свойств символов в Emacs создаются из соответствующих свойств Unicode путем
+их перевода в нижний регистр и замены каждого символа @samp{_} на тире
+@samp{-}.  Например, @code{Canonical_Combining_Class} становится
+@code{canonical-combining-class}.  Однако иногда сокращаются имена, чтобы
+облегчить их использование.
 
 @cindex unassigned character codepoints
-  Some codepoints are left @dfn{unassigned} by the
-@acronym{UCD}---they don't correspond to any character.  The Unicode
-Standard defines default values of properties for such codepoints;
-they are mentioned below for each property.
+  Некоторые кодовые точки оставлены @dfn{неназначенными} в @acronym{UCD}---
+они не соответствуют ни одному символу.  Стандарт Unicode определяет
+значения свойств по умолчанию для таких кодовых точек; они указаны ниже для
+каждого свойства.
 
-  Here is the full list of value types for all the character
-properties that Emacs knows about:
+  Вот полный список типов значений для всех свойств символов, о которых
+знает Emacs:
 
 @table @code
 @item name
-Corresponds to the @code{Name} Unicode property.  The value is a
-string consisting of upper-case Latin letters A to Z, digits, spaces,
-and hyphen @samp{-} characters.  For unassigned codepoints, the value
-is @code{nil}.
+Соответствует свойству Unicode @code{Name}.  Значение представляет собой
+строку, состоящую из заглавных латинских букв от A до Z, цифр, пробелов и
+символов дефиса @samp{-}.  Для неназначенных кодовых точек значение -
+@code{nil}.
 
 @cindex unicode general category
 @item general-category
-Corresponds to the @code{General_Category} Unicode property.  The
-value is a symbol whose name is a 2-letter abbreviation of the
-character's classification.  For unassigned codepoints, the value
-is @code{Cn}.
+Соответствует свойству Unicode @code{General_Category}.  Значение
+представляет собой символ, имя которого представляет собой двухбуквенное
+сокращение классификации персонажа.  Для неназначенных кодовых точек
+значение - @code{Cn}.
 
 @item canonical-combining-class
-Corresponds to the @code{Canonical_Combining_Class} Unicode property.
-The value is an integer.  For unassigned codepoints, the value
-is zero.
+Соответствует свойству Unicode @code{Canonical_Combining_Class}.  Значение
+- целое число.  Для неназначенных кодовых точек значение равно нулю.
 
 @cindex bidirectional class of characters
 @item bidi-class
-Corresponds to the Unicode @code{Bidi_Class} property.  The value is a
-symbol whose name is the Unicode @dfn{directional type} of the
-character.  Emacs uses this property when it reorders bidirectional
-text for display (@pxref{Bidirectional Display}).  For unassigned
-codepoints, the value depends on the code blocks to which the
-codepoint belongs: most unassigned codepoints get the value of
-@code{L} (strong L), but some get values of @code{AL} (Arabic letter)
-or @code{R} (strong R).
+Соответствует свойству Unicode @code{Bidi_Class}.  Значение представляет
+собой символ, имя которого является Unicode @dfn{направленный тип} символа.
+Emacs использует это свойство, когда переупорядочивает двунаправленный текст
+для отображения (@pxref{Bidirectional Display}).  Для неназначенных кодовых
+точек значение зависит от кодовых блоков, которым принадлежит кодовая точка:
+большинство неназначенных кодовых точек получают значение @code{L} (строгий
+L), но некоторые получают значения @code{AL} (арабская буква) или @code{R}
+(строгий R).
 
 @item decomposition
-Corresponds to the Unicode properties @code{Decomposition_Type} and
-@code{Decomposition_Value}.  The value is a list, whose first element
-may be a symbol representing a compatibility formatting tag, such as
-@code{small}@footnote{The Unicode specification writes these tag names
-inside @samp{<..>} brackets, but the tag names in Emacs do not include
-the brackets; e.g., Unicode specifies @samp{<small>} where Emacs uses
-@samp{small}.  }; the other elements are characters that give the
-compatibility decomposition sequence of this character.  For
-characters that don't have decomposition sequences, and for unassigned
-codepoints, the value is a list with a single member, the character
-itself.
+Соответствует свойствам Unicode @code{Decomposition_Type} и
+@code{Decomposition_Value}.  Значение представляет собой список, первым
+элементом которого может быть символ, представляющий тег форматирования
+совместимости, например @code{small}@footnote{Спецификация Unicode
+записывает эти имена тегов внутри скобок @samp{<..>}, но имена тегов в Emacs
+не включают скобки; например, Unicode указывает @samp{<small>}, где Emacs
+использует @samp{small}.  }; другие элементы - это символы, которые задают
+последовательность декомпозиции совместимости этого символа.  Для символов,
+которые не имеют последовательности декомпозиции, и для неназначенных
+кодовых точек значение представляет собой список с одним членом, самим
+символом.
 
 @item decimal-digit-value
-Corresponds to the Unicode @code{Numeric_Value} property for
-characters whose @code{Numeric_Type} is @samp{Decimal}.  The value is
-an integer, or @code{nil} if the character has no decimal digit value.
-For unassigned codepoints, the value is @code{nil}, which means
-@acronym{NaN}, or ``not a number''.
+Соответствует свойству Unicode @code{Numeric_Value} для символов, у которых
+@code{Numeric_Type} есть @samp{Decimal}.  Значение является целым числом или
+@code{nil}, если символ не имеет десятичного значения.  Для неназначенных
+кодовых точек используется значение @code{nil}, что означает @acronym{NaN}
+или ``не число''.
 
 @item digit-value
-Corresponds to the Unicode @code{Numeric_Value} property for
-characters whose @code{Numeric_Type} is @samp{Digit}.  The value is an
-integer.  Examples of such characters include compatibility subscript
-and superscript digits, for which the value is the corresponding
-number.  For characters that don't have any numeric value, and for
-unassigned codepoints, the value is @code{nil}, which means
-@acronym{NaN}.
+Соответствует свойству Unicode @code{Numeric_Value} для символов, у которых
+@code{Numeric_Type} есть @samp{Digit}.  Значение - целое число.  Примеры
+таких символов включают в себя цифры нижнего и верхнего индекса
+совместимости, для которых значением является соответствующее число.  Для
+символов, не имеющих числового значения, и для неназначенных кодовых точек
+значение - @code{nil}, что означает @acronym{NaN}.
 
 @item numeric-value
-Corresponds to the Unicode @code{Numeric_Value} property for
-characters whose @code{Numeric_Type} is @samp{Numeric}.  The value of
-this property is a number.  Examples of characters that have this
-property include fractions, subscripts, superscripts, Roman numerals,
-currency numerators, and encircled numbers.  For example, the value of
-this property for the character U+2155 @sc{vulgar fraction one
-fifth} is @code{0.2}.  For characters that don't have any numeric
-value, and for unassigned codepoints, the value is @code{nil}, which
-means @acronym{NaN}.
+Соответствует свойству Unicode @code{Numeric_Value} для символов, у которых
+@code{Numeric_Type} есть @samp{Numeric}.  Значение этого свойства - число.
+Примеры символов, обладающих этим свойством, включают дроби, нижние индексы,
+верхние индексы, римские цифры, числители валют и числа в кружках.
+Например, значение этого свойства для символа U+2155 @sc{вульгарная дробь
+одна пятая} - @code{0.2}.  Для символов, не имеющих числового значения, и
+для неназначенных кодовых точек значение - @code{nil}, что означает
+@acronym{NaN}.
 
 @cindex mirroring of characters
 @item mirrored
-Corresponds to the Unicode @code{Bidi_Mirrored} property.  The value
-of this property is a symbol, either @code{Y} or @code{N}.  For
-unassigned codepoints, the value is @code{N}.
+Соответствует свойству Unicode @code{Bidi_Mirrored}.  Значение этого
+свойства - символ, либо @code{Y} или @code{N}.  Для неназначенных кодовых
+точек значение - @code{N}.
 
 @item mirroring
-Corresponds to the Unicode @code{Bidi_Mirroring_Glyph} property.  The
-value of this property is a character whose glyph represents the
-mirror image of the character's glyph, or @code{nil} if there's no
-defined mirroring glyph.  All the characters whose @code{mirrored}
-property is @code{N} have @code{nil} as their @code{mirroring}
-property; however, some characters whose @code{mirrored} property is
-@code{Y} also have @code{nil} for @code{mirroring}, because no
-appropriate characters exist with mirrored glyphs.  Emacs uses this
-property to display mirror images of characters when appropriate
-(@pxref{Bidirectional Display}).  For unassigned codepoints, the value
-is @code{nil}.
+Соответствует свойству Unicode @code{Bidi_Mirroring_Glyph}.  Значением этого
+свойства является символ, глиф которого представляет зеркальное отображение
+глифа символа, или @code{nil}, если нет определенного зеркального глифа.
+Все символы, у которых свойство @code{mirrored} равно @code{N}, имеют
+свойство @code{mirroring} в качестве свойства @code{mirroring}; однако
+некоторые символы, свойство @code{mirrored} которых имеет значение @code{Y},
+также имеют @code{nil} для @code{mirroring}, потому что не существует
+подходящих символов с зеркальными глифами.  Emacs использует это свойство
+для отображения зеркальных отображений символов при соответствующем
+(@pxref{Bidirectional Display}).  Для неназначенных кодовых точек это
+значение @code{nil}.
 
 @item paired-bracket
-Corresponds to the Unicode @code{Bidi_Paired_Bracket} property.  The
-value of this property is the codepoint of a character's @dfn{paired
-bracket}, or @code{nil} if the character is not a bracket character.
-This establishes a mapping between characters that are treated as
-bracket pairs by the Unicode Bidirectional Algorithm; Emacs uses this
-property when it decides how to reorder for display parentheses,
-braces, and other similar characters (@pxref{Bidirectional Display}).
+Соответствует свойству Unicode @code{Bidi_Paired_Bracket}.  Значение этого
+свойства является кодовой точкой @dfn{paired bracket} символа или
+@code{nil}, если символ не является символом скобок.  Это устанавливает
+соответствие между символами, которые рассматриваются двунаправленным
+алгоритмом Unicode как пары скобок; Emacs использует это свойство, когда
+решает, как изменить порядок отображения скобок, фигурных скобок и других
+подобных символов (@pxref{Bidirectional Display}).
 
 @item bracket-type
-Corresponds to the Unicode @code{Bidi_Paired_Bracket_Type} property.
-For characters whose @code{paired-bracket} property is non-@code{nil},
-the value of this property is a symbol, either @code{o} (for opening
-bracket characters) or @code{c} (for closing bracket characters).  For
-characters whose @code{paired-bracket} property is @code{nil}, the
-value is the symbol @code{n} (None).  Like @code{paired-bracket}, this
-property is used for bidirectional display.
+Соответствует свойству Unicode @code{Bidi_Paired_Bracket_Type}.  Для
+символов, у которых свойство @code{paired-bracket} равно не-@code{nil},
+значением этого свойства является символ, либо @code{o} (для символов
+открывающих скобок) или @code{c} (для символов закрывающих скобок).  Для
+символов, у которых свойство @code{paired-bracket} равно @code{nil},
+значением является символ @code{n} (Нет).  Как и @code{paired-bracket}, это
+свойство используется для двунаправленного отображения.
 
 @item old-name
-Corresponds to the Unicode @code{Unicode_1_Name} property.  The value
-is a string.  For unassigned codepoints, and characters that have no
-value for this property, the value is @code{nil}.
+Соответствует свойству Unicode @code{Unicode_1_Name}.  Значение - строка.
+Для неназначенных кодовых точек и символов, не имеющих значения для этого
+свойства, значение равно @code{nil}.
 
 @item iso-10646-comment
-Corresponds to the Unicode @code{ISO_Comment} property.  The value is
-either a string or @code{nil}.  For unassigned codepoints, the value
-is @code{nil}.
+Соответствует свойству Unicode @code{ISO_Comment}.  Значение - либо строка,
+либо @code{nil}.  Для неназначенных кодовых точек значение - @code{nil}.
 
 @item uppercase
-Corresponds to the Unicode @code{Simple_Uppercase_Mapping} property.
-The value of this property is a single character.  For unassigned
-codepoints, the value is @code{nil}, which means the character itself.
+Соответствует свойству Unicode @code{Simple_Uppercase_Mapping}.  Значение
+этого свойства - один символ.  Для неназначенных кодовых точек значение
+равно @code{nil}, что означает сам символ.
 
 @item lowercase
-Corresponds to the Unicode @code{Simple_Lowercase_Mapping} property.
-The value of this property is a single character.  For unassigned
-codepoints, the value is @code{nil}, which means the character itself.
+Соответствует свойству Unicode @code{Simple_Lowercase_Mapping}.  Значение
+этого свойства - один символ.  Для неназначенных кодовых точек значение
+равно @code{nil}, что означает сам символ.
 
 @item titlecase
-Corresponds to the Unicode @code{Simple_Titlecase_Mapping} property.
-@dfn{Title case} is a special form of a character used when the first
-character of a word needs to be capitalized.  The value of this
-property is a single character.  For unassigned codepoints, the value
-is @code{nil}, which means the character itself.
+Соответствует свойству Unicode @code{Simple_Titlecase_Mapping}.
+@dfn{Title case} - это особая форма символа, используемая, когда первый
+символ слова должен быть написан с заглавной буквы.  Значение этого свойства
+- один символ.  Для неназначенных кодовых точек значение равно @code{nil},
+что означает сам символ.
 
 @item special-uppercase
-Corresponds to Unicode language- and context-independent special upper-casing
-rules.  The value of this property is a string (which may be empty).  For
-example mapping for U+00DF @sc{latin small letter sharp s} is
-@code{"SS"}.  For characters with no special mapping, the value is @code{nil}
-which means @code{uppercase} property needs to be consulted instead.
+Соответствует специальным правилам верхнего регистра, зависящим от языка
+Unicode и контекста.  Значение этого свойства - строка (которая может быть
+пустой).  Пример, отображение U+00DF @sc{латинская строчная резкая буква s}
+- @code{"SS"}.  Для символов без специального сопоставления используется
+значение @code{nil}, что означает, что вместо этого необходимо обратиться к
+свойству @code{uppercase}.
 
 @item special-lowercase
-Corresponds to Unicode language- and context-independent special
-lower-casing rules.  The value of this property is a string (which may
-be empty).  For example mapping for U+0130 @sc{latin capital letter i
-with dot above} the value is @code{"i\u0307"} (i.e. 2-character string
-consisting of @sc{latin small letter i} followed by U+0307
-@sc{combining dot above}).  For characters with no special mapping,
-the value is @code{nil} which means @code{lowercase} property needs to
-be consulted instead.
+Соответствует специальным правилам для нижнего регистра, не зависящим от
+языка и контекста Unicode.  Значение этого свойства - строка (которая может
+быть пустой).  Например, для сопоставления U+0130
+@sc{латинская заглавная буква I с точкой над ней} значение будет
+@code{"i\0307"} (то есть двухсимвольная строка, состоящая из
+@sc{латинская строчная буква I}, за которым следует U+0307
+@sc{сочетание точки вверху}).  Для символов без специального сопоставления
+используется значение @code{nil}, что означает, что вместо этого необходимо
+обратиться к свойству @code{lowercase}.
 
 @item special-titlecase
-Corresponds to Unicode unconditional special title-casing rules.  The value of
-this property is a string (which may be empty).  For example mapping for
-U+FB01 @sc{latin small ligature fi} the value is @code{"Fi"}.  For
-characters with no special mapping, the value is @code{nil} which means
-@code{titlecase} property needs to be consulted instead.
+Соответствует безусловным специальным правилам Unicode для заглавных букв.
+Значение этого свойства - строка (которая может быть пустой).  Например,
+отображение для U + FB01 @sc{латинская строчная лигатура fi} значение
+@code{"Fi"}.  Для символов без специального сопоставления используется
+значение @code{nil}, что означает, что вместо этого необходимо обратиться к
+свойству @code{titlecase}.
 @end table
 
 @defun get-char-code-property char propname
-This function returns the value of @var{char}'s @var{propname} property.
+Функция возвращает значение свойства @var{char} @var{propname}.
 
 @example
 @group
@@ -686,8 +680,8 @@ This function returns the value of @var{char}'s @var{propname} property.
 @end defun
 
 @defun char-code-property-description prop value
-This function returns the description string of property @var{prop}'s
-@var{value}, or @code{nil} if @var{value} has no description.
+Функция возвращает строку описания свойства @var{prop} @var{value} или
+@code{nil}, если @var{value} не имеет описания.
 
 @example
 @group
@@ -706,422 +700,421 @@ This function returns the description string of property @var{prop}'s
 @end defun
 
 @defun put-char-code-property char propname value
-This function stores @var{value} as the value of the property
-@var{propname} for the character @var{char}.
+Функция сохраняет @var{value} как значение свойства @var{propname} для
+символа @var{char}.
 @end defun
 
 @defvar unicode-category-table
-The value of this variable is a char-table (@pxref{Char-Tables}) that
-specifies, for each character, its Unicode @code{General_Category}
-property as a symbol.
+Значением этой переменной является таблица символов (@pxref{Char-Tables}),
+которая определяет для каждого символа его свойство символа Unicode
+@code{General_Category}.
 @end defvar
 
 @defvar char-script-table
 @cindex script symbols
-The value of this variable is a char-table that specifies, for each
-character, a symbol whose name is the script to which the character
-belongs, according to the Unicode Standard classification of the
-Unicode code space into script-specific blocks.  This char-table has a
-single extra slot whose value is the list of all script symbols.
+Значением этой переменной является таблица символов, которая определяет для
+каждого символа символ, имя которого является сценарием, которому
+принадлежит символ, согласно классификации Unicode Standard пространства
+кода Unicode на блоки, специфичные для сценария.  Эта таблица символов имеет
+единственный дополнительный слот, значением которого является список всех
+символов скрипта.
 @end defvar
 
 @defvar char-width-table
-The value of this variable is a char-table that specifies the width of
-each character in columns that it will occupy on the screen.
+Значением этой переменной является таблица символов, которая определяет
+ширину каждого символа в столбцах, которые он будет занимать на экране.
 @end defvar
 
 @defvar printable-chars
-The value of this variable is a char-table that specifies, for each
-character, whether it is printable or not.  That is, if evaluating
-@code{(aref printable-chars char)} results in @code{t}, the character
-is printable, and if it results in @code{nil}, it is not.
+Значением этой переменной является таблица символов, в которой для каждого
+символа указывается, можно ли его распечатать.  То есть, если оценка
+@code{(aref printable-chars char)} получает @code{t}, символ печатается,
+а если результатом является @code{nil}, то нет.
 @end defvar
 
 @node Character Sets
-@section Character Sets
+@section Наборы Символов
 @cindex character sets
 
 @cindex charset
 @cindex coded character set
-An Emacs @dfn{character set}, or @dfn{charset}, is a set of characters
-in which each character is assigned a numeric code point.  (The
-Unicode Standard calls this a @dfn{coded character set}.)  Each Emacs
-charset has a name which is a symbol.  A single character can belong
-to any number of different character sets, but it will generally have
-a different code point in each charset.  Examples of character sets
-include @code{ascii}, @code{iso-8859-1}, @code{greek-iso8859-7}, and
-@code{windows-1255}.  The code point assigned to a character in a
-charset is usually different from its code point used in Emacs buffers
-and strings.
+Emacs @dfn{character set} или @dfn{charset} - это набор символов, в котором
+каждому символу назначена числовая кодовая точка.  (Стандарт Unicode
+называет это @dfn{кодированный набор символов}.)  Каждая кодировка Emacs
+имеет имя, которое является символом.  Один символ может принадлежать к
+любому количеству разных наборов символов, но, как правило, он будет иметь
+разные кодовые точки в каждой кодировке.  Примеры наборов символов включают
+@code{ascii}, @code{iso-8859-1}, @code{greek-iso8859-7} и
+@code{windows-1255}.  Кодовая точка, присвоенная символу в кодировке, обычно
+отличается от ее кодовой точки, используемой в буферах и строках Emacs.
 
 @cindex @code{emacs}, a charset
 @cindex @code{unicode}, a charset
 @cindex @code{eight-bit}, a charset
-  Emacs defines several special character sets.  The character set
-@code{unicode} includes all the characters whose Emacs code points are
-in the range @code{0..#x10FFFF}.  The character set @code{emacs}
-includes all @acronym{ASCII} and non-@acronym{ASCII} characters.
-Finally, the @code{eight-bit} charset includes the 8-bit raw bytes;
-Emacs uses it to represent raw bytes encountered in text.
+  Emacs определяет несколько специальных наборов символов.  Набор символов
+@code{unicode} включает все символы, чьи кодовые точки Emacs находятся в
+диапазоне @code{0..#x10FFFF}.  Набор символов @code{emacs} включает все
+символы @acronym{ASCII} и не-@acronym{ASCII}.  Наконец, кодировка
+@code{eight-bit} включает 8-битные необработанные байты; Emacs использует
+её для представления необработанных байтов, встречающихся в тексте.
 
 @defun charsetp object
-Returns @code{t} if @var{object} is a symbol that names a character set,
-@code{nil} otherwise.
+Возвращает @code{t}, если @var{object} является символом, который называет
+набор символов, и @code{nil} в противном случае.
 @end defun
 
 @defvar charset-list
-The value is a list of all defined character set names.
+Значение представляет собой список всех определенных имен наборов символов.
 @end defvar
 
 @defun charset-priority-list &optional highestp
-This function returns a list of all defined character sets ordered by
-their priority.  If @var{highestp} is non-@code{nil}, the function
-returns a single character set of the highest priority.
+Функция возвращает список всех определенных наборов символов, упорядоченных
+по их приоритету.  Если @var{highestp} равен не-@code{nil}, функция
+возвращает один набор символов с наивысшим приоритетом.
 @end defun
 
 @defun set-charset-priority &rest charsets
-This function makes @var{charsets} the highest priority character sets.
+Функция делает @var{charsets} набором символов с наивысшим приоритетом.
 @end defun
 
 @defun char-charset character &optional restriction
-This function returns the name of the character set of highest
-priority that @var{character} belongs to.  @acronym{ASCII} characters
-are an exception: for them, this function always returns @code{ascii}.
+Функция возвращает имя набора символов с наивысшим приоритетом, которому
+принадлежит @var{character}.  Символы @acronym{ASCII} являются исключением:
+для них эта функция всегда возвращает @code{ascii}.
 
-If @var{restriction} is non-@code{nil}, it should be a list of
-charsets to search.  Alternatively, it can be a coding system, in
-which case the returned charset must be supported by that coding
-system (@pxref{Coding Systems}).
+Если @var{restriction} - не-@code{nil}, это должен быть список кодировок для
+поиска.  В качестве альтернативы, это может быть система кодирования, и в
+этом случае возвращаемая кодировка должна поддерживаться этой системой
+кодирования (@pxref{Coding Systems}).
 @end defun
 
-@c TODO: Explain the properties here and add indexes such as 'charset property'.
+@c TODO: Объясните здесь свойства и добавьте индексы, например
+@c 'свойство charset'.
 @defun charset-plist charset
-This function returns the property list of the character set
-@var{charset}.  Although @var{charset} is a symbol, this is not the
-same as the property list of that symbol.  Charset properties include
-important information about the charset, such as its documentation
-string, short name, etc.
+Функция возвращает список свойств набора символов @var{charset}.  Хотя
+@var{charset} является символом, это не то же самое, что список свойств
+этого символа.  Свойства набора символов включают важную информацию о
+кодировке, такую как строка документации, краткое имя и так далее.
 @end defun
 
 @defun put-charset-property charset propname value
-This function sets the @var{propname} property of @var{charset} to the
-given @var{value}.
+Функция устанавливает свойство @var{propname} объекта @var{charset} равным
+данному @var{value}.
 @end defun
 
 @defun get-charset-property charset propname
-This function returns the value of @var{charset}s property
-@var{propname}.
+Функция возвращает значение свойства @var{charset} @var{propname}.
 @end defun
 
 @deffn Command list-charset-chars charset
-This command displays a list of characters in the character set
-@var{charset}.
+Команда отображает список символов в наборе символов @var{charset}.
 @end deffn
 
-  Emacs can convert between its internal representation of a character
-and the character's codepoint in a specific charset.  The following
-two functions support these conversions.
+  Emacs может конвертировать между своим внутренним представлением символа и
+его кодовой точкой в определенной кодировке.  Следующие две функции
+поддерживают эти преобразования.
 
-@c FIXME: decode-char and encode-char accept and ignore an additional
-@c argument @var{restriction}.  When that argument actually makes a
-@c difference, it should be documented here.
+@c FIXME: decode-char и encode-char принимает и игнорирует дополнительный
+@c аргумент @var{restriction}.  Когда этот аргумент действительно имеет
+@c значение, он должен быть задокументирован здесь.
 @defun decode-char charset code-point
-This function decodes a character that is assigned a @var{code-point}
-in @var{charset}, to the corresponding Emacs character, and returns
-it.  If @var{charset} doesn't contain a character of that code point,
-the value is @code{nil}.  If @var{code-point} doesn't fit in a Lisp
-integer (@pxref{Integer Basics, most-positive-fixnum}), it can be
-specified as a cons cell @code{(@var{high} . @var{low})}, where
-@var{low} are the lower 16 bits of the value and @var{high} are the
-high 16 bits.
+Функция декодирует символ, которому назначен @var{code-point} в
+@var{charset}, который соответствует символу Emacs и возвращает его.  Если
+@var{charset} не содержит символа этой кодовой точки, значение будет
+@code{nil}.  Если @var{code-point} не помещается в целое число
+(@pxref{Integer Basics, most-positive-fixnum}) Lisp, его можно указать как
+cons-ячейку @code{(@var{high} . @var{low})}, где @var{low} - младшие 16 бит
+значения, а @var{high} - старшие 16 бит.
 @end defun
 
 @defun encode-char char charset
-This function returns the code point assigned to the character
-@var{char} in @var{charset}.  If the result does not fit in a Lisp
-integer, it is returned as a cons cell @code{(@var{high} . @var{low})}
-that fits the second argument of @code{decode-char} above.  If
-@var{charset} doesn't have a codepoint for @var{char}, the value is
-@code{nil}.
+Функция возвращает кодовую точку, присвоенную символу @var{char} в
+@var{charset}.  Если результат не соответствует целому числу Lisp,
+возвращается cons-ячейка @code{(@var{high} . @var{low})}, которая
+соответствует второму аргументу @code{decode-char} выше.  Если @var{charset}
+не имеет кода для @var{char}, значение будет @code{nil}.
 @end defun
 
-  The following function comes in handy for applying a certain
-function to all or part of the characters in a charset:
+  Следующая функция пригодится для применения определенной функции ко всем
+или части символов в кодировке:
 
 @defun map-charset-chars function charset &optional arg from-code to-code
-Call @var{function} for characters in @var{charset}.  @var{function}
-is called with two arguments.  The first one is a cons cell
-@code{(@var{from} .  @var{to})}, where @var{from} and @var{to}
-indicate a range of characters contained in charset.  The second
-argument passed to @var{function} is @var{arg}.
+Вызов @var{function} для символов в @var{charset}.  @var{function}
+вызывается с двумя аргументами.  Первый - это cons-ячейка
+@code{(@var{from} .  @var{to})}, где @var{from} и @var{to} обозначают
+диапазон символов, содержащихся в кодировке.  Второй аргумент, передаваемый
+@var{function}, - @var{arg}.
 
-By default, the range of codepoints passed to @var{function} includes
-all the characters in @var{charset}, but optional arguments
-@var{from-code} and @var{to-code} limit that to the range of
-characters between these two codepoints of @var{charset}.  If either
-of them is @code{nil}, it defaults to the first or last codepoint of
-@var{charset}, respectively.
+По умолчанию диапазон кодовых точек, переданных в @var{function}, включает
+все символы в @var{charset}, но необязательные аргументы @var{from-code} и
+@var{to-code} ограничивают это диапазоном символов между этими двумя
+кодовыми точками @var{charset}.  Если любой из них - @code{nil}, по
+умолчанию используется первая или последняя кодовая точка @var{charset}
+соответственно.
 @end defun
 
 @node Scanning Charsets
-@section Scanning for Character Sets
+@section Сканирование Наборов Символов
 @cindex scanning for character sets
 @cindex character set, searching
 
-  Sometimes it is useful to find out which character set a particular
-character belongs to.  One use for this is in determining which coding
-systems (@pxref{Coding Systems}) are capable of representing all of
-the text in question; another is to determine the font(s) for
-displaying that text.
+  Иногда бывает полезно узнать, к какому набору символов принадлежит
+конкретный символ.  Одно из применений этого - определение того, какие
+системы кодирования (@pxref{Coding Systems}) способны представить весь
+рассматриваемый текст; другой - определить шрифт (ы) для отображения этого
+текста.
 
 @defun charset-after &optional pos
-This function returns the charset of highest priority containing the
-character at position @var{pos} in the current buffer.  If @var{pos}
-is omitted or @code{nil}, it defaults to the current value of point.
-If @var{pos} is out of range, the value is @code{nil}.
+Функция возвращает кодировку с наивысшим приоритетом, содержащую символ в
+позиции @var{pos} в текущем буфере. Если @var{pos} опущен или @code{nil}, по
+умолчанию используется текущее значение точки. Если @var{pos} вне
+допустимого диапазона, значение будет @code{nil}.
 @end defun
 
 @defun find-charset-region beg end &optional translation
-This function returns a list of the character sets of highest priority
-that contain characters in the current buffer between positions
-@var{beg} and @var{end}.
+Функция возвращает список наборов символов с наивысшим приоритетом, которые
+содержат символы в текущем буфере между позициями @var{beg} и @var{end}.
 
-The optional argument @var{translation} specifies a translation table
-to use for scanning the text (@pxref{Translation of Characters}).  If
-it is non-@code{nil}, then each character in the region is translated
-through this table, and the value returned describes the translated
-characters instead of the characters actually in the buffer.
+Необязательный аргумент @var{translation} указывает таблицу трансляции,
+используемую для сканирования текста (@pxref{Translation of Characters}).
+Если это не-@code{nil}, то каждый символ в регионе транслируется через эту
+таблицу, а возвращаемое значение описывает переведенные символы, а не
+символы, фактически находящиеся в буфере.
 @end defun
 
 @defun find-charset-string string &optional translation
-This function returns a list of character sets of highest priority
-that contain characters in @var{string}.  It is just like
-@code{find-charset-region}, except that it applies to the contents of
-@var{string} instead of part of the current buffer.
+Функция возвращает список наборов символов с наивысшим приоритетом, которые
+содержат символы в @var{string}.  Это похоже на @code{find-charset-region},
+за исключением того, что применяется к содержимому @var{string}, а не к
+части текущего буфера.
 @end defun
 
 @node Translation of Characters
-@section Translation of Characters
+@section Трансляция Символов
 @cindex character translation tables
 @cindex translation tables
 
-  A @dfn{translation table} is a char-table (@pxref{Char-Tables}) that
-specifies a mapping of characters into characters.  These tables are
-used in encoding and decoding, and for other purposes.  Some coding
-systems specify their own particular translation tables; there are
-also default translation tables which apply to all other coding
-systems.
+  @dfn{Таблица трансляции} - это таблица символов (@pxref{Char-Tables}),
+которая определяет отображение символов в символы.  Эти таблицы используются
+при кодировании и декодировании, а также для других целей.  Некоторые
+системы кодирования определяют свои собственные таблицы трансляции; есть
+также таблицы трансляции по умолчанию, которые применяются ко всем остальным
+системам кодирования.
 
-  A translation table has two extra slots.  The first is either
-@code{nil} or a translation table that performs the reverse
-translation; the second is the maximum number of characters to look up
-for translating sequences of characters (see the description of
-@code{make-translation-table-from-alist} below).
+  В таблице трансляции есть два дополнительных слота.  Первый - это либо
+@code{nil}, либо таблица перевода, выполняющая обратное преобразование;
+второй - максимальное количество символов, которое нужно найти для
+преобразования последовательностей символов (смотреть описание
+@code{make-translation-table-from-alist} ниже).
 
 @defun make-translation-table &rest translations
-This function returns a translation table based on the argument
-@var{translations}.  Each element of @var{translations} should be a
-list of elements of the form @code{(@var{from} . @var{to})}; this says
-to translate the character @var{from} into @var{to}.
+Функция возвращает таблицу трансляции на основе аргумента
+@var{translations}.  Каждый элемент @var{translations} должен быть списком
+элементов вида @code{(@var{from} . @var{to})}; это говорит о трансляции
+символа @var{from} в @var{to}.
 
-The arguments and the forms in each argument are processed in order,
-and if a previous form already translates @var{to} to some other
-character, say @var{to-alt}, @var{from} is also translated to
-@var{to-alt}.
+Аргументы и формы в каждом аргументе обрабатываются по порядку, и если
+предыдущая форма уже переводит @var{to} в какой-либо другой символ,
+допустить, в @var{to-alt}, @var{from} также переводится в @var{to-alt}.
 @end defun
 
-  During decoding, the translation table's translations are applied to
-the characters that result from ordinary decoding.  If a coding system
-has the property @code{:decode-translation-table}, that specifies the
-translation table to use, or a list of translation tables to apply in
-sequence.  (This is a property of the coding system, as returned by
-@code{coding-system-get}, not a property of the symbol that is the
-coding system's name.  @xref{Coding System Basics,, Basic Concepts of
-Coding Systems}.)  Finally, if
-@code{standard-translation-table-for-decode} is non-@code{nil}, the
-resulting characters are translated by that table.
+  Во время декодирования таблицы трансляция применяется к символам,
+полученным в результате обычного декодирования.  Если система кодирования
+имеет свойство @code{:decode-translation-table}, которое указывает таблицу
+преобразования, которую нужно использовать, или список таблиц
+преобразования, которые следует применять последовательно.  (Это свойство
+системы кодирования, возвращаемое @code{coding-system-get}, а не свойство
+символа, являющегося именем системы кодирования.
+@xref{Coding System Basics,, Basic Concepts of Coding Systems}.)  Наконец,
+если @code{standard-translation-table-for-decode} равен не-@code{nil},
+полученные символы переводятся этой таблицей.
 
-  During encoding, the translation table's translations are applied to
-the characters in the buffer, and the result of translation is
-actually encoded.  If a coding system has property
-@code{:encode-translation-table}, that specifies the translation table
-to use, or a list of translation tables to apply in sequence.  In
-addition, if the variable @code{standard-translation-table-for-encode}
-is non-@code{nil}, it specifies the translation table to use for
-translating the result.
+  Во время трансляции таблицы трансляция применяются к символам в буфере, и
+результат трансляции фактически кодируется.  Если система кодирования имеет
+свойство @code{:encode-translation-table}, которое указывает таблицу
+преобразования, которую нужно использовать, или список таблиц
+преобразования, применяемых последовательно.  Кроме того, если переменная
+@code{standard-translation-table-for-encode} имеет значение не-@code{nil},
+она указывает таблицу преобразования, которая будет использоваться для
+преобразования результата.
 
 @defvar standard-translation-table-for-decode
-This is the default translation table for decoding.  If a coding
-systems specifies its own translation tables, the table that is the
-value of this variable, if non-@code{nil}, is applied after them.
+Таблица перевода по умолчанию для декодирования.  Если система кодирования
+определяет свои собственные таблицы трансляции, таблица, которая является
+значением этой переменной, если не-@code{nil}, применяется после них.
 @end defvar
 
 @defvar standard-translation-table-for-encode
-This is the default translation table for encoding.  If a coding
-systems specifies its own translation tables, the table that is the
-value of this variable, if non-@code{nil}, is applied after them.
+Таблица перевода по умолчанию для кодирования.  Если система кодирования
+определяет свои собственные таблицы перевода, таблица, которая является
+значением этой переменной, если не-@code{nil}, применяется после них.
 @end defvar
 
-@c FIXME: This variable is obsolete since 23.1.  We should mention
-@c that here or simply remove this defvar.  --xfq
+@c FIXME: Эта переменная устарела с 23.1. Мы должны упомянуть
+@c здесь, или просто удалить эту defvar.  --xfq
 @defvar translation-table-for-input
-Self-inserting characters are translated through this translation
-table before they are inserted.  Search commands also translate their
-input through this table, so they can compare more reliably with
-what's in the buffer.
+Самовставляющиеся символы переводятся через эту таблицу трансляции перед
+вставкой.  Команды поиска также транслируют свой ввод через эту таблицу,
+поэтому они могут более надежно сравнивать с тем, что находится в буфере.
 
-This variable automatically becomes buffer-local when set.
+При установке эта переменная автоматически становится локальной для буфера.
 @end defvar
 
 @defun make-translation-table-from-vector vec
-This function returns a translation table made from @var{vec} that is
-an array of 256 elements to map bytes (values 0 through #xFF) to
-characters.  Elements may be @code{nil} for untranslated bytes.  The
-returned table has a translation table for reverse mapping in the
-first extra slot, and the value @code{1} in the second extra slot.
+Функция возвращает таблицу преобразования, созданную из @var{vec}, которая
+представляет собой массив из 256 элементов для сопоставления байтов
+(значения от 0 до #xFF) с символами.  Элементы могут быть @code{nil} для
+непереведенных байтов.  Возвращенная таблица содержит таблицу трансляции для
+обратного отображения в первом дополнительном слоте и значение @code{1} во
+втором дополнительном слоте.
 
-This function provides an easy way to make a private coding system
-that maps each byte to a specific character.  You can specify the
-returned table and the reverse translation table using the properties
-@code{:decode-translation-table} and @code{:encode-translation-table}
-respectively in the @var{props} argument to
-@code{define-coding-system}.
+Функция обеспечивает простой способ создания частной системы кодирования,
+которая отображает каждый байт на определенный символ. Вы можете указать
+возвращаемую таблицу и таблицу обратного преобразования, используя свойства
+@code{:decode-translation-table} и @code{:encode-translation-table}
+соответственно в аргументе @var{props} для @code{define-coding-system}.
 @end defun
 
 @defun make-translation-table-from-alist alist
-This function is similar to @code{make-translation-table} but returns
-a complex translation table rather than a simple one-to-one mapping.
-Each element of @var{alist} is of the form @code{(@var{from}
-. @var{to})}, where @var{from} and @var{to} are either characters or
-vectors specifying a sequence of characters.  If @var{from} is a
-character, that character is translated to @var{to} (i.e., to a
-character or a character sequence).  If @var{from} is a vector of
-characters, that sequence is translated to @var{to}.  The returned
-table has a translation table for reverse mapping in the first extra
-slot, and the maximum length of all the @var{from} character sequences
-in the second extra slot.
+Функция похожа на @code{make-translation-table}, но возвращает сложную
+таблицу преобразования, а не простое взаимно-однозначное сопоставление.
+Каждый элемент @var{alist} имеет форму @code{(@var{from} . @var{to})}, где
+@var{from} и @var{to} - символы или векторы, определяющие последовательность
+символов.  Если @var{from} является символом, этот символ преобразуется в
+@var{to} (то есть в символ или последовательность символов).  Если
+@var{from} - это вектор символов, эта последовательность преобразуется в
+@var{to}.  Возвращенная таблица содержит таблицу трансляции для обратного
+отображения в первом дополнительном слоте и максимальную длину всех
+последовательностей символов @var{from} во втором дополнительном слоте.
 @end defun
 
 @node Coding Systems
-@section Coding Systems
+@section Системы Кодирования
 
 @cindex coding system
-  When Emacs reads or writes a file, and when Emacs sends text to a
-subprocess or receives text from a subprocess, it normally performs
-character code conversion and end-of-line conversion as specified
-by a particular @dfn{coding system}.
+  Когда Emacs читает или записывает файл, и когда Emacs отправляет текст в
+подпроцесс или получает текст из подпроцесса, он обычно выполняет
+преобразование кода символов и преобразование конца строки, как указано в
+конкретной @dfn{кодовой системе}.
 
-  How to define a coding system is an arcane matter, and is not
-documented here.
+  Как определить систему кодирования - непонятный вопрос, который здесь не
+описывается.
 
 @menu
-* Coding System Basics::        Basic concepts.
-* Encoding and I/O::            How file I/O functions handle coding systems.
-* Lisp and Coding Systems::     Functions to operate on coding system names.
-* User-Chosen Coding Systems::  Asking the user to choose a coding system.
-* Default Coding Systems::      Controlling the default choices.
-* Specifying Coding Systems::   Requesting a particular coding system
-                                    for a single file operation.
-* Explicit Encoding::           Encoding or decoding text without doing I/O.
-* Terminal I/O Encoding::       Use of encoding for terminal I/O.
+* Coding System Basics::        Базовые концепции.
+* Encoding and I/O::            Как функции файлового ввода-вывода
+                                    обрабатывают системы кодирования.
+* Lisp and Coding Systems:: Функции для работы с именами систем кодирования.
+* User-Chosen Coding Systems::  Спросить пользователя выбрать систему
+                                    кодирования.
+* Default Coding Systems::      Управление выбором по умолчанию.
+* Specifying Coding Systems::   Запрос конкретной системы кодирования для
+                                    одной файловой операции.
+* Explicit Encoding:: Кодирование или декодирование текста без ввода-вывода.
+* Terminal I/O Encoding::       Использование кодировки для терминального
+                                    ввода/вывода.
 @end menu
 
 @node Coding System Basics
-@subsection Basic Concepts of Coding Systems
+@subsection Основные Концепции Систем Кодирования
 
 @cindex character code conversion
-  @dfn{Character code conversion} involves conversion between the
-internal representation of characters used inside Emacs and some other
-encoding.  Emacs supports many different encodings, in that it can
-convert to and from them.  For example, it can convert text to or from
-encodings such as Latin 1, Latin 2, Latin 3, Latin 4, Latin 5, and
-several variants of ISO 2022.  In some cases, Emacs supports several
-alternative encodings for the same characters; for example, there are
-three coding systems for the Cyrillic (Russian) alphabet: ISO,
-Alternativnyj, and KOI8.
+  @dfn{Преобразование кода символа} включает преобразование между внутренним
+представлением символов, используемых внутри Emacs, и некоторой другой
+кодировкой.  Emacs поддерживает множество различных кодировок в том смысле,
+что он может конвертировать в них и из них.  Например, может преобразовывать
+текст в кодировки, такие как Latin 1, Latin 2, Latin 3, Latin 4, Latin 5 и
+несколько вариантов ISO 2022, или наоборот.  В некоторых случаях Emacs
+поддерживает несколько альтернативных кодировок для одних и тех же символов;
+Например, для кириллического (русского) алфавита существует три системы
+кодирования: ISO, Альтернативный и KOI8.
 
 @vindex undecided@r{ coding system}
 @vindex prefer-utf-8@r{ coding system}
-  Every coding system specifies a particular set of character code
-conversions, but the coding system @code{undecided} is special: it
-leaves the choice unspecified, to be chosen heuristically for each
-file, based on the file's data.  The coding system @code{prefer-utf-8}
-is like @code{undecided}, but it prefers to choose @code{utf-8} when
-possible.
+  Каждая система кодирования определяет конкретный набор преобразований кода
+символов, но система кодирования @code{undecided} является особенной: она
+оставляет выбор без указания, который нужно выбирать эвристически для
+каждого файла на основе данных файла.  Система кодирования
+@code{prefer-utf-8} похожа на @code{undecided}, но по возможности
+предпочитает выбирать @code{utf-8}.
 
-  In general, a coding system doesn't guarantee roundtrip identity:
-decoding a byte sequence using a coding system, then encoding the
-resulting text in the same coding system, can produce a different byte
-sequence.  But some coding systems do guarantee that the byte sequence
-will be the same as what you originally decoded.  Here are a few
-examples:
+  В общем, система кодирования не гарантирует двустороннюю идентичность:
+декодирование последовательности байтов с использованием системы кодирования
+с последующим кодированием результирующего текста в той же системе
+кодирования может дать другую последовательность байтов.  Но некоторые
+системы кодирования действительно гарантируют, что последовательность байтов
+будет такой же, как та, которая изначально декодировалась.  Вот несколько
+примеров:
 
 @quotation
 iso-8859-1, utf-8, big5, shift_jis, euc-jp
 @end quotation
 
-  Encoding buffer text and then decoding the result can also fail to
-reproduce the original text.  For instance, if you encode a character
-with a coding system which does not support that character, the result
-is unpredictable, and thus decoding it using the same coding system
-may produce a different text.  Currently, Emacs can't report errors
-that result from encoding unsupported characters.
+  Кодирование текста в буфере и последующее декодирование результата также
+могут не воспроизвести исходный текст.  Например, если кодируется символ с
+помощью системы кодирования, которая не поддерживает этот символ, результат
+будет непредсказуемым, и поэтому его декодирование с использованием той же
+системы кодирования может дать другой текст.  В настоящее время Emacs не
+может сообщать об ошибках, возникающих в результате кодирования
+неподдерживаемых символов.
 
 @cindex EOL conversion
 @cindex end-of-line conversion
 @cindex line end conversion
-  @dfn{End of line conversion} handles three different conventions
-used on various systems for representing end of line in files.  The
-Unix convention, used on GNU and Unix systems, is to use the linefeed
-character (also called newline).  The DOS convention, used on
-MS-Windows and MS-DOS systems, is to use a carriage return and a
-linefeed at the end of a line.  The Mac convention is to use just
-carriage return.  (This was the convention used in Classic Mac OS.)
+  @dfn{Конверсия в конце строки} обрабатывает три различных соглашения,
+используемых в различных системах для представления конца строки в файлах.
+Соглашение Unix, используемое в системах GNU и Unix, заключается в
+использовании символа перевода строки (также называемого новой строкой).
+Соглашение DOS, используемое в системах MS-Windows и MS-DOS, заключается в
+использовании возврата каретки и перевода строки в конце строки.  Соглашение
+Mac заключается в использовании только возврата каретки.  (Это соглашение
+использовалось в классической Mac OS.)
 
 @cindex base coding system
 @cindex variant coding system
-  @dfn{Base coding systems} such as @code{latin-1} leave the end-of-line
-conversion unspecified, to be chosen based on the data.  @dfn{Variant
-coding systems} such as @code{latin-1-unix}, @code{latin-1-dos} and
-@code{latin-1-mac} specify the end-of-line conversion explicitly as
-well.  Most base coding systems have three corresponding variants whose
-names are formed by adding @samp{-unix}, @samp{-dos} and @samp{-mac}.
+  @dfn{Базовые системы кодирования}, например @code{latin-1}, оставляет
+преобразование конца строки неопределенным, чтобы его можно было выбрать на
+основе данных.  @dfn{Вариантные системы кодирования}, например
+@code{latin-1-unix}, @code{latin-1-dos} и @code{latin-1-mac}, также явно
+указывают преобразование конца строки.  Большинство базовых систем
+кодирования имеют три соответствующих варианта, имена которых образованы
+добавлением @samp{-unix}, @samp{-dos} и @samp{-mac}.
 
 @vindex raw-text@r{ coding system}
-  The coding system @code{raw-text} is special in that it prevents
-character code conversion, and causes the buffer visited with this
-coding system to be a unibyte buffer.  For historical reasons, you can
-save both unibyte and multibyte text with this coding system.  When
-you use @code{raw-text} to encode multibyte text, it does perform one
-character code conversion: it converts eight-bit characters to their
-single-byte external representation.  @code{raw-text} does not specify
-the end-of-line conversion, allowing that to be determined as usual by
-the data, and has the usual three variants which specify the
-end-of-line conversion.
+  Система кодирования @code{raw-text} особенная в том, что она предотвращает
+преобразование кода символов и заставляет буфер, посещаемый этой системой
+кодирования, быть однобайтовым буфером. По историческим причинам с помощью
+этой системы кодирования можно сохранять как однобайтовый, так и
+многобайтовый текст.  Когда используетя @code{raw-text} для кодирования
+многобайтового текста, выполняется преобразование кода одного символа:
+преобразуются восьмибитные символы в их однобайтовое внешнее представление.
+@code{raw-text} не определяет преобразование конца строки, что позволяет
+определять его как обычно по данным, и имеет три обычных варианта,
+определяющих преобразование конца строки.
 
 @vindex no-conversion@r{ coding system}
 @vindex binary@r{ coding system}
-  @code{no-conversion} (and its alias @code{binary}) is equivalent to
-@code{raw-text-unix}: it specifies no conversion of either character
-codes or end-of-line.
+  @code{no-conversion} (и его псевдоним @code{binary}) эквивалентен
+@code{raw-text-unix}: не определяет преобразования ни кодов символов, ни
+конца строки. 
 
 @vindex emacs-internal@r{ coding system}
 @vindex utf-8-emacs@r{ coding system}
-  The coding system @code{utf-8-emacs} specifies that the data is
-represented in the internal Emacs encoding (@pxref{Text
-Representations}).  This is like @code{raw-text} in that no code
-conversion happens, but different in that the result is multibyte
-data.  The name @code{emacs-internal} is an alias for
-@code{utf-8-emacs-unix} (so it forces no conversion of end-of-line,
-unlike @code{utf-8-emacs}, which can decode all 3 kinds of
-end-of-line conventions).
+  Система кодирования @code{utf-8-emacs} указывает, что данные представлены
+во внутренней кодировке Emacs (@pxref{Text Representations}).  Это похоже на
+@code{raw-text} в том, что преобразование кода не происходит, но отличается
+тем, что результатом являются многобайтовые данные.  Имя
+@code{emacs-internal} - это псевдоним @code{utf-8-emacs-unix} (поэтому он не
+вызывает преобразования конца строки, в отличие от @code{utf-8-emacs},
+который может декодировать все 3 вида соглашений о конце строки).
 
 @defun coding-system-get coding-system property
-This function returns the specified property of the coding system
-@var{coding-system}.  Most coding system properties exist for internal
-purposes, but one that you might find useful is @code{:mime-charset}.
-That property's value is the name used in MIME for the character coding
-which this coding system can read and write.  Examples:
+Функция возвращает указанное свойство системы кодирования
+@var{coding-system}.  Большинство свойств системы кодирования существуют для
+внутренних целей, но одно из них может оказаться полезным -
+@code{:mime-charset}. Значение этого свойства - это имя, используемое в MIME
+для кодировки символов, которую эта система кодирования может читать и
+записывать.  Примеры:
 
 @example
 (coding-system-get 'iso-latin-1 :mime-charset)
@@ -1132,143 +1125,143 @@ which this coding system can read and write.  Examples:
      @result{} koi8-r
 @end example
 
-The value of the @code{:mime-charset} property is also defined
-as an alias for the coding system.
+Значение свойства @code{:mime-charset} также определяется как псевдоним для
+системы кодирования.
 @end defun
 
 @cindex alias, for coding systems
 @defun coding-system-aliases coding-system
-This function returns the list of aliases of @var{coding-system}.
+Функция возвращает список псевдонимов @var{coding-system}.
 @end defun
 
 @node Encoding and I/O
-@subsection Encoding and I/O
+@subsection Декодирование и I/O
 
-  The principal purpose of coding systems is for use in reading and
-writing files.  The function @code{insert-file-contents} uses a coding
-system to decode the file data, and @code{write-region} uses one to
-encode the buffer contents.
+  Основная цель систем кодирования - использование для чтения и записи
+файлов.  Функция @code{insert-file-contents} использует систему кодирования
+для декодирования данных файла, а @code{write-region} использует ее для
+кодирования содержимого буфера.
 
-  You can specify the coding system to use either explicitly
-(@pxref{Specifying Coding Systems}), or implicitly using a default
-mechanism (@pxref{Default Coding Systems}).  But these methods may not
-completely specify what to do.  For example, they may choose a coding
-system such as @code{undecided} which leaves the character code
-conversion to be determined from the data.  In these cases, the I/O
-operation finishes the job of choosing a coding system.  Very often
-you will want to find out afterwards which coding system was chosen.
+  Можно указать систему кодирования для использования либо явно
+(@pxref{Specifying Coding Systems}), либо неявно с использованием механизма
+по умолчанию (@pxref{Default Coding Systems}).  Но эти методы могут не
+указывать полностью, что делать.  Например, могут выбрать систему
+кодирования, такую как @code{undecided}, в которой преобразование кода
+символа будет определяться на основе данных.  В этих случаях операция
+ввода-вывода завершает работу по выбору системы кодирования.  Очень часто
+впоследствии требуется узнать, какая система кодирования была выбрана.
 
 @defvar buffer-file-coding-system
-This buffer-local variable records the coding system used for saving the
-buffer and for writing part of the buffer with @code{write-region}.  If
-the text to be written cannot be safely encoded using the coding system
-specified by this variable, these operations select an alternative
-encoding by calling the function @code{select-safe-coding-system}
-(@pxref{User-Chosen Coding Systems}).  If selecting a different encoding
-requires to ask the user to specify a coding system,
-@code{buffer-file-coding-system} is updated to the newly selected coding
-system.
+Эта локальная в буфере переменная записывает систему кодирования,
+используемую для сохранения буфера и для записи части буфера с помощью
+@code{write-region}.  Если записываемый текст не может быть безопасно
+закодирован с использованием системы кодирования, указанной в этой
+переменной, эти операции выбирают альтернативную кодировку, вызывая функцию
+@code{select-safe-coding-system} (@pxref{User-Chosen Coding Systems}).  Если
+для выбора другой кодировки требуется попросить пользователя указать систему
+кодирования, @code{buffer-file-coding-system} обновляется до вновь выбранной
+системы кодирования.
 
-@code{buffer-file-coding-system} does @emph{not} affect sending text
-to a subprocess.
+@code{buffer-file-coding-system} @emph{не} влияет на отправку текста в
+подпроцесс.
 @end defvar
 
 @defvar save-buffer-coding-system
-This variable specifies the coding system for saving the buffer (by
-overriding @code{buffer-file-coding-system}).  Note that it is not used
-for @code{write-region}.
+Переменная определяет систему кодирования для сохранения буфера (путем
+переопределения @code{buffer-file-coding-system}).  Обратить внимание, что
+она не используется для @code{write-region}.
 
-When a command to save the buffer starts out to use
-@code{buffer-file-coding-system} (or @code{save-buffer-coding-system}),
-and that coding system cannot handle
-the actual text in the buffer, the command asks the user to choose
-another coding system (by calling @code{select-safe-coding-system}).
-After that happens, the command also updates
-@code{buffer-file-coding-system} to represent the coding system that
-the user specified.
+Когда команда для сохранения буфера начинает использовать
+@code{buffer-file-coding-system} (или @code{save-buffer-coding-system}), и
+эта система кодирования не может обработать фактический текст в буфере,
+команда просит пользователя выбрать другую систему кодирования (путем вызова
+@code{select-safe-coding-system}).  После этого команда также обновляет
+@code{buffer-file-coding-system}, чтобы представить систему кодирования,
+указанную пользователем.
 @end defvar
 
 @defvar last-coding-system-used
-I/O operations for files and subprocesses set this variable to the
-coding system name that was used.  The explicit encoding and decoding
-functions (@pxref{Explicit Encoding}) set it too.
+Операции ввода-вывода для файлов и подпроцессов устанавливают в этой
+переменной имя системы кодирования, которое использовалось.  Его также
+устанавливают функции явного кодирования и декодирования
+(@pxref{Explicit Encoding}).
 
-@strong{Warning:} Since receiving subprocess output sets this variable,
-it can change whenever Emacs waits; therefore, you should copy the
-value shortly after the function call that stores the value you are
-interested in.
+@strong{Предупреждение:} Поскольку получение вывода подпроцесса
+устанавливает эту переменную, она может изменяться всякий раз, когда Emacs
+ожидает; поэтому потребуется скопировать значение вскоре после вызова
+функции, в которой хранится интересующее значение.
 @end defvar
 
-  The variable @code{selection-coding-system} specifies how to encode
-selections for the window system.  @xref{Window System Selections}.
+  Переменная @code{selection-coding-system} указывает, как кодировать выбор
+для оконной системы.  @xref{Window System Selections}.
 
 @defvar file-name-coding-system
-The variable @code{file-name-coding-system} specifies the coding
-system to use for encoding file names.  Emacs encodes file names using
-that coding system for all file operations.  If
-@code{file-name-coding-system} is @code{nil}, Emacs uses a default
-coding system determined by the selected language environment.  In the
-default language environment, any non-@acronym{ASCII} characters in
-file names are not encoded specially; they appear in the file system
-using the internal Emacs representation.
+Переменная @code{file-name-coding-system} указывает систему кодирования,
+используемую для кодирования имен файлов.  Emacs кодирует имена файлов,
+используя эту систему кодирования для всех операций с файлами.  Если
+@code{file-name-coding-system} равен @code{nil}, Emacs использует систему
+кодирования по умолчанию, определяемую выбранной языковой средой.  В
+языковой среде по умолчанию любые символы не-@acronym{ASCII} в именах файлов
+специально не кодируются; они появляются в файловой системе с использованием
+внутреннего представления Emacs.
 @end defvar
 
-  @strong{Warning:} if you change @code{file-name-coding-system} (or
-the language environment) in the middle of an Emacs session, problems
-can result if you have already visited files whose names were encoded
-using the earlier coding system and are handled differently under the
-new coding system.  If you try to save one of these buffers under the
-visited file name, saving may use the wrong file name, or it may get
-an error.  If such a problem happens, use @kbd{C-x C-w} to specify a
-new file name for that buffer.
+  @strong{Предупреждение:} если изменить @code{file-name-coding-system} (или
+языковую среду) в середине сеанса Emacs, могут возникнуть проблемы, если уже
+посещены файлы, имена которых были закодированы с использованием более
+ранней системы кодирования и обрабатываются по-другому в новой системе
+кодирования.  Если попытаться сохранить один из этих буферов под именем
+посещенного файла, при сохранении может использоваться неправильное имя
+файла или может возникнуть ошибка.  Если возникает такая проблема,
+используется @kbd{C-x C-w}, чтобы указать новое имя файла для этого буфера.
 
 @cindex file-name encoding, MS-Windows
-  On Windows 2000 and later, Emacs by default uses Unicode APIs to
-pass file names to the OS, so the value of
-@code{file-name-coding-system} is largely ignored.  Lisp applications
-that need to encode or decode file names on the Lisp level should use
-@code{utf-8} coding-system when @code{system-type} is
-@code{windows-nt}; the conversion of UTF-8 encoded file names to the
-encoding appropriate for communicating with the OS is performed
-internally by Emacs.
+  В Windows 2000 и более поздних версиях Emacs по умолчанию использует API
+Unicode для передачи имен файлов в ОС, поэтому значение
+@code{file-name-coding-system} в основном игнорируется.  Приложения Lisp,
+которым необходимо кодировать или декодировать имена файлов на уровне Lisp,
+должны использовать систему кодирования @code{utf-8}, когда
+@code{system-type} имеет значение @code{windows-nt}; преобразование имен
+файлов в кодировке UTF-8 в кодировку, подходящую для взаимодействия с ОС,
+выполняется внутри Emacs.
 
 @node Lisp and Coding Systems
-@subsection Coding Systems in Lisp
+@subsection Системы Кодирования в Lisp
 
-  Here are the Lisp facilities for working with coding systems:
+  Вот возможности Lisp для работы с системами кодирования:
 
 @cindex list all coding systems
 @defun coding-system-list &optional base-only
-This function returns a list of all coding system names (symbols).  If
-@var{base-only} is non-@code{nil}, the value includes only the
-base coding systems.  Otherwise, it includes alias and variant coding
-systems as well.
+Функция возвращает список всех имен (символов) систем кодирования.  Если
+@var{base-only} равен не-@code{nil}, значение включает только базовые
+системы кодирования.  В противном случае он также включает системы
+псевдонимов и вариантного кодирования.
 @end defun
 
 @defun coding-system-p object
-This function returns @code{t} if @var{object} is a coding system
-name or @code{nil}.
+Функция возвращает @code{t}, если @var{object} - имя системы кодирования,
+или @code{nil}.
 @end defun
 
 @cindex validity of coding system
 @cindex coding system, validity check
 @defun check-coding-system coding-system
-This function checks the validity of @var{coding-system}.  If that is
-valid, it returns @var{coding-system}.  If @var{coding-system} is
-@code{nil}, the function return @code{nil}.  For any other values, it
-signals an error whose @code{error-symbol} is @code{coding-system-error}
-(@pxref{Signaling Errors, signal}).
+Функция проверяет правильность @var{coding-system}.  Если это действительно
+так, возвращается @var{coding-system}.  Если @var{coding-system} равно
+@code{nil}, функция возвращает @code{nil}.  Для любых других значений
+сигнализируется об ошибке, когда @code{error-symbol} установленно в
+@code{coding-system-error} (@pxref{Signaling Errors, signal}).
 @end defun
 
 @cindex eol type of coding system
 @defun coding-system-eol-type coding-system
-This function returns the type of end-of-line (a.k.a.@: @dfn{eol})
-conversion used by @var{coding-system}.  If @var{coding-system}
-specifies a certain eol conversion, the return value is an integer 0,
-1, or 2, standing for @code{unix}, @code{dos}, and @code{mac},
-respectively.  If @var{coding-system} doesn't specify eol conversion
-explicitly, the return value is a vector of coding systems, each one
-with one of the possible eol conversion types, like this:
+Функция возвращает тип преобразования конца строки (также известный как @:
+@dfn{eol}), используемый @var{coding-system}.  Если @var{coding-system}
+задает определенное преобразование eol, возвращаемое значение будет целым
+числом 0, 1 или 2, обозначающим @code{unix}, @code{dos} and @code{mac},
+соответственно.  Если @var{coding-system} не указывает явно преобразование
+eol, возвращаемое значение представляет собой вектор систем кодирования,
+каждая из которых имеет один из возможных типов преобразования eol, как это:
 
 @lisp
 (coding-system-eol-type 'latin-1)
@@ -1276,673 +1269,677 @@ with one of the possible eol conversion types, like this:
 @end lisp
 
 @noindent
-If this function returns a vector, Emacs will decide, as part of the
-text encoding or decoding process, what eol conversion to use.  For
-decoding, the end-of-line format of the text is auto-detected, and the
-eol conversion is set to match it (e.g., DOS-style CRLF format will
-imply @code{dos} eol conversion).  For encoding, the eol conversion is
-taken from the appropriate default coding system (e.g.,
-default value of @code{buffer-file-coding-system} for
-@code{buffer-file-coding-system}), or from the default eol conversion
-appropriate for the underlying platform.
+Если функция возвращает вектор, Emacs решит, как часть процесса кодирования
+или декодирования текста, какое преобразование eol использовать.  Для
+декодирования формат конца строки текста определяется автоматически, и
+преобразование eol устанавливается в соответствии с ним (например, формат
+CRLF в стиле DOS будет подразумевать преобразование eol в @code{dos}).  Для
+кодирования преобразование eol берется из соответствующей системы
+кодирования по умолчанию (например, значение по умолчанию
+@code{buffer-file-coding-system} для @code{buffer-file-coding-system}) или
+из преобразования eol по умолчанию, подходящего для базовой платформы.
 @end defun
 
 @cindex eol conversion of coding system
 @defun coding-system-change-eol-conversion coding-system eol-type
-This function returns a coding system which is like @var{coding-system}
-except for its eol conversion, which is specified by @code{eol-type}.
-@var{eol-type} should be @code{unix}, @code{dos}, @code{mac}, or
-@code{nil}.  If it is @code{nil}, the returned coding system determines
-the end-of-line conversion from the data.
+Функция возвращает систему кодирования, которая похожа на
+@var{coding-system}, за исключением преобразования eol, которое задается
+@code{eol-type}.  @var{eol-type} должно быть @code{unix}, @code{dos},
+@code{mac} или @code{nil}.  Если это @code{nil}, возвращенная система
+кодирования определяет преобразование конца строки из данных.
 
-@var{eol-type} may also be 0, 1 or 2, standing for @code{unix},
-@code{dos} and @code{mac}, respectively.
+@var{eol-type} также может быть 0, 1 или 2, что означает @code{unix},
+@code{dos} и @code{mac} соответственно.
 @end defun
 
 @cindex text conversion of coding system
 @defun coding-system-change-text-conversion eol-coding text-coding
-This function returns a coding system which uses the end-of-line
-conversion of @var{eol-coding}, and the text conversion of
-@var{text-coding}.  If @var{text-coding} is @code{nil}, it returns
-@code{undecided}, or one of its variants according to @var{eol-coding}.
+Функция возвращает систему кодирования, которая использует преобразование
+конца строки @var{eol-coding} и преобразование текста @var{text-coding}.
+Если @var{text-coding} равен @code{nil}, он возвращает @code{undecided} или
+один из его вариантов согласно @var{eol-coding}.
 @end defun
 
 @cindex safely encode region
 @cindex coding systems for encoding region
 @defun find-coding-systems-region from to
-This function returns a list of coding systems that could be used to
-encode a text between @var{from} and @var{to}.  All coding systems in
-the list can safely encode any multibyte characters in that portion of
-the text.
+Функция возвращает список систем кодирования, которые можно использовать для
+кодирования текста между @var{from} и @var{to}.  Все системы кодирования в
+списке могут безопасно кодировать любые многобайтовые символы в этой части
+текста.
 
-If the text contains no multibyte characters, the function returns the
-list @code{(undecided)}.
+Если в тексте нет многобайтовых символов, функция возвращает список
+@code{(undecided)}.
 @end defun
 
 @cindex safely encode a string
 @cindex coding systems for encoding a string
 @defun find-coding-systems-string string
-This function returns a list of coding systems that could be used to
-encode the text of @var{string}.  All coding systems in the list can
-safely encode any multibyte characters in @var{string}.  If the text
-contains no multibyte characters, this returns the list
-@code{(undecided)}.
+Функция возвращает список систем кодирования, которые можно использовать для
+кодирования текста @var{string}.  Все системы кодирования в списке могут
+безопасно кодировать любые многобайтовые символы в @var{string}.  Если текст
+не содержит многобайтовых символов, возвращается список @code{(undecided)}.
 @end defun
 
 @cindex charset, coding systems to encode
 @cindex safely encode characters in a charset
 @defun find-coding-systems-for-charsets charsets
-This function returns a list of coding systems that could be used to
-encode all the character sets in the list @var{charsets}.
+Функция возвращает список систем кодирования, которые можно использовать для
+кодирования всех наборов символов в списке @var{charsets}.
 @end defun
 
 @defun check-coding-systems-region start end coding-system-list
-This function checks whether coding systems in the list
-@code{coding-system-list} can encode all the characters in the region
-between @var{start} and @var{end}.  If all of the coding systems in
-the list can encode the specified text, the function returns
-@code{nil}.  If some coding systems cannot encode some of the
-characters, the value is an alist, each element of which has the form
-@code{(@var{coding-system1} @var{pos1} @var{pos2} @dots{})}, meaning
-that @var{coding-system1} cannot encode characters at buffer positions
+Функция проверяет, могут ли системы кодирования в списке
+@code{coding-system-list} кодировать все символы в области между @var{start}
+и @var{end}.  Если все системы кодирования в списке могут кодировать
+указанный текст, функция возвращает @code{nil}.  Если некоторые системы
+кодирования не могут кодировать некоторые символы, значение представляет
+собой список, каждый элемент которого имеет форму
+@code{(@var{coding-system1} @var{pos1} @var{pos2} @dots{})}, что означает,
+что @var{coding-system1} не может кодировать символы в позициях буфера
 @var{pos1}, @var{pos2}, @enddots{}.
 
-@var{start} may be a string, in which case @var{end} is ignored and
-the returned value references string indices instead of buffer
-positions.
+@var{start} может быть строкой, и в этом случае @var{end} игнорируется, а
+возвращаемое значение ссылается на строковые индексы, а не на позиции
+буфера.
 @end defun
 
 @defun detect-coding-region start end &optional highest
-This function chooses a plausible coding system for decoding the text
-from @var{start} to @var{end}.  This text should be a byte sequence,
-i.e., unibyte text or multibyte text with only @acronym{ASCII} and
-eight-bit characters (@pxref{Explicit Encoding}).
+Функция выбирает правдоподобную систему кодирования для декодирования текста
+от @var{start} до @var{end}.  Этот текст должен быть байтовой
+последовательностью, то есть однобайтовым или многобайтовым текстом,
+состоящим только из символов @acronym{ASCII} и восьмибитных символов
+(@pxref{Explicit Encoding}).
 
-Normally this function returns a list of coding systems that could
-handle decoding the text that was scanned.  They are listed in order of
-decreasing priority.  But if @var{highest} is non-@code{nil}, then the
-return value is just one coding system, the one that is highest in
-priority.
+Обычно функция возвращает список систем кодирования, которые могут
+обрабатывать декодирование отсканированного текста.  Перечислены они в
+порядке убывания приоритета.  Но если @var{highest} равен не-@code{nil}, то
+возвращаемое значение - это всего лишь одна система кодирования, имеющая
+наивысший приоритет.
 
-If the region contains only @acronym{ASCII} characters except for such
-ISO-2022 control characters ISO-2022 as @code{ESC}, the value is
-@code{undecided} or @code{(undecided)}, or a variant specifying
-end-of-line conversion, if that can be deduced from the text.
+Если область содержит только символы @acronym{ASCII}, за исключением таких
+управляющих символов ISO-2022 ISO-2022, как @code{ESC}, значение будет
+@code{undecided} или @code{(undecided)}, или вариант, определяющий
+преобразование конца строки, если это можно вывести из текста.
 
-If the region contains null bytes, the value is @code{no-conversion},
-even if the region contains text encoded in some coding system.
+Если область содержит нулевые байты, значение будет @code{no-conversion},
+даже если область содержит текст, закодированный в какой-либо системе
+кодирования.
 @end defun
 
 @defun detect-coding-string string &optional highest
-This function is like @code{detect-coding-region} except that it
-operates on the contents of @var{string} instead of bytes in the buffer.
+Функция похожа на @code{detect-coding-region}, за исключением того, что она
+работает с содержимым @var{string}, а не с байтами в буфере.
 @end defun
 
 @cindex null bytes, and decoding text
 @defvar inhibit-null-byte-detection
-If this variable has a non-@code{nil} value, null bytes are ignored
-when detecting the encoding of a region or a string.  This allows the
-encoding of text that contains null bytes to be correctly detected,
-such as Info files with Index nodes.
+Если эта переменная имеет значение не-@code{nil}, нулевые байты игнорируются
+при обнаружении кодировки области или строки.  Это позволяет правильно
+определять кодировку текста, содержащего нулевые байты, например, файлов
+Info с узлами индекса.
 @end defvar
 
 @defvar inhibit-iso-escape-detection
-If this variable has a non-@code{nil} value, ISO-2022 escape sequences
-are ignored when detecting the encoding of a region or a string.  The
-result is that no text is ever detected as encoded in some ISO-2022
-encoding, and all escape sequences become visible in a buffer.
-@strong{Warning:} @emph{Use this variable with extreme caution,
-because many files in the Emacs distribution use ISO-2022 encoding.}
+Если переменная имеет значение не-@code{nil}, escape-последовательности
+ISO-2022 игнорируются при обнаружении кодировки области или строки.  В
+результате никакой текст никогда не распознается как закодированный в
+некоторой кодировке ISO-2022, и все escape-последовательности становятся
+видимыми в буфере.
+@strong{Предупреждение:} @emph{Использовать эту переменную с особой
+осторожностью, потому что многие файлы в дистрибутиве Emacs используют
+кодировку ISO-2022.}
 @end defvar
 
 @cindex charsets supported by a coding system
 @defun coding-system-charset-list coding-system
-This function returns the list of character sets (@pxref{Character
-Sets}) supported by @var{coding-system}.  Some coding systems that
-support too many character sets to list them all yield special values:
+Функция возвращает список наборов символов (@pxref{Character Sets}),
+поддерживаемых @var{coding-system}.  Некоторые системы кодирования, которые
+поддерживают слишком много наборов символов, чтобы перечислить их все, дают
+специальные значения.:
 @itemize @bullet
 @item
-If @var{coding-system} supports all Emacs characters, the value is
+Если @var{coding-system} поддерживает все символы Emacs, значение равно
 @code{(emacs)}.
 @item
-If @var{coding-system} supports all Unicode characters, the value is
+Если @var{coding-system} поддерживает все символы Unicode, значение равно
 @code{(unicode)}.
 @item
-If @var{coding-system} supports all ISO-2022 charsets, the value is
+Если @var{coding-system} поддерживает все кодировки ISO-2022, значение будет
 @code{iso-2022}.
 @item
-If @var{coding-system} supports all the characters in the internal
-coding system used by Emacs version 21 (prior to the implementation of
-internal Unicode support), the value is @code{emacs-mule}.
+Если @var{coding-system} поддерживает все символы во внутренней системе
+кодирования, используемой Emacs версии 21 (до реализации внутренней
+поддержки Unicode), значение равно @code{emacs-mule}.
 @end itemize
 @end defun
 
-  @xref{Coding systems for a subprocess,, Process Information}, in
-particular the description of the functions
-@code{process-coding-system} and @code{set-process-coding-system}, for
-how to examine or set the coding systems used for I/O to a subprocess.
+  @xref{Coding systems for a subprocess,, Process Information}, в частности,
+описание функций @code{process-coding-system} и
+@code{set-process-coding-system}, как проверять или устанавливать системы
+кодирования, используемые для ввода-вывода для подпроцесса.
 
 @node User-Chosen Coding Systems
-@subsection User-Chosen Coding Systems
+@subsection Системы Кодирования по Выбору Пользователя
 
 @cindex select safe coding system
 @defun select-safe-coding-system from to &optional default-coding-system accept-default-p file
-This function selects a coding system for encoding specified text,
-asking the user to choose if necessary.  Normally the specified text
-is the text in the current buffer between @var{from} and @var{to}.  If
-@var{from} is a string, the string specifies the text to encode, and
-@var{to} is ignored.
+Функция выбирает систему кодирования для кодирования указанного текста,
+предлагая пользователю выбрать при необходимости.  Обычно указанный текст -
+это текст в текущем буфере между @var{from} и @var{to}.  Если @var{from}
+является строкой, строка указывает текст для кодирования, а @var{to}
+игнорируется.
 
-If the specified text includes raw bytes (@pxref{Text
-Representations}), @code{select-safe-coding-system} suggests
-@code{raw-text} for its encoding.
+Если указанный текст включает необработанные байты
+(@pxref{Text Representations}), @code{select-safe-coding-system} предлагает
+@code{raw-text} для его кодировки.
 
-If @var{default-coding-system} is non-@code{nil}, that is the first
-coding system to try; if that can handle the text,
-@code{select-safe-coding-system} returns that coding system.  It can
-also be a list of coding systems; then the function tries each of them
-one by one.  After trying all of them, it next tries the current
-buffer's value of @code{buffer-file-coding-system} (if it is not
-@code{undecided}), then the default value of
-@code{buffer-file-coding-system} and finally the user's most
-preferred coding system, which the user can set using the command
-@code{prefer-coding-system} (@pxref{Recognize Coding,, Recognizing
-Coding Systems, emacs, The GNU Emacs Manual}).
+Если @var{default-coding-system} равен не-@code{nil}, это первая система
+кодирования, которую следует попробовать; если может обработаться текст,
+@code{select-safe-coding-system} вернет эту систему кодирования.  Это также
+может быть список систем кодирования; затем функция пробует каждый из них по
+очереди.  После проверки всех из них затем пробуется текущее значение буфера
+@code{buffer-file-coding-system} (если это не @code{undecided}), затем
+значение по умолчанию @code{buffer-file-coding-system} и, наконец, наиболее
+предпочтительную систему кодирования пользователя, которую пользователь
+может установить с помощью команды @code{prefer-coding-system}
+(@pxref{Recognize Coding,, Recognizing Coding Systems, emacs, The GNU Emacs Manual}).
 
-If one of those coding systems can safely encode all the specified
-text, @code{select-safe-coding-system} chooses it and returns it.
-Otherwise, it asks the user to choose from a list of coding systems
-which can encode all the text, and returns the user's choice.
+Если одна из этих систем кодирования может безопасно закодировать весь
+указанный текст, @code{select-safe-coding-system} выбирает его и возвращает.
+В противном случае спрашивается пользоватль о выборе из списка систем
+кодирования, которые могут кодировать весь текст, и возвращается выбор
+пользователя.
 
-@var{default-coding-system} can also be a list whose first element is
-@code{t} and whose other elements are coding systems.  Then, if no coding
-system in the list can handle the text, @code{select-safe-coding-system}
-queries the user immediately, without trying any of the three
-alternatives described above.  This is handy for checking only the
-coding systems in the list.
+@var{default-coding-system} также может быть списком, первым элементом
+которого является @code{t}, а другими элементами являются системы
+кодирования.  Затем, если никакая система кодирования в списке не может
+обработать текст, @code{select-safe-coding-system} немедленно запрашивает
+пользователя, не пробуя ни одну из трех альтернатив, описанных выше.  Это
+удобно для проверки только систем кодирования в списке.
 
-The optional argument @var{accept-default-p} determines whether a
-coding system selected without user interaction is acceptable.  If
-it's omitted or @code{nil}, such a silent selection is always
-acceptable.  If it is non-@code{nil}, it should be a function;
-@code{select-safe-coding-system} calls this function with one
-argument, the base coding system of the selected coding system.  If
-the function returns @code{nil}, @code{select-safe-coding-system}
-rejects the silently selected coding system, and asks the user to
-select a coding system from a list of possible candidates.
+Необязательный аргумент @var{accept-default-p} определяет, приемлема ли
+система кодирования, выбранная без взаимодействия с пользователем.  Если
+опущен или @code{nil}, такой тихий выбор всегда приемлем.  Если это
+не-@code{nil}, это должна быть функция; @code{select-safe-coding-system}
+вызывается эта функция с одним аргументом, базовой системой кодирования
+выбранной системы кодирования.  Если функция возвращает @code{nil},
+@code{select-safe-coding-system} отклоняет автоматически выбранную систему
+кодирования и просит пользователя выбрать систему кодирования из списка
+возможных кандидатов.
 
 @vindex select-safe-coding-system-accept-default-p
-If the variable @code{select-safe-coding-system-accept-default-p} is
-non-@code{nil}, it should be a function taking a single argument.
-It is used in place of @var{accept-default-p}, overriding any
-value supplied for this argument.
+Если переменная @code{select-safe-coding-system-accept-default-p} -
+не-@code{nil}, это должна быть функция, принимающая единственный аргумент.
+Он используется вместо @var{accept-default-p}, переопределяя любое значение,
+указанное для этого аргумента.
 
-As a final step, before returning the chosen coding system,
-@code{select-safe-coding-system} checks whether that coding system is
-consistent with what would be selected if the contents of the region
-were read from a file.  (If not, this could lead to data corruption in
-a file subsequently re-visited and edited.)  Normally,
-@code{select-safe-coding-system} uses @code{buffer-file-name} as the
-file for this purpose, but if @var{file} is non-@code{nil}, it uses
-that file instead (this can be relevant for @code{write-region} and
-similar functions).  If it detects an apparent inconsistency,
-@code{select-safe-coding-system} queries the user before selecting the
-coding system.
+В качестве последнего шага, перед возвратом выбранной системы кодирования,
+@code{select-safe-coding-system} проверяет, согласуется ли эта система
+кодирования с тем, что было бы выбрано, если бы содержимое области было
+прочитано из файла.  (В противном случае это может привести к повреждению
+данных в файле, который впоследствии будет повторно посещен и
+отредактирован.)  Обычно @code{select-safe-coding-system} использует
+@code{buffer-file-name} в качестве файла для этой цели, но если @var{file}
+имеет значение не-@code{nil}, используется этот файл (это может быть
+актуально для @code{write-region} и аналогичным функциям).  Если
+обнаруживается явное несоответствие, @code{select-safe-coding-system}
+запрашивает пользователя перед выбором системы кодирования.
 @end defun
 
 @defvar select-safe-coding-system-function
-This variable names the function to be called to request the user to
-select a proper coding system for encoding text when the default
-coding system for an output operation cannot safely encode that text.
-The default value of this variable is @code{select-safe-coding-system}.
-Emacs primitives that write text to files, such as
-@code{write-region}, or send text to other processes, such as
-@code{process-send-region}, normally call the value of this variable,
-unless @code{coding-system-for-write} is bound to a non-@code{nil}
-value (@pxref{Specifying Coding Systems}).
+Переменная именует функцию, которая должна быть вызвана, чтобы попросить
+пользователя выбрать правильную систему кодирования для кодирования текста,
+когда система кодирования по умолчанию для операции вывода не может
+безопасно кодировать этот текст.  Значение по умолчанию для этой переменной
+- @code{select-safe-coding-system}.  Примитивы Emacs, которые записывают
+текст в файлы, такие как @code{write-region}, или отправляют текст в другие
+процессы, такие как @code{process-send-region}, обычно используют значение
+этой переменной, если @code{coding-system-for-write} не привязан к значению
+не-@code{nil} (@pxref{Specifying Coding Systems}).
 @end defvar
 
-  Here are two functions you can use to let the user specify a coding
-system, with completion.  @xref{Completion}.
+  Вот две функции, которые можно использовать, чтобы позволить пользователю
+указать систему кодирования с завершением.  @xref{Completion}.
 
 @defun read-coding-system prompt &optional default
-This function reads a coding system using the minibuffer, prompting with
-string @var{prompt}, and returns the coding system name as a symbol.  If
-the user enters null input, @var{default} specifies which coding system
-to return.  It should be a symbol or a string.
+Функция считывает систему кодирования с помощью минибуфера, запрашивая
+строку @var{prompt}, и возвращает имя системы кодирования в виде символа.
+Если пользователь вводит нулевой ввод, @var{default} указывает, какую
+систему кодирования нужно вернуть. Это должен быть символ или строка.
 @end defun
 
 @defun read-non-nil-coding-system prompt
-This function reads a coding system using the minibuffer, prompting with
-string @var{prompt}, and returns the coding system name as a symbol.  If
-the user tries to enter null input, it asks the user to try again.
-@xref{Coding Systems}.
+Функция считывает систему кодирования с помощью минибуфера, запрашивая
+строку @var{prompt}, и возвращает имя системы кодирования в виде символа.
+Если пользователь пытается ввести нулевой ввод, он просит пользователя
+повторить попытку.  @xref{Coding Systems}.
 @end defun
 
 @node Default Coding Systems
-@subsection Default Coding Systems
+@subsection Системы Кодирования по Умолчанию
 @cindex default coding system
 @cindex coding system, automatically determined
 
-  This section describes variables that specify the default coding
-system for certain files or when running certain subprograms, and the
-function that I/O operations use to access them.
+  В этом разделе описываются переменные, которые определяют систему
+кодирования по умолчанию для определенных файлов или при выполнении
+определенных подпрограмм, а также функции, которые операции ввода-вывода
+используют для доступа к ним.
 
-  The idea of these variables is that you set them once and for all to the
-defaults you want, and then do not change them again.  To specify a
-particular coding system for a particular operation in a Lisp program,
-don't change these variables; instead, override them using
-@code{coding-system-for-read} and @code{coding-system-for-write}
-(@pxref{Specifying Coding Systems}).
+  Идея этих переменных заключается в том, что устанавлены они раз и
+устанавливают значения по умолчанию, которые требуются, а затем больше не
+меняются.  Чтобы указать конкретную систему кодирования для конкретной
+операции в программе на Lisp, не изменять эти переменные; вместо этого
+переопределить их, используя @code{coding-system-for-read} и
+@code{coding-system-for-write} (@pxref{Specifying Coding Systems}).
 
 @cindex file contents, and default coding system
 @defopt auto-coding-regexp-alist
-This variable is an alist of text patterns and corresponding coding
-systems.  Each element has the form @code{(@var{regexp}
-. @var{coding-system})}; a file whose first few kilobytes match
-@var{regexp} is decoded with @var{coding-system} when its contents are
-read into a buffer.  The settings in this alist take priority over
-@code{coding:} tags in the files and the contents of
-@code{file-coding-system-alist} (see below).  The default value is set
-so that Emacs automatically recognizes mail files in Babyl format and
-reads them with no code conversions.
+Переменная представляет собой список текстовых шаблонов и соответствующих
+систем кодирования.  Каждый элемент имеет вид
+@code{(@var{regexp} . @var{coding-system})}; файл, первые несколько
+килобайт которого совпадают с @var{regexp}, декодируется с помощью
+@var{coding-system}, когда его содержимое считывается в буфер.  Настройки в
+этом списке имеют приоритет над тегами @code{coding:} в файлах и содержимым
+@code{file-coding-system-alist} (смотреть ниже) значение по умолчанию
+установлено так, что Emacs автоматически распознает почтовые файлы в формате
+Babyl и читает их без преобразования кода.
 @end defopt
 
 @cindex file name, and default coding system
 @defopt file-coding-system-alist
-This variable is an alist that specifies the coding systems to use for
-reading and writing particular files.  Each element has the form
-@code{(@var{pattern} . @var{coding})}, where @var{pattern} is a regular
-expression that matches certain file names.  The element applies to file
-names that match @var{pattern}.
+Переменная представляет собой список, который определяет системы
+кодирования, используемые для чтения и записи определенных файлов.  Каждый
+элемент имеет форму @code{(@var{pattern} . @var{coding})}, где @var{pattern}
+- регулярное выражение, которое соответствует определенным именам файлов.
+Элемент применяется к именам файлов, которые соответствуют @var{pattern}.
 
-The @sc{cdr} of the element, @var{coding}, should be either a coding
-system, a cons cell containing two coding systems, or a function name (a
-symbol with a function definition).  If @var{coding} is a coding system,
-that coding system is used for both reading the file and writing it.  If
-@var{coding} is a cons cell containing two coding systems, its @sc{car}
-specifies the coding system for decoding, and its @sc{cdr} specifies the
-coding system for encoding.
+@sc{cdr} элемента @var{coding} должен быть либо системой кодирования,
+cons-ячейкой, содержащей две системы кодирования, либо именем функции
+(символ с определением функции).  Если @var{coding} - это система
+кодирования, эта система кодирования используется как для чтения файла, так
+и для его записи.  Если @var{coding} - это cons-ячейка, содержащая две
+системы кодирования, ее @sc{car} задает систему кодирования для
+декодирования, а ее @sc{cdr} указывает систему кодирования для кодирования.
 
-If @var{coding} is a function name, the function should take one
-argument, a list of all arguments passed to
-@code{find-operation-coding-system}.  It must return a coding system
-or a cons cell containing two coding systems.  This value has the same
-meaning as described above.
+Если @var{coding} - это имя функции, функция должна принимать один аргумент,
+список всех аргументов, переданных в @code{find-operation-coding-system}.
+Она должена возвращать систему кодирования или cons-ячейку, содержащую две
+системы кодирования.  Это значение имеет то же значение, что описано выше.
 
-If @var{coding} (or what returned by the above function) is
-@code{undecided}, the normal code-detection is performed.
+Если @var{coding} (или то, что возвращает вышеуказанная функция) -
+@code{undecided}, выполняется обычное определение кода.
 @end defopt
 
 @defopt auto-coding-alist
-This variable is an alist that specifies the coding systems to use for
-reading and writing particular files.  Its form is like that of
-@code{file-coding-system-alist}, but, unlike the latter, this variable
-takes priority over any @code{coding:} tags in the file.
+Переменная представляет собой список, который определяет системы
+кодирования, используемые для чтения и записи определенных файлов.  По форме
+она похожа на @code{file-coding-system-alist}, но, в отличие от последней,
+эта переменная имеет приоритет над любыми тегами @code{coding:} в файле.
 @end defopt
 
 @cindex program name, and default coding system
 @defvar process-coding-system-alist
-This variable is an alist specifying which coding systems to use for a
-subprocess, depending on which program is running in the subprocess.  It
-works like @code{file-coding-system-alist}, except that @var{pattern} is
-matched against the program name used to start the subprocess.  The coding
-system or systems specified in this alist are used to initialize the
-coding systems used for I/O to the subprocess, but you can specify
-other coding systems later using @code{set-process-coding-system}.
+Переменная представляет собой список, определяющий, какие системы
+кодирования использовать для подпроцесса, в зависимости от того, какая
+программа выполняется в подпроцессе.  Работает как
+@code{file-coding-system-alist}, за исключением того, что @var{pattern}
+сопоставляется с именем программы, используемым для запуска подпроцесса.
+Система или системы кодирования, указанные в этом списке, используются для
+инициализации систем кодирования, используемых для ввода-вывода, для
+подпроцесса, но можно указать другие системы кодирования позже, используя
+@code{set-process-coding-system}.
 @end defvar
 
-  @strong{Warning:} Coding systems such as @code{undecided}, which
-determine the coding system from the data, do not work entirely reliably
-with asynchronous subprocess output.  This is because Emacs handles
-asynchronous subprocess output in batches, as it arrives.  If the coding
-system leaves the character code conversion unspecified, or leaves the
-end-of-line conversion unspecified, Emacs must try to detect the proper
-conversion from one batch at a time, and this does not always work.
+  @strong{Предупреждение:} Системы кодирования, такие как @code{undecided},
+которые определяют систему кодирования по данным, не работают полностью
+надежно с асинхронным выводом подпроцесса.  Это потому, что Emacs
+обрабатывает вывод асинхронного подпроцесса пакетами по мере поступления.
+Если система кодирования оставляет неопределенным преобразование кода
+символа или оставляет неопределенным преобразование конца строки, Emacs
+должен попытаться определить правильное преобразование одного пакета за раз,
+а это не всегда работает.
 
-  Therefore, with an asynchronous subprocess, if at all possible, use a
-coding system which determines both the character code conversion and
-the end of line conversion---that is, one like @code{latin-1-unix},
-rather than @code{undecided} or @code{latin-1}.
+  Следовательно, с асинхронным подпроцессом, если это вообще возможно,
+использовать систему кодирования, которая определяет как преобразование кода
+символа, так и преобразование конца строки, то есть такую, как
+@code{latin-1-unix}, а не @code{undecided} или @code{latin-1}.
 
 @cindex port number, and default coding system
 @cindex network service name, and default coding system
 @defvar network-coding-system-alist
-This variable is an alist that specifies the coding system to use for
-network streams.  It works much like @code{file-coding-system-alist},
-with the difference that the @var{pattern} in an element may be either a
-port number or a regular expression.  If it is a regular expression, it
-is matched against the network service name used to open the network
-stream.
+Переменная представляет собой список, который указывает систему кодирования,
+используемую для сетевых потоков.  Работает так же, как
+@code{file-coding-system-alist}, с той разницей, что @var{pattern} в
+элементе может быть либо номером порта, либо регулярным выражением.  Если
+это регулярное выражение, оно сопоставляется с именем сетевой службы,
+используемым для открытия сетевого потока.
 @end defvar
 
 @defvar default-process-coding-system
-This variable specifies the coding systems to use for subprocess (and
-network stream) input and output, when nothing else specifies what to
-do.
+Переменная определяет системы кодирования, используемые для ввода и вывода
+подпроцесса (и сетевого потока), когда ничто другое не указывает, что
+делать.
 
-The value should be a cons cell of the form @code{(@var{input-coding}
-. @var{output-coding})}.  Here @var{input-coding} applies to input from
-the subprocess, and @var{output-coding} applies to output to it.
+Значение должно быть cons-ячейкой вида
+@code{(@var{input-coding} . @var{output-coding})}.  Здесь @var{input-coding}
+применяется к вводу из подпроцесса, а @var{output-coding} применяется к
+выводу в него.
 @end defvar
 
 @cindex default coding system, functions to determine
 @defopt auto-coding-functions
-This variable holds a list of functions that try to determine a
-coding system for a file based on its undecoded contents.
+Переменная содержит список функций, которые пытаются определить систему
+кодирования файла на основе его недекодированного содержимого.
 
-Each function in this list should be written to look at text in the
-current buffer, but should not modify it in any way.  The buffer will
-contain the text of parts of the file.  Each function should take one
-argument, @var{size}, which tells it how many characters to look at,
-starting from point.  If the function succeeds in determining a coding
-system for the file, it should return that coding system.  Otherwise,
-it should return @code{nil}.
+Каждая функция в этом списке должна быть написана для просмотра текста в
+текущем буфере, но не должна изменять его каким-либо образом.  Буфер будет
+содержать текст частей файла.  Каждая функция должна принимать один аргумент
+@var{size}, который сообщает, сколько символов нужно искать, начиная с
+точки.  Если функции удается определить систему кодирования для файла, 
+возвращается эта систему кодирования.  В противном случае возвращается
+@code{nil}.
 
-The functions in this list could be called either when the file is
-visited and Emacs wants to decode its contents, and/or when the file's
-buffer is about to be saved and Emacs wants to determine how to encode
-its contents.
+Функции в этом списке могут быть вызваны либо при посещении файла, и Emacs
+хочет декодировать его содержимое, и/или когда буфер файла собирается быть
+сохраненным, и Emacs хочет определить, как кодировать его содержимое.
 
-If a file has a @samp{coding:} tag, that takes precedence, so these
-functions won't be called.
+Если файл имеет тег @samp{coding:}, он имеет приоритет, поэтому эти функции
+не будут вызываться.
 @end defopt
 
 @defun find-auto-coding filename size
-This function tries to determine a suitable coding system for
-@var{filename}.  It examines the buffer visiting the named file, using
-the variables documented above in sequence, until it finds a match for
-one of the rules specified by these variables.  It then returns a cons
-cell of the form @code{(@var{coding} . @var{source})}, where
-@var{coding} is the coding system to use and @var{source} is a symbol,
-one of @code{auto-coding-alist}, @code{auto-coding-regexp-alist},
-@code{:coding}, or @code{auto-coding-functions}, indicating which one
-supplied the matching rule.  The value @code{:coding} means the coding
-system was specified by the @code{coding:} tag in the file
-(@pxref{Specify Coding,, coding tag, emacs, The GNU Emacs Manual}).
-The order of looking for a matching rule is @code{auto-coding-alist}
-first, then @code{auto-coding-regexp-alist}, then the @code{coding:}
-tag, and lastly @code{auto-coding-functions}.  If no matching rule was
-found, the function returns @code{nil}.
+Функция пытается определить подходящую систему кодирования для
+@var{filename}.  Проверяется буфер, обращающийся к названному файлу,
+используя последовательно задокументированные выше переменные, пока не
+найдет соответствие одному из правил, заданных этими переменными.  Затем
+возвращается cons-ячейка вида @code{(@var{coding} . @var{source})}, где
+@var{coding} - это используемая система кодирования, а @var{source} - это
+символ, один из @code{auto-coding-alist}, @code{auto-coding-regexp-alist},
+@code{:coding} или @code{auto-coding-functions}, указывающий, какой из них
+предоставил правило сопоставления.  Значение @code{:coding} означает, что
+система кодирования была указана тегом @code{coding:} в файле
+(@pxref{Specify Coding,, coding tag, emacs, The GNU Emacs Manual}).  Порядок
+поиска правила соответствия: сначала @code{auto-coding-alist}, затем
+@code{auto-coding-regexp-alist}, затем тег @code{coding:} и, наконец,
+@code{auto-coding-functions}.  Если подходящего правила не найдено, функция
+возвращает @code{nil}.
 
-The second argument @var{size} is the size of text, in characters,
-following point.  The function examines text only within @var{size}
-characters after point.  Normally, the buffer should be positioned at
-the beginning when this function is called, because one of the places
-for the @code{coding:} tag is the first one or two lines of the file;
-in that case, @var{size} should be the size of the buffer.
+Второй аргумент @var{size} - это размер текста в символах после точки.
+Функция проверяет текст только в пределах @var{size} символов после точки.
+Обычно при вызове этой функции буфер должен располагаться в начале, потому
+что одно из мест для тега @code{coding:} - это первые одна или две строки
+файла; в этом случае @var{size} должен быть размером буфера.
 @end defun
 
 @defun set-auto-coding filename size
-This function returns a suitable coding system for file
-@var{filename}.  It uses @code{find-auto-coding} to find the coding
-system.  If no coding system could be determined, the function returns
-@code{nil}.  The meaning of the argument @var{size} is like in
-@code{find-auto-coding}.
+Функция возвращает подходящую систему кодирования для файла @var{filename}.
+Используется @code{find-auto-coding} для поиска системы кодирования.  Если
+система кодирования не может быть определена, функция возвращает @code{nil}.
+Смысл аргумента @var{size} аналогичен аргументу @code{find-auto-coding}.
 @end defun
 
 @defun find-operation-coding-system operation &rest arguments
-This function returns the coding system to use (by default) for
-performing @var{operation} with @var{arguments}.  The value has this
-form:
+Функция возвращает систему кодирования, используемую (по умолчанию) для
+выполнения @var{operation} с @var{arguments}.  Значение имеет такую форму:
 
 @example
 (@var{decoding-system} . @var{encoding-system})
 @end example
 
-The first element, @var{decoding-system}, is the coding system to use
-for decoding (in case @var{operation} does decoding), and
-@var{encoding-system} is the coding system for encoding (in case
-@var{operation} does encoding).
+Первый элемент, @var{decoding-system}, - это система кодирования,
+используемая для декодирования (в случае, если @var{operation} выполняет
+декодирование), а @var{encoding-system} - это система кодирования для
+кодирования (в случае, если @var{operation} выполняет кодирование).
 
-The argument @var{operation} is a symbol; it should be one of
+Аргумент @var{operation} - символ; это должно быть одно из
 @code{write-region}, @code{start-process}, @code{call-process},
-@code{call-process-region}, @code{insert-file-contents}, or
-@code{open-network-stream}.  These are the names of the Emacs I/O
-primitives that can do character code and eol conversion.
+@code{call-process-region}, @code{insert-file-contents} или
+@code{open-network-stream}.  Это имена примитивов ввода-вывода Emacs,
+которые могут выполнять преобразование символьного кода и eol.
 
-The remaining arguments should be the same arguments that might be given
-to the corresponding I/O primitive.  Depending on the primitive, one
-of those arguments is selected as the @dfn{target}.  For example, if
-@var{operation} does file I/O, whichever argument specifies the file
-name is the target.  For subprocess primitives, the process name is the
-target.  For @code{open-network-stream}, the target is the service name
-or port number.
+Остальные аргументы должны быть теми же аргументами, которые могут быть
+переданы соответствующему примитиву ввода-вывода.  В зависимости от
+примитива один из этих аргументов выбирается как @dfn{target}.  Например,
+если @var{operation} выполняет файловый ввод-вывод, любой аргумент,
+указывающий имя файла, является целью.  Для примитивов подпроцесса целью
+является имя процесса.  Для @code{open-network-stream} целью является имя
+службы или номер порта.
 
-Depending on @var{operation}, this function looks up the target in
-@code{file-coding-system-alist}, @code{process-coding-system-alist},
-or @code{network-coding-system-alist}.  If the target is found in the
-alist, @code{find-operation-coding-system} returns its association in
-the alist; otherwise it returns @code{nil}.
+В зависимости от @var{operation} эта функция ищет цель в
+@code{file-coding-system-alist}, @code{process-coding-system-alist}, или
+@code{network-coding-system-alist}.  Если цель найдена в списке,
+@code{find-operation-coding-system} возвращает ее ассоциацию в списке; в
+противном случае возвращается @code{nil}.
 
-If @var{operation} is @code{insert-file-contents}, the argument
-corresponding to the target may be a cons cell of the form
-@code{(@var{filename} . @var{buffer})}.  In that case, @var{filename}
-is a file name to look up in @code{file-coding-system-alist}, and
-@var{buffer} is a buffer that contains the file's contents (not yet
-decoded).  If @code{file-coding-system-alist} specifies a function to
-call for this file, and that function needs to examine the file's
-contents (as it usually does), it should examine the contents of
-@var{buffer} instead of reading the file.
+Если @var{operation} равнятся @code{insert-file-contents}, аргумент,
+соответствующий цели, может быть cons-ячейкой формы
+@code{(@var{filename} . @var{buffer})}.  В этом случае @var{filename} - это
+имя файла для поиска в @code{file-coding-system-alist}, а @var{buffer} - это
+буфер, содержащий содержимое файла (еще не декодированное).  Если
+@code{file-coding-system-alist} указывает функцию, вызываемую для этого
+файла, и эта функция должна проверять содержимое файла (как обычно), она
+должна проверять содержимое @var{buffer} вместо чтения файла.
 @end defun
 
 @node Specifying Coding Systems
-@subsection Specifying a Coding System for One Operation
+@subsection Указание Системы Кодирования для Одной Операции
 @cindex specify coding system
 @cindex force coding system for operation
 @cindex coding system for operation
 
-  You can specify the coding system for a specific operation by binding
-the variables @code{coding-system-for-read} and/or
+  Можно указать систему кодирования для конкретной операции, привязав
+переменные @code{coding-system-for-read} и/или
 @code{coding-system-for-write}.
 
 @defvar coding-system-for-read
-If this variable is non-@code{nil}, it specifies the coding system to
-use for reading a file, or for input from a synchronous subprocess.
+Если эта переменная - не-@code{nil}, она указывает систему кодирования,
+используемую для чтения файла или для ввода из синхронного подпроцесса.
 
-It also applies to any asynchronous subprocess or network stream, but in
-a different way: the value of @code{coding-system-for-read} when you
-start the subprocess or open the network stream specifies the input
-decoding method for that subprocess or network stream.  It remains in
-use for that subprocess or network stream unless and until overridden.
+Это также применимо к любому асинхронному подпроцессу или сетевому потоку,
+но по-другому: значение @code{coding-system-for-read}, когда запускается
+подпроцесс или открывается сетевой поток, определяется метод декодирования
+входных данных для этого подпроцесса или сетевого потока.  Это остается в
+использовании для этого подпроцесса или сетевого потока до тех пор, пока не
+будет отменено.
 
-The right way to use this variable is to bind it with @code{let} for a
-specific I/O operation.  Its global value is normally @code{nil}, and
-you should not globally set it to any other value.  Here is an example
-of the right way to use the variable:
+Правильный способ использования этой переменной - связать ее с @code{let}
+для конкретной операции ввода-вывода.  Её глобальное значение обычно
+@code{nil}, и не нужно глобально устанавливать для неё какое-либо другое
+значение.  Вот пример правильного использования переменной:
 
 @example
-;; @r{Read the file with no character code conversion.}
+;; @r{Прочитать файл без преобразования кода символа.}
 (let ((coding-system-for-read 'no-conversion))
   (insert-file-contents filename))
 @end example
 
-When its value is non-@code{nil}, this variable takes precedence over
-all other methods of specifying a coding system to use for input,
-including @code{file-coding-system-alist},
-@code{process-coding-system-alist} and
-@code{network-coding-system-alist}.
+Когда ее значение - не-@code{nil}, переменная имеет приоритет над всеми
+другими методами определения системы кодирования, используемой для ввода,
+включая @code{file-coding-system-alist}, @code{process-coding-system-alist}
+и @code{network-coding-system-alist}.
 @end defvar
 
 @defvar coding-system-for-write
-This works much like @code{coding-system-for-read}, except that it
-applies to output rather than input.  It affects writing to files,
-as well as sending output to subprocesses and net connections.  It
-also applies to encoding command-line arguments with which Emacs
-invokes subprocesses.
+Это работает так же, как @code{coding-system-for-read}, за исключением того,
+что применяется к выводу, а не к вводу.  Влияет на запись в файлы, а также
+на отправку вывода в подпроцессы и сетевые соединения.  Это также применимо
+к кодированию аргументов командной строки, с которыми Emacs вызывает
+подпроцессы.
 
-When a single operation does both input and output, as do
-@code{call-process-region} and @code{start-process}, both
-@code{coding-system-for-read} and @code{coding-system-for-write}
-affect it.
+Когда одна операция выполняет и ввод, и вывод, как и
+@code{call-process-region} и @code{start-process}, на нее влияют оба
+@code{coding-system-for-read} и @code{coding-system-for-write}.
 @end defvar
 
 @defvar coding-system-require-warning
-Binding @code{coding-system-for-write} to a non-@code{nil} value
-prevents output primitives from calling the function specified by
-@code{select-safe-coding-system-function} (@pxref{User-Chosen Coding
-Systems}).  This is because @kbd{C-x @key{RET} c}
-(@code{universal-coding-system-argument}) works by binding
-@code{coding-system-for-write}, and Emacs should obey user selection.
-If a Lisp program binds @code{coding-system-for-write} to a value that
-might not be safe for encoding the text to be written, it can also bind
-@code{coding-system-require-warning} to a non-@code{nil} value, which
-will force the output primitives to check the encoding by calling the
-value of @code{select-safe-coding-system-function} even though
-@code{coding-system-for-write} is non-@code{nil}.  Alternatively, call
-@code{select-safe-coding-system} explicitly before using the specified
-encoding.
+Привязка @code{coding-system-for-write} к значению не-@code{nil}
+предотвращает вызов выходных примитивов функции, указанной
+@code{select-safe-coding-system-function}
+(@pxref{User-Chosen Coding Systems}).  Это потому, что @kbd{C-x @key{RET} c}
+(@code{universal-coding-system-argument}) работает путем связывания
+@code{coding-system-for-write}, а Emacs должен подчиняться выбору
+пользователя.  Если программа на Lisp связывает
+@code{coding-system-for-write} со значением, которое может быть небезопасным
+для кодирования записываемого текста, также может привязаться
+@code{coding-system-require-warning} к значению не-@code{nil}, что заставит
+выходные примитивы проверять кодировку, вызывая значение
+@code{select-safe-coding-system-function}, даже если
+@code{coding-system-for-write} - это не-@code{nil}.  В качестве альтернативы
+вызывается @code{select-safe-coding-system} явно перед использованием
+указанной кодировки.
 @end defvar
 
 @defopt inhibit-eol-conversion
-When this variable is non-@code{nil}, no end-of-line conversion is done,
-no matter which coding system is specified.  This applies to all the
-Emacs I/O and subprocess primitives, and to the explicit encoding and
-decoding functions (@pxref{Explicit Encoding}).
+Когда эта переменная - не-@code{nil}, преобразование конца строки не
+выполняется, независимо от того, какая система кодирования указана.  Это
+относится ко всем примитивам ввода-вывода и подпроцесса Emacs, а также к
+функциям явного кодирования и декодирования (@pxref{Explicit Encoding}).
 @end defopt
 
 @cindex priority order of coding systems
 @cindex coding systems, priority
-  Sometimes, you need to prefer several coding systems for some
-operation, rather than fix a single one.  Emacs lets you specify a
-priority order for using coding systems.  This ordering affects the
-sorting of lists of coding systems returned by functions such as
+  Иногда требуется предпочесть несколько систем кодирования для какой-либо
+операции, а не исправлять одну.  Emacs позволяет указать порядок приоритета
+для использования систем кодирования.  Этот порядок влияет на сортировку
+списков систем кодирования, возвращаемых такими функциями, как
 @code{find-coding-systems-region} (@pxref{Lisp and Coding Systems}).
 
 @defun coding-system-priority-list &optional highestp
-This function returns the list of coding systems in the order of their
-current priorities.  Optional argument @var{highestp}, if
-non-@code{nil}, means return only the highest priority coding system.
+Функция возвращает список систем кодирования в порядке их текущих
+приоритетов.  Необязательный аргумент @var{highestp}, если не-@code{nil},
+означает возврат только системы кодирования с наивысшим приоритетом.
 @end defun
 
 @defun set-coding-system-priority &rest coding-systems
-This function puts @var{coding-systems} at the beginning of the
-priority list for coding systems, thus making their priority higher
-than all the rest.
+Функция помещает @var{coding-systems} в начало списка приоритетов для систем
+кодирования, тем самым делая их приоритет выше всех остальных.
 @end defun
 
 @defmac with-coding-priority coding-systems &rest body@dots{}
-This macro execute @var{body}, like @code{progn} does
-(@pxref{Sequencing, progn}), with @var{coding-systems} at the front of
-the priority list for coding systems.  @var{coding-systems} should be
-a list of coding systems to prefer during execution of @var{body}.
+Этот макрос выполняет @var{body}, как @code{progn} выполняет
+(@pxref{Sequencing, progn}), с @var{coding-systems} в начале списка
+приоритетов для систем кодирования.  @var{coding-systems} должно быть
+списком систем кодирования, которые следует предпочесть при выполнении
+@var{body}.
 @end defmac
 
 @node Explicit Encoding
-@subsection Explicit Encoding and Decoding
+@subsection Явное Кодирование и Декодирование
 @cindex encoding in coding systems
 @cindex decoding in coding systems
 
-  All the operations that transfer text in and out of Emacs have the
-ability to use a coding system to encode or decode the text.
-You can also explicitly encode and decode text using the functions
-in this section.
+  Все операции по передаче текста в Emacs и из него могут использовать
+систему кодирования для кодирования или декодирования текста.  Также можно
+явно кодировать и декодировать текст, используя функции в этом разделе.
 
-  The result of encoding, and the input to decoding, are not ordinary
-text.  They logically consist of a series of byte values; that is, a
-series of @acronym{ASCII} and eight-bit characters.  In unibyte
-buffers and strings, these characters have codes in the range 0
-through #xFF (255).  In a multibyte buffer or string, eight-bit
-characters have character codes higher than #xFF (@pxref{Text
-Representations}), but Emacs transparently converts them to their
-single-byte values when you encode or decode such text.
+  Результат кодирования и вход для декодирования - это не обычный текст.
+Логически состоят из серии байтовых значений; то есть серия из
+@acronym{ASCII} и восьмибитных символов.  В однобайтовых буферах и строках
+эти символы имеют коды в диапазоне от 0 до #xFF (255).  В многобайтовом
+буфере или строке восьмибитные символы имеют коды символов выше, чем
+#xFF (@pxref{Text Representations}), но Emacs прозрачно преобразует их в их
+однобайтовые значения, когда кодируется или декодируется такой текст.
 
-  The usual way to read a file into a buffer as a sequence of bytes, so
-you can decode the contents explicitly, is with
-@code{insert-file-contents-literally} (@pxref{Reading from Files});
-alternatively, specify a non-@code{nil} @var{rawfile} argument when
-visiting a file with @code{find-file-noselect}.  These methods result in
-a unibyte buffer.
+  Обычный способ прочитать файл в буфер как последовательность байтов, для
+явного декодирования содержимого, - это
+@code{insert-file-contents-literally} (@pxref{Reading from Files}); в
+качестве альтернативы указывается аргумент не-@code{nil} @var{rawfile} при
+обращении к файлу с @code{find-file-noselect}.  Эти методы приводят к
+созданию однобайтового буфера.
 
-  The usual way to use the byte sequence that results from explicitly
-encoding text is to copy it to a file or process---for example, to write
-it with @code{write-region} (@pxref{Writing to Files}), and suppress
-encoding by binding @code{coding-system-for-write} to
-@code{no-conversion}.
+  Обычный способ использования байтовой последовательности, полученной в
+результате явного кодирования текста, - это скопировать ее в файл или
+процесс, например, записать ее с помощью @code{write-region}
+(@pxref{Writing to Files}) и подавить кодирование путем привязки
+@code{coding-system-for-write} к @code{no-conversion}.
 
-  Here are the functions to perform explicit encoding or decoding.  The
-encoding functions produce sequences of bytes; the decoding functions
-are meant to operate on sequences of bytes.  All of these functions
-discard text properties.  They also set @code{last-coding-system-used}
-to the precise coding system they used.
+  Вот функции для выполнения явного кодирования или декодирования.  Функции
+кодирования создают последовательности байтов; функции декодирования
+предназначены для работы с последовательностями байтов.  Все эти функции
+отбрасывают свойства текста.  Они также установливают
+@code{last-coding-system-used} в точную систему кодирования, которую они
+использовали.
 
 @deffn Command encode-coding-region start end coding-system &optional destination
-This command encodes the text from @var{start} to @var{end} according
-to coding system @var{coding-system}.  Normally, the encoded text
-replaces the original text in the buffer, but the optional argument
-@var{destination} can change that.  If @var{destination} is a buffer,
-the encoded text is inserted in that buffer after point (point does
-not move); if it is @code{t}, the command returns the encoded text as
-a unibyte string without inserting it.
+Команда кодирует текст от @var{start} до @var{end} в соответствии с системой
+кодирования @var{coding-system}.  Обычно закодированный текст заменяет
+исходный текст в буфере, но необязательный аргумент @var{destination} может
+это изменить.  Если @var{destination} является буфером, закодированный текст
+вставляется в этот буфер после точки (точка не перемещается); если это
+@code{t}, команда возвращает закодированный текст как однобайтную строку, не
+вставляя ее.
 
-If encoded text is inserted in some buffer, this command returns the
-length of the encoded text.
+Если закодированный текст вставлен в некоторый буфер, эта команда возвращает
+длину закодированного текста.
 
-The result of encoding is logically a sequence of bytes, but the
-buffer remains multibyte if it was multibyte before, and any 8-bit
-bytes are converted to their multibyte representation (@pxref{Text
-Representations}).
+Результатом кодирования логически является последовательность байтов, но
+буфер остается многобайтовым, если до этого он был многобайтовым, и любые
+8-битные байты преобразуются в их многобайтовое представление
+(@pxref{Text Representations}).
 
 @cindex @code{undecided} coding-system, when encoding
-Do @emph{not} use @code{undecided} for @var{coding-system} when
-encoding text, since that may lead to unexpected results.  Instead,
-use @code{select-safe-coding-system} (@pxref{User-Chosen Coding
-Systems, select-safe-coding-system}) to suggest a suitable encoding,
-if there's no obvious pertinent value for @var{coding-system}.
+Использовать @emph{не} @code{undecided} вместо @var{coding-system} при
+кодировании текста, так как это может привести к неожиданным результатам.
+Вместо этого используйте @code{select-safe-coding-system}
+(@pxref{User-Chosen Coding Systems, select-safe-coding-system}), чтобы
+предложить подходящую кодировку, если нет очевидного подходящего значения
+для @var{coding-system}.
 @end deffn
 
 @defun encode-coding-string string coding-system &optional nocopy buffer
-This function encodes the text in @var{string} according to coding
-system @var{coding-system}.  It returns a new string containing the
-encoded text, except when @var{nocopy} is non-@code{nil}, in which
-case the function may return @var{string} itself if the encoding
-operation is trivial.  The result of encoding is a unibyte string.
+Функция кодирует текст в @var{string} в соответствии с системой кодирования
+@var{coding-system}.  Возвращается новая строка, содержащая закодированный
+текст, за исключением случая, когда @var{nocopy} имеет значение
+не-@code{nil}, и в этом случае функция может вернуть @var{string} сама, если
+операция кодирования тривиальна.  Результатом кодирования является
+однобайтная строка.
 @end defun
 
 @deffn Command decode-coding-region start end coding-system &optional destination
-This command decodes the text from @var{start} to @var{end} according
-to coding system @var{coding-system}.  To make explicit decoding
-useful, the text before decoding ought to be a sequence of byte
-values, but both multibyte and unibyte buffers are acceptable (in the
-multibyte case, the raw byte values should be represented as eight-bit
-characters).  Normally, the decoded text replaces the original text in
-the buffer, but the optional argument @var{destination} can change
-that.  If @var{destination} is a buffer, the decoded text is inserted
-in that buffer after point (point does not move); if it is @code{t},
-the command returns the decoded text as a multibyte string without
-inserting it.
+Команда декодирует текст от @var{start} до @var{end} в соответствии с
+системой кодирования @var{coding-system}.  Чтобы сделать явное декодирование
+полезным, текст перед декодированием должен быть последовательностью
+байтовых значений, но допустимы как многобайтовые, так и однобайтовые буферы
+(в многобайтовом случае необработанные байтовые значения должны быть
+представлены в виде восьмибитных символов).  Обычно декодированный текст
+заменяет исходный текст в буфере, но необязательный аргумент
+@var{destination} может это изменить.  Если @var{destination} является
+буфером, декодированный текст вставляется в этот буфер после точки (точка не
+перемещается); если это @code{t}, команда возвращает декодированный текст
+как многобайтовую строку, не вставляя ее.
 
-If decoded text is inserted in some buffer, this command returns the
-length of the decoded text.  If that buffer is a unibyte buffer
-(@pxref{Selecting a Representation}), the internal representation of
-the decoded text (@pxref{Text Representations}) is inserted into the
-buffer as individual bytes.
+Если декодированный текст вставлен в некоторый буфер, эта команда возвращает
+длину декодированного текста.  Если этот буфер представляет собой
+однобайтный буфер (@pxref{Selecting a Representation}), внутреннее
+представление декодированного текста (@pxref{Text Representations})
+вставляется в буфер как отдельные байты.
 
-This command puts a @code{charset} text property on the decoded text.
-The value of the property states the character set used to decode the
-original text.
+Команда помещает текстовое свойство @code{charset} в декодированный текст.
+Значение свойства указывает набор символов, используемый для декодирования
+исходного текста.
 @end deffn
 
 @defun decode-coding-string string coding-system &optional nocopy buffer
-This function decodes the text in @var{string} according to
-@var{coding-system}.  It returns a new string containing the decoded
-text, except when @var{nocopy} is non-@code{nil}, in which case the
-function may return @var{string} itself if the decoding operation is
-trivial.  To make explicit decoding useful, the contents of
-@var{string} ought to be a unibyte string with a sequence of byte
-values, but a multibyte string is also acceptable (assuming it
-contains 8-bit bytes in their multibyte form).
+Функция декодирует текст в @var{string} согласно @var{coding-system}.
+Возвращается новая строка, содержащая декодированный текст, за исключением
+случаев, когда @var{nocopy} имеет значение не-@code{nil}, и в этом случае
+функция может вернуть @var{string} сама, если операция декодирования
+тривиальна.  Чтобы сделать явное декодирование полезным, содержимое
+@var{string} должно быть однобайтной строкой с последовательностью байтовых
+значений, но также допустима и многобайтовая строка (при условии, что она
+содержит 8-битные байты в их многобайтовой форме).
 
-If optional argument @var{buffer} specifies a buffer, the decoded text
-is inserted in that buffer after point (point does not move).  In this
-case, the return value is the length of the decoded text.  If that
-buffer is a unibyte buffer, the internal representation of the decoded
-text is inserted into it as individual bytes.
+Если необязательный аргумент @var{buffer} указывает буфер, декодированный
+текст вставляется в этот буфер после точки (точка не перемещается).  В этом
+случае возвращаемое значение - длина декодированного текста.  Если этот
+буфер является однобайтовым буфером, внутреннее представление
+декодированного текста вставляется в него как отдельные байты.
 
 @cindex @code{charset}, text property
-This function puts a @code{charset} text property on the decoded text.
-The value of the property states the character set used to decode the
-original text:
+Функция помещает текстовое свойство @code{charset} в декодированный текст.
+Значение свойства указывает набор символов, используемый для декодирования
+исходного текста:
 
 @example
 @group
@@ -1953,187 +1950,192 @@ original text:
 @end defun
 
 @defun decode-coding-inserted-region from to filename &optional visit beg end replace
-This function decodes the text from @var{from} to @var{to} as if
-it were being read from file @var{filename} using @code{insert-file-contents}
-using the rest of the arguments provided.
+Функция декодирует текст от @var{from} до @var{to}, как если бы он читался
+из файла @var{filename} с использованием @code{insert-file-contents},
+используя остальные предоставленные аргументы.
 
-The normal way to use this function is after reading text from a file
-without decoding, if you decide you would rather have decoded it.
-Instead of deleting the text and reading it again, this time with
-decoding, you can call this function.
+Обычно эту функцию можно использовать после чтения текста из файла без
+декодирования, если решается, что предпочительнее бы его декодировать.
+Вместо удаления текста и его повторного чтения, на этот раз с
+декодированием, можно вызвать эту функцию.
 @end defun
 
 @node Terminal I/O Encoding
-@subsection Terminal I/O Encoding
+@subsection Кодирование Ввода/Вывода Терминала
 
-  Emacs can use coding systems to decode keyboard input and encode
-terminal output.  This is useful for terminals that transmit or
-display text using a particular encoding, such as Latin-1.  Emacs does
-not set @code{last-coding-system-used} when encoding or decoding
-terminal I/O.
+  Emacs может использовать системы кодирования для декодирования ввода с
+клавиатуры и кодирования вывода терминала.  Это полезно для терминалов,
+которые передают или отображают текст с использованием определенной
+кодировки, например Latin-1.  Emacs не устанавливает
+@code{last-coding-system-used} при кодировании или декодировании
+терминального ввода-вывода.
 
 @defun keyboard-coding-system &optional terminal
-This function returns the coding system used for decoding keyboard
-input from @var{terminal}.  A value of @code{no-conversion} means no
-decoding is done.  If @var{terminal} is omitted or @code{nil}, it
-means the selected frame's terminal.  @xref{Multiple Terminals}.
+Функция возвращает систему кодирования, используемую для декодирования ввода
+с клавиатуры из @var{terminal}.  Значение @code{no-conversion} означает, что
+декодирование не выполняется.  Если @var{terminal} опущен или @code{nil},
+это означает, что выбранный фрейм терминал.  @xref{Multiple Terminals}.
 @end defun
 
 @deffn Command set-keyboard-coding-system coding-system &optional terminal
-This command specifies @var{coding-system} as the coding system to use
-for decoding keyboard input from @var{terminal}.  If
-@var{coding-system} is @code{nil}, that means not to decode keyboard
-input.  If @var{terminal} is a frame, it means that frame's terminal;
-if it is @code{nil}, that means the currently selected frame's
-terminal.  @xref{Multiple Terminals}.
+Команда указывает @var{coding-system} как систему кодирования, используемую
+для декодирования ввода с клавиатуры из @var{terminal}.  Если
+@var{coding-system} равен @code{nil}, это означает, что ввод с клавиатуры не
+декодируется.  Если @var{terminal} - это фрейм, это означает, что это
+терминал фрейма; если это @code{nil}, это означает терминал текущего
+выбранного фрейма.  @xref{Multiple Terminals}.
 @end deffn
 
 @defun terminal-coding-system &optional terminal
-This function returns the coding system that is in use for encoding
-terminal output from @var{terminal}.  A value of @code{no-conversion}
-means no encoding is done.  If @var{terminal} is a frame, it means
-that frame's terminal; if it is @code{nil}, that means the currently
-selected frame's terminal.
+Функция возвращает систему кодирования, которая используется для кодирования
+вывода терминала из @var{terminal}.  Значение @code{no-conversion} означает,
+что кодирование не выполняется.  Если @var{terminal} - это фрейм, это
+означает, что это терминал фрейма; если это @code{nil}, это означает
+терминал текущего выбранного фрейма.
 @end defun
 
 @deffn Command set-terminal-coding-system coding-system &optional terminal
-This command specifies @var{coding-system} as the coding system to use
-for encoding terminal output from @var{terminal}.  If
-@var{coding-system} is @code{nil}, that means not to encode terminal
-output.  If @var{terminal} is a frame, it means that frame's terminal;
-if it is @code{nil}, that means the currently selected frame's
-terminal.
+Команда указывает @var{coding-system} как систему кодирования, используемую
+для кодирования вывода терминала из @var{terminal}.
+Если @var{coding-system} равен @code{nil}, это означает, что вывод терминала
+не кодируется.  Если @var{terminal} - это фрейм, это означает, что это
+терминал фрейма; если это @code{nil}, это означает терминал текущего
+выбранного фрейма.
 @end deffn
 
 @node Input Methods
-@section Input Methods
+@section Методы Ввода
 @cindex input methods
 
-  @dfn{Input methods} provide convenient ways of entering non-@acronym{ASCII}
-characters from the keyboard.  Unlike coding systems, which translate
-non-@acronym{ASCII} characters to and from encodings meant to be read by
-programs, input methods provide human-friendly commands.  (@xref{Input
-Methods,,, emacs, The GNU Emacs Manual}, for information on how users
-use input methods to enter text.)  How to define input methods is not
-yet documented in this manual, but here we describe how to use them.
+  @dfn{Метод ввода} предоставляет удобный способ ввода символов
+не-@acronym{ASCII} с клавиатуры.  В отличие от систем кодирования, которые
+переводят символы не-@acronym{ASCII} в кодировки, предназначенные для чтения
+программами, и обратно, методы ввода предоставляют удобные для человека
+команды.  (@xref{Input Methods,,, emacs, The GNU Emacs Manual}, для
+информации о том, как пользователи используют методы ввода для ввода
+текста.)  Как определять методы ввода, еще не описано в этом руководстве, но
+здесь описывается, как их использовать.
 
-  Each input method has a name, which is currently a string;
-in the future, symbols may also be usable as input method names.
+  У каждого метода ввода есть имя, которое в настоящее время является
+строкой; в будущем символы могут также использоваться в качестве имен
+методов ввода.
 
 @defvar current-input-method
-This variable holds the name of the input method now active in the
-current buffer.  (It automatically becomes local in each buffer when set
-in any fashion.)  It is @code{nil} if no input method is active in the
-buffer now.
+Переменная содержит имя метода ввода, который теперь активен в текущем
+буфере.  (Она автоматически становится локальной в каждом буфере, если
+установлена любым способом.)  @code{nil}, если в данный момент в буфере
+не активен ни один метод ввода.
 @end defvar
 
 @defopt default-input-method
-This variable holds the default input method for commands that choose an
-input method.  Unlike @code{current-input-method}, this variable is
-normally global.
+Переменная содержит метод ввода по умолчанию для команд, выбирающих метод
+ввода.  В отличие от @code{current-input-method}, эта переменная обычно
+глобальная.
 @end defopt
 
 @deffn Command set-input-method input-method
-This command activates input method @var{input-method} for the current
-buffer.  It also sets @code{default-input-method} to @var{input-method}.
-If @var{input-method} is @code{nil}, this command deactivates any input
-method for the current buffer.
+Команда активирует метод ввода @var{input-method} для текущего буфера.
+Также устанавливает @code{default-input-method} в @var{input-method}.  Если
+@var{input-method} - @code{nil}, эта команда деактивирует любой метод ввода
+для текущего буфера.
 @end deffn
 
 @defun read-input-method-name prompt &optional default inhibit-null
-This function reads an input method name with the minibuffer, prompting
-with @var{prompt}.  If @var{default} is non-@code{nil}, that is returned
-by default, if the user enters empty input.  However, if
-@var{inhibit-null} is non-@code{nil}, empty input signals an error.
+Функция считывает имя метода ввода с помощью минибуфера, запрашивая
+@var{prompt}.  Если @var{default} равен не-@code{nil}, оно возвращается по
+умолчанию, если пользователь вводит пустой ввод.  Однако, если
+@var{inhibit-null} равен не-@code{nil}, пустой ввод сигнализирует об ошибке.
 
-The returned value is a string.
+Возвращаемое значение - строка.
 @end defun
 
 @defvar input-method-alist
-This variable defines all the supported input methods.
-Each element defines one input method, and should have the form:
+Переменная определяет все поддерживаемые методы ввода.  Каждый элемент
+определяет один метод ввода и должен иметь форму:
 
 @example
 (@var{input-method} @var{language-env} @var{activate-func}
  @var{title} @var{description} @var{args}...)
 @end example
 
-Here @var{input-method} is the input method name, a string;
-@var{language-env} is another string, the name of the language
-environment this input method is recommended for.  (That serves only for
-documentation purposes.)
+Здесь @var{input-method} - имя метода ввода, строка; @var{language-env} -
+другая строка, имя языковой среды, для которой рекомендуется этот метод
+ввода.  (Это служит только для целей документации.)
 
-@var{activate-func} is a function to call to activate this method.  The
-@var{args}, if any, are passed as arguments to @var{activate-func}.  All
-told, the arguments to @var{activate-func} are @var{input-method} and
-the @var{args}.
+@var{activate-func} - это функция, вызываемая для активации этого метода.
+@var{args}, если есть, передаются в качестве аргументов в
+@var{activate-func}.  В общем, аргументами @var{activate-func} являются
+@var{input-method} и @var{args}.
 
-@var{title} is a string to display in the mode line while this method is
-active.  @var{description} is a string describing this method and what
-it is good for.
+@var{title} - это строка, отображаемая в строке режима, пока этот метод
+активен.  @var{description} - строка, описывающая этот метод и его
+назначение.
 @end defvar
 
-  The fundamental interface to input methods is through the
-variable @code{input-method-function}.  @xref{Reading One Event},
-and @ref{Invoking the Input Method}.
+  Основной интерфейс к методам ввода - через переменную
+@code{input-method-function}.  @xref{Reading One Event} и
+@ref{Invoking the Input Method}.
 
 @node Locales
-@section Locales
+@section Локали
 @cindex locale
 
-  In POSIX, locales control which language
-to use in language-related features.  These Emacs variables control
-how Emacs interacts with these features.
+  В POSIX языковые стандарты определяют, какой язык использовать в языковых
+функциях.  Эти переменные Emacs управляют тем, как Emacs взаимодействует с
+этими функциями.
 
 @defvar locale-coding-system
 @cindex keyboard input decoding on X
-This variable specifies the coding system to use for decoding system
-error messages and---on X Window system only---keyboard input, for
-sending batch output to the standard output and error streams, for
-encoding the format argument to @code{format-time-string}, and for
-decoding the return value of @code{format-time-string}.
+Переменная определяет систему кодирования, которая будет использоваться для
+декодирования системных сообщений об ошибках и --- только в системе X Window
+--- ввод с клавиатуры, для отправки пакетного вывода в стандартный поток
+вывода и ошибок, для кодирования аргумента формата в
+@code{format-time-string} и для декодирование возвращаемого значения
+@code{format-time-string}.
 @end defvar
 
 @defvar system-messages-locale
-This variable specifies the locale to use for generating system error
-messages.  Changing the locale can cause messages to come out in a
-different language or in a different orthography.  If the variable is
-@code{nil}, the locale is specified by environment variables in the
-usual POSIX fashion.
+Переменная определяет языковой стандарт, который будет использоваться для
+создания сообщений об ошибках системы.  Изменение языкового стандарта может
+привести к тому, что сообщения будут выводиться на другом языке или в другой
+орфографии.  Если переменная - @code{nil}, локаль определяется переменными
+среды обычным способом POSIX.
 @end defvar
 
 @defvar system-time-locale
-This variable specifies the locale to use for formatting time values.
-Changing the locale can cause messages to appear according to the
-conventions of a different language.  If the variable is @code{nil}, the
-locale is specified by environment variables in the usual POSIX fashion.
+Переменная определяет языковой стандарт, используемый для форматирования
+значений времени.  Изменение языкового стандарта может привести к тому, что
+сообщения будут отображаться в соответствии с соглашениями на другом языке.
+Если переменная - @code{nil}, локаль определяется переменными среды обычным
+способом POSIX.
 @end defvar
 
 @defun locale-info item
-This function returns locale data @var{item} for the current POSIX
-locale, if available.  @var{item} should be one of these symbols:
+Функция возвращает данные языкового стандарта @var{item} для текущего
+языкового стандарта POSIX, если они доступны.  @var{item} должен быть одним
+из этих символов:
 
 @table @code
 @item codeset
-Return the character set as a string (locale item @code{CODESET}).
+Вернуть набор символов в виде строки (элемент локали @code{CODESET}).
 
 @item days
-Return a 7-element vector of day names (locale items
-@code{DAY_1} through @code{DAY_7});
+Возвращает 7-элементный вектор названий дней (элементы локали от
+@code{DAY_1} до @code{DAY_7});
 
 @item months
-Return a 12-element vector of month names (locale items @code{MON_1}
-through @code{MON_12}).
+Возвращает вектор из 12 элементов с названиями месяцев (элементы локали от
+@code{MON_1} до @code{MON_12}).
 
 @item paper
-Return a list @code{(@var{width} @var{height})} for the default paper
-size measured in millimeters (locale items @code{PAPER_WIDTH} and
+Возвращает список @code{(@var{width} @var{height})} для размера бумаги по
+умолчанию, измеряемого в миллиметрах (элементы локали @code{PAPER_WIDTH} и
 @code{PAPER_HEIGHT}).
 @end table
 
-If the system can't provide the requested information, or if
-@var{item} is not one of those symbols, the value is @code{nil}.  All
-strings in the return value are decoded using
-@code{locale-coding-system}.  @xref{Locales,,, libc, The GNU Libc Manual},
-for more information about locales and locale items.
+Если система не может предоставить запрошенную информацию или @var{item} не
+является одним из этих символов, значение будет @code{nil}.  Все строки в
+возвращаемом значении декодируются с помощью @code{locale-coding-system}.
+@xref{Locales,,, libc, The GNU Libc Manual}, для получения дополнительной
+информации о локали и элементах локали.
 @end defun
