@@ -4,350 +4,358 @@
 @c Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Syntax Tables
-@chapter Syntax Tables
+@chapter Синтакс Таблицы
 @cindex parsing buffer text
 @cindex syntax table
 @cindex text parsing
 
-  A @dfn{syntax table} specifies the syntactic role of each character
-in a buffer.  It can be used to determine where words, symbols, and
-other syntactic constructs begin and end.  This information is used by
-many Emacs facilities, including Font Lock mode (@pxref{Font Lock
-Mode}) and the various complex movement commands (@pxref{Motion}).
+  @dfn{Синтакс таблица} определяет синтаксическую роль каждого символа в
+буфере.  Это можно использовать, чтобы определить, где начинаются и
+заканчиваются слова, символы и другие синтаксические конструкции.  Информация
+используется многими средствами Emacs, включая режим Font Lock
+(@pxref{Font Lock Mode}) и различными сложными командами перемещения
+(@pxref{Motion}).
 
 @menu
-* Basics: Syntax Basics.     Basic concepts of syntax tables.
-* Syntax Descriptors::       How characters are classified.
-* Syntax Table Functions::   How to create, examine and alter syntax tables.
-* Syntax Properties::        Overriding syntax with text properties.
-* Motion and Syntax::        Moving over characters with certain syntaxes.
-* Parsing Expressions::      Parsing balanced expressions
-                                using the syntax table.
-* Syntax Table Internals::   How syntax table information is stored.
-* Categories::               Another way of classifying character syntax.
+* Basics: Syntax Basics.     Основные понятия синтаксических таблиц.
+* Syntax Descriptors::       Как классифицируются символы.
+* Syntax Table Functions::   Как создавать, исследовать и изменять таблицы синтаксиса.
+* Syntax Properties::        Переопределение синтаксиса с помощью текстовых свойств.
+* Motion and Syntax::        Перемещение символов с определенным синтаксисом.
+* Parsing Expressions::      Разбор сбалансированных выражений с использованием
+                                 таблицы синтаксиса.
+* Syntax Table Internals::   Как хранится информация таблицы синтаксиса.
+* Categories::               Другой способ классификации синтаксиса символов.
 @end menu
 
 @node Syntax Basics
-@section Syntax Table Concepts
+@section Понятия Таблицы Синтаксиса
 
-  A syntax table is a data structure which can be used to look up the
-@dfn{syntax class} and other syntactic properties of each character.
-Syntax tables are used by Lisp programs for scanning and moving across
-text.
+  Таблица синтаксиса - это структура данных, которая может
+использоваться для поиска @dfn{синтакс класса} и других
+синтаксических свойств каждого символа.  Таблицы синтаксиса
+используются программами Lisp для сканирования и перемещения
+по тексту.
 
-  Internally, a syntax table is a char-table (@pxref{Char-Tables}).
-The element at index @var{c} describes the character with code
-@var{c}; its value is a cons cell which specifies the syntax of the
-character in question.  @xref{Syntax Table Internals}, for details.
-However, instead of using @code{aset} and @code{aref} to modify and
-inspect syntax table contents, you should usually use the higher-level
-functions @code{char-syntax} and @code{modify-syntax-entry}, which are
-described in @ref{Syntax Table Functions}.
+  Внутренне таблица синтаксиса представляет собой таблицу
+символов (@pxref{Char-Tables}).  Элемент с индексом @var{c}
+описывает символ с кодом @var{c}; его значение - это cons-ячейка,
+которая определяет синтаксис рассматриваемого символа.
+@xref{Syntax Table Internals}, подробности.  Однако вместо
+использования @code{aset} и @code{aref} для изменения и
+проверки содержимого таблицы синтаксиса обычно следует
+использовать функции более высокого уровня @code{char-syntax} и
+@code{modify-syntax-entry}, которые описаны в
+@ref{Syntax Table Functions}.
 
 @defun syntax-table-p object
-This function returns @code{t} if @var{object} is a syntax table.
+Функция возвращает @code{t}, если @var{object} является
+таблицей синтаксиса.
 @end defun
 
-  Each buffer has its own major mode, and each major mode has its own
-idea of the syntax class of various characters.  For example, in Lisp
-mode, the character @samp{;} begins a comment, but in C mode, it
-terminates a statement.  To support these variations, the syntax table
-is local to each buffer.  Typically, each major mode has its own
-syntax table, which it installs in all buffers that use that mode.
-For example, the variable @code{emacs-lisp-mode-syntax-table} holds
-the syntax table used by Emacs Lisp mode, and
-@code{c-mode-syntax-table} holds the syntax table used by C mode.
-Changing a major mode's syntax table alters the syntax in all of that
-mode's buffers, as well as in any buffers subsequently put in that
-mode.  Occasionally, several similar modes share one syntax table.
-@xref{Example Major Modes}, for an example of how to set up a syntax
-table.
+  Каждый буфер имеет свой собственный основной режим, и каждый
+основной режим имеет собственное представление о синтаксическом
+классе различных символов.  Например, в режиме Lisp символ @samp{;}
+начинает комментарий, но в режиме C он завершает оператор.  Для
+поддержки этих вариантов таблица синтаксиса является локальной для
+каждого буфера.  Обычно у каждого основного режима есть своя
+собственная таблица синтаксиса, которая устанавливается во все буферы,
+использующие этот режим.  Например, переменная
+@code{emacs-lisp-mode-syntax-table} содержит таблицу синтаксиса,
+используемую режимом Emacs Lisp, а переменная @code{c-mode-syntax-table}
+содержит таблицу синтаксиса, используемую режимом C.  Изменение таблицы
+синтаксиса основного режима изменяет синтаксис во всех буферах этого режима,
+а также во всех буферах, впоследствии переведенных в этот режим. Иногда
+несколько похожих режимов используют одну синтаксическую таблицу.
+@xref{Example Major Modes}, пример, как настроить таблицу синтаксиса.
 
 @cindex standard syntax table
 @cindex inheritance, syntax table
-  A syntax table can @dfn{inherit} from another syntax table, which is
-called its @dfn{parent syntax table}.  A syntax table can leave the
-syntax class of some characters unspecified, by giving them the
-``inherit'' syntax class; such a character then acquires the syntax
-class specified by the parent syntax table (@pxref{Syntax Class
-Table}).  Emacs defines a @dfn{standard syntax table}, which is the
-default parent syntax table, and is also the syntax table used by
-Fundamental mode.
+  Таблица синтаксиса может @dfn{наследоваться} из другой таблицы
+синтаксиса, которая называется её @dfn{родительская таблица синтаксиса}.
+В таблице синтаксиса можно оставить класс синтаксиса некоторых символов
+неопределенным, присвоив им класс синтаксиса ``наследовать''; такой символ
+затем получает класс синтаксиса, указанный в родительской таблице синтаксиса
+(@pxref{Syntax Class Table}).  Emacs определяет @dfn{стандартную таблицу
+синтаксиса}, которая является родительской таблицей синтаксиса по умолчанию,
+а также таблицей синтаксиса, используемой в режиме Fundamental.
 
 @defun standard-syntax-table
-This function returns the standard syntax table, which is the syntax
-table used in Fundamental mode.
+Функция возвращает стандартную таблицу синтаксиса, которая является
+таблицей синтаксиса, используемой в основном режиме.
 @end defun
 
-  Syntax tables are not used by the Emacs Lisp reader, which has its
-own built-in syntactic rules which cannot be changed.  (Some Lisp
-systems provide ways to redefine the read syntax, but we decided to
-leave this feature out of Emacs Lisp for simplicity.)
+  Таблицы синтаксиса не используются программой чтения Emacs Lisp, которая
+имеет свои собственные встроенные синтаксические правила, которые нельзя
+изменить.  (Некоторые системы Lisp предоставляют способы переопределения
+синтаксиса чтения, но здеся решено оставить эту функцию вне Emacs Lisp
+для простоты.)
 
 @node Syntax Descriptors
-@section Syntax Descriptors
+@section Дескрипторы Синтаксиса
 @cindex syntax class
 
-  The @dfn{syntax class} of a character describes its syntactic role.
-Each syntax table specifies the syntax class of each character.  There
-is no necessary relationship between the class of a character in one
-syntax table and its class in any other table.
+  @dfn{Класс синтаксиса} символа описывает его синтаксическую роль.
+Каждая таблица синтаксиса определяет класс синтаксиса каждого символа.
+Нет обязательной связи между классом символа в одной таблице синтаксиса
+и его классом в любой другой таблице.
 
-  Each syntax class is designated by a mnemonic character, which
-serves as the name of the class when you need to specify a class.
-Usually, this designator character is one that is often assigned that
-class; however, its meaning as a designator is unvarying and
-independent of what syntax that character currently has.  Thus,
-@samp{\} as a designator character always stands for escape character
-syntax, regardless of whether the @samp{\} character actually has that
-syntax in the current syntax table.
+  Каждый синтаксический класс обозначается мнемоническим символом,
+который служит именем класса, когда нужно указать класс. Обычно этот
+символ-указатель часто присваивается этому классу; однако его значение
+в качестве обозначения не меняется и не зависит от того, какой синтаксис
+у этого символа в настоящее время.  Таким образом, @samp{\} как
+символ-указатель всегда обозначает синтаксис escape-символа, независимо
+от того, действительно ли символ @samp{\} имеет этот синтаксис в текущей
+таблице синтаксиса.
 @ifnottex
-@xref{Syntax Class Table}, for a list of syntax classes and their
-designator characters.
+@xref{Syntax Class Table}, для списка классов синтаксиса и их обозначений.
 @end ifnottex
 
 @cindex syntax descriptor
-  A @dfn{syntax descriptor} is a Lisp string that describes the syntax
-class and other syntactic properties of a character.  When you want to
-modify the syntax of a character, that is done by calling the function
-@code{modify-syntax-entry} and passing a syntax descriptor as one of
-its arguments (@pxref{Syntax Table Functions}).
+  @dfn{Дескриптор синтаксиса} - это строка Lisp, которая описывает класс
+синтаксиса и другие синтаксические свойства символа.  Если потребуется
+изменить синтаксис символа, это делается путем вызова функции
+@code{modify-syntax-entry} и передачи дескриптора синтаксиса в качестве
+одного из ее аргументов (@pxref{Syntax Table Functions}).
 
-  The first character in a syntax descriptor must be a syntax class
-designator character.  The second character, if present, specifies a
-matching character (e.g., in Lisp, the matching character for
-@samp{(} is @samp{)}); a space specifies that there is no matching
-character.  Then come characters specifying additional syntax
-properties (@pxref{Syntax Flags}).
+  Первый символ в дескрипторе синтаксиса должен быть символом указателя
+класса синтаксиса.  Второй символ, если он присутствует, указывает
+соответствующий символ (например, в Lisp соответствующий символ для
+@samp{(} - @samp{)}); пробел указывает на отсутствие соответствующего
+символа.  Затем идут символы, определяющие дополнительные свойства
+синтаксиса (@pxref{Syntax Flags}).
 
-  If no matching character or flags are needed, only one character
-(specifying the syntax class) is sufficient.
+  Если соответствующий символ или флаги не требуются, достаточно только
+одного символа (с указанием класса синтаксиса).
 
-  For example, the syntax descriptor for the character @samp{*} in C
-mode is @code{". 23"} (i.e., punctuation, matching character slot
-unused, second character of a comment-starter, first character of a
-comment-ender), and the entry for @samp{/} is @samp{@w{. 14}} (i.e.,
-punctuation, matching character slot unused, first character of a
-comment-starter, second character of a comment-ender).
+  Например, дескриптор синтаксиса для символа @samp{*} в режиме C - это
+@code{". 23"} (то есть пунктуация, соответствующий слот символа не
+используется, второй символ начала комментария, первый символ конца
+комментария), а запись для @samp{\} - @samp{@w{. 14}} ( то есть пунктуация,
+соответствующий слот символа не используется, первый символ начала
+комментария, второй символ конца комментария).
 
-  Emacs also defines @dfn{raw syntax descriptors}, which are used to
-describe syntax classes at a lower level.  @xref{Syntax Table
-Internals}.
+  Emacs также определяет @dfn{необработанные дескрипторы синтаксиса}, которые
+используются для описания классов синтаксиса на более низком уровне.
+@xref{Syntax Table Internals}.
 
 @menu
-* Syntax Class Table::      Table of syntax classes.
-* Syntax Flags::            Additional flags each character can have.
+* Syntax Class Table::      Таблица классов синтаксиса.
+* Syntax Flags::            Дополнительные флаги могут быть у
+                                каждого символа.
 @end menu
 
 @node Syntax Class Table
-@subsection Table of Syntax Classes
+@subsection Таблица Классов Синтаксиса
 @cindex syntax class table
 
-  Here is a table of syntax classes, the characters that designate
-them, their meanings, and examples of their use.
+  Вот таблица классов синтаксиса, обозначающих их символов, их
+значений и примеров их использования.
 
 @table @asis
 @item Whitespace characters: @samp{@ } or @samp{-}
-Characters that separate symbols and words from each other.
-Typically, whitespace characters have no other syntactic significance,
-and multiple whitespace characters are syntactically equivalent to a
-single one.  Space, tab, and formfeed are classified as whitespace in
-almost all major modes.
+Символы, отделяющие друг от друга символы и слова.  Обычно
+пробельные символы не имеют другого синтаксического значения, а
+несколько пробельных символов синтаксически эквивалентны одному.
+Пробел, табуляция и подача формы классифицируются как пробелы почти
+во всех основных режимах.
 
-This syntax class can be designated by either @w{@samp{@ }} or
-@samp{-}.  Both designators are equivalent.
+Этот синтаксический класс может быть обозначен как @w{@samp{@ }}
+или @samp{-}.  Оба обозначения эквивалентны.
 
 @item Word constituents: @samp{w}
-Parts of words in human languages.  These are typically used in
-variable and command names in programs.  All upper- and lower-case
-letters, and the digits, are typically word constituents.
+Части слов в человеческих языках.  Обычно они используются в именах
+переменных и команд в программах.  Все буквы верхнего и нижнего регистра,
+а также цифры обычно являются составными частями слова.
 
 @item Symbol constituents: @samp{_}
-Extra characters used in variable and command names along with word
-constituents.  Examples include the characters @samp{$&*+-_<>} in Lisp
-mode, which may be part of a symbol name even though they are not part
-of English words.  In standard C, the only non-word-constituent
-character that is valid in symbols is underscore (@samp{_}).
+Дополнительные символы, используемые в именах переменных и команд
+вместе с составляющими слова.  Примеры включают символы @samp{$&*+-_<>}
+в режиме Lisp, которые могут быть частью имени символа, даже если они не
+являются частью английских слов.  В стандарте C единственным допустимым
+символом, не входящим в состав слова, является подчеркивание (@samp{_}).
 
 @item Punctuation characters: @samp{.}
-Characters used as punctuation in a human language, or used in a
-programming language to separate symbols from one another.  Some
-programming language modes, such as Emacs Lisp mode, have no
-characters in this class since the few characters that are not symbol
-or word constituents all have other uses.  Other programming language
-modes, such as C mode, use punctuation syntax for operators.
+Символы, используемые как знаки препинания в человеческом языке или
+используемые в языках программирования для отделения друг от друга символов.
+Некоторые режимы языка программирования, такие как режим Emacs Lisp, не
+содержат символов в этом классе, поскольку несколько символов, которые
+не являются составляющими символа или слова, имеют другое применение.  В
+других режимах языка программирования, таких как режим C, для операторов
+используется синтаксис пунктуации.
 
 @item Open parenthesis characters: @samp{(}
 @itemx Close parenthesis characters: @samp{)}
-Characters used in dissimilar pairs to surround sentences or
-expressions.  Such a grouping is begun with an open parenthesis
-character and terminated with a close.  Each open parenthesis
-character matches a particular close parenthesis character, and vice
-versa.  Normally, Emacs indicates momentarily the matching open
-parenthesis when you insert a close parenthesis.  @xref{Blinking}.
+Символы, используемые в разных парах для окружения предложений или выражений.
+Такая группировка начинается с открывающей круглой скобки и заканчивается
+закрытием.  Каждый символ открытой круглой скобки соответствует определенному
+символу закрывающей скобки, и наоборот.  Обычно Emacs на мгновение указывает
+соответствующую открытую скобку, когда вставляется закрывающая скобка.
+@xref{Blinking}.
 
-In human languages, and in C code, the parenthesis pairs are
-@samp{()}, @samp{[]}, and @samp{@{@}}.  In Emacs Lisp, the delimiters
-for lists and vectors (@samp{()} and @samp{[]}) are classified as
-parenthesis characters.
+В человеческих языках и в коде C пары скобок - @samp{()}, @samp{[]} и @samp{@{@}}.
+В Emacs Lisp разделители для списков и векторов (@samp{()} и @samp{[]})
+классифицируются как символы скобок.
 
 @item String quotes: @samp{"}
-Characters used to delimit string constants.  The same string quote
-character appears at the beginning and the end of a string.  Such
-quoted strings do not nest.
+Символы, используемые для обозначения строковых констант.  Одинаковые строковые
+кавычки появляются в начале и в конце строки.  Такие строки в кавычках не
+распологаются.
 
-The parsing facilities of Emacs consider a string as a single token.
-The usual syntactic meanings of the characters in the string are
-suppressed.
+Средства синтаксического анализа Emacs рассматривают строку как отдельный
+токен.  Обычные синтаксические значения символов в строке подавляются.
 
-The Lisp modes have two string quote characters: double-quote (@samp{"})
-and vertical bar (@samp{|}).  @samp{|} is not used in Emacs Lisp, but it
-is used in Common Lisp.  C also has two string quote characters:
-double-quote for strings, and apostrophe (@samp{'}) for character
-constants.
+В режимах Lisp есть два строковых символа кавычек: двойные кавычки (@samp{"})
+и вертикальная черта (@samp{|}).  @samp{|} не используется в Emacs Lisp, но
+используется в Common Lisp.  C также имеет два символа строковых кавычек:
+двойные кавычки для строк и апостроф (@samp{'}) для символьных констант.
 
-Human text has no string quote characters.  We do not want quotation
-marks to turn off the usual syntactic properties of other characters
-in the quotation.
+В человеческом тексте нет строковых кавычек.  Хочется, чтобы кавычки
+отключили обычные синтаксические свойства других символов в кавычках.
 
 @item Escape-syntax characters: @samp{\}
-Characters that start an escape sequence, such as is used in string
-and character constants.  The character @samp{\} belongs to this class
-in both C and Lisp.  (In C, it is used thus only inside strings, but
-it turns out to cause no trouble to treat it this way throughout C
-code.)
+Символы, которые запускают escape-последовательность, например, в строковых
+и символьных константах.  Символ @samp{\} принадлежит этому классу как в C,
+так и в Lisp.  (Таким образом, в C он используется только внутри строк, но,
+как выясняется, не составляет труда обращаться с ним таким образом во всем
+коде C.)
 
-Characters in this class count as part of words if
-@code{words-include-escapes} is non-@code{nil}.  @xref{Word Motion}.
+Символы в этом классе считаются частью слов, если @code{words-include-escapes}
+- не-@code{nil}.  @xref{Word Motion}.
 
 @item Character quotes: @samp{/}
-Characters used to quote the following character so that it loses its
-normal syntactic meaning.  This differs from an escape character in
-that only the character immediately following is ever affected.
+Символ, используемый для цитирования следующего символа, так что теряется
+его обычное синтаксическое значение.  Отличается от escape-символа тем, что
+затрагивается только следующий за ним символ.
 
-Characters in this class count as part of words if
-@code{words-include-escapes} is non-@code{nil}.  @xref{Word Motion}.
+Символы в этом классе считаются частью слов, если
+@code{words-include-escapes} - не-@code{nil}.  @xref{Word Motion}.
 
-This class is used for backslash in @TeX{} mode.
+Этот класс используется для обратной косой черты в режиме @TeX{}.
 
 @item Paired delimiters: @samp{$}
-Similar to string quote characters, except that the syntactic
-properties of the characters between the delimiters are not
-suppressed.  Only @TeX{} mode uses a paired delimiter presently---the
-@samp{$} that both enters and leaves math mode.
+Подобно символам строковых кавычек, за исключением того, что синтаксические
+свойства символов между разделителями не подавляются.  В настоящее время
+только режим @TeX{} использует парный разделитель --- @samp{$}, который
+одновременно входит в математический режим и выходит из него.
 
 @item Expression prefixes: @samp{'}
-Characters used for syntactic operators that are considered as part of
-an expression if they appear next to one.  In Lisp modes, these
-characters include the apostrophe, @samp{'} (used for quoting), the
-comma, @samp{,} (used in macros), and @samp{#} (used in the read
-syntax for certain data types).
+Символы, используемые для синтаксических операторов, которые считаются
+частью выражения, если они появляются рядом с ними.  В режимах Lisp эти
+символы включают апостроф, @samp{'} (используется для цитирования), запятую,
+@samp{,} (используется в макросах) и @samp{#} (используется в синтаксисе
+чтения для определенных типов данных).
 
 @item Comment starters: @samp{<}
 @itemx Comment enders: @samp{>}
 @cindex comment syntax
-Characters used in various languages to delimit comments.  Human text
-has no comment characters.  In Lisp, the semicolon (@samp{;}) starts a
-comment and a newline or formfeed ends one.
+Символы, используемые на разных языках для обозначения комментариев.  Текст
+без комментариев. В Lisp точка с запятой (@samp{;}) начинает комментарий,
+а символ новой строки или перевод формы заканчивает его.
 
 @item Inherit standard syntax: @samp{@@}
-This syntax class does not specify a particular syntax.  It says to
-look in the standard syntax table to find the syntax of this
-character.
+Этот синтаксический класс не определяет конкретный синтаксис.  Указывает,
+что нужно посмотреть в стандартной таблице синтаксиса, чтобы найти
+синтаксис этого символа.
 
 @item Generic comment delimiters: @samp{!}
-Characters that start or end a special kind of comment.  @emph{Any}
-generic comment delimiter matches @emph{any} generic comment
-delimiter, but they cannot match a comment starter or comment ender;
-generic comment delimiters can only match each other.
+Символы, которые начинают или заканчивают особый комментарий.  @emph{Любой}
+универсальный разделитель комментариев  совпадает с @emph{любым} универсальным
+разделителем комментариев , но не могут совпадать с начальным или
+конечным элементом комментария; общие разделители комментариев могут совпадать
+только друг с другом.
 
-This syntax class is primarily meant for use with the
-@code{syntax-table} text property (@pxref{Syntax Properties}).  You
-can mark any range of characters as forming a comment, by giving the
-first and last characters of the range @code{syntax-table} properties
-identifying them as generic comment delimiters.
+Этот синтаксический класс в первую очередь предназначен для использования
+с текстовым свойством @code{syntax-table} (@pxref{Syntax Properties}).
+Можно пометить любой диапазон символов как образующий комментарий, указав
+первый и последний символы в свойствах range @code{syntax-table},
+идентифицируя их как общие разделители комментариев.
 
 @item Generic string delimiters: @samp{|}
-Characters that start or end a string.  This class differs from the
-string quote class in that @emph{any} generic string delimiter can
-match any other generic string delimiter; but they do not match
-ordinary string quote characters.
+Символы, которые начинают или заканчивают строку.  Этот класс отличается
+от класса строковых кавычек тем, что общий @emph{любой} разделитель строк
+может соответствовать любому другому универсальному разделителю строк; но
+не соответствует обычным строковым кавычкам.
 
-This syntax class is primarily meant for use with the
-@code{syntax-table} text property (@pxref{Syntax Properties}).  You
-can mark any range of characters as forming a string constant, by
-giving the first and last characters of the range @code{syntax-table}
-properties identifying them as generic string delimiters.
+Этот синтаксический класс в первую очередь предназначен для использования
+с текстовым свойством @code{syntax-table} (@pxref{Syntax Properties}).
+Можно пометить любой диапазон символов как образующий строковую константу,
+задав первый и последний символы свойств range @code{syntax-table},
+идентифицируя их как общие разделители строк.
 @end table
 
 @node Syntax Flags
-@subsection Syntax Flags
+@subsection Флаги Синтаксиса
 @cindex syntax flags
 
-  In addition to the classes, entries for characters in a syntax table
-can specify flags.  There are eight possible flags, represented by the
-characters @samp{1}, @samp{2}, @samp{3}, @samp{4}, @samp{b}, @samp{c},
-@samp{n}, and @samp{p}.
+  Помимо классов, записи для символов в таблице синтаксиса могут указывать
+флаги.  Есть восемь возможных флагов, представленных символами @samp{1},
+@samp{2}, @samp{3}, @samp{4}, @samp{b}, @samp{c}, @samp{n} и @samp{p}.
 
-  All the flags except @samp{p} are used to describe comment
-delimiters.  The digit flags are used for comment delimiters made up
-of 2 characters.  They indicate that a character can @emph{also} be
-part of a comment sequence, in addition to the syntactic properties
-associated with its character class.  The flags are independent of the
-class and each other for the sake of characters such as @samp{*} in
-C mode, which is a punctuation character, @emph{and} the second
-character of a start-of-comment sequence (@samp{/*}), @emph{and} the
-first character of an end-of-comment sequence (@samp{*/}).  The flags
-@samp{b}, @samp{c}, and @samp{n} are used to qualify the corresponding
-comment delimiter.
+  Все флаги, кроме @samp{p}, используются для описания разделителей
+комментариев.  Цифровые флаги используются для разделителей комментариев,
+состоящих из 2 символов.  Они указывают, что символ @emph{также} может быть
+частью последовательности комментариев в дополнение к синтаксическим
+свойствам, связанным с его классом символов.  Флаги не зависят от класса
+и друг от друга, так как символы, такие как @samp{*} в режиме C, являются
+символом пунктуации, @emph{и} - вторым символом последовательности начала
+комментария, (@samp{\*}), @emph{и} - первым символом конца строки.
+последовательность комментариев (@samp{*\}).  Флаги @samp{b}, @samp{c} и
+@samp{n} используются для обозначения соответствующего разделителя
+комментариев.
 
-  Here is a table of the possible flags for a character @var{c},
-and what they mean:
+  Вот таблица возможных флагов для символа @var{c} и их значения:
 
 @itemize @bullet
 @item
-@samp{1} means @var{c} is the start of a two-character comment-start
-sequence.
+@samp{1} означает, что @var{c} - это начало двухсимвольной
+последовательности начала комментария.
 
 @item
-@samp{2} means @var{c} is the second character of such a sequence.
+@samp{2} означает, что @var{c} - второй символ такой последовательности.
 
 @item
-@samp{3} means @var{c} is the start of a two-character comment-end
-sequence.
+@samp{3} означает, что @var{c} - это начало двухсимвольной
+последовательности конца комментария.
 
 @item
-@samp{4} means @var{c} is the second character of such a sequence.
+@samp{4} означает, что @var{c} - второй символ такой последовательности.
 
 @item
-@samp{b} means that @var{c} as a comment delimiter belongs to the
-alternative ``b'' comment style.  For a two-character comment starter,
-this flag is only significant on the second char, and for a 2-character
-comment ender it is only significant on the first char.
+@samp{b} означает, что @var{c} как разделитель комментариев принадлежит
+к альтернативному стилю комментариев ``b''.  Для двухсимвольного
+начального комментария этот флаг имеет значение только для второго символа,
+а для двухсимвольного завершающего комментария он имеет значение только
+для первого символа.
 
 @item
-@samp{c} means that @var{c} as a comment delimiter belongs to the
-alternative ``c'' comment style.  For a two-character comment
-delimiter, @samp{c} on either character makes it of style ``c''.
+@samp{c} означает, что @var{c} как разделитель комментариев принадлежит к
+альтернативному стилю комментариев ``c''.  Для двухсимвольного разделителя
+комментариев, @samp{c} для любого символа делает его стилем ``c''.
 
 @item
-@samp{n} on a comment delimiter character specifies that this kind of
-comment can be nested.  Inside such a comment, only comments of the
-same style will be recognized.  For a two-character comment delimiter,
-@samp{n} on either character makes it nestable.
+@samp{n} на символе разделителя комментариев указывает, что этот вид
+комментария может быть вложенным.  Внутри такого комментария будут
+распознаваться только комментарии одного стиля.  Для двухсимвольного
+разделителя комментария @samp{n} для любого символа делает его
+вкладываемым.
 
 @cindex comment style
-Emacs supports several comment styles simultaneously in any one syntax
-table.  A comment style is a set of flags @samp{b}, @samp{c}, and
-@samp{n}, so there can be up to 8 different comment styles, each one
-named by the set of its flags.  Each comment delimiter has a style and
-only matches comment delimiters of the same style.  Thus if a comment
-starts with the comment-start sequence of style ``bn'', it will extend
-until the next matching comment-end sequence of style ``bn''.  When
-the set of flags has neither flag @samp{b} nor flag @samp{c} set, the
-resulting style is called the ``a'' style.
+Emacs поддерживает несколько стилей комментариев одновременно в одной
+синтаксической таблице.  Стиль комментария - это набор флагов @samp{b},
+@samp{c} и @samp{n}, поэтому может быть до 8 различных стилей комментариев,
+каждый из которых назван набором своих флагов.  Каждый разделитель
+комментариев имеет свой стиль и соответствует только разделителям
+комментариев одного стиля.  Таким образом, если комментарий начинается
+с последовательности начала комментария стиля ``bn'', он будет
+продолжаться до следующей соответствующей последовательности конца
+комментария стиля ``bn''.  Когда в наборе флагов не установлен ни
+флаг @samp{b}, ни флаг @samp{c}, результирующий стиль называется
+стилем ``a''.
 
-The appropriate comment syntax settings for C++ can be as follows:
+Соответствующие настройки синтаксиса комментариев для C ++ могут
+быть следующими:
 
 @table @asis
 @item @samp{/}
@@ -358,108 +366,109 @@ The appropriate comment syntax settings for C++ can be as follows:
 @samp{>}
 @end table
 
-This defines four comment-delimiting sequences:
+Это определяет четыре последовательности, ограничивающие комментарии:
 
 @table @asis
 @item @samp{/*}
-This is a comment-start sequence for ``b'' style because the
-second character, @samp{*}, has the @samp{b} flag.
+Это последовательность начала комментария для стиля ``b'', потому
+что второй символ, @samp{*}, имеет флаг @samp{b}.
 
 @item @samp{//}
-This is a comment-start sequence for ``a'' style because the second
-character, @samp{/}, does not have the @samp{b} flag.
+Это последовательность начала комментария для стиля ``a'', потому
+что второй символ, @samp{/}, не имеет флага @samp{b}.
 
 @item @samp{*/}
-This is a comment-end sequence for ``b'' style because the first
-character, @samp{*}, has the @samp{b} flag.
+Это последовательность конца комментария для стиля b '', потому что
+первый символ, @samp{*}, имеет флаг @samp{b}.
 
 @item newline
-This is a comment-end sequence for ``a'' style, because the newline
-character does not have the @samp{b} flag.
+Это последовательность конца комментария для стиля ``a'', потому
+что символ новой строки не имеет флага @samp{b}.
 @end table
 
 @item
-@samp{p} identifies an additional prefix character for Lisp syntax.
-These characters are treated as whitespace when they appear between
-expressions.  When they appear within an expression, they are handled
-according to their usual syntax classes.
+@samp{p} определяет дополнительный префиксный символ для синтаксиса
+Lisp.  Эти символы рассматриваются как пробелы, когда они появляются
+между выражениями.  Когда они появляются в выражении, они
+обрабатываются в соответствии с их обычными классами синтаксиса.
 
-The function @code{backward-prefix-chars} moves back over these
-characters, as well as over characters whose primary syntax class is
-prefix (@samp{'}).  @xref{Motion and Syntax}.
+Функция @code{backward-prefix-chars} перемещается назад по этим
+символам, а также по символам, основным синтаксическим классом которых
+является префикс (@samp{'}).  @xref{Motion and Syntax}.
 @end itemize
 
 @node Syntax Table Functions
-@section Syntax Table Functions
+@section Функции Таблицы Синтаксиса
 
-  In this section we describe functions for creating, accessing and
-altering syntax tables.
+  В этом разделе описываются функции для создания, доступа и
+изменения синтаксических таблиц.
 
 @defun make-syntax-table &optional table
-This function creates a new syntax table.  If @var{table} is
-non-@code{nil}, the parent of the new syntax table is @var{table};
-otherwise, the parent is the standard syntax table.
+Эта функция создает новую таблицу синтаксиса.  Если @var{table} -
+не-@code{nil}, то родителем новой таблицы синтаксиса будет @var{table};
+в противном случае родительской таблицейа является стандартная
+синтаксическая таблица.
 
-In the new syntax table, all characters are initially given the
-``inherit'' (@samp{@@}) syntax class, i.e., their syntax is inherited
-from the parent table (@pxref{Syntax Class Table}).
+В новой таблице синтаксиса всем символам изначально присвоен класс
+синтаксиса ``наследовать'' (@samp{@@}), то есть их синтаксис наследуется
+от родительской таблицы (@pxref{Syntax Class Table}).
 @end defun
 
 @defun copy-syntax-table &optional table
-This function constructs a copy of @var{table} and returns it.  If
-@var{table} is omitted or @code{nil}, it returns a copy of the
-standard syntax table.  Otherwise, an error is signaled if @var{table}
-is not a syntax table.
+Функция создает копию @var{table} и возвращает ее.  Если @var{table}
+опущено или @code{nil}, возвращается копия стандартной таблицы синтаксиса.
+В противном случае выдается сообщение об ошибке, если @var{table} не
+является таблицей синтаксиса.
 @end defun
 
 @deffn Command modify-syntax-entry char syntax-descriptor  &optional table
 @cindex syntax entry, setting
-This function sets the syntax entry for @var{char} according to
-@var{syntax-descriptor}.  @var{char} must be a character, or a cons
-cell of the form @code{(@var{min} . @var{max})}; in the latter case,
-the function sets the syntax entries for all characters in the range
-between @var{min} and @var{max}, inclusive.
+Функция устанавливает запись синтаксиса для @var{char} в соответствии с
+@var{syntax-descriptor}.  @var{char} должен быть символом или cons-ячейкой
+вида @code{(@var{min} . @var{max})}; в последнем случае функция
+устанавливает записи синтаксиса для всех символов в диапазоне от @var{min}
+до @var{max} включительно.
 
-The syntax is changed only for @var{table}, which defaults to the
-current buffer's syntax table, and not in any other syntax table.
+Синтаксис изменяется только для @var{table}, которая по умолчанию соответствует
+таблице синтаксиса текущего буфера, а не для какой-либо другой таблицы синтаксиса.
 
-The argument @var{syntax-descriptor} is a syntax descriptor, i.e., a
-string whose first character is a syntax class designator and whose
-second and subsequent characters optionally specify a matching
-character and syntax flags.  @xref{Syntax Descriptors}.  An error is
-signaled if @var{syntax-descriptor} is not a valid syntax descriptor.
+Аргумент @var{syntax-descriptor} - это дескриптор синтаксиса, то есть строка,
+первый символ которой является указателем класса синтаксиса, а второй и
+последующие символы могут дополнительно определять совпадающий символ и
+флаги синтаксиса.  @xref{Syntax Descriptors}.  Сообщается об ошибке, если
+@var{syntax-descriptor} не является допустимым дескриптором синтаксиса.
 
-This function always returns @code{nil}.  The old syntax information in
-the table for this character is discarded.
+Функция всегда возвращает @code{nil}.  Старая информация о синтаксисе в
+таблице для этого символа отбрасывается.
 
 @example
 @group
-@exdent @r{Examples:}
+@exdent @r{Примеры:}
 
-;; @r{Put the space character in class whitespace.}
+;; @r{Поместить пробел в пробел класса.}
 (modify-syntax-entry ?\s " ")
      @result{} nil
 @end group
 
 @group
-;; @r{Make @samp{$} an open parenthesis character,}
-;;   @r{with @samp{^} as its matching close.}
+;; @r{Сделать @samp{$} символом открытой круглой скобки ,}
+;; @r{с @samp{^} в качестве соответствующего ему символу закрывающей скобки.}
 (modify-syntax-entry ?$ "(^")
      @result{} nil
 @end group
 
 @group
-;; @r{Make @samp{^} a close parenthesis character,}
-;;   @r{with @samp{$} as its matching open.}
+;; @r{Сделать @samp{^} символом закрывающей скобки ,}
+;; @r{с @samp{$} в качестве соответствующего ему символу открывающей скобки.}
 (modify-syntax-entry ?^ ")$")
      @result{} nil
 @end group
 
 @group
-;; @r{Make @samp{/} a punctuation character,}
-;;   @r{the first character of a start-comment sequence,}
-;;   @r{and the second character of an end-comment sequence.}
-;;   @r{This is used in C mode.}
+;; @r{Сделать @samp{/} знаком препинания ,}
+;; @r{первый символ последовательности начало-комментария,}
+;; @r{второй символ последовательности конец-комментарий.}
+;; @r{Используется в режиме C.}
 (modify-syntax-entry ?/ ". 14")
      @result{} nil
 @end group
@@ -467,33 +476,32 @@ the table for this character is discarded.
 @end deffn
 
 @defun char-syntax character
-This function returns the syntax class of @var{character}, represented
-by its designator character (@pxref{Syntax Class Table}).  This
-returns @emph{only} the class, not its matching character or syntax
-flags.
+Функция возвращает класс синтаксиса @var{character}, представленный
+его обозначением (@pxref{Syntax Class Table}).  Это @emph{только}
+возвращает класс, а не соответствующий ему символ или флаги синтаксиса.
 
-The following examples apply to C mode.  (We use @code{string} to make
-it easier to see the character returned by @code{char-syntax}.)
+Следующие примеры относятся к режиму C.  (Используется @code{string},
+чтобы упростить просмотр символа, возвращаемого @code{char-syntax}.)
 
 @example
 @group
-;; Space characters have whitespace syntax class.
+;; Пробелы имеют класс синтаксиса пробелов.
 (string (char-syntax ?\s))
      @result{} " "
 @end group
 
 @group
-;; Forward slash characters have punctuation syntax.
-;; Note that this @code{char-syntax} call does not reveal
-;; that it is also part of comment-start and -end sequences.
+;; Символы прямой косой черты имеют синтаксис пунктуации.
+;; Обратить внимание, что этот вызов @code{char-syntax} не показывает,
+;; что он также является частью последовательности comment-start и -end.
 (string (char-syntax ?/))
      @result{} "."
 @end group
 
 @group
-;; Open parenthesis characters have open parenthesis syntax.
-;; Note that this @code{char-syntax} call does not reveal that
-;; it has a matching character, @samp{)}.
+;; Открытые круглые скобки имеют синтаксис открытых скобок.
+;; Обратить внимание, что этот вызов @code{char-syntax} не показывает, что
+;; имеет соответствующий символ @samp{)}.
 (string (char-syntax ?\())
      @result{} "("
 @end group
@@ -502,512 +510,516 @@ it easier to see the character returned by @code{char-syntax}.)
 @end defun
 
 @defun set-syntax-table table
-This function makes @var{table} the syntax table for the current buffer.
-It returns @var{table}.
+Функция делает @var{table} таблицей синтаксиса для текущего буфера.
+Возвращается @var{table}.
 @end defun
 
 @defun syntax-table
-This function returns the current syntax table, which is the table for
-the current buffer.
+Функция возвращает текущую таблицу синтаксиса, которая является
+таблицей для текущего буфера.
 @end defun
 
 @deffn Command describe-syntax &optional buffer
-This command displays the contents of the syntax table of
-@var{buffer} (by default, the current buffer) in a help buffer.
+Команда отображает содержимое таблицы синтаксиса @var{buffer}
+(по умолчанию текущий буфер) в буфере справки.
 @end deffn
 
 @defmac with-syntax-table table body@dots{}
-This macro executes @var{body} using @var{table} as the current syntax
-table.  It returns the value of the last form in @var{body}, after
-restoring the old current syntax table.
+Макрос выполняет @var{body} с использованием @var{table} в качестве
+текущей таблицы синтаксиса.  Возвращается значение последней формы в
+@var{body} после восстановления старой текущей таблицы синтаксиса.
 
-Since each buffer has its own current syntax table, we should make that
-more precise: @code{with-syntax-table} temporarily alters the current
-syntax table of whichever buffer is current at the time the macro
-execution starts.  Other buffers are not affected.
+Поскольку каждый буфер имеет свою собственную текущую таблицу
+синтаксиса, потребуется уточнить это: @code{with-syntax-table}
+временно изменяет текущую таблицу синтаксиса того буфера, который
+является текущим на момент запуска макроса.  Другие буферы не
+затрагиваются.
 @end defmac
 
 @node Syntax Properties
-@section Syntax Properties
-@kindex syntax-table @r{(text property)}
+@section Синтаксические Свойства
+@kindex syntax-table @r{(текстовое свойство)}
 
-When the syntax table is not flexible enough to specify the syntax of
-a language, you can override the syntax table for specific character
-occurrences in the buffer, by applying a @code{syntax-table} text
-property.  @xref{Text Properties}, for how to apply text properties.
+Если таблица синтаксиса недостаточно гибкая, чтобы указать синтаксис
+языка, возможно переопределить таблицу синтаксиса для определенных
+вхождений символов в буфере, применив текстовое свойство
+@code{syntax-table}.  @xref{Text Properties}, как применять свойства
+текста.
 
-  The valid values of @code{syntax-table} text property are:
+  Допустимые значения текстового свойства @code{syntax-table}:
 
 @table @asis
 @item @var{syntax-table}
-If the property value is a syntax table, that table is used instead of
-the current buffer's syntax table to determine the syntax for the
-underlying text character.
+Если значение свойства является таблицей синтаксиса, эта таблица
+используется вместо таблицы синтаксиса текущего буфера для определения
+синтаксиса основного текстового символа.
 
 @item @code{(@var{syntax-code} . @var{matching-char})}
-A cons cell of this format is a raw syntax descriptor (@pxref{Syntax
-Table Internals}), which directly specifies a syntax class for the
-underlying text character.
+Cons-ячейка этого формата представляет собой дескриптор необработанного
+синтаксиса (@pxref{Syntax Table Internals}), который напрямую определяет
+класс синтаксиса для нижележащего текстового символа.
 
 @item @code{nil}
-If the property is @code{nil}, the character's syntax is determined from
-the current syntax table in the usual way.
+Если свойство - @code{nil}, синтаксис символа определяется из текущей
+синтаксической таблицы обычным способом.
 @end table
 
 @defvar parse-sexp-lookup-properties
-If this is non-@code{nil}, the syntax scanning functions, like
-@code{forward-sexp}, pay attention to @code{syntax-table} text
-properties.  Otherwise they use only the current syntax table.
+Если это не-@code{nil}, функции сканирования синтаксиса, такие как
+@code{forward-sexp}, обращают внимание на свойства текста
+@code{syntax-table}.  В противном случае используется только текущая
+таблица синтаксиса.
 @end defvar
 
 @defvar syntax-propertize-function
-This variable, if non-@code{nil}, should store a function for applying
-@code{syntax-table} properties to a specified stretch of text.  It is
-intended to be used by major modes to install a function which applies
-@code{syntax-table} properties in some mode-appropriate way.
+Эта переменная, если не-@code{nil}, хранит функцию для применения
+свойств @code{syntax-table} к указанному фрагменту текста.  Предназначается
+для использования основными режимами для установки функции, которая
+применяет свойства @code{syntax-table} некоторым подходящим для режима
+способом.
 
-The function is called by @code{syntax-ppss} (@pxref{Position Parse}),
-and by Font Lock mode during syntactic fontification (@pxref{Syntactic
-Font Lock}).  It is called with two arguments, @var{start} and
-@var{end}, which are the starting and ending positions of the text on
-which it should act.  It is allowed to call @code{syntax-ppss} on any
-position before @var{end}.  However, it should not call
-@code{syntax-ppss-flush-cache}; so, it is not allowed to call
-@code{syntax-ppss} on some position and later modify the buffer at an
-earlier position.
+Функция вызывается @code{syntax-ppss} (@pxref{Position Parse}) и режимом
+Font Lock во время синтаксической фонификации (@pxref{Syntactic Font Lock}).
+Вызывается с двумя аргументами @var{start} и @var{end}, которые являются
+начальной и конечной позициями текста, с которыми происходит взаимодействие.
+Разрешается вызывать @code{syntax-ppss} на любую позицию до @var{end}.
+Однако не должно быть вызова @code{syntax-ppss-flush-cache}; поэтому не
+получиться вызывать @code{syntax-ppss} в какой-либо позиции и позже изменять
+буфер в более ранней позиции.
 @end defvar
 
 @defvar syntax-propertize-extend-region-functions
-This abnormal hook is run by the syntax parsing code prior to calling
-@code{syntax-propertize-function}.  Its role is to help locate safe
-starting and ending buffer positions for passing to
-@code{syntax-propertize-function}.  For example, a major mode can add
-a function to this hook to identify multi-line syntactic constructs,
-and ensure that the boundaries do not fall in the middle of one.
+Этот ненормальный перехватчик запускается кодом синтаксического анализа
+до вызова @code{syntax-propertize-function}.  Его роль - помочь найти
+безопасные начальные и конечные позиции буфера для перехода к
+@code{syntax-propertize-function}.  Например, основной режим может
+добавить к этому перехватчику функцию для идентификации многострочных
+синтаксических конструкций и обеспечения того, чтобы границы не
+попадали в середину одной из них.
 
-Each function in this hook should accept two arguments, @var{start}
-and @var{end}.  It should return either a cons cell of two adjusted
-buffer positions, @code{(@var{new-start} . @var{new-end})}, or
-@code{nil} if no adjustment is necessary.  The hook functions are run
-in turn, repeatedly, until they all return @code{nil}.
+Каждая функция в этой ловушке принимает два аргумента @var{start}
+and @var{end}.  Возвращает либо cons-ячейку с двумя настроенными
+положениями буфера, @code{(@var{new-start} . @var{new-end})} или
+@code{nil}, если настройка не требуется.  Функции ловушки запускаются
+по очереди, многократно, пока все они не вернут @code{nil}.
 @end defvar
 
 @node Motion and Syntax
-@section Motion and Syntax
+@section Движение и Синтаксис
 @cindex moving across syntax classes
 @cindex skipping characters of certain syntax
 
-  This section describes functions for moving across characters that
-have certain syntax classes.
+  В этом разделе описаны функции для перемещения между символами,
+имеющими определенные классы синтаксиса.
 
 @defun skip-syntax-forward syntaxes &optional limit
-This function moves point forward across characters having syntax
-classes mentioned in @var{syntaxes} (a string of syntax class
-characters).  It stops when it encounters the end of the buffer, or
-position @var{limit} (if specified), or a character it is not supposed
-to skip.
+Функция перемещает точку между символами, имеющими классы синтаксиса,
+упомянутые в @var{syntaxes} (строка символов класса синтаксиса).
+Остановка, когда встречает конец буфера, позиция @var{limit}
+(если указана) или символ, который не пропускается.
 
-If @var{syntaxes} starts with @samp{^}, then the function skips
-characters whose syntax is @emph{not} in @var{syntaxes}.
+Если @var{syntaxes} начинается с @samp{^}, функция пропускает
+символы с @emph{не} синтаксисом @var{syntaxes}.
 
-The return value is the distance traveled, which is a nonnegative
-integer.
+Возвращаемое значение - это пройденное расстояние, которое является
+неотрицательным целым числом.
 @end defun
 
 @defun skip-syntax-backward syntaxes &optional limit
-This function moves point backward across characters whose syntax
-classes are mentioned in @var{syntaxes}.  It stops when it encounters
-the beginning of the buffer, or position @var{limit} (if specified), or
-a character it is not supposed to skip.
+Функция перемещает точку назад по символам, синтаксические классы
+которых упомянуты в @var{syntaxes}.  Остановка, когда встречается
+начало буфера, позиция @var{limit} (если указана) или символ,
+который не должен пропускаться.
 
-If @var{syntaxes} starts with @samp{^}, then the function skips
-characters whose syntax is @emph{not} in @var{syntaxes}.
+Если @var{syntaxes} начинается с @samp{^}, функция пропускает символы,
+синтаксис которых @emph{не} @var{syntaxes}.
 
-The return value indicates the distance traveled.  It is an integer that
-is zero or less.
+Возвращаемое значение указывает пройденное  расстояние. Это целое
+число, равное нулю или меньше.
 @end defun
 
 @defun backward-prefix-chars
-This function moves point backward over any number of characters with
-expression prefix syntax.  This includes both characters in the
-expression prefix syntax class, and characters with the @samp{p} flag.
+Функция перемещает точку назад на любое количество символов с
+синтаксисом префикса выражения.  Сюда входят как символы в классе
+синтаксиса префикса выражения, так и символы с флагом @samp{p}.
 @end defun
 
 @node Parsing Expressions
-@section Parsing Expressions
+@section Анализ Выражений
 @cindex parsing expressions
 @cindex scanning expressions
 
-  This section describes functions for parsing and scanning balanced
-expressions.  We will refer to such expressions as @dfn{sexps},
-following the terminology of Lisp, even though these functions can act
-on languages other than Lisp.  Basically, a sexp is either a balanced
-parenthetical grouping, a string, or a symbol (i.e., a sequence
-of characters whose syntax is either word constituent or symbol
-constituent).  However, characters in the expression prefix syntax
-class (@pxref{Syntax Class Table}) are treated as part of the sexp if
-they appear next to it.
+  В этом разделе описаны функции для синтаксического анализа и сканирования
+сбалансированных выражений.  Будут называться такие выражения @dfn{sexps},
+следуя терминологии Lisp, даже если эти функции могут действовать на языках,
+отличных от Lisp.  По сути, sexp представляет собой сбалансированную
+группировку в скобках, строку или символ (то есть последовательность символов,
+синтаксис которой является составной частью слова или составляющей символа).
+Однако символы в классе синтаксиса префикса выражения
+(@pxref{Syntax Class Table}) обрабатываются как часть sexp, если они
+появляются рядом с ним.
 
-  The syntax table controls the interpretation of characters, so these
-functions can be used for Lisp expressions when in Lisp mode and for C
-expressions when in C mode.  @xref{List Motion}, for convenient
-higher-level functions for moving over balanced expressions.
+  Таблица синтаксиса управляет интерпретацией символов, поэтому эти функции
+могут использоваться для выражений Lisp в режиме Lisp и для выражений C в
+режиме C.  @xref{List Motion}, изучить удобные функций более высокого уровня
+для перемещения по сбалансированным выражениям.
 
-  A character's syntax controls how it changes the state of the
-parser, rather than describing the state itself.  For example, a
-string delimiter character toggles the parser state between
-in-string and in-code, but the syntax of characters does not
-directly say whether they are inside a string.  For example (note that
-15 is the syntax code for generic string delimiters),
+  Синтаксис символа управляет тем, как изменяется состояние анализатора, а
+не описывает само состояние.  Например, символ-разделитель строк переключает
+состояние анализатора между строкой и кодом, но синтаксис символов не указывает
+напрямую, находится ли положение внутри строки.  Например (обратить внимание,
+что 15 - это код синтаксиса для общих разделителей строк),
 
 @example
 (put-text-property 1 9 'syntax-table '(15 . nil))
 @end example
 
 @noindent
-does not tell Emacs that the first eight chars of the current buffer
-are a string, but rather that they are all string delimiters.  As a
-result, Emacs treats them as four consecutive empty string constants.
+не сообщает Emacs, что первые восемь символов текущего буфера являются строкой,
+а скорее, что все они являются разделителями строк.  В результате Emacs
+обрабатывает их как четыре последовательные пустые строковые константы.
 
 @menu
-* Motion via Parsing::       Motion functions that work by parsing.
-* Position Parse::           Determining the syntactic state of a position.
-* Parser State::             How Emacs represents a syntactic state.
-* Low-Level Parsing::        Parsing across a specified region.
-* Control Parsing::          Parameters that affect parsing.
+* Motion via Parsing::       Функции перемещения, работающие путем синтаксического анализа.
+* Position Parse::           Определение синтаксического состояния позиции.
+* Parser State::             Как Emacs представляет синтаксическое состояние.
+* Low-Level Parsing::        Разбор в указанном регионе.
+* Control Parsing::          Параметры, влияющие на синтаксический анализ.
 @end menu
 
 @node Motion via Parsing
-@subsection Motion Commands Based on Parsing
+@subsection Команды Движения на Основе Синтаксического Анализа
 @cindex motion based on parsing
 
-  This section describes simple point-motion functions that operate
-based on parsing expressions.
+  В этом разделе описаны простые функции перемещения точки, которые
+работают на основе выражений синтаксического анализа.
 
 @defun scan-lists from count depth
-This function scans forward @var{count} balanced parenthetical
-groupings from position @var{from}.  It returns the position where the
-scan stops.  If @var{count} is negative, the scan moves backwards.
+Функция просматривает вперед @var{count} сбалансированные группировки
+в скобках с позиции @var{from}.  Возвращается позиция остановки сканирования.
+Если @var{count} отрицательный, сканирование перемещается назад.
 
-If @var{depth} is nonzero, treat the starting position as being
-@var{depth} parentheses deep.  The scanner moves forward or backward
-through the buffer until the depth changes to zero @var{count} times.
-Hence, a positive value for @var{depth} has the effect of moving out
-@var{depth} levels of parenthesis from the starting position, while a
-negative @var{depth} has the effect of moving deeper by @var{-depth}
-levels of parenthesis.
+Если @var{depth} отлично от нуля, рассматривается начальная позиция как
+глубокая скобка @var{depth}.  Сканер перемещается вперед или назад через
+буфер до тех пор, пока глубина не изменится до нуля @var{count} раза.
+Следовательно, положительное значение @var{depth} приводит к перемещению
+уровней скобок @var{depth} из начальной позиции, а отрицательное значение
+@var{depth} приводит к перемещению глубже на уровни скобок @var{-depth}.
 
-Scanning ignores comments if @code{parse-sexp-ignore-comments} is
-non-@code{nil}.
+При сканировании комментарии игнорируются, если
+@code{parse-sexp-ignore-comments} равен не-@code{nil}.
 
-If the scan reaches the beginning or end of the accessible part of the
-buffer before it has scanned over @var{count} parenthetical groupings,
-the return value is @code{nil} if the depth at that point is zero; if
-the depth is non-zero, a @code{scan-error} error is signaled.
+Если сканирование достигает начала или конца доступной части буфера до
+того, как оно просканировало группировки @var{count} в скобках, возвращается
+значение @code{nil}, если глубина в этой точке равна нулю; если глубина не
+равна нулю, сигнализируется ошибка @code{scan-error}.
 @end defun
 
 @defun scan-sexps from count
-This function scans forward @var{count} sexps from position @var{from}.
-It returns the position where the scan stops.  If @var{count} is
-negative, the scan moves backwards.
+Функция просматривает вперед @var{count} sexps от позиции @var{from}.
+Возвращается позиция остановки сканирования.  Если @var{count} отрицательно,
+сканирование перемещается назад.
 
-Scanning ignores comments if @code{parse-sexp-ignore-comments} is
-non-@code{nil}.
+При сканировании комментарии игнорируются, если
+@code{parse-sexp-ignore-comments} равно не-@code{nil}.
 
-If the scan reaches the beginning or end of (the accessible part of) the
-buffer while in the middle of a parenthetical grouping, an error is
-signaled.  If it reaches the beginning or end between groupings but
-before count is used up, @code{nil} is returned.
+Если сканирование достигает начала или конца (доступной части) буфера,
+находясь в середине группировки в скобках, выдается сигнал об ошибке.
+Если достигается начало или конец между группировками, но до того, как
+счетчик исчерпан, возвращается @code{nil}.
 @end defun
 
 @defun forward-comment count
-This function moves point forward across @var{count} complete comments
-     (that is, including the starting delimiter and the terminating
-delimiter if any), plus any whitespace encountered on the way.  It
-moves backward if @var{count} is negative.  If it encounters anything
-other than a comment or whitespace, it stops, leaving point at the
-place where it stopped.  This includes (for instance) finding the end
-of a comment when moving forward and expecting the beginning of one.
-The function also stops immediately after moving over the specified
-number of complete comments.  If @var{count} comments are found as
-expected, with nothing except whitespace between them, it returns
-@code{t}; otherwise it returns @code{nil}.
+Функция перемещает точку вперед через полных @var{count} комментариев
+(то есть включая начальный и конечный разделители, если они есть), а
+также любые пробелы, встречающиеся на пути.  Перемещение назад, если
+@var{count} отрицательно.  Если встречается что-либо, кроме комментария
+или пробела, остановка, оставляется точка в этом месте.  Это включает
+(например) поиск конца комментария при движении вперед и ожидание начала
+комментария.  Функция также останавливается сразу после перехода на
+указанное количество полных комментариев . Если @var{count} комментариев
+найдено, как ожидалось, и между ними нет ничего, кроме пробелов,
+возвращается @code{t}; в противном случае возвращается @code{nil}.
 
-This function cannot tell whether the comments it traverses are
-embedded within a string.  If they look like comments, it treats them
-as comments.
+Функция не может определить, встроены ли комментарии, которые она
+просматривает, в строку.  Если они выглядят как комментарии,
+обрабатываются как комментарии.
 
-To move forward over all comments and whitespace following point, use
-@code{(forward-comment (buffer-size))}.  @code{(buffer-size)} is a
-good argument to use, because the number of comments in the buffer
-cannot exceed that many.
+Чтобы переместиться вперед по всем комментариям и пробелам после точки,
+используется @code{(forward-comment (buffer-size))}. @code{(buffer-size)}
+- хороший аргумент, потому что количество комментариев в буфере не может
+превышать такое количество.
 @end defun
 
 @node Position Parse
-@subsection Finding the Parse State for a Position
+@subsection Нахождение Состояния Синтаксического Анализа для Позиции
 @cindex parse state for a position
 
-  For syntactic analysis, such as in indentation, often the useful
-thing is to compute the syntactic state corresponding to a given buffer
-position.  This function does that conveniently.
+  Для синтаксического анализа, например отступов, часто полезно вычислить
+синтаксическое состояние, соответствующее данной позиции буфера.
+Эта функция делает это удобно.
 
 @defun syntax-ppss &optional pos
-This function returns the parser state that the parser would reach at
-position @var{pos} starting from the beginning of the visible portion
-of the buffer.
+Функция возвращает состояние парсера, которого парсер достиг бы в
+позиции @var{pos}, начиная с начала видимой части буфера.
 @iftex
-See the next section for
+Смотреть следующий раздел для
 @end iftex
 @ifnottex
 @xref{Parser State},
 @end ifnottex
-for a description of the parser state.
+для описания состояния парсера.
 
-The return value is the same as if you call the low-level parsing
-function @code{parse-partial-sexp} to parse from the beginning of the
-visible portion of the buffer to @var{pos} (@pxref{Low-Level
-Parsing}).  However, @code{syntax-ppss} uses caches to speed up the
-computation.  Due to this optimization, the second value (previous
-complete subexpression) and sixth value (minimum parenthesis depth) in
-the returned parser state are not meaningful.
+Возвращаемое значение такое же, как если бы вызывалась низкоуровневая
+функция синтаксического анализа @code{parse-partial-sexp} для
+синтаксического анализа от начала видимой части буфера до @var{pos}
+(@pxref{Low-Level Parsing}).  Однако @code{syntax-ppss} использует кеши
+для ускорения вычислений.  Из-за этой оптимизации второе значение
+(предыдущее полное подвыражение) и шестое значение (минимальная глубина
+скобок) в возвращенном состоянии синтаксического анализатора не имеют
+смысла.
 
-This function has a side effect: it adds a buffer-local entry to
-@code{before-change-functions} (@pxref{Change Hooks}) for
-@code{syntax-ppss-flush-cache} (see below).  This entry keeps the
-cache consistent as the buffer is modified.  However, the cache might
-not be updated if @code{syntax-ppss} is called while
-@code{before-change-functions} is temporarily let-bound, or if the
-buffer is modified without running the hook, such as when using
-@code{inhibit-modification-hooks}.  In those cases, it is necessary to
-call @code{syntax-ppss-flush-cache} explicitly.
+У этой функции есть побочный эффект: добавление в локальный буфер запись
+в @code{before-change-functions} (@pxref{Change Hooks}) для
+@code{syntax-ppss-flush-cache} (смотреть ниже).  Эта запись поддерживает
+согласованность кеша при изменении буфера.  Однако кеш может не обновляться,
+если вызывается @code{syntax-ppss}, когда @code{before-change-functions}
+временно привязан к let, или если буфер изменяется без запуска ловушки,
+например, при использовании @code{inhibit-modification-hooks}.  В таких
+случаях необходимо явно вызвать @code{syntax-ppss-flush-cache}.
 @end defun
 
 @defun syntax-ppss-flush-cache beg &rest ignored-args
-This function flushes the cache used by @code{syntax-ppss}, starting
-at position @var{beg}.  The remaining arguments, @var{ignored-args},
-are ignored; this function accepts them so that it can be directly
-used on hooks such as @code{before-change-functions} (@pxref{Change
-Hooks}).
+Функция очищает кеш, используемый @code{syntax-ppss}, начиная с позиции
+@var{beg}.  Остальные аргументы @var{ignored-args} игнорируются; эта функция
+принимает их, так что ее можно напрямую использовать в перехватчиках, таких
+как @code{before-change-functions} (@pxref{Change Hooks}).
 @end defun
 
 @node Parser State
-@subsection Parser State
+@subsection Состояние Парсера
 @cindex parser state
 
-  A @dfn{parser state} is a list of (currently) eleven elements
-describing the state of the syntactic parser, after it parses the text
-between a specified starting point and a specified end point in the
-buffer.  Parsing functions such as @code{syntax-ppss}
+  @dfn{Состояние парсера} - это список (в настоящее время) одиннадцати
+элементов, описывающих состояние синтаксического анализатора после того,
+как он проанализирует текст между указанной начальной точкой и указанной
+конечной точкой в буфере.  Функции синтаксического анализа, такие как
+@code{syntax-ppss},
 @ifnottex
 (@pxref{Position Parse})
 @end ifnottex
-return a parser state as the value.  Some parsing functions accept a
-parser state as an argument, for resuming parsing.
+возвращают состояние анализатора в качестве значения.  Некоторые функции
+синтаксического анализа принимают состояние анализатора в качестве
+аргумента для возобновления синтаксического анализа.
 
-  Here are the meanings of the elements of the parser state:
+  Вот значения элементов состояния парсера:
 
 @enumerate 0
 @item
-The depth in parentheses, counting from 0.  @strong{Warning:} this can
-be negative if there are more close parens than open parens between
-the parser's starting point and end point.
+Глубина в круглых скобках, считая от 0.  @strong{Предупреждение:}
+это может быть отрицательным числом, если между начальной и конечной
+точкой парсера больше закрытых скобок, чем открытых.
 
 @item
 @cindex innermost containing parentheses
-The character position of the start of the innermost parenthetical
-grouping containing the stopping point; @code{nil} if none.
+Позиция символа начала самой внутренней группы в скобках, содержащей
+точку остановки; @code{nil}, если нет.
 
 @item
 @cindex previous complete subexpression
-The character position of the start of the last complete subexpression
-terminated; @code{nil} if none.
+Позиция символа начала последнего полного подвыражения завершена;
+@code{nil}, если нет.
 
 @item
 @cindex inside string
-Non-@code{nil} if inside a string.  More precisely, this is the
-character that will terminate the string, or @code{t} if a generic
-string delimiter character should terminate it.
+не-@code{nil}, если внутри строки.  Точнее, это символ, который
+завершает строку, или @code{t}, если общий символ разделителя
+строки должен завершать ее.
 
 @item
 @cindex inside comment
-@code{t} if inside a non-nestable comment (of any comment style;
-@pxref{Syntax Flags}); or the comment nesting level if inside a
-comment that can be nested.
+@code{t}, если он находится внутри не вложенного комментария
+(любого стиля комментария; @pxref{Syntax Flags}); или уровня
+вложенности комментария, если он находится внутри комментария,
+который может быть вложенным.
 
 @item
 @cindex quote character
-@code{t} if the end point is just after a quote character.
+@code{t}, если конечная точка находится сразу после символа кавычки.
 
 @item
-The minimum parenthesis depth encountered during this scan.
+Минимальная глубина скобок, обнаруженная во время этого сканирования.
 
 @item
-What kind of comment is active: @code{nil} if not in a comment or in a
-comment of style @samp{a}; 1 for a comment of style @samp{b}; 2 for a
-comment of style @samp{c}; and @code{syntax-table} for a comment that
-should be ended by a generic comment delimiter character.
+Какой комментарий активен: @code{nil}, если не в комментарии или в
+комментарии стиля @samp{a};
+1 за комментарий стиля @samp{b};
+2 за комментарий стиля @samp{c}; и
+@code{syntax-table} для комментария, который должен заканчиваться
+общим символом-разделителем комментариев.
 
 @item
-The string or comment start position.  While inside a comment, this is
-the position where the comment began; while inside a string, this is the
-position where the string began.  When outside of strings and comments,
-this element is @code{nil}.
+Позиция начала строки или комментария.  Находясь внутри комментария,
+это позиция, с которой комментарий начинался; находясь внутри строки,
+это позиция, с которой строка начиналась.  За пределами строк и
+комментариев этот элемент - @code{nil}.
 
 @item
-The list of the positions of the currently open parentheses, starting
-with the outermost.
+Список позиций открытых в данный момент круглых скобок, начиная с крайних.
 
 @item
-When the last buffer position scanned was the (potential) first
-character of a two character construct (comment delimiter or
-escaped/char-quoted character pair), the @var{syntax-code}
-(@pxref{Syntax Table Internals}) of that position.  Otherwise
+Когда последняя просканированная позиция буфера была (потенциальным)
+первым символом двухсимвольной конструкции (разделитель комментариев
+или пара символов с экранированием/кавычками), @var{syntax-code}
+(@pxref{Syntax Table Internals}) этой позиции.  В противном случае
 @code{nil}.
 @end enumerate
 
-  Elements 1, 2, and 6 are ignored in a state which you pass as an
-argument to continue parsing.  Elements 9 and 10 are mainly used
-internally by the parser code.
+  Элементы 1, 2 и 6 игнорируются в состоянии, которое передается в качестве
+аргумента для продолжения синтаксического анализа.  Элементы 9 и 10 в
+основном используются внутри кода парсера.
 
-  One additional piece of useful information is available from a
-parser state using this function:
+  Одна дополнительная полезная информация доступна из состояния парсера
+с помощью этой функции:
 
 @defun syntax-ppss-toplevel-pos state
-This function extracts, from parser state @var{state}, the last
-position scanned in the parse which was at top level in grammatical
-structure.  ``At top level'' means outside of any parentheses,
-comments, or strings.
+Эта функция извлекает из состояния синтаксического анализатора
+@var{state} последнюю просканированную в синтаксическом анализе позицию,
+которая находилась на верхнем уровне грамматической структуры.
+``На высшем уровне'' означает вне скобок, комментариев или строк.
 
-The value is @code{nil} if @var{state} represents a parse which has
-arrived at a top level position.
+Значение @code{nil}, если @var{state} представляет синтаксический анализ,
+который достиг позиции верхнего уровня.
 @end defun
 
 @node Low-Level Parsing
-@subsection Low-Level Parsing
+@subsection Анализ Низкого Уровня
 
-  The most basic way to use the expression parser is to tell it
-to start at a given position with a certain state, and parse up to
-a specified end position.
+  Самый простой способ использовать синтаксический анализатор выражений -
+это указать, что должно начинаться с заданной позиции с определенным
+состоянием и выполнять синтаксический анализ до указанной конечной позиции.
 
 @defun parse-partial-sexp start limit &optional target-depth stop-before state stop-comment
-This function parses a sexp in the current buffer starting at
-@var{start}, not scanning past @var{limit}.  It stops at position
-@var{limit} or when certain criteria described below are met, and sets
-point to the location where parsing stops.  It returns a parser state
+Функция анализирует sexp в текущем буфере, начиная с @var{start},
+не просматривая @var{limit}.  Остановка в позиции @var{limit} или при
+соблюдении определенных критериев, описанных ниже, и устанавление точки
+в месте, где останавливается синтаксический анализ.  Возвращается состояние
+синтаксического анализатора,
 @ifinfo
 (@pxref{Parser State})
 @end ifinfo
-describing the status of the parse at the point where it stops.
+описывающее состояние синтаксического анализа в точке, где он остановился.
 
 @cindex parenthesis depth
-If the third argument @var{target-depth} is non-@code{nil}, parsing
-stops if the depth in parentheses becomes equal to @var{target-depth}.
-The depth starts at 0, or at whatever is given in @var{state}.
+Если третий аргумент @var{target-depth} равен не-@code{nil},
+синтаксический анализ останавливается, если глубина в скобках становится
+равной @var{target-depth}.  Глубина начинается с 0 или с любого значения,
+указанного в @var{state}.
 
-If the fourth argument @var{stop-before} is non-@code{nil}, parsing
-stops when it comes to any character that starts a sexp.  If
-@var{stop-comment} is non-@code{nil}, parsing stops after the start of
-an unnested comment.  If @var{stop-comment} is the symbol
-@code{syntax-table}, parsing stops after the start of an unnested
-comment or a string, or after the end of an unnested comment or a
-string, whichever comes first.
+Если четвертым аргументом @var{stop-before} является не-@code{nil},
+синтаксический анализ останавливается, когда дело доходит до любого символа,
+который запускает sexp.  Если @var{stop-comment} равен не-@code{nil},
+синтаксический анализ останавливается после начала невложенного комментария.
+Если @var{stop-comment} - это символ @code{syntax-table}, синтаксический
+анализ останавливается после начала невложенного комментария или строки,
+или после конца невложенного комментария или строки, в зависимости от того,
+что наступит раньше.
 
-If @var{state} is @code{nil}, @var{start} is assumed to be at the top
-level of parenthesis structure, such as the beginning of a function
-definition.  Alternatively, you might wish to resume parsing in the
-middle of the structure.  To do this, you must provide a @var{state}
-argument that describes the initial status of parsing.  The value
-returned by a previous call to @code{parse-partial-sexp} will do
-nicely.
+Если @var{state} - @code{nil}, предполагается, что @var{start} находится
+на верхнем уровне структуры скобок, например, в начале определения функции.
+В качестве альтернативы возможно возобновить синтаксический анализ в
+середине структуры.  Для этого потребуется предоставить аргумент @var{state},
+который описывает начальный статус синтаксического анализа.  Подойдет значение,
+возвращенное предыдущим вызовом @code{parse-partial-sexp}.
 @end defun
 
 @node Control Parsing
-@subsection Parameters to Control Parsing
+@subsection Параметры для Управления Парсингом
 @cindex parsing, control parameters
 
 @defvar multibyte-syntax-as-symbol
-If this variable is non-@code{nil}, @code{scan-sexps} treats all
-non-@acronym{ASCII} characters as symbol constituents regardless of
-what the syntax table says about them.  (However, @code{syntax-table
-}text properties can still override the syntax.)
+Если эта переменная - не-@code{nil}, @code{scan-sexps} обрабатывает все
+символы не-@acronym{ASCII} как составляющие символа, независимо от того,
+что о них говорит синтаксическая таблица.  (Однако текстовые свойства
+@code{syntax-table } могут переопределять синтаксис.)
 @end defvar
 
 @defopt parse-sexp-ignore-comments
 @cindex skipping comments
-If the value is non-@code{nil}, then comments are treated as
-whitespace by the functions in this section and by @code{forward-sexp},
-@code{scan-lists} and @code{scan-sexps}.
+Если значение равно не-@code{nil}, то комментарии обрабатываются как пробел
+функциями в этом разделе @code{forward-sexp}, @code{scan-lists} и
+@code{scan-sexps}.
 @end defopt
 
-The behavior of @code{parse-partial-sexp} is also affected by
+На поведение @code{parse-partial-sexp} также влияет
 @code{parse-sexp-lookup-properties} (@pxref{Syntax Properties}).
 
 @defvar comment-end-can-be-escaped
-If this buffer local variable is non-@code{nil}, a single character
-which usually terminates a comment doesn't do so when that character
-is escaped.  This is used in C and C++ Modes, where line comments
-starting with @samp{//} can be continued onto the next line by
-escaping the newline with @samp{\}.
+Если эта локальная переменная буфера - не-@code{nil}, одиночный символ,
+который обычно завершает комментарий, не делает этого при экранировании
+этого символа.  Это используется в режимах C и C ++, где комментарии к
+строкам, начинающиеся с @samp{\\}, могут быть продолжены на следующей
+строке путем экранирования новой строки с помощью @samp{\}.
 @end defvar
 
-You can use @code{forward-comment} to move forward or backward over
-one comment or several comments.
+Можно использовать @code{forward-comment} для перемещения вперед или назад
+по одному или нескольким комментариям.
 
 @node Syntax Table Internals
-@section Syntax Table Internals
+@section Внутреннее Устройство Таблицы Синтаксиса
 @cindex syntax table internals
 
-  Syntax tables are implemented as char-tables (@pxref{Char-Tables}),
-but most Lisp programs don't work directly with their elements.
-Syntax tables do not store syntax data as syntax descriptors
-(@pxref{Syntax Descriptors}); they use an internal format, which is
-documented in this section.  This internal format can also be assigned
-as syntax properties (@pxref{Syntax Properties}).
+  Таблицы синтаксиса реализованы как таблицы символов (@pxref{Char-Tables}),
+но большинство программ на Lisp не работают напрямую со своими элементами.
+Таблицы синтаксиса не хранят данные синтаксиса как дескрипторы синтаксиса
+(@pxref{Syntax Descriptors}); они используют внутренний формат, который
+задокументирован в этом разделе.  Этот внутренний формат также может быть
+назначен как свойства синтаксиса (@pxref{Syntax Properties}).
 
 @cindex syntax code
 @cindex raw syntax descriptor
-  Each entry in a syntax table is a @dfn{raw syntax descriptor}: a
-cons cell of the form @code{(@var{syntax-code}
-. @var{matching-char})}.  @var{syntax-code} is an integer which
-encodes the syntax class and syntax flags, according to the table
-below.  @var{matching-char}, if non-@code{nil}, specifies a matching
-character (similar to the second character in a syntax descriptor).
+  Каждая запись в таблице синтаксиса - это @dfn{raw syntax descriptor}:
+cons-ячейка в форме @code{(@var{syntax-code} . @var{matching-char})}.
+@var{syntax-code} - это целое число, которое кодирует класс синтаксиса и
+флаги синтаксиса в соответствии с таблицей ниже.  @var{matching-char}, если
+не-@code{nil}, указывает соответствующий символ (аналогично второму символу
+в дескрипторе синтаксиса).
 
 @cindex syntax tables (accessing elements of)
-Use @code{aref} (@pxref{Array Functions}) to get the raw syntax
-descriptor of a character, e.g. @w{@code{(aref (syntax-table) ch)}}.
+Использовать @code{aref} (@pxref{Array Functions}), чтобы получить
+необработанный дескриптор синтаксиса символа, например
+@w{@code{(aref (syntax-table) ch)}}.
 
-  Here are the syntax codes corresponding to the various syntax
-classes:
+  Вот коды синтаксиса, соответствующие различным классам синтаксиса:
 
 @multitable @columnfractions .2 .3 .2 .3
 @item
 @i{Code} @tab @i{Class} @tab @i{Code} @tab @i{Class}
 @item
-0 @tab whitespace @tab 8 @tab paired delimiter
+0 @tab пробел @tab 8 @tab парный разделитель
 @item
-1 @tab punctuation @tab 9 @tab escape
+1 @tab пунктуация @tab 9 @tab escape
 @item
-2 @tab word @tab 10 @tab character quote
+2 @tab слово @tab 10 @tab цитированный символ
 @item
-3 @tab symbol @tab 11 @tab comment-start
+3 @tab символ @tab 11 @tab коментарий-начало
 @item
-4 @tab open parenthesis @tab 12 @tab comment-end
+4 @tab открывающая скобка @tab 12 @tab коментарий-конец
 @item
-5 @tab close parenthesis @tab 13 @tab inherit
+5 @tab закрывающая скобка @tab 13 @tab наследование
 @item
-6 @tab expression prefix @tab 14 @tab generic comment
+6 @tab префикс выражения @tab 14 @tab общий комментарий
 @item
-7 @tab string quote @tab 15 @tab generic string
+7 @tab строковая цитата @tab 15 @tab общая строка
 @end multitable
 
 @noindent
-For example, in the standard syntax table, the entry for @samp{(} is
-@code{(4 . 41)}.  41 is the character code for @samp{)}.
+Например, в стандартной таблице синтаксиса запись для @samp{(} -
+@code{(4 . 41)}.  41 - это код символа для @samp{)}.
 
-  Syntax flags are encoded in higher order bits, starting 16 bits from
-the least significant bit.  This table gives the power of two which
-corresponds to each syntax flag.
+  Флаги синтаксиса кодируются в битах более высокого порядка,
+начиная с 16 бит от младшего бита.  В этой таблице дана степень
+двойки, соответствующая каждому флагу синтаксиса.
 
 @multitable @columnfractions .15 .3 .15 .3
 @item
@@ -1023,94 +1035,95 @@ corresponds to each syntax flag.
 @end multitable
 
 @defun string-to-syntax desc
-Given a syntax descriptor @var{desc} (a string), this function returns
-the corresponding raw syntax descriptor.
+Учитывая дескриптор синтаксиса @var{desc} (строка), эта функция
+возвращает соответствующий необработанный дескриптор синтаксиса.
 @end defun
 
 @defun syntax-after pos
-This function returns the raw syntax descriptor for the character in
-the buffer after position @var{pos}, taking account of syntax
-properties as well as the syntax table.  If @var{pos} is outside the
-buffer's accessible portion (@pxref{Narrowing, accessible portion}),
-the return value is @code{nil}.
+Функция возвращает дескриптор необработанного синтаксиса для символа в
+буфере после позиции @var{pos}, принимая во внимание свойства синтаксиса,
+а также таблицу синтаксиса.  Если @var{pos} находится за пределами
+доступной части буфера (@pxref{Narrowing, accessible portion}),
+возвращается значение @code{nil}.
 @end defun
 
 @defun syntax-class syntax
-This function returns the syntax code for the raw syntax descriptor
-@var{syntax}.  More precisely, it takes the raw syntax descriptor's
-@var{syntax-code} component, masks off the high 16 bits which record
-the syntax flags, and returns the resulting integer.
+Функция возвращает код синтаксиса для необработанного дескриптора
+синтаксиса @var{syntax}.  Точнее, берётся компонент @var{syntax-code}
+дескриптора необработанного синтаксиса, маскируется старшие 16 бит,
+которые записывают флаги синтаксиса, и возвращается результирующее
+целое число.
 
-If @var{syntax} is @code{nil}, the return value is @code{nil}.  This
-is so that the expression
+Если @var{syntax} - @code{nil}, возвращаемое значение - @code{nil}.
+Это так, что выражение
 
 @example
 (syntax-class (syntax-after pos))
 @end example
 
 @noindent
-evaluates to @code{nil} if @code{pos} is outside the buffer's
-accessible portion, without throwing errors or returning an incorrect
-code.
+оценивается как @code{nil}, если @code{pos} находится за пределами
+доступной части буфера, без выдачи ошибок или возврата неверного кода.
 @end defun
 
 @node Categories
-@section Categories
+@section Категории
 @cindex categories of characters
 @cindex character categories
 
-  @dfn{Categories} provide an alternate way of classifying characters
-syntactically.  You can define several categories as needed, then
-independently assign each character to one or more categories.  Unlike
-syntax classes, categories are not mutually exclusive; it is normal for
-one character to belong to several categories.
+  @dfn{Категории} предоставляют альтернативный способ синтаксической
+классификации символов.  При необходимости можно определить несколько
+категорий, а затем независимо назначить каждый символ одной или
+нескольким категориям.  В отличие от классов синтаксиса, категории не
+исключают друг друга; принадлежность одного символа к нескольким
+категориям - это нормально.
 
 @cindex category table
-  Each buffer has a @dfn{category table} which records which categories
-are defined and also which characters belong to each category.  Each
-category table defines its own categories, but normally these are
-initialized by copying from the standard categories table, so that the
-standard categories are available in all modes.
+  Каждый буфер имеет @dfn{таблицу категорий}, в которой записывается,
+какие категории определены, а также какие символы принадлежат каждой
+категории.  Каждая таблица категорий определяет свои собственные категории,
+но обычно они инициализируются путем копирования из стандартной таблицы
+категорий, так что стандартные категории доступны во всех режимах.
 
-  Each category has a name, which is an @acronym{ASCII} printing character in
-the range @w{@samp{ }} to @samp{~}.  You specify the name of a category
-when you define it with @code{define-category}.
+  У каждой категории есть имя, которое представляет собой печатный символ
+@acronym{ASCII} в диапазоне от @w{@samp{ }} до @samp{~}.  Указывается имя
+категории, когда определяется она с помощью @code{define-category}.
 
 @cindex category set
-  The category table is actually a char-table (@pxref{Char-Tables}).
-The element of the category table at index @var{c} is a @dfn{category
-set}---a bool-vector---that indicates which categories character @var{c}
-belongs to.  In this category set, if the element at index @var{cat} is
-@code{t}, that means category @var{cat} is a member of the set, and that
-character @var{c} belongs to category @var{cat}.
+  Таблица категорий на самом деле является таблицей символов
+(@pxref{Char-Tables}).  Элемент таблицы категорий с индексом @var{c} -
+это @dfn{набор категорий} - логический вектор - который указывает, к каким
+категориям принадлежит символ @var{c}.  В этом наборе категорий, если
+элемент с индексом @var{cat} - @code{t}, это означает, что категория
+@var{cat} является членом набора, и этот символ @var{c} принадлежит
+категории @var{cat}.
 
-For the next three functions, the optional argument @var{table}
-defaults to the current buffer's category table.
+Для следующих трех функций необязательный аргумент @var{table} по
+умолчанию соответствует таблице категорий текущего буфера.
 
 @defun define-category char docstring &optional table
-This function defines a new category, with name @var{char} and
-documentation @var{docstring}, for the category table @var{table}.
+Функция определяет новую категорию с именем @var{char} и документацией
+@var{docstring} для таблицы категорий @var{table}.
 
-Here's an example of defining a new category for characters that have
-strong right-to-left directionality (@pxref{Bidirectional Display})
-and using it in a special category table.  To obtain the information
-about the directionality of characters, the example code uses the
-@samp{bidi-class} Unicode property (@pxref{Character Properties,
-bidi-class}).
+Вот пример определения новой категории для символов с сильной
+направленностью справа налево (@pxref{Bidirectional Display}) и
+использования ее в специальной таблице категорий.  Для получения информации
+о направленности символов в примере кода используется свойство
+@samp{bidi-class} Unicode (@pxref{Character Properties, bidi-class}).
 
 @example
 (defvar special-category-table-for-bidi
-  ;;     Make an empty category-table.
+  ;;     Сделать пустую таблицу категорий.
   (let ((category-table (make-category-table))
-        ;; Create a char-table which gives the 'bidi-class' Unicode
-        ;; property for each character.
+        ;; Создать таблицу символов, которая дает свойство 'bidi-class' Unicode
+        ;; для каждого символа.
         (uniprop-table
          (unicode-property-table-internal 'bidi-class)))
     (define-category ?R "Characters of bidi-class R, AL, or RLO"
                      category-table)
-    ;; Modify the category entry of each character whose
-    ;; 'bidi-class' Unicode property is R, AL, or RLO --
-    ;; these have a right-to-left directionality.
+    ;; Изменить запись категории для каждого символа, для которого свойство Unicode
+    ;; 'bidi-class' имеет значение R, AL, или RLO -
+    ;;  они имеют направленность справа налево.
     (map-char-table
      #'(lambda (key val)
          (if (memq val '(R AL RLO))
@@ -1121,8 +1134,8 @@ bidi-class}).
 @end defun
 
 @defun category-docstring category &optional table
-This function returns the documentation string of category @var{category}
-in category table @var{table}.
+Функция возвращает строку документации категории @var{category}
+в таблице категорий @var{table}.
 
 @example
 (category-docstring ?a)
@@ -1133,48 +1146,48 @@ in category table @var{table}.
 @end defun
 
 @defun get-unused-category &optional table
-This function returns a category name (a character) which is not
-currently defined in @var{table}.  If all possible categories are in use
-in @var{table}, it returns @code{nil}.
+Функция возвращает имя категории (символ), которое в настоящее время не
+определено в @var{table}.  Если в @var{table} используются все возможные
+категории, возвращается @code{nil}.
 @end defun
 
 @defun category-table
-This function returns the current buffer's category table.
+Функция возвращает таблицу категорий текущего буфера.
 @end defun
 
 @defun category-table-p object
-This function returns @code{t} if @var{object} is a category table,
-otherwise @code{nil}.
+Функция возвращает @code{t}, если @var{object} является таблицей
+категорий, в противном случае - @code{nil}.
 @end defun
 
 @defun standard-category-table
-This function returns the standard category table.
+Функция возвращает стандартную таблицу категорий.
 @end defun
 
 @defun copy-category-table &optional table
-This function constructs a copy of @var{table} and returns it.  If
-@var{table} is not supplied (or is @code{nil}), it returns a copy of the
-standard category table.  Otherwise, an error is signaled if @var{table}
-is not a category table.
+Функция создает копию @var{table} и возвращает ее.  Если @var{table} не
+указано (или равно @code{nil}), возвращается копия стандартной таблицы
+категорий.  В противном случае выдается сообщение об ошибке, если
+@var{table} не является таблицей категорий.
 @end defun
 
 @defun set-category-table table
-This function makes @var{table} the category table for the current
-buffer.  It returns @var{table}.
+Функция делает @var{table} таблицей категорий для текущего буфера.
+Возвращается @var{table}.
 @end defun
 
 @defun make-category-table
-This creates and returns an empty category table.  In an empty category
-table, no categories have been allocated, and no characters belong to
-any categories.
+Это создает и возвращает пустую таблицу категорий.  В пустой таблице
+категорий никакие категории не назначены, и символы не принадлежат ни
+к каким категориям.
 @end defun
 
 @defun make-category-set categories
-This function returns a new category set---a bool-vector---whose initial
-contents are the categories listed in the string @var{categories}.  The
-elements of @var{categories} should be category names; the new category
-set has @code{t} for each of those categories, and @code{nil} for all
-other categories.
+Функция возвращает новый набор категорий --- вектор типа bool ---,
+начальным содержанием которого являются категории, перечисленные в
+строке @var{categories}.  Элементы @var{categories} должны быть
+названиями категорий; новый набор категорий имеет @code{t} для каждой
+из этих категорий и @code{nil} для всех остальных категорий.
 
 @example
 (make-category-set "al")
@@ -1183,11 +1196,11 @@ other categories.
 @end defun
 
 @defun char-category-set char
-This function returns the category set for character @var{char} in the
-current buffer's category table.  This is the bool-vector which
-records which categories the character @var{char} belongs to.  The
-function @code{char-category-set} does not allocate storage, because
-it returns the same bool-vector that exists in the category table.
+Функция возвращает набор категорий для символа @var{char} в таблице
+категорий текущего буфера.  Это логический вектор, который записывает,
+к каким категориям принадлежит символ @var{char}.  Функция
+@code{char-category-set} не выделяет память, потому что она возвращает
+тот же bool-вектор, который существует в таблице категорий.
 
 @example
 (char-category-set ?a)
@@ -1196,9 +1209,8 @@ it returns the same bool-vector that exists in the category table.
 @end defun
 
 @defun category-set-mnemonics category-set
-This function converts the category set @var{category-set} into a string
-containing the characters that designate the categories that are members
-of the set.
+Функция преобразует набор категорий @var{category-set} в строку,
+содержащую символы, обозначающие категории, которые являются членами набора.
 
 @example
 (category-set-mnemonics (char-category-set ?a))
@@ -1207,21 +1219,19 @@ of the set.
 @end defun
 
 @defun modify-category-entry char category &optional table reset
-This function modifies the category set of @var{char} in category
-table @var{table} (which defaults to the current buffer's category
-table).  @var{char} can be a character, or a cons cell of the form
-@code{(@var{min} . @var{max})}; in the latter case, the function
-modifies the category sets of all characters in the range between
-@var{min} and @var{max}, inclusive.
+Функция изменяет набор категорий @var{char} в таблице категорий @var{table}
+(по умолчанию используется таблица категорий текущего буфера).  @var{char}
+может быть символом или cons-ячейкой вида @code{(@var{min} . @var{max})};
+в последнем случае функция изменяет наборы категорий для всех символов в
+диапазоне от @var{min} до @var{max} включительно.
 
-Normally, it modifies a category set by adding @var{category} to it.
-But if @var{reset} is non-@code{nil}, then it deletes @var{category}
-instead.
+Обычно изменяется набор категорий, добавляется к нему @var{category}.
+Но если @var{reset} равен не-@code{nil}, вместо этого удаляется @var{category}.
 @end defun
 
 @deffn Command describe-categories &optional buffer-or-name
-This function describes the category specifications in the current
-category table.  It inserts the descriptions in a buffer, and then
-displays that buffer.  If @var{buffer-or-name} is non-@code{nil}, it
-describes the category table of that buffer instead.
+Функция описывает спецификации категорий в текущей таблице категорий.
+Вставляет описания в буфер, а затем отображает этот буфер.  Если
+@var{buffer-or-name} равен не-@code{nil}, вместо этого описывается
+таблицу категорий этого буфера.
 @end deffn
