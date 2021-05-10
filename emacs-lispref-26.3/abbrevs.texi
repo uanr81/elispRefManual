@@ -4,367 +4,385 @@
 @c Inc.
 @c See the file elisp.texi for copying conditions.
 @node Abbrevs
-@chapter Abbrevs and Abbrev Expansion
+@chapter Сокращения и Расширение Аббревиатуры
 @cindex abbrev
-@c  @cindex abbrev table  Redundant with "abbrev".
+@c  @cindex таблица сокращений Избыточная с "abbrev".
 
-  An abbreviation or @dfn{abbrev} is a string of characters that may be
-expanded to a longer string.  The user can insert the abbrev string and
-find it replaced automatically with the expansion of the abbrev.  This
-saves typing.
+  Аббревиатура или @dfn{сокращение} - это строка символов, которая
+может быть расширена до более длинной строки.  Пользователь может
+вставить строку аббревиатуры и обнаружить, что она автоматически
+заменяется расширением аббревиатуры.  Это экономит набор текста.
 
-  The set of abbrevs currently in effect is recorded in an @dfn{abbrev
-table}.  Each buffer has a local abbrev table, but normally all buffers
-in the same major mode share one abbrev table.  There is also a global
-abbrev table.  Normally both are used.
+  Набор действующих сокращений записывается в файл @dfn{таблиц сокращений}.
+Каждый буфер имеет локальную таблицу сокращений, но обычно все буферы в
+одном основном режиме используют одну таблицу сокращений.  Также существует
+глобальная таблица сокращений.  Обычно используются обе.
 
-  An abbrev table is represented as an obarray.  @xref{Creating
-Symbols}, for information about obarrays.  Each abbreviation is
-represented by a symbol in the obarray.  The symbol's name is the
-abbreviation; its value is the expansion; its function definition is
-the hook function for performing the expansion (@pxref{Defining
-Abbrevs}); and its property list cell contains various additional
-properties, including the use count and the number of times the
-abbreviation has been expanded (@pxref{Abbrev Properties}).
+  Таблица сокращений представлена в виде массива.  @xref{Creating Symbols},
+для информации о obarrays.  Каждая аббревиатура представлена символом в
+массиве.  Название символа - это аббревиатура; его оценка - расширение;
+его определение функции - это функция-перехватчик для выполнения раскрытия
+(@pxref{Defining Abbrevs}); а его ячейка со списком свойств содержит
+различные дополнительные свойства, включая счетчик использования и
+количество раз, когда сокращение было расширено (@pxref{Abbrev Properties}).
 
 @cindex system abbrev
-  Certain abbrevs, called @dfn{system abbrevs}, are defined by a major
-mode instead of the user.  A system abbrev is identified by its
-non-@code{nil} @code{:system} property (@pxref{Abbrev Properties}).
-When abbrevs are saved to an abbrev file, system abbrevs are omitted.
-@xref{Abbrev Files}.
+  Некоторые сокращения, называемые @dfn{системные сокращения},
+определяются основным режимом, а не пользователем.  Системное сокращение
+идентифицируется своим свойством @code{:system} в не-@code{nil}
+(@pxref{Abbrev Properties}).  При сохранении сокращений в файл сокращений
+системные сокращения опускаются.  @xref{Abbrev Files}.
 
-  Because the symbols used for abbrevs are not interned in the usual
-obarray, they will never appear as the result of reading a Lisp
-expression; in fact, normally they are never used except by the code
-that handles abbrevs.  Therefore, it is safe to use them in a
-nonstandard way.
+  Поскольку символы, используемые для сокращений, не помещаются в обычный
+obarray, они никогда не появятся в результате чтения выражения Lisp;
+фактически, обычно они никогда не используются, кроме кода, который
+обрабатывает сокращения.  Поэтому использовать их нестандартным
+способом безопасно.
 
-  If the minor mode Abbrev mode is enabled, the buffer-local variable
-@code{abbrev-mode} is non-@code{nil}, and abbrevs are automatically
-expanded in the buffer.  For the user-level commands for abbrevs, see
+  Если включен второстепенный режим - режим сокращений включен,
+локальная в буфере переменная @code{abbrev-mode} имеет значение не-@code{nil},
+и сокращения автоматически расширяются в буфере.  Для команд уровня
+пользователя для сокращений, смотреть
 @ref{Abbrevs,, Abbrev Mode, emacs, The GNU Emacs Manual}.
 
 @menu
-* Tables: Abbrev Tables.        Creating and working with abbrev tables.
-* Defining Abbrevs::            Specifying abbreviations and their expansions.
-* Files: Abbrev Files.          Saving abbrevs in files.
-* Expansion: Abbrev Expansion.  Controlling expansion; expansion subroutines.
-* Standard Abbrev Tables::      Abbrev tables used by various major modes.
-* Abbrev Properties::           How to read and set abbrev properties.
-                                Which properties have which effect.
-* Abbrev Table Properties::     How to read and set abbrev table properties.
-                                Which properties have which effect.
+* Tables: Abbrev Tables.        Создание и работа с таблицами сокращений.
+* Defining Abbrevs::            Указание сокращений и их расширения.
+* Files: Abbrev Files.          Сохранение сокращений в файлах.
+* Expansion: Abbrev Expansion.  Контроль за расширением; подпрограммы расширения.
+* Standard Abbrev Tables::      Таблицы сокращений, используемые в различных основных режимах.
+* Abbrev Properties::           Как читать и устанавливать свойства сокращения.
+                                Какие свойства имеют какой эффект.
+* Abbrev Table Properties::     Как читать и устанавливать свойства таблицы сокращений.
+                                Какие свойства имеют какой эффект.
 @end menu
 
 @node Abbrev Tables
-@section Abbrev Tables
+@section Таблицы Сокращений
 @cindex abbrev tables
 
-  This section describes how to create and manipulate abbrev tables.
+  В этом разделе описывается, как создавать таблицы сокращений и управлять ими.
 
 @defun make-abbrev-table &optional props
-This function creates and returns a new, empty abbrev table---an
-obarray containing no symbols.  It is a vector filled with zeros.
-@var{props} is a property list that is applied to the new table
-(@pxref{Abbrev Table Properties}).
+Функция создает и возвращает новую пустую таблицу сокращений --- массив
+без символов.  Это вектор, заполненный нулями.  @var{props} - это список
+свойств, который применяется к новой таблице (@pxref{Abbrev Table Properties}).
 @end defun
 
 @defun abbrev-table-p object
-This function returns a non-@code{nil} value if @var{object} is an
-abbrev table.
+Функция возвращает значение не-@code{nil}, если @var{object} - это
+таблица сокращений.
 @end defun
 
 @defun clear-abbrev-table abbrev-table
-This function undefines all the abbrevs in @var{abbrev-table}, leaving
-it empty.
-@c Don't see why this needs saying.
-@c It always returns @code{nil}.
+Функция отменяет определение всех сокращений в @var{abbrev-table},
+оставляя его пустым.
+@c Не понимаю, почему это нужно сказать.
+@c Всегда возвращает @code{nil}.
 @end defun
 
 @defun copy-abbrev-table abbrev-table
-This function returns a copy of @var{abbrev-table}---a new abbrev
-table containing the same abbrev definitions.  It does @emph{not} copy
-any property lists; only the names, values, and functions.
+Функция возвращает копию @var{abbrev-table} --- новую таблицу сокращений,
+содержащую те же определения сокращений. @emph{Не} копирует ни какие
+списки свойств; только имена, значения и функции.
 @end defun
 
 @defun define-abbrev-table tabname definitions &optional docstring &rest props
-This function defines @var{tabname} (a symbol) as an abbrev table
-name, i.e., as a variable whose value is an abbrev table.  It defines
-abbrevs in the table according to @var{definitions}, a list of
-elements of the form @code{(@var{abbrevname} @var{expansion}
-[@var{hook}] [@var{props}...])}.  These elements are passed as
-arguments to @code{define-abbrev}.  @c The return value is always @code{nil}.
+Функция определяет @var{tabname} (символ) как имя таблицы сокращений,
+то есть как переменную, значение которой является таблицей сокращений.
+Определяет сокращения в таблице в соответствии с @var{definitions},
+списком элементов вида
+@code{(@var{abbrevname} @var{expansion} [@var{hook}] [@var{props}...])}.
+Эти элементы передаются в качестве аргументов в @code{define-abbrev}.
+@c Возвращаемое значение всегда @code{nil}.
 
-The optional string @var{docstring} is the documentation string of the
-variable @var{tabname}.  The property list @var{props} is applied to
-the abbrev table (@pxref{Abbrev Table Properties}).
+Необязательная строка @var{docstring} - это строка документации
+переменной @var{tabname}.  Список свойств @var{props} применяется
+к таблице сокращений (@pxref{Abbrev Table Properties}).
 
-If this function is called more than once for the same @var{tabname},
-subsequent calls add the definitions in @var{definitions} to
-@var{tabname}, rather than overwriting the entire original contents.
-(A subsequent call only overrides abbrevs explicitly redefined or
-undefined in @var{definitions}.)
+Если функция вызывается более одного раза для одной и той же
+@var{tabname}, последующие вызовы добавляют определения из
+@var{definitions} к @var{tabname}, а не перезаписывают все
+исходное содержимое.  (Последующий вызов заменяет только
+сокращения, явно переопределенные или неопределенные в
+@var{definitions}.)
 @end defun
 
 @defvar abbrev-table-name-list
-This is a list of symbols whose values are abbrev tables.
-@code{define-abbrev-table} adds the new abbrev table name to this list.
+Это список символов, значения которых представляют собой таблицы
+сокращений.  @code{define-abbrev-table} добавляет в этот список
+новое имя таблицы сокращений.
 @end defvar
 
 @defun insert-abbrev-table-description name &optional human
-This function inserts before point a description of the abbrev table
-named @var{name}.  The argument @var{name} is a symbol whose value is an
-abbrev table.  @c The return value is always @code{nil}.
+Функция вставляет перед точкой описание таблицы сокращений
+с именем @var{name}.  Аргумент @var{name} - это символ,
+значением которого является таблица сокращений.
+@c Возвращаемое значение всегда @code{nil}.
 
-If @var{human} is non-@code{nil}, the description is human-oriented.
-System abbrevs are listed and identified as such.  Otherwise the
-description is a Lisp expression---a call to @code{define-abbrev-table}
-that would define @var{name} as it is currently defined, but without
-the system abbrevs.  (The mode or package using @var{name} is supposed
-to add these to @var{name} separately.)
+Если @var{human} равно не-@code{nil}, описание ориентировано
+на человека.  Системные сокращения перечислены и обозначены
+как таковые.  В противном случае описание будет выражением Lisp -
+вызовом @code{define-abbrev-table}, определяется @var{name} в том
+виде, в каком определено в данный момент, но без системных
+сокращений.  (Предполагается, что режим или пакет, использующие
+@var{name}, добавят их в @var{name} отдельно.)
 @end defun
 
 @node Defining Abbrevs
-@section Defining Abbrevs
+@section Определение Сокращений
 @cindex defining abbrevs
 
-  @code{define-abbrev} is the low-level basic function for defining an
-abbrev in an abbrev table.
+  @code{define-abbrev} - это базовая функция нижнего уровня для
+определения сокращения в таблице сокращений.
 
-  When a major mode defines a system abbrev, it should call
-@code{define-abbrev} and specify @code{t} for the @code{:system}
-property.  Be aware that any saved non-system abbrevs are restored
-at startup, i.e., before some major modes are loaded.  Therefore, major
-modes should not assume that their abbrev tables are empty when they
-are first loaded.
+  Когда основной режим определяет системное сокращение, требуется
+вызов @code{define-abbrev} и указание @code{t} для свойства
+@code{:system}.  Иметь в виду, что любые сохраненные несистемные
+сокращения восстанавливаются при запуске, то есть перед загрузкой
+некоторых основных режимов.  Следовательно, основные режимы не
+должны предполагать, что их таблицы сокращений при первой загрузке
+пусты.
 
 @defun define-abbrev abbrev-table name expansion &optional hook &rest props
-This function defines an abbrev named @var{name}, in
-@var{abbrev-table}, to expand to @var{expansion} and call @var{hook},
-with properties @var{props} (@pxref{Abbrev Properties}).  The return
-value is @var{name}.  The @code{:system} property in @var{props} is
-treated specially here: if it has the value @code{force}, then it will
-overwrite an existing definition even for a non-system abbrev of
-the same name.
+Функция определяет сокращение с именем @var{name} в @var{abbrev-table}
+для расширения до @var{expansion} и вызова @var{hook} со свойствами
+@var{props} (@pxref{Abbrev Properties}).  Возвращаемое значение -
+@var{name}.  Свойство @code{:system} в @var{props} здесь обрабатывается
+особым образом: если оно имеет значение @code{force}, оно перезапишет
+существующее определение даже для несистемного сокращения с тем же именем.
 
-@var{name} should be a string.  The argument @var{expansion} is
-normally the desired expansion (a string), or @code{nil} to undefine
-the abbrev.  If it is anything but a string or @code{nil}, then the
-abbreviation expands solely by running @var{hook}.
+@var{name} должно быть строкой.  Аргумент @var{expansion} обычно
+является желаемым расширением (строкой) или @code{nil} для отмены
+определения сокращения.  Если это что-то, кроме строки или @code{nil},
+тогда сокращение расширяется только путем запуска @var{hook}.
 
-The argument @var{hook} is a function or @code{nil}.  If @var{hook} is
-non-@code{nil}, then it is called with no arguments after the abbrev is
-replaced with @var{expansion}; point is located at the end of
-@var{expansion} when @var{hook} is called.
+Аргумент @var{hook} - это функция или @code{nil}.  Если @var{hook}
+равно не-@code{nil}, то вызывается без аргументов после замены
+сокращения на @var{expansion}; точка находится в конце
+@var{expansion} при вызове @var{hook}.
 
 @cindex @code{no-self-insert} property
-If @var{hook} is a non-@code{nil} symbol whose @code{no-self-insert}
-property is non-@code{nil}, @var{hook} can explicitly control whether
-to insert the self-inserting input character that triggered the
-expansion.  If @var{hook} returns non-@code{nil} in this case, that
-inhibits insertion of the character.  By contrast, if @var{hook}
-returns @code{nil}, @code{expand-abbrev} (or @code{abbrev-insert})
-also returns @code{nil}, as if expansion had not really occurred.
+Если @var{hook} - это символ не-@code{nil}, свойство
+@code{no-self-insert} которого равно не-@code{nil}, @var{hook}
+может явно контролировать, нужно ли вставлять самовставляющийся
+входной символ, который запускал раскрытие.  Если в этом случае
+@var{hook} возвращает не-@code{nil}, это запрещает вставку символа.
+Напротив, если @var{hook} возвращает @code{nil}, @code{expand-abbrev}
+(или @code{abbrev-insert}) также возвращает @code{nil}, как если
+бы расширения на самом деле не было.
 
-Normally, @code{define-abbrev} sets the variable
-@code{abbrevs-changed} to @code{t}, if it actually changes the abbrev.
-This is so that some commands will offer to save the abbrevs.  It
-does not do this for a system abbrev, since those aren't saved anyway.
+Обычно @code{define-abbrev} устанавливает переменную
+@code{abbrevs-changed} в @code{t}, если действительно меняется
+сокращение.  Это сделано для того, чтобы некоторые команды предлагали
+сохранить сокращения.  Это не относится к системным сокращениям,
+поскольку они все равно не сохраняются.
 @end defun
 
 @defopt only-global-abbrevs
-If this variable is non-@code{nil}, it means that the user plans to use
-global abbrevs only.  This tells the commands that define mode-specific
-abbrevs to define global ones instead.  This variable does not alter the
-behavior of the functions in this section; it is examined by their
-callers.
+Если эта переменная - не-@code{nil}, это означает, что пользователь
+планирует использовать только глобальные сокращения.  Это указывает
+командам, определяющим сокращения для конкретных режимов, вместо них
+определять глобальные.  Эта переменная не изменяет поведение функций
+в этом разделе; это проверяется их абонентами.
 @end defopt
 
 @node Abbrev Files
-@section Saving Abbrevs in Files
+@section Сохранение Cокращений в Файлах
 @cindex save abbrevs in files
 
-  A file of saved abbrev definitions is actually a file of Lisp code.
-The abbrevs are saved in the form of a Lisp program to define the same
-abbrev tables with the same contents.  Therefore, you can load the file
-with @code{load} (@pxref{How Programs Do Loading}).  However, the
-function @code{quietly-read-abbrev-file} is provided as a more
-convenient interface.  Emacs automatically calls this function at
-startup.
+  Файл сохраненных определений сокращений на самом деле является
+файлом кода Lisp.  Сокращения сохраняются в форме программы на Lisp
+для определения тех же таблиц сокращений с тем же содержанием.
+Следовательно, можно загрузить файл с @code{load}
+(@pxref{How Programs Do Loading}).  Однако функция
+@code{quietly-read-abbrev-file} предоставляется как более удобный
+интерфейс.  Emacs автоматически вызывает эту функцию при запуске.
 
-  User-level facilities such as @code{save-some-buffers} can save
-abbrevs in a file automatically, under the control of variables
-described here.
+  Средства пользовательского уровня, такие как @code{save-some-buffers},
+могут автоматически сохранять сокращения в файл под управлением
+переменных, описанных здесь.
 
 @defopt abbrev-file-name
-This is the default file name for reading and saving abbrevs.  By
-default, Emacs will look for @file{~/.emacs.d/abbrev_defs}, and, if
-not found, for @file{~/.abbrev_defs}; if neither file exists, Emacs
-will create @file{~/.emacs.d/abbrev_defs}.
+Это имя файла по умолчанию для чтения и сохранения сокращений.
+По умолчанию Emacs будет искать @file{~/.emacs.d/abbrev_defs} и,
+если не найден, @file{~/.abbrev_defs}; если ни один файл не
+существует, Emacs создаст @file{~/.emacs.d/abbrev_defs}.
 @end defopt
 
 @defun quietly-read-abbrev-file &optional filename
-This function reads abbrev definitions from a file named @var{filename},
-previously written with @code{write-abbrev-file}.  If @var{filename} is
-omitted or @code{nil}, the file specified in @code{abbrev-file-name} is
-used.
+Функция считывает определения сокращений из файла с именем
+@var{filename}, ранее записанного с помощью @code{write-abbrev-file}.
+Если @var{filename} не указан или @code{nil}, используется файл,
+указанный в @code{abbrev-file-name}.
 
-As the name implies, this function does not display any messages.
-@c It returns @code{nil}.
+Как следует из названия, эта функция не отображает никаких сообщений.
+@c Возвращает @code{nil}.
 @end defun
 
 @defopt save-abbrevs
-A non-@code{nil} value for @code{save-abbrevs} means that Emacs should
-offer to save abbrevs (if any have changed) when files are saved.  If
-the value is @code{silently}, Emacs saves the abbrevs without asking
-the user.  @code{abbrev-file-name} specifies the file to save the
-abbrevs in.  The default value is @code{t}.
+Значение не-@code{nil} для @code{save-abbrevs} означает, что Emacs
+должен предлагать сохранять сокращения (если они изменились) при
+сохранении файлов.  Если значение равно @code{silently}, Emacs
+сохраняет сокращения, не спрашивая пользователя.
+@code{abbrev-file-name} указывает файл для сохранения сокращений.
+Значение по умолчанию - @code{t}.
 @end defopt
 
 @defvar abbrevs-changed
-This variable is set non-@code{nil} by defining or altering any
-abbrevs (except system abbrevs).  This serves as a flag for various
-Emacs commands to offer to save your abbrevs.
+Эта переменная устанавливается не-@code{nil} путем определения
+или изменения любых сокращений (кроме системных сокращений).
+Это служит флагом для различных команд Emacs, предлагающих
+сохранить ваши сокращения.
 @end defvar
 
 @deffn Command write-abbrev-file &optional filename
-Save all abbrev definitions (except system abbrevs), for all abbrev
-tables listed in @code{abbrev-table-name-list}, in the file
-@var{filename}, in the form of a Lisp program that when loaded will
-define the same abbrevs.  If @var{filename} is @code{nil} or omitted,
-@code{abbrev-file-name} is used.  This function returns @code{nil}.
+Сохраните все определения сокращений (кроме системных сокращений)
+для всех таблиц сокращений, перечисленных в
+@code{abbrev-table-name-list}, в файле @var{filename} в форме
+программы на Lisp, которая при загрузке будет определять те же
+сокращения.  Если @var{filename} равен @code{nil} или опущен,
+используется @code{abbrev-file-name}.  Эта функция возвращает
+@code{nil}.
 @end deffn
 
 @node Abbrev Expansion
-@section Looking Up and Expanding Abbreviations
+@section Поиск и Раскрытие Сокращений
 @cindex looking up abbrevs
 @cindex expanding abbrevs
 @cindex abbrevs, looking up and expanding
 
-  Abbrevs are usually expanded by certain interactive commands,
-including @code{self-insert-command}.  This section describes the
-subroutines used in writing such commands, as well as the variables they
-use for communication.
+  Сокращения обычно расширяются некоторыми интерактивными командами,
+включая @code{self-insert-command}.  В этом разделе описаны подпрограммы,
+используемые при написании таких команд, а также переменные,
+которые они используют для связи.
 
 @defun abbrev-symbol abbrev &optional table
-This function returns the symbol representing the abbrev named
-@var{abbrev}.  It returns @code{nil} if that abbrev is not
-defined.  The optional second argument @var{table} is the abbrev table
-in which to look it up.  If @var{table} is @code{nil}, this function
-tries first the current buffer's local abbrev table, and second the
-global abbrev table.
+Функция возвращает символ, представляющий сокращение с именем
+@var{abbrev}.  Возвращается @code{nil}, если это сокращение не
+определено.  Необязательный второй аргумент @var{table} - это
+таблица сокращений, в которой его можно найти.  Если @var{table}
+равно @code{nil}, эта функция сначала пробует локальную таблицу
+сокращений текущего буфера, а затем глобальную таблицу сокращений.
 @end defun
 
 @defun abbrev-expansion abbrev &optional table
-This function returns the string that @var{abbrev} would expand into (as
-defined by the abbrev tables used for the current buffer).  It returns
-@code{nil} if @var{abbrev} is not a valid abbrev.
-The optional argument @var{table} specifies the abbrev table to use,
-as in @code{abbrev-symbol}.
+Функция возвращает строку, в которую @var{abbrev} расширится
+(как определено в таблицах сокращений, используемых для текущего
+буфера).  Возвращается @code{nil}, если @var{abbrev} не является
+допустимым сокращением.  Необязательный аргумент @var{table}
+указывает используемую таблицу сокращений, как в @code{abbrev-symbol}.
 @end defun
 
 @deffn Command expand-abbrev
-This command expands the abbrev before point, if any.  If point does not
-follow an abbrev, this command does nothing.  To do the expansion, it
-calls the function that is the value of the @code{abbrev-expand-function}
-variable, with no arguments, and returns whatever that function does.
+Команда расширяет аббревиатуру перед точкой, если таковая имеется.
+Если точка не следует за аббревиатурой, эта команда ничего не делает.
+Чтобы выполнить расширение, вызывается функция, которая является
+значением переменной @code{abbrev-expand-function}, без аргументов,
+и возвращается все, что делает эта функция.
 
-The default expansion function returns the abbrev symbol if it did
-expansion, and @code{nil} otherwise.  If the abbrev symbol has a hook
-function that is a symbol whose @code{no-self-insert} property is
-non-@code{nil}, and if the hook function returns @code{nil} as its
-value, then the default expansion function returns @code{nil},
-even though expansion did occur.
+Функция расширения по умолчанию возвращает символ сокращения,
+если она выполняла расширение, и @code{nil} в противном случае.
+Если у символа сокращения есть функция-перехватчик, которая
+является символом, свойство @code{no-self-insert} которого имеет
+значение не-@code{nil}, и если функция-перехватчик возвращает
+@code{nil} в качестве своего значения, то функция расширения по
+умолчанию возвращает @code{nil}, даже если расширение
+действительно имело место.
 @end deffn
 
 @defun abbrev-insert abbrev &optional name start end
-This function inserts the abbrev expansion of @code{abbrev}, replacing
-the text between @code{start} and @code{end}.  If @code{start} is
-omitted, it defaults to point.  @code{name}, if non-@code{nil}, should
-be the name by which this abbrev was found (a string); it is used to
-figure out whether to adjust the capitalization of the expansion.  The
-function returns @code{abbrev} if the abbrev was successfully
-inserted, otherwise it returns @code{nil}.
+Функция вставляет аббревиатуру @code{abbrev}, заменяя текст
+между @code{start} и @code{end}.  Если @code{start} опущено, по
+умолчанию используется точка.  @code{name}, если не-@code{nil},
+должно быть именем, по которому было найдено это сокращение
+(строка); это используется, чтобы выяснить, следует ли
+корректировать регистр расширения.  Функция возвращает
+@code{abbrev}, если сокращение было успешно вставлено, в
+противном случае возвращается @code{nil}.
 @end defun
 
 @deffn Command abbrev-prefix-mark &optional arg
-This command marks the current location of point as the beginning of
-an abbrev.  The next call to @code{expand-abbrev} will use the text
-from here to point (where it is then) as the abbrev to expand, rather
-than using the previous word as usual.
+Команда отмечает текущее местоположение точки как начало аббревиатуры.
+Следующий вызов @code{expand-abbrev} будет использовать текст отсюда
+до точки (где он находится тогда) в качестве сокращения для расширения,
+вместо того, чтобы использовать предыдущее слово, как обычно.
 
-First, this command expands any abbrev before point, unless @var{arg}
-is non-@code{nil}.  (Interactively, @var{arg} is the prefix argument.)
-Then it inserts a hyphen before point, to indicate the start of the
-next abbrev to be expanded.  The actual expansion removes the hyphen.
+Во-первых, эта команда расширяет любое сокращение перед точкой,
+если только @var{arg} не не-@code{nil}.  (В интерактивном режиме
+@var{arg} является префиксным аргументом.)  Затем вставляется дефис
+перед точкой, чтобы указать начало следующего сокращения, которое
+нужно раскрыть.  Фактическое расширение удаляет дефис.
 @end deffn
 
 @defopt abbrev-all-caps
-When this is set non-@code{nil}, an abbrev entered entirely in upper
-case is expanded using all upper case.  Otherwise, an abbrev entered
-entirely in upper case is expanded by capitalizing each word of the
-expansion.
+Когда установлено не-@code{nil}, аббревиатура, введенная
+полностью в верхнем регистре, раскрывается полностью в верхнем
+регистре.  В противном случае сокращение, введенное полностью в
+верхнем регистре, раскрывается с заглавной буквы в каждом слове расширения.
 @end defopt
 
 @defvar abbrev-start-location
-The value of this variable is a buffer position (an integer or a marker)
-for @code{expand-abbrev} to use as the start of the next abbrev to be
-expanded.  The value can also be @code{nil}, which means to use the
-word before point instead.  @code{abbrev-start-location} is set to
-@code{nil} each time @code{expand-abbrev} is called.  This variable is
-also set by @code{abbrev-prefix-mark}.
+Значение этой переменной представляет собой позицию в буфере
+(целое число или маркер) для @code{expand-abbrev}, чтобы
+использовать его в качестве начала следующего сокращения,
+которое нужно раскрыть.  Значение также может быть @code{nil},
+что означает использование слова перед точкой.
+@code{abbrev-start-location} устанавливается в @code{nil} каждый раз,
+когда вызывается @code{expand-abbrev}.  Эта переменная также
+устанавливается @code{abbrev-prefix-mark}.
 @end defvar
 
 @defvar abbrev-start-location-buffer
-The value of this variable is the buffer for which
-@code{abbrev-start-location} has been set.  Trying to expand an abbrev
-in any other buffer clears @code{abbrev-start-location}.  This variable
-is set by @code{abbrev-prefix-mark}.
+Значение этой переменной - буфер, для которого установлено
+@code{abbrev-start-location}.  Попытка расширить аббревиатуру в
+любом другом буфере очищает @code{abbrev-start-location}.  Эта
+переменная устанавливается @code{abbrev-prefix-mark}.
 @end defvar
 
 @defvar last-abbrev
-This is the @code{abbrev-symbol} of the most recent abbrev expanded.  This
-information is left by @code{expand-abbrev} for the sake of the
-@code{unexpand-abbrev} command (@pxref{Expanding Abbrevs,, Expanding
+Это @code{abbrev-symbol} последнего расширенного сокращения.
+Эта информация оставлена @code{expand-abbrev} для команды
+@code{unexpand-abbrev} (@pxref{Expanding Abbrevs,, Expanding
 Abbrevs, emacs, The GNU Emacs Manual}).
 @end defvar
 
 @defvar last-abbrev-location
-This is the location of the most recent abbrev expanded.  This contains
-information left by @code{expand-abbrev} for the sake of the
-@code{unexpand-abbrev} command.
+Это расположение последнего расширенного сокращения.  Содержит
+информацию, оставленную @code{expand-abbrev} для команды
+@code{unexpand-abbrev}.
 @end defvar
 
 @defvar last-abbrev-text
-This is the exact expansion text of the most recent abbrev expanded,
-after case conversion (if any).  Its value is @code{nil} if the abbrev
-has already been unexpanded.  This contains information left by
-@code{expand-abbrev} for the sake of the @code{unexpand-abbrev} command.
+Это точный текст раскрытия последнего сокращения после преобразования
+регистра (если есть).  Его значение - @code{nil}, если сокращение
+ещё не раскрыто.  Содержит информацию, оставленную @code{expand-abbrev}
+для команды @code{unexpand-abbrev}.
 @end defvar
 
 @defvar abbrev-expand-function
-The value of this variable is a function that @code{expand-abbrev}
-will call with no arguments to do the expansion.  The function can do
-anything it wants before and after performing the expansion.
-It should return the abbrev symbol if expansion took place.
+Значение этой переменной - это функция, которую @code{expand-abbrev}
+будет вызывать без аргументов для выполнения раскрытия.  Функция может
+делать все, что угодно, до и после выполнения раскрытия.  Должен вернуться
+символ сокращения, если расширение имело место.
 @end defvar
 
-  The following sample code shows a simple use of
-@code{abbrev-expand-function}.  It assumes that @code{foo-mode} is a
-mode for editing certain files in which lines that start with @samp{#}
-are comments.  You want to use Text mode abbrevs for those lines.  The
-regular local abbrev table, @code{foo-mode-abbrev-table} is
-appropriate for all other lines.  @xref{Standard Abbrev Tables}, for the
-definitions of @code{local-abbrev-table} and @code{text-mode-abbrev-table}.
-@xref{Advising Functions}, for details of @code{add-function}.
+  В следующем примере кода показано простое использование
+@code{abbrev-expand-function}.  Предполагается, что @code{foo-mode} -
+это режим редактирования определенных файлов, в которых строки,
+начинающиеся с @samp{#}, являются комментариями.  Требуется
+использовать сокращения в текстовом режиме для этих строк.
+Обычная локальная таблица сокращений @code{foo-mode-abbrev-table}
+подходит для всех остальных строк.  @xref{Standard Abbrev Tables},
+для определений @code{local-abbrev-table} и @code{text-mode-abbrev-table}.
+@xref{Advising Functions}, подробности об @code{add-function}.
 
 @smallexample
 (defun foo-mode-abbrev-expand-function (expand)
   (if (not (save-excursion (forward-line 0) (eq (char-after) ?#)))
-      ;; Performs normal expansion.
+      ;; Выполняется нормальное расширение.
       (funcall expand)
-    ;; We're inside a comment: use the text-mode abbrevs.
+    ;; Сейчас внутри комментария: использовать сокращения текстового режима.
     (let ((local-abbrev-table text-mode-abbrev-table))
       (funcall expand))))
 
@@ -375,135 +393,135 @@ definitions of @code{local-abbrev-table} and @code{text-mode-abbrev-table}.
 @end smallexample
 
 @node Standard Abbrev Tables
-@section Standard Abbrev Tables
+@section Стандартные Таблицы Сокращений
 @cindex standard abbrev tables
 
-  Here we list the variables that hold the abbrev tables for the
-preloaded major modes of Emacs.
+  Здесь перечисляются переменные, которые содержат таблицы
+сокращений для предварительно загруженных основных режимов Emacs.
 
 @defvar global-abbrev-table
-This is the abbrev table for mode-independent abbrevs.  The abbrevs
-defined in it apply to all buffers.  Each buffer may also have a local
-abbrev table, whose abbrev definitions take precedence over those in the
-global table.
+Это таблица сокращений для сокращений, не зависящих от режима.
+Определенные в нем сокращения применяются ко всем буферам.  Каждый буфер
+может также иметь локальную таблицу сокращений, определения сокращений
+которой имеют приоритет над определениями в глобальной таблице.
 @end defvar
 
 @defvar local-abbrev-table
-The value of this buffer-local variable is the (mode-specific)
-abbreviation table of the current buffer.  It can also be a list of
-such tables.
+Значение этой локальной переменной буфера представляет собой
+(зависящую от режима) таблицу сокращений текущего буфера.
+Также это может быть список таких таблиц.
 @end defvar
 
 @defvar abbrev-minor-mode-table-alist
-The value of this variable is a list of elements of the form
-@code{(@var{mode} . @var{abbrev-table})} where @var{mode} is the name
-of a variable: if the variable is bound to a non-@code{nil} value,
-then the @var{abbrev-table} is active, otherwise it is ignored.
-@var{abbrev-table} can also be a list of abbrev tables.
+Значение этой переменной представляет собой список элементов
+вида @code{(@var{mode} . @var{abbrev-table})}, где @var{mode} -
+имя переменной: если переменная привязана к значению не-@code{nil},
+то @var{abbrev-table} активна, в противном случае это игнорируется.
+@var{abbrev-table} также может быть списком таблиц сокращений.
 @end defvar
 
 @defvar fundamental-mode-abbrev-table
-This is the local abbrev table used in Fundamental mode; in other words,
-it is the local abbrev table in all buffers in Fundamental mode.
+Локальная таблица сокращений, используемая в основном режиме;
+другими словами, это локальная таблица сокращений во всех буферах
+в основном режиме.
 @end defvar
 
 @defvar text-mode-abbrev-table
-This is the local abbrev table used in Text mode.
+Локальная таблица сокращений, используемая в текстовом режиме.
 @end defvar
 
 @defvar lisp-mode-abbrev-table
-This is the local abbrev table used in Lisp mode.  It is the parent
-of the local abbrev table used in Emacs Lisp mode.  @xref{Abbrev Table
-Properties}.
+Локальная таблица сокращений, используемая в режиме Lisp.
+Это родительский элемент локальной таблицы сокращений,
+используемой в режиме Emacs Lisp.  @xref{Abbrev Table Properties}.
 @end defvar
 
 @node Abbrev Properties
-@section Abbrev Properties
+@section Свойства Сокращения
 @cindex abbrev properties
 
-Abbrevs have properties, some of which influence the way they work.
-You can provide them as arguments to @code{define-abbrev}, and
-manipulate them with the following functions:
+У сокращений есть свойства, некоторые из которых влияют на то,
+как они работают.  Можно предоставить их в качестве аргументов
+@code{define-abbrev} и управлять ими с помощью следующих функций:
 
 @defun abbrev-put abbrev prop val
-Set the property @var{prop} of @var{abbrev} to value @var{val}.
+Установить для свойства @var{prop} объекта @var{abbrev} значение @var{val}.
 @end defun
 
 @defun abbrev-get abbrev prop
-Return the property @var{prop} of @var{abbrev}, or @code{nil} if the
-abbrev has no such property.
+Вернуть свойство @var{prop} для @var{abbrev} или @code{nil}, если
+у аббревиатуры нет такого свойства.
 @end defun
 
-The following properties have special meanings:
+Следующие свойства имеют особое значение:
 
 @table @code
 @item :count
-This property counts the number of times the abbrev has
-been expanded.  If not explicitly set, it is initialized to 0 by
-@code{define-abbrev}.
+Свойство подсчитывает, сколько раз сокращение было расширено.
+Если не установлен явно, инициализируется значением 0 с
+помощью @code{define-abbrev}.
 
 @item :system
-If non-@code{nil}, this property marks the abbrev as a system abbrev.
-Such abbrevs are not saved (@pxref{Abbrev Files}).
+Если не-@code{nil}, это свойство отмечает аббревиатуру как
+системную.  Такие сокращения не сохраняются (@pxref{Abbrev Files}).
 
 @item :enable-function
-If non-@code{nil}, this property should be a function of no
-arguments which returns @code{nil} if the abbrev should not be used
-and @code{t} otherwise.
+Если не-@code{nil}, это свойство должно быть функцией без аргументов,
+которая возвращает @code{nil}, если сокращение не следует использовать,
+и @code{t} в противном случае.
 
 @item :case-fixed
-If non-@code{nil}, this property indicates that the case of the
-abbrev's name is significant and should only match a text with the
-same pattern of capitalization.  It also disables the code that
-modifies the capitalization of the expansion.
+Если не-@code{nil}, это свойство указывает, что регистр имени
+аббревиатуры имеет значение и должен соответствовать только тексту
+с таким же шаблоном использования заглавных букв.  Также отключается код,
+который изменяет регистр в раскрытии.
 @end table
 
 @node Abbrev Table Properties
-@section Abbrev Table Properties
+@section Свойства Таблицы Сокращений
 @cindex abbrev table properties
 
-Like abbrevs, abbrev tables have properties, some of which influence
-the way they work.  You can provide them as arguments to
-@code{define-abbrev-table}, and manipulate them with the functions:
+Как и сокращения, таблицы сокращений имеют свойства, некоторые из
+которых влияют на способ их работы.  Можно предоставить их в качестве
+аргументов @code{define-abbrev-table} и управлять ими с помощью функций:
 
 @defun abbrev-table-put table prop val
-Set the property @var{prop} of abbrev table @var{table} to value @var{val}.
+Задать для свойства @var{prop} таблицы сокращений @var{table} значение @var{val}.
 @end defun
 
 @defun abbrev-table-get table prop
-Return the property @var{prop} of abbrev table @var{table}, or @code{nil}
-if @var{table} has no such property.
+Вернуть свойство @var{prop} таблицы сокращений @var{table} или
+@code{nil}, если @var{table} не имеет такого свойства.
 @end defun
 
-The following properties have special meaning:
+Следующие свойства имеют особое значение:
 
 @table @code
 @item :enable-function
-This is like the @code{:enable-function} abbrev property except that
-it applies to all abbrevs in the table.  It is used before even trying
-to find the abbrev before point, so it can dynamically modify the
-abbrev table.
+Это похоже на свойство abbrev @code{:enable-function}, за
+исключением того, что оно применяется ко всем сокращениям в
+таблице.  Используется даже перед попыткой найти сокращение
+перед точкой, поэтому может динамически изменять таблицу сокращений.
 
 @item :case-fixed
-This is like the @code{:case-fixed} abbrev property except that it
-applies to all abbrevs in the table.
+Это похоже на свойство abbrev @code{:case-fixed}, за исключением
+того, что применяется ко всем сокращениям в таблице.
 
 @item :regexp
-If non-@code{nil}, this property is a regular expression that
-indicates how to extract the name of the abbrev before point, before
-looking it up in the table.  When the regular expression matches
-before point, the abbrev name is expected to be in submatch 1.
-If this property is @code{nil}, the default is to use
-@code{backward-word} and @code{forward-word} to find the name.  This
-property allows the use of abbrevs whose name contains characters of
-non-word syntax.
+Если не-@code{nil}, это свойство является регулярным выражением,
+которое указывает, как извлечь имя сокращения перед точкой,
+прежде чем искать его в таблице.  Когда регулярное выражение
+совпадает перед точкой, предполагается, что сокращенное имя будет
+в подсоответствии 1.  Если это свойство - @code{nil}, по умолчанию
+для поиска имени используется @code{backward-word} и @code{forward-word}.
+Это свойство позволяет использовать аббревиатуры, имя которых
+содержит символы несловесного синтаксиса.
 
 @item :parents
-This property holds a list of tables from which to inherit
-other abbrevs.
+Свойство содержит список таблиц, от которых наследуются другие сокращения.
 
 @item :abbrev-table-modiff
-This property holds a counter incremented each time a new abbrev is
-added to the table.
+Свойство содержит счетчик, увеличивающийся каждый раз, когда в
+таблицу добавляется новое сокращение.
 
 @end table
