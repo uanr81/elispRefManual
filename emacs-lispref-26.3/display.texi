@@ -5513,814 +5513,762 @@ Emacs отображает каждый фрагмент как отдельно
 если значение @code{max-image-size} впоследствии будет изменено (@pxref{Image Cache}).
 @end defvar
 
-Images inserted with the insertion functions above also get a local
-keymap installed in the text properties (or overlays) that span the
-displayed image.  This keymap defines the following commands:
+Изображения, вставленные с помощью указанных выше функций вставки, также получают
+локальную ключевую карту, установленную в свойствах текста (или наложениях), которые
+охватывают отображаемое изображение.  Эта карта определяет следующие команды:
 
 @table @kbd
 @item +
-Increase the image size (@code{image-increase-size}).  A prefix value
-of @samp{4} means to increase the size by 40%.  The default is 20%.
+Увеличить размер изображения (@code{image-increase-size}).  Значение префикса
+@samp{4} означает увеличение размера на 40%.  По умолчанию 20%.
 
 @item -
-Decrease the image size (@code{image-increase-size}).  A prefix value
-of @samp{4} means to decrease the size by 40%.  The default is 20%.
+Уменьшить размер изображения (@code{image-increase-size}).  Значение префикса
+@samp {4} означает уменьшение размера на 40%.  По умолчанию 20%.
 
 @item r
-Rotate the image by 90 degrees (@code{image-rotate}).
+Повернуть изображение на 90 градусов (@code{image-rotate}).
 
 @item o
-Save the image to a file (@code{image-save}).
+Сохранить изображение в файл (@code{image-save}).
 @end table
 
 @node Multi-Frame Images
-@subsection Multi-Frame Images
+@subsection Много Фреймовые Изображения
 @cindex multi-frame images
 
 @cindex animation
 @cindex image animation
 @cindex image frames
-Some image files can contain more than one image.  We say that there
-are multiple ``frames'' in the image.  At present, Emacs supports
-multiple frames for GIF, TIFF, and certain ImageMagick formats such as
+Некоторые файлы изображений могут содержать более одного изображения.  Говорится, что
+на изображении есть несколько ``frames''.  В настоящее время Emacs поддерживает
+многофреймовые изображения для GIF, TIFF и некоторых форматов ImageMagick, таких как
 DJVM@.
 
-The frames can be used either to represent multiple pages (this is
-usually the case with multi-frame TIFF files, for example), or to
-create animation (usually the case with multi-frame GIF files).
+Фреймы могут использоваться либо для представления нескольких страниц (обычно это
+бывает с многофреймовыми файлами TIFF, например), либо для создания анимации (обычно
+в случае с многофреймовыми файлами GIF).
 
-A multi-frame image has a property @code{:index}, whose value is an
-integer (counting from 0) that specifies which frame is being displayed.
+Многофреймовое изображение имеет свойство @code{:index}, значение которого является
+целым числом (считая от 0), указывающим, какой фрейм отображается.
 
 @defun image-multi-frame-p image
-This function returns не-@code{nil} if @var{image} contains more than
-one frame.  The actual return value is a cons @code{(@var{nimages}
-. @var{delay})}, where @var{nimages} is the number of frames and
-@var{delay} is the delay in seconds between them, or @code{nil}
-if the image does not specify a delay.  Images that are intended to be
-animated usually specify a frame delay, whereas ones that are intended
-to be treated as multiple pages do not.
+Функция возвращает не-@code{nil}, если @var{image} содержит более одного фрейма.
+Фактическое возвращаемое значение - cons-ячейка @code{(@var{nimages} . @var{delay})},
+где @var{nimages} - количество фреймов, а @var{delay} - задержка в секундах между
+ними, или @code{nil}, если изображение не указывает задержку.  Изображения, которые
+предназначены для анимации, обычно указывают задержку фрейма, тогда как изображения,
+которые предназначены для обработки нескольких страниц, не имеют.
 @end defun
 
 @defun image-current-frame image
-This function returns the index of the current frame number for
-@var{image}, counting from 0.
+Функция возвращает индекс текущего номера фрейма для @var{image}, начиная с 0.
 @end defun
 
 @defun image-show-frame image n &optional nocheck
-This function switches @var{image} to frame number @var{n}.  It
-replaces a frame number outside the valid range with that of the end
-of the range, unless @var{nocheck} is не-@code{nil}.  If @var{image}
-does not contain a frame with the specified number, the image displays
-as a hollow box.
+Функция переключает @var{image} на номер @var{n} фрейма.  Заменяется номер фрейма за
+пределами допустимого диапазона на номер конца диапазона, если только @var{nocheck} не
+не-@code{nil}.  Если в @var{image} нет фрейма с указанным номером, изображение
+отображается в виде пустого поля.
 @end defun
 
 @defun image-animate image &optional index limit
-This function animates @var{image}.  The optional integer @var{index}
-specifies the frame from which to start (default 0).  The optional
-argument @var{limit} controls the length of the animation.  If omitted
-or @code{nil}, the image animates once only; if @code{t} it loops
-forever; if a number animation stops after that many seconds.
+Функция анимирует @var{image}.  Необязательное целое число @var{index} указывает
+фрейм, с которого следует начать (по умолчанию 0).  Необязательный аргумент
+@var{limit} управляет продолжительностью анимации.  Если опущено или @code{nil},
+изображение анимируется только один раз; если @code{t}, зацикливается навсегда; если
+числовая анимация останавливается через много секунд.
 @end defun
 
 @vindex image-minimum-frame-delay
 @vindex image-default-frame-delay
-@noindent Animation operates by means of a timer.  Note that Emacs imposes a
-minimum frame delay of 0.01 (@code{image-minimum-frame-delay}) seconds.
-If the image itself does not specify a delay, Emacs uses
+@noindent Анимация работает с помощью таймера.  Обратить внимание, что Emacs
+устанавливает минимальную задержку фрейма 0,01 (@code{image-minimum-frame-delay})
+секунд.  Если в самом изображении задержка не указана, Emacs использует
 @code{image-default-frame-delay}.
 
 @defun image-animate-timer image
-This function returns the timer responsible for animating @var{image},
-if there is one.
+Функция возвращает таймер, отвечающий за анимацию @var{image}, если он есть.
 @end defun
 
 
 @node Image Cache
-@subsection Image Cache
+@subsection Кэш Изображений
 @cindex image cache
 
-  Emacs caches images so that it can display them again more
-efficiently.  When Emacs displays an image, it searches the image
-cache for an existing image specification @code{equal} to the desired
-specification.  If a match is found, the image is displayed from the
-cache.  Otherwise, Emacs loads the image normally.
+  Emacs кэширует изображения, чтобы отображать их снова более эффективно.  Когда
+Emacs отображает изображение, ищется в кэше изображений существующая спецификация
+изображения @code{equal} в соответствии с желаемой спецификацией.  Если совпадение
+найдено, изображение отображается из кеша.  В противном случае Emacs загружает
+изображение обычным образом.
 
 @defun image-flush spec &optional frame
-This function removes the image with specification @var{spec} from the
-image cache of frame @var{frame}.  Image specifications are compared
-using @code{equal}.  If @var{frame} is @code{nil}, it defaults to the
-selected frame.  If @var{frame} is @code{t}, the image is flushed on
-all existing frames.
+Функция удаляет изображение со спецификацией @var{spec} из кеша изображений фрейма
+@var{frame}.  Характеристики изображений сравниваются с помощью @code{equal}.  Если
+@var{frame} равно @code{nil}, по умолчанию используется выбранный фрейм.  Если
+@var{frame} равно @code{t}, изображение стирается на всех существующих фреймах.
 
-In Emacs's current implementation, each graphical terminal possesses an
-image cache, which is shared by all the frames on that terminal
-(@pxref{Multiple Terminals}).  Thus, refreshing an image in one frame
-also refreshes it in all other frames on the same terminal.
+В текущей реализации Emacs каждый графический терминал имеет кэш изображений, который
+используется всеми фреймами на этом терминале (@pxref{Multiple Terminals}).  Таким
+образом, обновление изображения в одном фрейме также обновляет его во всех других
+фреймах на том же терминале.
 @end defun
 
-  One use for @code{image-flush} is to tell Emacs about a change in an
-image file.  If an image specification contains a @code{:file}
-property, the image is cached based on the file's contents when the
-image is first displayed.  Even if the file subsequently changes,
-Emacs continues displaying the old version of the image.  Calling
-@code{image-flush} flushes the image from the cache, forcing Emacs to
-re-read the file the next time it needs to display that image.
+  Одно из применений @code{image-flush} - сообщить Emacs об изменении файла
+изображения.  Если спецификация изображения содержит свойство @code{:file},
+изображение кэшируется на основе содержимого файла при первом отображении изображения.
+Даже если файл впоследствии изменится, Emacs продолжает отображать старую версию
+изображения.  Вызов @code{image-flush} очищает изображение из кеша, заставляя Emacs
+перечитать файл в следующий раз, когда ему потребуется отобразить это изображение.
 
-  Another use for @code{image-flush} is for memory conservation.  If
-your Lisp program creates a large number of temporary images over a
-period much shorter than @code{image-cache-eviction-delay} (see
-below), you can opt to flush unused images yourself, instead of
-waiting for Emacs to do it automatically.
+  Другое использование @code{image-flush} - сохранение памяти.  Если программа на
+Lisp создает большое количество временных изображений за период, намного меньший, чем
+@code{image-cache-eviction-delay} (смотреть ниже), можно выбрать очистку
+неиспользуемых изображений самостоятельно, вместо того, чтобы ждать, пока Emacs
+сделает это автоматически.
 
 @defun clear-image-cache &optional filter
-This function clears an image cache, removing all the images stored in
-it.  If @var{filter} is omitted or @code{nil}, it clears the cache for
-the selected frame.  If @var{filter} is a frame, it clears the cache
-for that frame.  If @var{filter} is @code{t}, all image caches are
-cleared.  Otherwise, @var{filter} is taken to be a file name, and all
-images associated with that file name are removed from all image
-caches.
+Функция очищает кеш изображений, удаляя все изображения, хранящиеся в нем.  Если
+@var{filter} не указано или @code{nil}, очищается кеш для выбранного фрейма.  Если
+@var{filter} - это фрейм, очищается кеш для этого фрейма.  Если @var{filter} равно
+@code{t}, все кеши изображений очищаются.  В противном случае @var{filter}
+принимается как имя файла, и все изображения, связанные с этим именем файла,
+удаляются из всех кешей изображений.
 @end defun
 
-If an image in the image cache has not been displayed for a specified
-period of time, Emacs removes it from the cache and frees the
-associated memory.
+Если изображение в кэше изображений не отображалось в течение определенного периода
+времени, Emacs удаляет его из кеша и освобождает связанную с ним память.
 
 @defvar image-cache-eviction-delay
-This variable specifies the number of seconds an image can remain in
-the cache without being displayed.  When an image is not displayed for
-this length of time, Emacs removes it from the image cache.
+Переменная определяет количество секунд, в течение которых изображение может
+оставаться в кеше без отображения.  Когда изображение не отображается в течение этого
+времени, Emacs удаляет его из кеша изображений.
 
-Under some circumstances, if the number of images in the cache grows
-too large, the actual eviction delay may be shorter than this.
+В некоторых случаях, если количество изображений в кэше становится слишком большим,
+фактическая задержка удаления может быть меньше этого значения.
 
-If the value is @code{nil}, Emacs does not remove images from the cache
-except when you explicitly clear it.  This mode can be useful for
-debugging.
+Если значение равно @code{nil}, Emacs не удаляет изображения из кеша, кроме случаев,
+когда явно очищается он.  Этот режим может быть полезен для отладки.
 @end defvar
 
 @node Xwidgets
-@section Embedded Native Widgets
+@section Встроенные Собственные Виджеты
 @cindex xwidget
 @cindex embedded widgets
 @cindex webkit browser widget
 
-  Emacs is able to display native widgets, such as GTK+ WebKit widgets,
-in Emacs buffers when it was built with the necessary support
-libraries and is running on a graphical terminal.  To test whether
-Emacs supports display of embedded widgets, check that the
-@code{xwidget-internal} feature is available (@pxref{Named Features}).
+  Emacs может отображать собственные виджеты, такие как виджеты GTK+ WebKit, в
+буферах Emacs, когда был построен с необходимыми библиотеками поддержки и запущен на
+графическом терминале.  Чтобы проверить, поддерживает ли Emacs отображение встроенных
+виджетов, проверить, доступна ли функция @code{xwidget-internal}
+(@pxref{Named Features}).
 
-  To display an embedded widget in a buffer, you must first create an
-xwidget object, and then use that object as the display specifier
-in a @code{display} text or overlay property (@pxref{Display
-Property}).
+  Чтобы отобразить встроенный виджет в буфере, необходимо сначала создать объект
+xwidget, а затем использовать этот объект в качестве спецификатора отображения в
+тексте @code{display} или свойстве наложения (@pxref{Display Property}).
 
 @defun make-xwidget type title width height arguments &optional buffer
-This creates and returns an xwidget object.  If
-@var{buffer} is omitted or @code{nil}, it defaults to the current
-buffer.  If @var{buffer} names a buffer that doesn't exist, it will be
-created.  The @var{type} identifies the type of the xwidget component,
-it can be one of the following:
+Это создает и возвращает объект xwidget.  Если @var{buffer} опущено или @code{nil},
+по умолчанию используется текущий буфер.  Если @var{buffer} указывает буфер, которого
+не существует, он будет создан.  @var{type} определяет тип компонента xwidget, он
+может быть одним из следующих:
 
 @table @code
 @item webkit
-The WebKit component.
+Компонент WebKit.
 @end table
 
-The @var{width} and @var{height} arguments specify the widget size in
-pixels, and @var{title}, a string, specifies its title.
+Аргументы @var{width} и @var{height} определяют размер виджета в пикселях, а строка
+@var{title} определяет его заголовок.
 @end defun
 
 @defun xwidgetp object
-This function returns @code{t} if @var{object} is an xwidget,
-@code{nil} otherwise.
+Функция возвращает @code{t}, если @var{object} является xwidget, и @code{nil} в
+противном случае.
 @end defun
 
 @defun xwidget-plist xwidget
-This function returns the property list of @var{xwidget}.
+Функция возвращает список свойств @var{xwidget}.
 @end defun
 
 @defun set-xwidget-plist xwidget plist
-This function replaces the property list of @var{xwidget} with a new
-property list given by @var{plist}.
+Функция заменяет список свойств @var{xwidget} новым списком свойств, заданным
+@var{plist}.
 @end defun
 
 @defun xwidget-buffer xwidget
-This function returns the buffer of @var{xwidget}.
+Функция возвращает буфер @var{xwidget}.
 @end defun
 
 @defun get-buffer-xwidgets buffer
-This function returns a list of xwidget objects associated with the
-@var{buffer}, which can be specified as a buffer object or a name of
-an existing buffer, a string.  The value is @code{nil} if @var{buffer}
-contains no xwidgets.
+Функция возвращает список объектов xwidget, связанных с @var{buffer}, который может
+быть указан как буферный объект или имя существующего буфера, строка.  Значение
+@code{nil}, если @var{buffer} не содержит xwidgets.
 @end defun
 
 @defun xwidget-webkit-goto-uri xwidget uri
-This function browses the specified @var{uri} in the given
-@var{xwidget}.  The @var{uri} is a string that specifies the name of a
-file or a URL.  @c FIXME: What else can a URI specify in this context?
+Функция просматривает указанный @var{uri} в данном @var{xwidget}.  @var{uri} - это
+строка, определяющая имя файла или URL-адрес.
+@c FIXME: Что еще может указывать URI в этом контексте?
 @end defun
 
 @defun xwidget-webkit-execute-script xwidget script
-This function causes the browser widget specified by @var{xwidget} to
-execute the specified JavaScript @code{script}.
+Функция заставляет виджет браузера, указанный в @var{xwidget}, выполнять указанный
+JavaScript @code{script}.
 @end defun
 
 @defun xwidget-webkit-execute-script-rv xwidget script &optional default
-This function executes the specified @var{script} like
-@code{xwidget-webkit-execute-script} does, but it also returns the
-script's return value as a string.  If @var{script} doesn't return a
-value, this function returns @var{default}, or @code{nil} if
-@var{default} was omitted.
+Функция выполняет указанный @var{script}, как и @code{xwidget-webkit-execute-script},
+но также возвращает возвращаемое значение скрипта в виде строки.  Если @var{script}
+не возвращает значение, эта функция возвращает @var{default} или @code{nil}, если
+@var{default} было опущено.
 @end defun
 
 @defun xwidget-webkit-get-title xwidget
-This function returns the title of @var{xwidget} as a string.
+Функция возвращает заголовок @var{xwidget} в виде строки.
 @end defun
 
 @defun xwidget-resize xwidget width height
-This function resizes the specified @var{xwidget} to the size
-@var{width}x@var{height} pixels.
+Функция изменяет размер указанного @var{xwidget} до размера
+@var{width}x@var{height} пикселей.
 @end defun
 
 @defun xwidget-size-request xwidget
-This function returns the desired size of @var{xwidget} as a list of
-the form @code{(@var{width} @var{height})}.  The dimensions are in
-pixels.
+Функция возвращает требуемый размер @var{xwidget} в виде списка вида
+@code{(@var{width} @var{height})}.  Размеры указываются в пикселях.
 @end defun
 
 @defun xwidget-info xwidget
-This function returns the attributes of @var{xwidget} as a vector of
-the form @code{[@var{type} @var{title} @var{width} @var{height}]}.
-The attributes are usually determined by @code{make-xwidget} when the
-xwidget is created.
+Функция возвращает атрибуты @var{xwidget} как вектор вида
+@code{[@var{type} @var{title} @var{width} @var{height}]}.  Атрибуты обычно
+определяются @code{make-xwidget} при создании xwidget.
 @end defun
 
 @defun set-xwidget-query-on-exit-flag xwidget flag
-This function allows you to arrange that Emacs will ask the user for
-confirmation before exiting or before killing a buffer that has
-@var{xwidget} associated with it.  If @var{flag} is не-@code{nil},
-Emacs will query the user, otherwise it will not.
+Функция позволяет настроить, чтобы Emacs запрашивал у пользователя подтверждение
+перед выходом или перед уничтожением буфера, с которым связан @var{xwidget}.  Если
+@var{flag} равен не-@code{nil}, Emacs запросит пользователя, в противном случае - нет.
 @end defun
 
 @defun xwidget-query-on-exit-flag xwidget
-This function returns the current setting of @var{xwidget}s
-query-on-exit flag, either @code{t} or @code{nil}.
+Функция возвращает текущее значение флага запроса при выходе @var{xwidget}, либо
+@code{t} или @code{nil}.
 @end defun
 
 @node Buttons
-@section Buttons
+@section Кнопки
 @cindex buttons in buffers
 @cindex clickable buttons in buffers
 
-  The Button package defines functions for inserting and manipulating
-@dfn{buttons} that can be activated with the mouse or via keyboard
-commands.  These buttons are typically used for various kinds of
-hyperlinks.
+  Пакет Button определяет функции для вставки @dfn{кнопки} и управления им, которые
+можно активировать с помощью мыши или с помощью команд клавиатуры.  Эти кнопки обычно
+используются для различных типов гиперссылок.
 
-  A button is essentially a set of text or overlay properties,
-attached to a stretch of text in a buffer.  These properties are
-called @dfn{button properties}.  One of these properties, the
-@dfn{action property}, specifies a function which is called when the
-user invokes the button using the keyboard or the mouse.  The action
-function may examine the button and use its other properties as
-desired.
+  Кнопка - это, по сути, набор свойств текста или наложения, прикрепленный к
+фрагменту текста в буфере.  Эти свойства называются @dfn{свойстваи кнопки}.  Одно из
+этих свойств, @dfn{свойство действия}, определяет функцию, которая вызывается, когда
+пользователь нажимает кнопку с помощью клавиатуры или мыши.  Функция действия может
+исследовать кнопку и использовать другие ее свойства по желанию.
 
-  In some ways, the Button package duplicates the functionality in the
-Widget package.  @xref{Top, , Introduction, widget, The Emacs Widget
-Library}.  The advantage of the Button package is that it is faster,
-smaller, and simpler to program.  From the point of view of the user,
-the interfaces produced by the two packages are very similar.
+  В некотором смысле пакет Button дублирует функциональность пакета Widget.
+@xref{Top, , Introduction, widget, The Emacs Widget Library}.  Преимущество пакета
+Button в том, что он быстрее, меньше по размеру и проще в программировании.  С точки
+зрения пользователя интерфейсы, создаваемые двумя пакетами, очень похожи.
 
 @menu
-* Button Properties::      Button properties with special meanings.
-* Button Types::           Defining common properties for classes of buttons.
-* Making Buttons::         Adding buttons to Emacs buffers.
-* Manipulating Buttons::   Getting and setting properties of buttons.
-* Button Buffer Commands:: Buffer-wide commands and bindings for buttons.
+* Button Properties::      Свойства кнопки со специальным значением.
+* Button Types::           Определение общих свойств для классов кнопок.
+* Making Buttons::         Добавление кнопок в буферы Emacs.
+* Manipulating Buttons::   Получение и установка свойств кнопок.
+* Button Buffer Commands:: Команды для всего буфера и привязки для кнопок.
 @end menu
 
 @node Button Properties
-@subsection Button Properties
+@subsection Свойства Кнопки
 @cindex button properties
 
-  Each button has an associated list of properties defining its
-appearance and behavior, and other arbitrary properties may be used
-for application specific purposes.  The following properties have
-special meaning to the Button package:
+  Каждая кнопка имеет связанный список свойств, определяющих ее внешний вид и
+поведение, а другие произвольные свойства могут использоваться для конкретных целей
+приложения.  Следующие свойства имеют особое значение для пакета Button:
 
 @table @code
 @item action
-@kindex action @r{(button property)}
-The function to call when the user invokes the button, which is passed
-the single argument @var{button}.  By default this is @code{ignore},
-which does nothing.
+@kindex action @r{(свойство кнопки)}
+Функция, вызываемая, когда пользователь нажимает кнопку, которой передается
+единственный аргумент @var{button}.  По умолчанию это @code{ignore}, который ничего
+не делает.
 
 @item mouse-action
-@kindex mouse-action @r{(button property)}
-This is similar to @code{action}, and when present, will be used
-instead of @code{action} for button invocations resulting from
-mouse-clicks (instead of the user hitting @key{RET}).  If not
-present, mouse-clicks use @code{action} instead.
+@kindex mouse-action @r{(свойство кнопки)}
+Похоже на @code{action}, и когда присутствует, будет использоваться вместо
+@code{action} для вызовов кнопок в результате щелчков мышью (вместо того, чтобы
+пользователь нажимал @key{RET}).  Если этого нет, вместо щелчка мышью используется
+@code{action}.
 
 @item face
-@kindex face @r{(button property)}
-This is an Emacs face controlling how buttons of this type are
-displayed; by default this is the @code{button} face.
+@kindex face @r{(свойство кнопки)}
+Вид отображения Emacs, управляющее отображением кнопок этого типа; по умолчанию этот
+вид @code{button}.
 
 @item mouse-face
-@kindex mouse-face @r{(button property)}
-This is an additional face which controls appearance during
-mouse-overs (merged with the usual button face); by default this is
-the usual Emacs @code{highlight} face.
+@kindex mouse-face @r{(свойство кнопки)}
+Это дополнительный вид, который контролирует внешний вид при наведении курсора мыши
+(объединенное с обычным видом кнопки); по умолчанию это обычный вид Emacs
+@code{highlight}.
 
 @item keymap
-@kindex keymap @r{(button property)}
-The button's keymap, defining bindings active within the button
-region.  By default this is the usual button region keymap, stored
-in the variable @code{button-map}, which defines @key{RET} and
-@key{mouse-2} to invoke the button.
+@kindex keymap @r{(свойство кнопки)}
+Ключевая карта кнопки, определяющая привязки, активные в области кнопки.  По умолчанию
+это обычная карта области кнопок, хранящаяся в переменной @code{button-map}, которая
+определяет @key{RET} и @key{mouse-2} для вызова кнопкой.
 
 @item type
-@kindex type @r{(button property)}
-The button type.  @xref{Button Types}.
+@kindex type @r{(свойство кнопки)}
+Тип кнопки.  @xref{Button Types}.
 
 @item help-echo
-@kindex help-index @r{(button property)}
-A string displayed by the Emacs tool-tip help system; by default,
+@kindex help-index @r{(свойство кнопки)}
+Строка, отображения справочной системой всплывающих подсказок Emacs; по умолчанию
 @code{"mouse-2, RET: Push this button"}.
 
 @item follow-link
-@kindex follow-link @r{(button property)}
-The follow-link property, defining how a @key{mouse-1} click behaves
-on this button, @xref{Clickable Text}.
+@kindex follow-link @r{(свойство кнопки)}
+Свойство follow-link, определяющее, как щелчок @key{mouse-1} ведет себя на этой
+кнопке, @xref{Clickable Text}.
 
 @item button
-@kindex button @r{(button property)}
-All buttons have a не-@code{nil} @code{button} property, which may be useful
-in finding regions of text that comprise buttons (which is what the
-standard button functions do).
+@kindex button @r{(свойство кнопки)}
+Все кнопки имеют свойство @code{button} установленное в не-@code{nil}, которое может
+быть полезно при поиске областей текста, содержащих кнопки (что и делают стандартные
+функции кнопок).
 @end table
 
-  There are other properties defined for the regions of text in a
-button, but these are not generally interesting for typical uses.
+  Существуют и другие свойства, определенные для областей текста в кнопке, но они
+обычно не интересны для типичного использования.
 
 @node Button Types
-@subsection Button Types
+@subsection Типы Кнопок
 @cindex button types
 
-  Every button has a @dfn{button type}, which defines default values
-for the button's properties.  Button types are arranged in a
-hierarchy, with specialized types inheriting from more general types,
-so that it's easy to define special-purpose types of buttons for
-specific tasks.
+  У каждой кнопки есть @dfn{тип кнопки}, который определяет значения по умолчанию для
+свойств кнопки.  Типы кнопок организованы в иерархию со специализированными типами,
+унаследованными от более общих типов, что позволяет легко определять специальные типы
+кнопок для конкретных задач.
 
 @defun define-button-type name &rest properties
-Define a button type called @var{name} (a symbol).
-The remaining arguments
-form a sequence of @var{property value} pairs, specifying default
-property values for buttons with this type (a button's type may be set
-by giving it a @code{type} property when creating the button, using
-the @code{:type} keyword argument).
+Определить тип кнопки с именем @var{name} (символ).  Остальные аргументы образуют
+последовательность пар @var{property value}, определяющих значения свойств по
+умолчанию для кнопок с этим типом (тип кнопки можно установить, задав ей свойство
+@code{type} при создании кнопки, используя аргумент ключевого слова @code{:type}).
 
-In addition, the keyword argument @code{:supertype} may be used to
-specify a button-type from which @var{name} inherits its default
-property values.  Note that this inheritance happens only when
-@var{name} is defined; subsequent changes to a supertype are not
-reflected in its subtypes.
+Кроме того, аргумент ключевого слова @code{:supertype} может использоваться для
+указания типа кнопки, от которого @var{name} наследует значения свойств по умолчанию.
+Обратить внимание, что это наследование происходит только тогда, когда определено
+@var{name}; последующие изменения супертипа не отражаются на его подтипах.
 @end defun
 
-  Using @code{define-button-type} to define default properties for
-buttons is not necessary---buttons without any specified type use the
-built-in button-type @code{button}---but it is encouraged, since
-doing so usually makes the resulting code clearer and more efficient.
+  Использование @code{define-button-type} для определения свойств по умолчанию для
+кнопок не является обязательным - кнопки без какого-либо указанного типа используют
+встроенный тип кнопки @code{button} - но это приветствуется, поскольку это обычно
+делает результирующий код более ясным и эффективным.
 
 @node Making Buttons
-@subsection Making Buttons
+@subsection Создание Кнопок
 @cindex making buttons
 
-  Buttons are associated with a region of text, using an overlay or
-text properties to hold button-specific information, all of which are
-initialized from the button's type (which defaults to the built-in
-button type @code{button}).  Like all Emacs text, the appearance of
-the button is governed by the @code{face} property; by default (via
-the @code{face} property inherited from the @code{button} button-type)
-this is a simple underline, like a typical web-page link.
+  Кнопки связаны с областью текста с использованием наложения или свойств текста для
+хранения информации, относящейся к кнопкам, каждая из которых инициализируется типом
+кнопки (по умолчанию используется встроенный тип кнопки @code{button}).  Как и весь
+текст Emacs, внешний вид кнопки определяется свойством @code{face}; по умолчанию
+(через свойство @code{face}, унаследованное от типа кнопки @code{button}) это простое
+подчеркивание, как обычная ссылка на веб-страницу.
 
-  For convenience, there are two sorts of button-creation functions,
-those that add button properties to an existing region of a buffer,
-called @code{make-...button}, and those that also insert the button
-text, called @code{insert-...button}.
+  Для удобства существует два типа функций создания кнопок: те, которые добавляют
+свойства кнопки в существующую область буфера, называемую @code{make-...button}, и те,
+которые также вставляют текст кнопки, называемые @code{insert-...button}.
 
-  The button-creation functions all take the @code{&rest} argument
-@var{properties}, which should be a sequence of @var{property value}
-pairs, specifying properties to add to the button; see @ref{Button
-Properties}.  In addition, the keyword argument @code{:type} may be
-used to specify a button-type from which to inherit other properties;
-see @ref{Button Types}.  Any properties not explicitly specified
-during creation will be inherited from the button's type (if the type
-defines such a property).
+  Все функции создания кнопки принимают аргумент @code{&rest} @var{properties},
+который должен быть последовательностью пар @var{property value}, определяющих
+свойства для добавления к кнопке; смотреть @ref{Button Properties}.  Кроме того,
+ключевое слово аргумент @code{:type} может использоваться для указания типа кнопки,
+от которой наследуются другие свойства; смотреть @ref{Button Types}.  Любые свойства,
+не указанные явно при создании, будут унаследованы от типа кнопки (если тип
+определяет такое свойство).
 
-  The following functions add a button using an overlay
-(@pxref{Overlays}) to hold the button properties:
+  Следующие функции добавляют кнопку с помощью наложения (@pxref{Overlays}) для
+хранения свойств кнопки:
 
 @defun make-button beg end &rest properties
-This makes a button from @var{beg} to @var{end} in the
-current buffer, and returns it.
+Делает кнопку от @var{beg} до @var{end} в текущем буфере и возвращает ее.
 @end defun
 
 @defun insert-button label &rest properties
-This insert a button with the label @var{label} at point,
-and returns it.
+Вставляет кнопку с меткой @var{label} в точке и возвращает ее.
 @end defun
 
-  The following functions are similar, but using text properties
-(@pxref{Text Properties}) to hold the button properties.  Such buttons
-do not add markers to the buffer, so editing in the buffer does not
-slow down if there is an extremely large numbers of buttons.  However,
-if there is an existing face text property on the text (e.g., a face
-assigned by Font Lock mode), the button face may not be visible.  Both
-of these functions return the starting position of the new button.
+  Следующие функции аналогичны, но используют текстовые свойства
+(@pxref{Text Properties}) для хранения свойств кнопки.  Такие кнопки не добавляют
+маркеры в буфер, поэтому редактирование в буфере не замедляется при очень большом
+количестве кнопок.  Однако, если в тексте есть свойство вид текста (например, вид
+отображения, назначенный режимом блокировки шрифта), вид кнопки может быть не
+отобразиться.  Обе эти функции возвращают начальную позицию новой кнопки.
 
 @defun make-text-button beg end &rest properties
-This makes a button from @var{beg} to @var{end} in the current buffer,
-using text properties.
+Создаётся кнопка от @var{beg} до @var{end} в текущем буфере, используя свойства
+текста.
 @end defun
 
 @defun insert-text-button label &rest properties
-This inserts a button with the label @var{label} at point, using text
-properties.
+Вставляется кнопка с меткой @var{label} в точке, используя свойства текста.
 @end defun
 
 @node Manipulating Buttons
-@subsection Manipulating Buttons
+@subsection Управление Кнопками
 @cindex manipulating buttons
 
-These are functions for getting and setting properties of buttons.
-Often these are used by a button's invocation function to determine
-what to do.
+Функции для получения и настройки свойств кнопок.  Часто используются функцией вызова
+кнопки, чтобы определить, что делать.
 
-Where a @var{button} parameter is specified, it means an object
-referring to a specific button, either an overlay (for overlay
-buttons), or a buffer-position or marker (for text property buttons).
-Such an object is passed as the first argument to a button's
-invocation function when it is invoked.
+Если указан параметр @var{button}, это означает объект, ссылающийся на определенную
+кнопку, либо наложение (для кнопок наложения), либо на позицию в буфере или маркер
+(для кнопок свойств текста).  Такой объект передается в качестве первого аргумента
+функции вызова кнопки при ее вызове.
 
 @defun button-start button
-Return the position at which @var{button} starts.
+Возврат позиции, с которой начинается @var{button}.
 @end defun
 
 @defun button-end button
-Return the position at which @var{button} ends.
+Возвращается позиция, в которой заканчивается @var{button}.
 @end defun
 
 @defun button-get button prop
-Get the property of button @var{button} named @var{prop}.
+Получить свойство кнопки @var{button} с именем @var{prop}.
 @end defun
 
 @defun button-put button prop val
-Set @var{button}'s @var{prop} property to @var{val}.
+Установить для @var{button} свойства @var{prop} значение @var{val}.
 @end defun
 
 @defun button-activate button &optional use-mouse-action
-Call @var{button}'s @code{action} property (i.e., invoke the function
-that is the value of that property, passing it the single argument
-@var{button}).  If @var{use-mouse-action} is не-@code{nil}, try to
-invoke the button's @code{mouse-action} property instead of
-@code{action}; if the button has no @code{mouse-action} property, use
-@code{action} as normal.
+Вызвать для @var{button} свойство @code{action} (то есть вызвать функцию, которая
+является значением этого свойства, передав ей единственный аргумент @var{button}).
+Если @var{use-mouse-action} - не-@code{nil}, попробовать вызвать свойство кнопки
+@code{mouse-action} вместо @code{action}; если у кнопки нет свойства
+@code{mouse-action}, использовать @code{action} как обычно.
 @end defun
 
 @defun button-label button
-Return @var{button}'s text label.
+Вернуть текстовую метку @var{button}.
 @end defun
 
 @defun button-type button
-Return @var{button}'s button-type.
+Вернуть @var{button} button-type.
 @end defun
 
 @defun button-has-type-p button type
-Return @code{t} if @var{button} has button-type @var{type}, or one of
-@var{type}'s subtypes.
+Вернуть @code{t}, если @var{button} имеет кнопочный @var{type} или один из подтипов
+@var{type}.
 @end defun
 
 @defun button-at pos
-Return the button at position @var{pos} in the current buffer, or
-@code{nil}.  If the button at @var{pos} is a text property button, the
-return value is a marker pointing to @var{pos}.
+Вернуть позицию кнопки @var{pos} в текущем буфере или @code{nil}.  Если кнопка в
+@var{pos} является кнопкой с текстовым свойством, возвращаемое значение - это маркер,
+указывающий на @var{pos}.
 @end defun
 
 @defun button-type-put type prop val
-Set the button-type @var{type}'s @var{prop} property to @var{val}.
+Задать для типа кнопки @var{type} свойства @var{prop} значение @var{val}.
 @end defun
 
 @defun button-type-get type prop
-Get the property of button-type @var{type} named @var{prop}.
+Получить для типа кнопки @var{type} свойство с именем @var{prop}.
 @end defun
 
 @defun button-type-subtype-p type supertype
-Return @code{t} if button-type @var{type} is a subtype of @var{supertype}.
+Вернуть @code{t}, если тип кнопки @var{type} является подтипом @var{supertype}.
 @end defun
 
 @node Button Buffer Commands
-@subsection Button Buffer Commands
+@subsection Команды Кнопок Буфера
 @cindex button buffer commands
 
-These are commands and functions for locating and operating on
-buttons in an Emacs buffer.
+Это команды и функции для поиска и работы с кнопками в буфере Emacs.
 
-@code{push-button} is the command that a user uses to actually push
-a button, and is bound by default in the button itself to @key{RET}
-and to @key{mouse-2} using a local keymap in the button's overlay or
-text properties.  Commands that are useful outside the buttons itself,
-such as @code{forward-button} and @code{backward-button} are
-additionally available in the keymap stored in
-@code{button-buffer-map}; a mode which uses buttons may want to use
-@code{button-buffer-map} as a parent keymap for its keymap.
+@code{push-button} - это команда, которую пользователь использует для фактического
+нажатия кнопки, и по умолчанию в самой кнопке она привязана к @key{RET} и
+@key{mouse-2} с использованием локальной ключевой карты в наложении кнопки или в
+свойствах текста.  Команды, которые полезны вне самих кнопок, такие как
+@code{forward-button} и @code{backward-button}, дополнительно доступны в ключевой
+карте, хранящейся в @code{button-buffer-map}; режим, который используют кнопки, может
+начать использовать @code{button-buffer-map} в качестве родительской карты для
+своей карты.
 
-If the button has a не-@code{nil} @code{follow-link} property, and
-@code{mouse-1-click-follows-link} is set, a quick @key{mouse-1} click
-will also activate the @code{push-button} command.
-@xref{Clickable Text}.
+Если кнопка имеет свойство @code{follow-link} установленное в не-@code{nil} и
+установлено @code{mouse-1-click-follows-link}, быстрое нажатие на @key{mouse-1} также
+активирует команду @code{push-button}.  @xref{Clickable Text}.
 
 @deffn Command push-button &optional pos use-mouse-action
-Perform the action specified by a button at location @var{pos}.
-@var{pos} may be either a buffer position or a mouse-event.  If
-@var{use-mouse-action} is не-@code{nil}, or @var{pos} is a
-mouse-event (@pxref{Mouse Events}), try to invoke the button's
-@code{mouse-action} property instead of @code{action}; if the button
-has no @code{mouse-action} property, use @code{action} as normal.
-@var{pos} defaults to point, except when @code{push-button} is invoked
-interactively as the result of a mouse-event, in which case, the mouse
-event's position is used.  If there's no button at @var{pos}, do
-nothing and return @code{nil}, otherwise return @code{t}.
+Выполнить действие, указанное кнопкой в расположении @var{pos}.  @var{pos} может быть
+либо положением в буфере, либо событием мыши.  Если @var{use-mouse-action} -
+не-@code{nil}, или @var{pos} - это (@pxref{Mouse Events}), вызванное событием мыши,
+попытка вызвать свойство кнопки @code{mouse-action} вместо @code{action}; если кнопка
+не имеет свойства @code{mouse-action}, использовать @code{action} как обычно.
+@var{pos} по умолчанию указывает на точку, за исключением случаев, когда
+@code{push-button} вызывается интерактивно в результате события мыши, и в этом случае
+используется позиция события мыши.  Если в @var{pos} нет кнопки, ничего не делать и
+вернуть @code{nil}, иначе вернуть @code{t}.
 @end deffn
 
 @deffn Command forward-button n &optional wrap display-message
-Move to the @var{n}th next button, or @var{n}th previous button if
-@var{n} is negative.  If @var{n} is zero, move to the start of any
-button at point.  If @var{wrap} is не-@code{nil}, moving past either
-end of the buffer continues from the other end.  If
-@var{display-message} is не-@code{nil}, the button's help-echo string
-is displayed.  Any button with a не-@code{nil} @code{skip} property
-is skipped over.  Returns the button found.
+Переход к кнопке @var{n} next или @var{n} previous, если @var{n} отрицательно.  Если
+@var{n} равно нулю, перейти к началу любой кнопки в точке.  Если @var{wrap} равно
+не-@code{nil}, движение за любой конец буфера продолжается с другого конца.  Если
+@var{display-message} равно не-@code{nil}, отображается строка help-echo кнопки.
+Любая кнопка со свойством @code{skip} установленным в не-@code{nil} пропускается.
+Возвращает найденную кнопку.
 @end deffn
 
 @deffn Command backward-button n &optional wrap display-message
-Move to the @var{n}th previous button, or @var{n}th next button if
-@var{n} is negative.  If @var{n} is zero, move to the start of any
-button at point.  If @var{wrap} is не-@code{nil}, moving past either
-end of the buffer continues from the other end.  If
-@var{display-message} is не-@code{nil}, the button's help-echo string
-is displayed.  Any button with a не-@code{nil} @code{skip} property
-is skipped over.  Returns the button found.
+Переход к предыдущей @var{n} кнопке или следующей @var{n} кнопки, если @var{n}
+отрицательно.  Если @var{n} равно нулю, перейти к началу любой кнопки в точке.  Если
+@var{wrap} равно не-@code{nil}, движение за любой конец буфера продолжается с другого
+конца.  Если @var{display-message} равно не-@code{nil}, отображается строка help-echo
+кнопки.  Любая кнопка со свойством @code{skip} установленным в не-@code{nil}
+пропускается.  Возвращается найденная кнопка.
 @end deffn
 
 @defun next-button pos &optional count-current
 @defunx previous-button pos &optional count-current
-Return the next button after (for @code{next-button}) or before (for
-@code{previous-button}) position @var{pos} in the current buffer.  If
-@var{count-current} is не-@code{nil}, count any button at @var{pos}
-in the search, instead of starting at the next button.
+Вернуть следующую кнопку после (для @code{next-button}) или до (для
+@code{previous-button}) позиции @var{pos} в текущем буфере.  Если @var{count-current}
+- не-@code{nil}, считать любую кнопку в @var{pos} в поиске, вместо того, чтобы
+начинать со следующей кнопки.
 @end defun
 
 @node Abstract Display
-@section Abstract Display
+@section Абстрактное Отображение
 @cindex ewoc
 @cindex display, abstract
 @cindex display, arbitrary objects
 @cindex model/view/controller
 @cindex view part, model/view/controller
 
-  The Ewoc package constructs buffer text that represents a structure
-of Lisp objects, and updates the text to follow changes in that
-structure.  This is like the ``view'' component in the
-``model--view--controller'' design paradigm.  Ewoc means ``Emacs's
-Widget for Object Collections''.
+  Пакет Ewoc создает текст буфера, который представляет структуру объектов Lisp, и
+обновляет текст, чтобы следовать изменениям в этой структуре.  Это похоже на компонент
+``Посмотреть'' в парадигме дизайна ``model--view--controller''.  Ewoc means
+``Виджет Emacs для коллекций объектов''.
 
-  An @dfn{ewoc} is a structure that organizes information required to
-construct buffer text that represents certain Lisp data.  The buffer
-text of the ewoc has three parts, in order: first, fixed @dfn{header}
-text; next, textual descriptions of a series of data elements (Lisp
-objects that you specify); and last, fixed @dfn{footer} text.
-Specifically, an ewoc contains information on:
+  @dfn{Ewoc} - это структура, которая организует информацию, необходимую для создания
+текста буфера, представляющего определенные данные Lisp.  Буферный текст ewoc состоит
+из трех частей по порядку: первая, фиксированный текст @dfn{заголовок}; затем
+текстовые описания серии элементов данных (объектов Lisp, которые указаны); и,
+наконец, исправлен текст @dfn{нижний колонтитул}.  В частности, ewoc содержит
+информацию о:
 
 @itemize @bullet
 @item
-The buffer which its text is generated in.
+Буфер, в котором создается его текст.
 
 @item
-The text's start position in the buffer.
+Начальная позиция текста в буфере.
 
 @item
-The header and footer strings.
+Строки верхнего и нижнего колонтитула.
 
 @item
 @cindex node, ewoc
-@c or "@cindex node, abstract display"?
-A doubly-linked chain of @dfn{nodes}, each of which contains:
+@c or "@cindex узел, абстрактное отображение"?
+Двусвязная цепочка @dfn{nodes}, каждая из которых содержит:
 
 @itemize
 @item
-A @dfn{data element}, a single Lisp object.
+@dfn{data element}, единственный объект Lisp.
 
 @item
-Links to the preceding and following nodes in the chain.
+Ссылки на предыдущие и последующие узлы в цепочке.
 @end itemize
 
 @item
-A @dfn{pretty-printer} function which is responsible for
-inserting the textual representation of a data
-element value into the current buffer.
+@dfn{pretty-printer} функция, которая отвечает за вставку текстового представления
+значения элемента данных в текущий буфер.
 @end itemize
 
-  Typically, you define an ewoc with @code{ewoc-create}, and then pass
-the resulting ewoc structure to other functions in the Ewoc package to
-build nodes within it, and display it in the buffer.  Once it is
-displayed in the buffer, other functions determine the correspondence
-between buffer positions and nodes, move point from one node's textual
-representation to another, and so forth.  @xref{Abstract Display
-Functions}.
+  Как правило, определяется ewoc с помощью @code{ewoc-create}, а затем передаётся
+полученная структура ewoc другим функциям в пакете Ewoc, чтобы создать в ней узлы и
+отобразить их в буфере.  Как только отображается в буфере, другие функции определяют
+соответствие между позициями буфера и узлами, перемещают точку из текстового
+представления одного узла в другое и так далее.  @xref{Abstract Display Functions}.
 
 @cindex encapsulation, ewoc
-@c or "@cindex encapsulation, abstract display"?
-  A node @dfn{encapsulates} a data element much the way a variable
-holds a value.  Normally, encapsulation occurs as a part of adding a
-node to the ewoc.  You can retrieve the data element value and place a
-new value in its place, like so:
+@c or "@cindex инкапсуляция, абстрактное отображение"?
+  Узел @dfn{инкапсулирует} - это элемент данных, во многом аналогично тому, как
+переменная хранит значение.  Обычно инкапсуляция происходит как часть добавления узла
+в ewoc.  Можно получить значение элемента данных и поместить на его место новое
+значение, например:
 
 @lisp
 (ewoc-data @var{node})
-@result{} value
+@result{} значение
 
 (ewoc-set-data @var{node} @var{new-value})
 @result{} @var{new-value}
 @end lisp
 
 @noindent
-You can also use, as the data element value, a Lisp object (list or
-vector) that is a container for the real value, or an index into
-some other structure.  The example (@pxref{Abstract Display Example})
-uses the latter approach.
+Также можно использовать в качестве значения элемента данных объект Lisp (список или
+вектор), который является контейнером для реального значения, или индекс в какой-либо
+другой структуре.  В примере (@pxref{Abstract Display Example}) используется второй
+подход.
 
-  When the data changes, you will want to update the text in the
-buffer.  You can update all nodes by calling @code{ewoc-refresh}, or
-just specific nodes using @code{ewoc-invalidate}, or all nodes
-satisfying a predicate using @code{ewoc-map}.  Alternatively, you can
-delete invalid nodes using @code{ewoc-delete} or @code{ewoc-filter},
-and add new nodes in their place.  Deleting a node from an ewoc deletes
-its associated textual description from buffer, as well.
+  Когда данные изменятся, захочется обновить текст в буфере.  Можно обновить все узлы,
+вызвав @code{ewoc-refresh}, или только определенные узлы, используя
+@code{ewoc-invalidate}, или все узлы, удовлетворяющие предикату, используя
+@code{ewoc-map}.  В качестве альтернативы можно удалить недопустимые узлы с помощью
+@code{ewoc-delete} или @code{ewoc-filter} и добавить на их место новые узлы.  При
+удалении узла из ewoc также удаляется связанное с ним текстовое описание из буфера.
 
 @menu
-* Abstract Display Functions::  Functions in the Ewoc package.
-* Abstract Display Example::    Example of using Ewoc.
+* Abstract Display Functions::  Функции в пакете Ewoc.
+* Abstract Display Example::    Пример использования Ewoc.
 @end menu
 
 @node Abstract Display Functions
-@subsection Abstract Display Functions
+@subsection Функции Абстрактного Отображения
 
-  In this subsection, @var{ewoc} and @var{node} stand for the
-structures described above (@pxref{Abstract Display}), while
-@var{data} stands for an arbitrary Lisp object used as a data element.
+  В этом подразделе @var{ewoc} и @var{node} обозначает структуры, описанные выше,
+(@pxref{Abstract Display}), а @var{data} обозначает произвольный объект Lisp,
+используемый в качестве элемента данных.
 
 @defun ewoc-create pretty-printer &optional header footer nosep
-This constructs and returns a new ewoc, with no nodes (and thus no data
-elements).  @var{pretty-printer} should be a function that takes one
-argument, a data element of the sort you plan to use in this ewoc, and
-inserts its textual description at point using @code{insert} (and never
-@code{insert-before-markers}, because that would interfere with the
-Ewoc package's internal mechanisms).
+Создает и возвращает новый ewoc без узлов (и, следовательно, без элементов данных).
+@var{pretty-printer} должно быть функцией, которая принимает один аргумент, элемент
+данных того типа, который планируется использовать в этом ewoc, и вставляет его
+текстовое описание в точку, используя @code{insert} (и никогда не
+@code{insert-before-markers}, потому что это будет мешать внутренним механизмам
+пакета Ewoc).
 
-Normally, a newline is automatically inserted after the header,
-the footer and every node's textual description.  If @var{nosep}
-is не-@code{nil}, no newline is inserted.  This may be useful for
-displaying an entire ewoc on a single line, for example, or for
-making nodes invisible by arranging for @var{pretty-printer}
-to do nothing for those nodes.
+Обычно новая строка автоматически вставляется после заголовка, нижнего колонтитула и
+текстового описания каждого узла.  Если @var{nosep} - не-@code{nil}, новая строка не
+вставляется.  Это может быть полезно, например, для отображения всего ewoc в одной
+строке или для того, чтобы сделать узлы невидимыми, настроив @var{pretty-printer},
+чтобы ничего не делать для этих узлов.
 
-An ewoc maintains its text in the buffer that is current when
-you create it, so switch to the intended buffer before calling
-@code{ewoc-create}.
+EWOC сохраняет свой текст в буфере, который является текущим при его создании,
+поэтому переключитесь на предполагаемый буфер перед вызовом @code{ewoc-create}.
 @end defun
 
 @defun ewoc-buffer ewoc
-This returns the buffer where @var{ewoc} maintains its text.
+Возвращается буфер, в котором @var{ewoc} хранит свой текст.
 @end defun
 
 @defun ewoc-get-hf ewoc
-This returns a cons cell @code{(@var{header} . @var{footer})}
-made from @var{ewoc}'s header and footer.
+Возвращается cons-ячейка @code{(@var{header} . @var{footer})}, созданную из верхнего
+и нижнего колонтитула @var{ewoc}.
 @end defun
 
 @defun ewoc-set-hf ewoc header footer
-This sets the header and footer of @var{ewoc} to the strings
-@var{header} and @var{footer}, respectively.
+Устанавливается верхний и нижний колонтитулы @var{ewoc} в строки @var{header} и
+@var{footer} соответственно.
 @end defun
 
 @defun ewoc-enter-first ewoc data
 @defunx ewoc-enter-last ewoc data
-These add a new node encapsulating @var{data}, putting it, respectively,
-at the beginning or end of @var{ewoc}'s chain of nodes.
+Добавляется новый узел, инкапсулирующий @var{data}, помещается, соответственно, в
+начало или конец цепочки узлов @var{ewoc}.
 @end defun
 
 @defun ewoc-enter-before ewoc node data
 @defunx ewoc-enter-after ewoc node data
-These add a new node encapsulating @var{data}, adding it to
-@var{ewoc} before or after @var{node}, respectively.
+Добавляется новый узел, инкапсулирующий @var{data}, добавляется в @var{ewoc} до
+или после @var{node} соответственно.
 @end defun
 
 @defun ewoc-prev ewoc node
 @defunx ewoc-next ewoc node
-These return, respectively, the previous node and the next node of @var{node}
-in @var{ewoc}.
+Возвращается, соответственно, предыдущий узел и следующий узел @var{node} в
+@var{ewoc}.
 @end defun
 
 @defun ewoc-nth ewoc n
-This returns the node in @var{ewoc} found at zero-based index @var{n}.
-A negative @var{n} means count from the end.  @code{ewoc-nth} returns
-@code{nil} if @var{n} is out of range.
+Возвращается узел в @var{ewoc}, найденный с отсчитываемым от нуля индексом @var{n}.
+Отрицательное @var{n} означает отсчет с конца.  @code{ewoc-nth} возвращается
+@code{nil}, если @var{n} выходит за пределы допустимого диапазона.
 @end defun
 
 @defun ewoc-data node
-This extracts the data encapsulated by @var{node} and returns it.
+Извлекает данные, инкапсулированные @var{node}, и возвращает их.
 @end defun
 
 @defun ewoc-set-data node data
-This sets the data encapsulated by @var{node} to @var{data}.
+Устанавливает данные, инкапсулированные @var{node}, в @var{data}.
 @end defun
 
 @defun ewoc-locate ewoc &optional pos guess
-This determines the node in @var{ewoc} which contains point (or
-@var{pos} if specified), and returns that node.  If @var{ewoc} has no
-nodes, it returns @code{nil}.  If @var{pos} is before the first node,
-it returns the first node; if @var{pos} is after the last node, it returns
-the last node.  The optional third arg @var{guess}
-should be a node that is likely to be near @var{pos}; this doesn't
-alter the result, but makes the function run faster.
+Определяет узел в @var{ewoc}, который содержит точку (или @var{pos}, если указано), и
+возвращает этот узел.  Если @var{ewoc} не имеет узлов, возвращается @code{nil}.  Если
+@var{pos} находится перед первым узлом, возвращается первый узел; если @var{pos}
+находится после последнего узла, возвращается последний узел.  Необязательный третий
+аргумент @var{guess} должен быть узлом, который, вероятно, находится рядом с
+@var{pos}; это не меняет результат, но заставляет функцию работать быстрее.
 @end defun
 
 @defun ewoc-location node
-This returns the start position of @var{node}.
+Возвращает начальную позицию @var{node}.
 @end defun
 
 @defun ewoc-goto-prev ewoc arg
 @defunx ewoc-goto-next ewoc arg
-These move point to the previous or next, respectively, @var{arg}th node
-in @var{ewoc}.  @code{ewoc-goto-prev} does not move if it is already at
-the first node or if @var{ewoc} is empty, whereas @code{ewoc-goto-next}
-moves past the last node, returning @code{nil}.  Excepting this special
-case, these functions return the node moved to.
+Перемещается точка на предыдущий или следующий узел, соответственно, @var{arg} в
+@var{ewoc}.  @code{ewoc-goto-prev} не перемещается, если уже находится на первом узле
+или если @var{ewoc} пусто, тогда как @code{ewoc-goto-next} перемещается за последний
+узел, возвращая @code{nil}.  За исключением этого особого случая, эти функции
+возвращают перемещенный узел.
 @end defun
 
 @defun ewoc-goto-node ewoc node
-This moves point to the start of @var{node} in @var{ewoc}.
+Перемещает точку в начало @var{node} в @var{ewoc}.
 @end defun
 
 @defun ewoc-refresh ewoc
-This function regenerates the text of @var{ewoc}.  It works by
-deleting the text between the header and the footer, i.e., all the
-data elements' representations, and then calling the pretty-printer
-function for each node, one by one, in order.
+Функция восстанавливает текст @var{ewoc}.  Работает, удаляя текст между верхним и
+нижним колонтитулами, то есть все представления элементов данных, а затем вызывает
+функцию pretty-printer для каждого узла, один за другим, по порядку.
 @end defun
 
 @defun ewoc-invalidate ewoc &rest nodes
-This is similar to @code{ewoc-refresh}, except that only @var{nodes} in
-@var{ewoc} are updated instead of the entire set.
+Похоже на @code{ewoc-refresh}, за исключением того, что обновляется только
+@var{nodes} в @var{ewoc}, а не весь набор.
 @end defun
 
 @defun ewoc-delete ewoc &rest nodes
-This deletes each node in @var{nodes} from @var{ewoc}.
+Удаляет каждый узел в @var{nodes} из @var{ewoc}.
 @end defun
 
 @defun ewoc-filter ewoc predicate &rest args
-This calls @var{predicate} for each data element in @var{ewoc} and
-deletes those nodes for which @var{predicate} returns @code{nil}.
-Any @var{args} are passed to @var{predicate}.
+Вызывается @var{predicate} для каждого элемента данных в @var{ewoc} и удаляются те
+узлы, для которых @var{predicate} возвращает @code{nil}.  Любые @var{args} передаются
+в @var{predicate}.
 @end defun
 
 @defun ewoc-collect ewoc predicate &rest args
-This calls @var{predicate} for each data element in @var{ewoc}
-and returns a list of those elements for which @var{predicate}
-returns не-@code{nil}.  The elements in the list are ordered
-as in the buffer.  Any @var{args} are passed to @var{predicate}.
+Вызывается @var{predicate} для каждого элемента данных в @var{ewoc} и возвращается
+список тех элементов, для которых @var{predicate} возвращает не-@code{nil}.  Элементы
+в списке упорядочены как в буфере.  Любые @var{args} передаются в @var{predicate}.
 @end defun
 
 @defun ewoc-map map-function ewoc &rest args
-This calls @var{map-function} for each data element in @var{ewoc} and
-updates those nodes for which @var{map-function} returns не-@code{nil}.
-Any @var{args} are passed to @var{map-function}.
+Вызывается @var{map-function} для каждого элемента данных в @var{ewoc} и обновляются
+те узлы, для которых @var{map-function} возвращает не-@code{nil}.  Любые @var{args}
+передаются в @var{map-function}.
 @end defun
 
 @node Abstract Display Example
-@subsection Abstract Display Example
+@subsection Пример Абстрактного Отображения
 
-  Here is a simple example using functions of the ewoc package to
-implement a @dfn{color components} display, an area in a buffer that
-represents a vector of three integers (itself representing a 24-bit RGB
-value) in various ways.
+  Вот простой пример использования функций пакета ewoc для реализации отображения
+@dfn{компонентов цвета}, области в буфере, которая представляет собой вектор из трех
+целых чисел (который сам представляет 24-битное значение RGB) различными способами.
 
 @example
 (setq colorcomp-ewoc nil
@@ -6347,8 +6295,8 @@ value) in various ways.
               "\n"))))
 
 (defun colorcomp (color)
-  "Allow fiddling with COLOR in a new buffer.
-The buffer is in Color Components mode."
+  "Разрешить возиться с ЦВЕТОМ в новом буфере.
+Буфер находится в режиме «Компоненты цвета»."
   (interactive "sColor (name or #RGB or #RRGGBB): ")
   (when (string= "" color)
     (setq color "green"))
@@ -6377,11 +6325,10 @@ The buffer is in Color Components mode."
 @end example
 
 @cindex controller part, model/view/controller
-  This example can be extended to be a color selection widget (in
-other words, the ``controller'' part of the ``model--view--controller''
-design paradigm) by defining commands to modify @code{colorcomp-data}
-and to finish the selection process, and a keymap to tie it all
-together conveniently.
+  Пример может быть расширен до виджета выбора цвета (другими словами, ``controller''
+часть парадигмы дизайна ``model--view--controller''), определяя команды для изменения
+@code{colorcomp-data} и завершения процесса выбора, а также ключевую карту, чтобы
+удобно связать все это вместе.
 
 @smallexample
 (defun colorcomp-mod (index limit delta)
@@ -6401,8 +6348,8 @@ together conveniently.
 (defun colorcomp-B-less () (interactive) (colorcomp-mod 2 0 -1))
 
 (defun colorcomp-copy-as-kill-and-exit ()
-  "Copy the color components into the kill ring and kill the buffer.
-The string is formatted #RRGGBB (hash followed by six hex digits)."
+  "Скопировать компоненты цвета в список уничтожения и уничтожить.
+Строка имеет формат #RRGGBB (хеш, за которым следуют шесть шестнадцатеричных цифр)."
   (interactive)
   (kill-new (format "#%02X%02X%02X"
                     (aref colorcomp-data 0)
@@ -6423,57 +6370,54 @@ The string is formatted #RRGGBB (hash followed by six hex digits)."
         m))
 @end smallexample
 
-Note that we never modify the data in each node, which is fixed when the
-ewoc is created to be either @code{nil} or an index into the vector
-@code{colorcomp-data}, the actual color components.
+Обратить внимание, что никогда не изменяются данные в каждом узле, что фиксируется
+при создании ewoc как @code{nil} или как индекс в векторе @code{colorcomp-data},
+фактических компонентах цвета.
 
 @node Blinking
-@section Blinking Parentheses
+@section Мигающие Круглые Скобки
 @cindex parenthesis matching
 @cindex blinking parentheses
 @cindex balancing parentheses
 
-  This section describes the mechanism by which Emacs shows a matching
-open parenthesis when the user inserts a close parenthesis.
+  В этом разделе описывается механизм, с помощью которого Emacs показывает
+соответствующую открытую скобку, когда пользователь вставляет закрывающую скобку.
 
 @defvar blink-paren-function
-The value of this variable should be a function (of no arguments) to
-be called whenever a character with close parenthesis syntax is inserted.
-The value of @code{blink-paren-function} may be @code{nil}, in which
-case nothing is done.
+Значением этой переменной должна быть функция (без аргументов), вызываемая всякий раз,
+когда вставляется символ с синтаксисом закрывающих скобок.  Значение
+@code{blink-paren-function} может быть @code{nil}, и в этом случае ничего не делается.
 @end defvar
 
 @defopt blink-matching-paren
-If this variable is @code{nil}, then @code{blink-matching-open} does
-nothing.
+Если эта переменная - @code{nil}, то @code{blink-matching-open} ничего не делает.
 @end defopt
 
 @defopt blink-matching-paren-distance
-This variable specifies the maximum distance to scan for a matching
-parenthesis before giving up.
+Переменная определяет максимальное расстояние для поиска подходящей круглой скобки,
+прежде чем отказаться от поиска.
 @end defopt
 
 @defopt blink-matching-delay
-This variable specifies the number of seconds to keep indicating the
-matching parenthesis.  A fraction of a second often gives good
-results, but the default is 1, which works on all systems.
+Переменная определяет количество секунд, в течение которых следует указывать
+соответствующую круглую скобку.  Доля секунды часто дает хорошие результаты, но по
+умолчанию установлено значение 1, которое работает во всех системах.
 @end defopt
 
 @deffn Command blink-matching-open
-This function is the default value of @code{blink-paren-function}.  It
-assumes that point follows a character with close parenthesis syntax
-and applies the appropriate effect momentarily to the matching opening
-character.  If that character is not already on the screen, it
-displays the character's context in the echo area.  To avoid long
-delays, this function does not search farther than
-@code{blink-matching-paren-distance} characters.
+Функция является значением по умолчанию @code{blink-paren-function}.  Предполагается,
+что точка следует за символом с синтаксисом закрывающих скобок и мгновенно применяет
+соответствующий эффект к соответствующему открывающему символу.  Если этого символа
+еще нет на экране, отображается контекст символа в эхо-области.  Чтобы избежать
+длительных задержек, эта функция не ищет дальше, чем символы
+@code{blink-matching-paren-distance}.
 
-Here is an example of calling this function explicitly.
+Вот пример явного вызова этой функции.
 
 @smallexample
 @group
 (defun interactive-blink-matching-open ()
-  "Indicate momentarily the start of parenthesized sexp before point."
+  "Указать на мгновение начало заключенного в скобки sexp перед точкой."
   (interactive)
 @end group
 @group
@@ -6486,194 +6430,182 @@ Here is an example of calling this function explicitly.
 @end deffn
 
 @node Character Display
-@section Character Display
+@section Отображение Символов
 
-  This section describes how characters are actually displayed by
-Emacs.  Typically, a character is displayed as a @dfn{glyph} (a
-graphical symbol which occupies one character position on the screen),
-whose appearance corresponds to the character itself.  For example,
-the character @samp{a} (character code 97) is displayed as @samp{a}.
-Some characters, however, are displayed specially.  For example, the
-formfeed character (character code 12) is usually displayed as a
-sequence of two glyphs, @samp{^L}, while the newline character
-(character code 10) starts a new screen line.
+  В этом разделе описывается, как на самом деле символы отображаются в Emacs.  Обычно
+символ отображается как @dfn{глиф} (графический символ, занимающий одну позицию
+символа на экране), внешний вид которого соответствует самому символу.  Например,
+символ @samp{a} (код символа 97) отображается как @samp{a}.  Однако некоторые символы
+отображаются особым образом.  Например, символ перевода страницы (код символа 12)
+обычно отображается как последовательность из двух глифов, @samp{^L}, а символ новой
+строки (код символа 10) запускает новую строку экрана.
 
-  You can modify how each character is displayed by defining a
-@dfn{display table}, which maps each character code into a sequence of
-glyphs.  @xref{Display Tables}.
+  Можно изменить способ отображения каждого символа, определив
+@dfn{таблицу отображения}, которая отображает код каждого символа в последовательность
+глифов.  @xref{Display Tables}.
 
 @menu
-* Usual Display::       The usual conventions for displaying characters.
-* Display Tables::      What a display table consists of.
-* Active Display Table::  How Emacs selects a display table to use.
-* Glyphs::              How to define a glyph, and what glyphs mean.
-* Glyphless Chars::     How glyphless characters are drawn.
+* Usual Display::       Обычные соглашения для отображения символов.
+* Display Tables::      Из чего состоит таблица отображения.
+* Active Display Table::  Как Emacs выбирает отображаемую таблицу для использования.
+* Glyphs::              Как определить глиф и что это означает.
+* Glyphless Chars::     Как нарисованы символы без символов.
 @end menu
 
 @node Usual Display
-@subsection Usual Display Conventions
+@subsection Обычные Условные Обозначения при Отображении
 
-  Here are the conventions for displaying each character code (in the
-absence of a display table, which can override these
+  Вот соглашения для отображения кода каждого символа (при отсутствии таблицы
+отображения, которая может переопределить эти
 @iftex
-conventions).
+условности).
 @end iftex
 @ifnottex
-conventions; @pxref{Display Tables}).
+условности; @pxref{Display Tables}).
 @end ifnottex
 
-@cindex printable ASCII characters
+@cindex печатные символы ASCII
 @itemize @bullet
 @item
-The @dfn{printable @acronym{ASCII} characters}, character codes 32
-through 126 (consisting of numerals, English letters, and symbols like
-@samp{#}) are displayed literally.
+@dfn{Печатные @acronym{ASCII} символы}, коды символов с 32 по 126 (состоящие из цифр,
+английских букв и символов, таких как @samp{#}) отображаются буквально.
 
 @item
-The tab character (character code 9) displays as whitespace stretching
-up to the next tab stop column.  @xref{Text Display,,, emacs, The GNU
-Emacs Manual}.  The variable @code{tab-width} controls the number of
-spaces per tab stop (see below).
+Символ табуляции (код символа 9) отображается как пробел, растягивающийся до
+следующего столбца табуляции.  @xref{Text Display,,, emacs, The GNU Emacs Manual}.
+Переменная @code{tab-width} контролирует количество пробелов на позицию табуляции
+(смотреть ниже).
 
 @item
-The newline character (character code 10) has a special effect: it
-ends the preceding line and starts a new line.
+Символ новой строки (код символа 10) имеет особый эффект: завершает предыдущую строку
+и начинает новую строку.
 
-@cindex ASCII control characters
+@cindex ASCII управляющие символы
 @item
-The non-printable @dfn{@acronym{ASCII} control characters}---character
-codes 0 through 31, as well as the @key{DEL} character (character code
-127)---display in one of two ways according to the variable
-@code{ctl-arrow}.  If this variable is не-@code{nil} (the default),
-these characters are displayed as sequences of two glyphs, where the
-first glyph is @samp{^} (a display table can specify a glyph to use
-instead of @samp{^}); e.g., the @key{DEL} character is displayed as
-@samp{^?}.
+Непечатаемые управляющие символы @dfn{@acronym{ASCII}} --- коды символов от 0 до 31,
+а также символ @key{DEL} (код символа 127) --- отображаются одним из двух способов в
+соответствии с переменной @code{ctl-arrow}.  Если эта переменная - не-@code{nil} (по
+умолчанию), эти символы отображаются как последовательности двух глифов, где первый
+глиф - @samp{^} (таблица отображения может указывать глиф для использования вместо
+@samp{^}); например, символ @key{DEL} отображается как @samp{^?}.
 
-If @code{ctl-arrow} is @code{nil}, these characters are displayed as
-octal escapes (see below).
+Если @code{ctl-arrow} равно @code{nil}, эти символы отображаются как восьмеричные
+escape-символы (смотреть ниже).
 
-This rule also applies to carriage return (character code 13), if that
-character appears in the buffer.  But carriage returns usually do not
-appear in buffer text; they are eliminated as part of end-of-line
-conversion (@pxref{Coding System Basics}).
+Это правило также применяется к возврату каретки (код символа 13), если этот символ
+появляется в буфере.  Но возврат каретки обычно не появляется в тексте буфера;
+удаляются как часть преобразования конца строки (@pxref{Coding System Basics}).
 
-@cindex octal escapes
+@cindex восьмеричные escap последовательности
 @item
-@dfn{Raw bytes} are non-@acronym{ASCII} characters with codes 128
-through 255 (@pxref{Text Representations}).  These characters display
-as @dfn{octal escapes}: sequences of four glyphs, where the first
-glyph is the @acronym{ASCII} code for @samp{\}, and the others are
-digit characters representing the character code in octal.  (A display
-table can specify a glyph to use instead of @samp{\}.)
+@dfn{Необработанные байты} - это символы не-@acronym{ASCII} с кодами от 128 до 255
+(@pxref{Text Representations}).  Эти символы отображаются как
+@dfn{восьмеричные escape последовательности}: последовательности из четырех глифов,
+где первый глиф - это код @acronym{ASCII} для @samp{\}, а остальные - это цифровые
+символы, представляющие код символа в восьмеричном формате. (В таблице отображения
+можно указать глиф, который будет использоваться вместо @samp{\}.)
 
 @item
-Each non-@acronym{ASCII} character with code above 255 is displayed
-literally, if the terminal supports it.  If the terminal does not
-support it, the character is said to be @dfn{glyphless}, and it is
-usually displayed using a placeholder glyph.  For example, if a
-graphical terminal has no font for a character, Emacs usually displays
-a box containing the character code in hexadecimal.  @xref{Glyphless
-Chars}.
+Каждый символ не-@acronym{ASCII} с кодом выше 255 отображается буквально, если
+терминал его поддерживает.  Если терминал его не поддерживает, символ называется
+@dfn{glyphless} и обычно отображается с помощью глифа-заполнителя.  Например, если
+графический терминал не имеет шрифта для символа, Emacs обычно отображает поле,
+содержащее код символа в шестнадцатеричном формате.  @xref{Glyphless Chars}.
 @end itemize
 
-  The above display conventions apply even when there is a display
-table, for any character whose entry in the active display table is
-@code{nil}.  Thus, when you set up a display table, you need only
-specify the characters for which you want special behavior.
+  Вышеупомянутые соглашения об отображении применяются даже при наличии таблицы
+отображения для любого символа, запись которого в активной таблице отображения -
+@code{nil}.  Таким образом, когда настраивается таблица отображения, нужно только
+указать символы, для которых требуется особое поведение.
 
-  The following variables affect how certain characters are displayed
-on the screen.  Since they change the number of columns the characters
-occupy, they also affect the indentation functions.  They also affect
-how the mode line is displayed; if you want to force redisplay of the
-mode line using the new values, call the function
-@code{force-mode-line-update} (@pxref{Mode Line Format}).
+  Следующие переменные влияют на то, как определенные символы отображаются на экране.
+Поскольку они изменяют количество столбцов, которые занимают символы, они также влияют
+на функции отступа.  Они также влияют на то, как отображается строка режима; если
+требуется принудительно повторно отобразить строку режима с новыми значениями,
+вызвать функцию @code{force-mode-line-update} (@pxref{Mode Line Format}).
 
 @defopt ctl-arrow
-@cindex control characters in display
-This buffer-local variable controls how control characters are
-displayed.  If it is не-@code{nil}, they are displayed as a caret
-followed by the character: @samp{^A}.  If it is @code{nil}, they are
-displayed as octal escapes: a backslash followed by three octal
-digits, as in @samp{\001}.
+@cindex отображение управляющих символов
+Локальная в буфере переменная определяет, как отображаются управляющие символы.  Если
+установленна в не-@code{nil}, символы отображаются в виде символа вставки, за которым
+следует символ: @samp{^A}.  Если установленна в @code{nil}, отображаются как
+восьмеричные escape-символы: обратная косая черта, за которой следуют три восьмеричные
+цифры, как в @samp{\001}.
 @end defopt
 
 @defopt tab-width
-The value of this buffer-local variable is the spacing between tab
-stops used for displaying tab characters in Emacs buffers.  The value
-is in units of columns, and the default is 8.  Note that this feature
-is completely independent of the user-settable tab stops used by the
-command @code{tab-to-tab-stop}.  @xref{Indent Tabs}.
+Значение этой локальной переменной буфера - это интервал между позициями табуляции,
+используемый для отображения символов табуляции в буферах Emacs.  Значение указывается
+в столбцах, по умолчанию - 8.  Обратить внимание, что эта функция полностью не зависит
+от настраиваемых пользователем позиций табуляции, используемых командой
+@code{tab-to-tab-stop}.  @xref{Indent Tabs}.
 @end defopt
 
 @node Display Tables
-@subsection Display Tables
+@subsection Таблицы Отображения
 
 @cindex display table
-  A display table is a special-purpose char-table
-(@pxref{Char-Tables}), with @code{display-table} as its subtype, which
-is used to override the usual character display conventions.  This
-section describes how to make, inspect, and assign elements to a
-display table object.
+  Таблица отображения - это специальная таблица символов (@pxref{Char-Tables}) с
+@code{display-table} в качестве подтипа, которая используется для переопределения
+обычных соглашений по отображению символов.  В этом разделе описывается, как
+создавать, проверять и назначать элементы объекту таблицы отображения.
 
 @defun make-display-table
-This creates and returns a display table.  The table initially has
-@code{nil} in all elements.
+Создает и возвращает таблицу отображения.  Таблица изначально имеет @code{nil} во
+всех элементах.
 @end defun
 
-  The ordinary elements of the display table are indexed by character
-codes; the element at index @var{c} says how to display the character
-code @var{c}.  The value should be @code{nil} (which means to display
-the character @var{c} according to the usual display conventions;
-@pxref{Usual Display}), or a vector of glyph codes (which means to
-display the character @var{c} as those glyphs; @pxref{Glyphs}).
+  Обычные элементы таблицы отображения индексируются кодами символов; элемент с
+индексом @var{c} говорит, как отобразить код символа @var{c}.  Значение должно быть
+@code{nil} (что означает отображение символа @var{c} в соответствии с обычными
+соглашениями об отображении; @pxref{Usual Display}) или вектор кодов глифов (что
+означает отображение символа @var{c} как этих глифов; @pxref{Glyphs}).
 
-  @strong{Warning:} if you use the display table to change the display
-of newline characters, the whole buffer will be displayed as one long
-line.
+  @strong{Предупреждение:} если используется таблица отображения для изменения
+отображения символов новой строки, весь буфер будет отображаться как одна длинная
+строка.
 
-  The display table also has six @dfn{extra slots} which serve special
-purposes.  Here is a table of their meanings; @code{nil} in any slot
-means to use the default for that slot, as stated below.
+  В таблице отображения также есть шесть @dfn{дополнительных слотов}, которые служат
+для специальных целей.  Вот таблица их значений; @code{nil} в любом слоте означает
+использование значения по умолчанию для этого слота, как указано ниже.
 
 @table @asis
 @item 0
-The glyph for the end of a truncated screen line (the default for this
-is @samp{$}).  @xref{Glyphs}.  On graphical terminals, Emacs by
-default uses arrows in the fringes to indicate truncation, so the
-display table has no effect, unless you disable the fringes
+Глиф конца усеченной строки экрана (по умолчанию @samp{$}).  @xref{Glyphs}.
+На графических терминалах Emacs по умолчанию использует стрелки на краях для
+обозначения усечения, поэтому таблица отображения не имеет никакого эффекта, если
+не отключены стрелки.
 (@pxref{Fringes,, Window Fringes, emacs, the GNU Emacs Manual}).
 
 @item 1
-The glyph for the end of a continued line (the default is @samp{\}).
-On graphical terminals, Emacs by default uses curved arrows in the
-fringes to indicate continuation, so the display table has no effect,
-unless you disable the fringes.
+Символ конца продолжающейся строки (по умолчанию @samp{\}).  На графических
+терминалах Emacs по умолчанию использует изогнутые стрелки на краях для обозначения
+продолжения, поэтому таблица отображения не имеет никакого эффекта, если не
+отключены эти стрелки.
 
 @item 2
-The glyph for indicating a character displayed as an octal character
-code (the default is @samp{\}).
+Глиф для обозначения символа, отображаемого как восьмеричный код символа (по
+умолчанию @samp{\}).
 
 @item 3
-The glyph for indicating a control character (the default is @samp{^}).
+Глиф для обозначения управляющего символа (по умолчанию @samp{^}).
 
 @item 4
-A vector of glyphs for indicating the presence of invisible lines (the
-default is @samp{...}).  @xref{Selective Display}.
+Вектор глифов для индикации наличия невидимых линий (по умолчанию @samp{...}).
+@xref{Selective Display}.
 
 @item 5
-The glyph used to draw the border between side-by-side windows (the
-default is @samp{|}).  @xref{Splitting Windows}.  This currently has
-effect only on text terminals; on graphical terminals, if vertical
-scroll bars are supported and in use, a scroll bar separates the two
-windows, and if there are no vertical scroll bars and no dividers
-(@pxref{Window Dividers}), Emacs uses a thin line to indicate the
-border.
+Глиф, используемый для рисования границы между соседними окнами (по умолчанию
+@samp{|}).  @xref{Splitting Windows}.  В настоящее время это действует только на
+текстовые терминалы; на графических терминалах, если вертикальные полосы прокрутки
+поддерживаются и используются, полоса прокрутки разделяет два окна, а если нет
+вертикальных полос прокрутки и разделителей (@pxref{Window Dividers}), Emacs
+использует тонкую линию для обозначения границы.
 @end table
 
-  For example, here is how to construct a display table that mimics
-the effect of setting @code{ctl-arrow} to a не-@code{nil} value
-(@pxref{Glyphs}, for the function @code{make-glyph-code}):
+  Например, вот как создать таблицу отображения, которая имитирует эффект установки
+@code{ctl-arrow} в значение не-@code{nil} (@pxref{Glyphs}, для функции
+@code{make-glyph-code}):
 
 @example
 (setq disptab (make-display-table))
@@ -6689,418 +6621,399 @@ the effect of setting @code{ctl-arrow} to a не-@code{nil} value
 @end example
 
 @defun display-table-slot display-table slot
-This function returns the value of the extra slot @var{slot} of
-@var{display-table}.  The argument @var{slot} may be a number from 0 to
-5 inclusive, or a slot name (symbol).  Valid symbols are
-@code{truncation}, @code{wrap}, @code{escape}, @code{control},
-@code{selective-display}, and @code{vertical-border}.
+Функция возвращает значение дополнительного слота @var{slot} для @var{display-table}.
+Аргумент @var{slot} может быть числом от 0 до 5 включительно или именем слота
+(символом).  Допустимые символы: @code{truncation}, @code{wrap}, @code{escape},
+@code{control}, @code{selective-display} и @code{vertical-border}.
 @end defun
 
 @defun set-display-table-slot display-table slot value
-This function stores @var{value} in the extra slot @var{slot} of
-@var{display-table}.  The argument @var{slot} may be a number from 0 to
-5 inclusive, or a slot name (symbol).  Valid symbols are
-@code{truncation}, @code{wrap}, @code{escape}, @code{control},
-@code{selective-display}, and @code{vertical-border}.
+Функция сохраняет @var{value} в дополнительном слоте @var{slot} объекта
+@var{display-table}.  Аргумент @var{slot} может быть числом от 0 до 5 включительно
+или именем слота (символом).  Допустимые символы: @code{truncation}, @code{wrap},
+@code{escape}, @code{control}, @code{selective-display} и @code{vertical-border}.
 @end defun
 
 @defun describe-display-table display-table
-This function displays a description of the display table
-@var{display-table} in a help buffer.
+Функция отображает описание таблицы отображения @var{display-table} в буфере справки.
 @end defun
 
 @deffn Command describe-current-display-table
-This command displays a description of the current display table in a
-help buffer.
+Команда отображает описание текущей отображаемой таблицы в буфере справки.
 @end deffn
 
 @node Active Display Table
-@subsection Active Display Table
+@subsection Таблица Активного Отображения
 @cindex active display table
 
-  Each window can specify a display table, and so can each buffer.
-The window's display table, if there is one, takes precedence over the
-buffer's display table.  If neither exists, Emacs tries to use the
-standard display table; if that is @code{nil}, Emacs uses the usual
-character display conventions (@pxref{Usual Display}).
+  Каждое окно может указывать таблицу отображения, как и каждый буфер.  Таблица
+отображения окна, если таковая имеется, имеет приоритет над таблицей отображения
+буфера.  Если ничего не существует, Emacs пытается использовать стандартную таблицу
+отображения; если это @code{nil}, Emacs использует обычные соглашения об отображении
+символов (@pxref{Usual Display}).
 
-  Note that display tables affect how the mode line is displayed, so
-if you want to force redisplay of the mode line using a new display
-table, call @code{force-mode-line-update} (@pxref{Mode Line Format}).
+  Обратить внимание, что таблицы отображения влияют на способ отображения строки
+режима, поэтому, если требуется принудительно повторно отобразить строку режима с
+помощью новой таблицы отображения, вызвать @code{force-mode-line-update}
+(@pxref{Mode Line Format}).
 
 @defun window-display-table &optional window
-This function returns @var{window}'s display table, or @code{nil} if
-there is none.  The default for @var{window} is the selected window.
+Функция возвращает таблицу отображения @var{window} или @code{nil}, если ее нет.
+По умолчанию для @var{window} выступает выбрано окно.
 @end defun
 
 @defun set-window-display-table window table
-This function sets the display table of @var{window} to @var{table}.
-The argument @var{table} should be either a display table or
-@code{nil}.
+Функция устанавливает для таблицы отображения @var{window} значение @var{table}.
+Аргумент @var{table} должен быть либо таблицей отображения, либо @code{nil}.
 @end defun
 
 @defvar buffer-display-table
-This variable is automatically buffer-local in all buffers; its value
-specifies the buffer's display table.  If it is @code{nil}, there is
-no buffer display table.
+Переменная автоматически является локальной для всех буферов; её значение определяет
+таблицу отображения буфера.  Если это @code{nil}, таблица отображения буфера
+отсутствует.
 @end defvar
 
 @defvar standard-display-table
-The value of this variable is the standard display table, which is
-used when Emacs is displaying a buffer in a window with neither a
-window display table nor a buffer display table defined, or when Emacs
-is outputting text to the standard output or error streams.  Although its
-default is typically @code{nil}, in an interactive session if the
-terminal cannot display curved quotes, its default maps curved quotes
-to ASCII approximations.  @xref{Text Quoting Style}.
+Значением этой переменной является стандартная таблица отображения, которая
+используется, когда Emacs отображает буфер в окне, в котором не определены ни таблица
+отображения окна, ни таблица отображения буфера, или когда Emacs выводит текст в
+стандартный поток вывода или потоки ошибок.  Хотя её значение по умолчанию обычно
+@code{nil}, в интерактивном сеансе, если терминал не может отображать изогнутые
+котировки, его значение по умолчанию сопоставляет изогнутые кавычки с приближением
+ASCII.  @xref{Text Quoting Style}.
 @end defvar
 
-The @file{disp-table} library defines several functions for changing
-the standard display table.
+Библиотека @file{disp-table} определяет несколько функций для изменения стандартной
+таблицы отображения.
 
 @node Glyphs
-@subsection Glyphs
+@subsection Глифы
 @cindex glyph
 
 @cindex glyph code
-  A @dfn{glyph} is a graphical symbol which occupies a single
-character position on the screen.  Each glyph is represented in Lisp
-as a @dfn{glyph code}, which specifies a character and optionally a
-face to display it in (@pxref{Faces}).  The main use of glyph codes is
-as the entries of display tables (@pxref{Display Tables}).  The
-following functions are used to manipulate glyph codes:
+  @dfn{Глиф} - это графический символ, который занимает позицию одного символа на
+экране.  Каждый глиф представлен в Lisp как @dfn{код глифа}, который определяет
+символ и, необязательно, вид отображения, чтобы отобразить его в (@pxref{Faces}).
+В основном коды глифов используются в качестве записей в таблицах отображения
+(@pxref{Display Tables}).  Следующие функции используются для управления кодами
+глифов:
 
 @defun make-glyph-code char &optional face
-This function returns a glyph code representing char @var{char} with
-face @var{face}.  If @var{face} is omitted or @code{nil}, the glyph
-uses the default face; in that case, the glyph code is an integer.  If
-@var{face} is не-@code{nil}, the glyph code is not necessarily an
-integer object.
+Функция возвращает код глифа, представляющий символ @var{char} с видом @var{face}.
+Если @var{face} опущено или @code{nil}, глиф использует начертание по умолчанию; в
+этом случае код глифа является целым числом.  Если @var{face} равно не-@code{nil},
+код глифа не обязательно является целочисленным объектом.
 @end defun
 
 @defun glyph-char glyph
-This function returns the character of glyph code @var{glyph}.
+Функция возвращает символ кода глифа @var{glyph}.
 @end defun
 
 @defun glyph-face glyph
-This function returns face of glyph code @var{glyph}, or @code{nil} if
-@var{glyph} uses the default face.
+Функция возвращает вид кода глифа @var{glyph} или @code{nil}, если @var{glyph}
+использует вид по умолчанию.
 @end defun
 
 @ifnottex
-  You can set up a @dfn{glyph table} to change how glyph codes are
-actually displayed on text terminals.  This feature is semi-obsolete;
-use @code{glyphless-char-display} instead (@pxref{Glyphless Chars}).
+  Можно настроить @dfn{таблицу глифов}, чтобы изменить способ отображения кодов
+глифов на текстовых терминалах.  Эта функция частично устарела; использовать
+@code{glyphless-char-display} вместо (@pxref{Glyphless Chars}).
 
 @defvar glyph-table
-The value of this variable, if не-@code{nil}, is the current glyph
-table.  It takes effect only on character terminals; on graphical
-displays, all glyphs are displayed literally.  The glyph table should
-be a vector whose @var{g}th element specifies how to display glyph
-code @var{g}, where @var{g} is the glyph code for a glyph whose face
-is unspecified.  Each element should be one of the following:
+Значение этой переменной, если не-@code{nil}, является текущей таблицей глифов.  Это
+действует только на символьные терминалы; на графических дисплеях все глифы
+отображаются буквально.  Таблица глифов должна быть вектором, элемент @var{g}
+которого указывает, как отображать код глифа @var{g}, где @var{g} - это код глифа
+для глифа, вид отображения которого не указан.  Каждый элемент должен быть одним
+из следующих:
 
 @table @asis
 @item @code{nil}
-Display this glyph literally.
+Отобразить этот глиф буквально.
 
 @item a string
-Display this glyph by sending the specified string to the terminal.
+Отобразить этот глиф, отправив указанную строку на терминал.
 
 @item a glyph code
-Display the specified glyph code instead.
+Вместо этого отобразить указанный код глифа.
 @end table
 
-Any integer glyph code greater than or equal to the length of the
-glyph table is displayed literally.
+Любой целочисленный код глифа, больший или равный длине таблицы глифов, отображается
+буквально.
 @end defvar
 @end ifnottex
 
 @node Glyphless Chars
-@subsection Glyphless Character Display
+@subsection Отображение Символов без Символов
 @cindex glyphless characters
 
-  @dfn{Glyphless characters} are characters which are displayed in a
-special way, e.g., as a box containing a hexadecimal code, instead of
-being displayed literally.  These include characters which are
-explicitly defined to be glyphless, as well as characters for which
-there is no available font (on a graphical display), and characters
-which cannot be encoded by the terminal's coding system (on a text
-terminal).
+  @dfn{Символы без символов} - это символы, которые отображаются особым образом,
+например, как поле, содержащее шестнадцатеричный код, вместо того, чтобы отображаться
+буквально.  К ним относятся символы, которые явно определены как не содержащие глифов,
+а также символы, для которых нет доступного шрифта (на графическом дисплее), и
+символы, которые не могут быть закодированы системой кодирования терминала (на
+текстовом терминале).
 
 @defvar glyphless-char-display
-The value of this variable is a char-table which defines glyphless
-characters and how they are displayed.  Each entry must be one of the
-following display methods:
+Значением этой переменной является таблица символов, которая определяет символы без
+глифов и способ их отображения.  Каждая запись должна быть одним из следующих
+способов отображения:
 
 @table @asis
 @item @code{nil}
-Display the character in the usual way.
+Отобразить символ обычным способом.
 
 @item @code{zero-width}
-Don't display the character.
+Не отображать символ.
 
 @item @code{thin-space}
-Display a thin space, 1-pixel wide on graphical displays, or
-1-character wide on text terminals.
+Отобразить тонкое пространство шириной 1 пиксель на графических дисплеях или шириной 1
+символ на текстовых терминалах.
 
 @item @code{empty-box}
 Display an empty box.
 
 @item @code{hex-code}
-Display a box containing the Unicode codepoint of the character, in
-hexadecimal notation.
+Отобразить поле, содержащее кодовую точку Unicode символа в шестнадцатеричной системе
+счисления.
 
 @item an @acronym{ASCII} string
-Display a box containing that string.  The string should contain at
-most 6 @acronym{ASCII} characters.
+Отобразить поле, содержащее эту строку.  Строка должна содержать не более 6
+символов @acronym{ASCII}.
 
 @item a cons cell @code{(@var{graphical} . @var{text})}
-Display with @var{graphical} on graphical displays, and with
-@var{text} on text terminals.  Both @var{graphical} and @var{text}
-must be one of the display methods described above.
+Отображение с @var{graphical} на графических дисплеях и с @var{text} на текстовых
+терминалах.  Оба @var{graphical} и @var{text} должны быть одним из методов
+отображения, описанных выше.
 @end table
 
 @noindent
-The @code{thin-space}, @code{empty-box}, @code{hex-code}, and
-@acronym{ASCII} string display methods are drawn with the
-@code{glyphless-char} face.  On text terminals, a box is emulated by
-square brackets, @samp{[]}.
+Методы отображения строки @code{thin-space}, @code{empty-box}, @code{hex-code} и
+@acronym{ASCII} рисуются видами @code{glyphless-char}.  На текстовых терминалах поле
+эмулируется квадратными скобками, @samp{[]}.
 
-The char-table has one extra slot, which determines how to display any
-character that cannot be displayed with any available font, or cannot
-be encoded by the terminal's coding system.  Its value should be one
-of the above display methods, except @code{zero-width} or a cons cell.
+Таблица символов имеет один дополнительный слот, который определяет, как отображать
+любой символ, который не может быть отображен ни одним доступным шрифтом или не может
+быть закодирован системой кодирования терминала.  Её значение должно быть одним из
+указанных выше методов отображения, кроме @code{zero-width} или cons-ячейки.
 
-If a character has a не-@code{nil} entry in an active display table,
-the display table takes effect; in this case, Emacs does not consult
-@code{glyphless-char-display} at all.
+Если у символа есть запись не-@code{nil} в активной таблице отображения, таблица
+отображения вступает в силу; в этом случае Emacs вообще не обращается к
+@code{glyphless-char-display}.
 @end defvar
 
 @defopt glyphless-char-display-control
-This user option provides a convenient way to set
-@code{glyphless-char-display} for groups of similar characters.  Do
-not set its value directly from Lisp code; the value takes effect only
-via a custom @code{:set} function (@pxref{Variable Definitions}),
-which updates @code{glyphless-char-display}.
+Пользовательская опция предоставляет удобный способ установить
+@code{glyphless-char-display} для групп похожих символов.  Не устанавливать её
+значение непосредственно из кода Lisp; значение вступает в силу только через
+специальную функцию @code{:set} (@pxref{Variable Definitions}), которая обновляет
+@code{glyphless-char-display}.
 
-Its value should be an alist of elements @code{(@var{group}
-. @var{method})}, where @var{group} is a symbol specifying a group of
-characters, and @var{method} is a symbol specifying how to display
-them.
+Её значение должно быть списком элементов @code{(@var{group} . @var{method})}, где
+@var{group} - символ, определяющий группу символов, а @var{method} - символ,
+определяющий, как их отображать.
 
-@var{group} should be one of the following:
+@var{group} должно быть одним из следующих:
 
 @table @code
 @item c0-control
-@acronym{ASCII} control characters @code{U+0000} to @code{U+001F},
-excluding the newline and tab characters (normally displayed as escape
-sequences like @samp{^A}; @pxref{Text Display,, How Text Is Displayed,
-emacs, The GNU Emacs Manual}).
+@acronym{ASCII} управляющие символы от @code{U+0000} до @code{U+001F}, исключая
+символы новой строки и табуляции (обычно отображаются как escape-последовательности,
+такие как @samp{^A};
+@pxref{Text Display,, How Text Is Displayed, emacs, The GNU Emacs Manual}).
 
 @item c1-control
-Non-@acronym{ASCII}, non-printing characters @code{U+0080} to
-@code{U+009F} (normally displayed as octal escape sequences like
-@samp{\230}).
+Не-@acronym{ASCII}, непечатаемые символы от @code{U+0080} до @code{U+009F} (обычно
+отображаются как восьмеричные escape-последовательности, так как @samp{\230}).
 
 @item format-control
-Characters of Unicode General Category [Cf], such as U+200E
-@sc{left-to-right mark}, but excluding characters that have graphic
-images, such as U+00AD @sc{soft hyphen}.
+Символы общей категории Unicode [Cf], например U+200E @sc{left-to-right mark}, но
+исключая символы с графическими изображениями, например U+00AD @sc{soft hyphen}.
 
 @item no-font
-Characters for which there is no suitable font, or which cannot be
-encoded by the terminal's coding system.
+Символы, для которых нет подходящего шрифта или которые не могут быть закодированы
+системой кодирования терминала.
 @end table
 
-@c FIXME: this can also be 'acronym', but that's not currently
-@c completely implemented; it applies only to the format-control
-@c group, and only works if the acronym is in 'char-acronym-table'.
-The @var{method} symbol should be one of @code{zero-width},
-@code{thin-space}, @code{empty-box}, or @code{hex-code}.  These have
-the same meanings as in @code{glyphless-char-display}, above.
+@c FIXME: это также может быть 'acronym', но в настоящее время
+@c реализовано не полностью; это применяется только к группе
+@c управления форматом и работает только в том случае, если
+@c аббревиатура находится в 'char-acronym-table'.
+Символ @var{method} должен быть одним из символов @code{zero-width},
+@code{thin-space}, @code{empty-box} или @code{hex-code}.  Имеют то же значение, что
+и в @code{glyphless-char-display} смотреть выше.
 @end defopt
 
 @node Beeping
-@section Beeping
+@section Писк
 @cindex bell
 
-  This section describes how to make Emacs ring the bell (or blink the
-screen) to attract the user's attention.  Be conservative about how
-often you do this; frequent bells can become irritating.  Also be
-careful not to use just beeping when signaling an error is more
-appropriate (@pxref{Errors}).
+  В этом разделе описывается, как заставить Emacs звонить в звонок (или мигать
+экраном), чтобы привлечь внимание пользователя.  Быть осторожным в отношении того,
+как часто это делается; частые звонки могут вызывать раздражение.  Также быть
+осторожным, чтобы не использовать просто звуковой сигнал, когда сигнал об ошибке
+более уместен.  (@pxref{Errors}).
 
 @defun ding &optional do-not-terminate
 @cindex keyboard macro termination
-This function beeps, or flashes the screen (see @code{visible-bell} below).
-It also terminates any keyboard macro currently executing unless
-@var{do-not-terminate} is не-@code{nil}.
+Функция подает звуковой сигнал или мигает экраном (смотреть @code{visible-bell} ниже).
+Также завершает выполнение любого макроса клавиатуры, если только
+@var{do-not-terminate} не не-@code{nil}.
 @end defun
 
 @defun beep &optional do-not-terminate
-This is a synonym for @code{ding}.
+Синоним @code{ding}.
 @end defun
 
 @defopt visible-bell
-This variable determines whether Emacs should flash the screen to
-represent a bell.  не-@code{nil} means yes, @code{nil} means no.
-This is effective on graphical displays, and on text terminals
-provided the terminal's Termcap entry defines the visible bell
-capability (@samp{vb}).
+Переменная определяет, должен ли Emacs мигать на экране, представляя колокольчик.
+Не-@code{nil} означает да, @code{nil} означает нет.  Это эффективно на графических
+дисплеях и на текстовых терминалах при условии, что запись Termcap терминала
+определяет возможность видимого звонка (@samp{vb}).
 @end defopt
 
 @defopt ring-bell-function
-If this is не-@code{nil}, it specifies how Emacs should ring the
-bell.  Its value should be a function of no arguments.  If this is
-не-@code{nil}, it takes precedence over the @code{visible-bell}
-variable.
+Если не-@code{nil}, указывается, как Emacs должен звонить в колокол.  Значение должно
+быть функцией без аргументов.  Если это не-@code{nil}, имеется приоритет перед
+переменной @code{visible-bell}.
 @end defopt
 
 @node Window Systems
-@section Window Systems
+@section Оконные Системы
 
-  Emacs works with several window systems, most notably the X Window
-System.  Both Emacs and X use the term ``window'', but use it
-differently.  An Emacs frame is a single window as far as X is
-concerned; the individual Emacs windows are not known to X at all.
+  Emacs работает с несколькими оконными системами, в первую очередь с X Window System.
+И Emacs, и X используют термин ``окно'', но по-разному.  Что касается X, фрейм Emacs -
+это одно окно; отдельные окна Emacs вообще не известны X.
 
 @defvar window-system
-This terminal-local variable tells Lisp programs what window system
-Emacs is using for displaying the frame.  The possible values are
+Локальная для терминала переменная сообщает программам Lisp, какую оконную систему
+Emacs использует для отображения фрейма.  Возможные значения:
 
 @table @code
 @item x
-@cindex X Window System
-Emacs is displaying the frame using X.
+@cindex X Окрнная Система
+Emacs отображает фрейм, используя X.
 @item w32
-Emacs is displaying the frame using native MS-Windows GUI.
+Emacs отображает фрейм, используя собственный графический интерфейс MS-Windows.
 @item ns
-Emacs is displaying the frame using the Nextstep interface (used on
-GNUstep and macOS).
+Emacs отображает фрейм с помощью интерфейса Nextstep (используется в GNUstep и macOS).
 @item pc
-Emacs is displaying the frame using MS-DOS direct screen writes.
+Emacs отображает фрейм, используя прямую запись на экране MS-DOS.
 @item nil
-Emacs is displaying the frame on a character-based terminal.
+Emacs отображает фрейм на символьном терминале.
 @end table
 @end defvar
 
 @defvar initial-window-system
-This variable holds the value of @code{window-system} used for the
-first frame created by Emacs during startup.  (When Emacs is invoked
-as a daemon, it does not create any initial
-frames, so @code{initial-window-system} is @code{nil}, except on
-MS-Windows, where it is still @code{w32}.  @xref{Initial Options,
-daemon,, emacs, The GNU Emacs Manual}.)
+Переменная содержит значение @code{window-system}, используемое для первого фрейма,
+созданного Emacs во время запуска.  (Когда Emacs вызывается как демон, он не создает
+никаких начальных фреймов, поэтому @code{initial-window-system} - это @code{nil},
+за исключением MS-Windows, где он по-прежнему @code{w32}.
+@xref{Initial Options, daemon,, emacs, The GNU Emacs Manual}.)
 @end defvar
 
 @defun window-system &optional frame
-This function returns a symbol whose name tells what window system is
-used for displaying @var{frame} (which defaults to the currently
-selected frame).  The list of possible symbols it returns is the same
-one documented for the variable @code{window-system} above.
+Функция возвращает символ, имя которого сообщает, какая оконная система используется
+для отображения @var{frame} (по умолчанию используется текущий выбранный фрейм).
+Список возможных символов, которые возвращаются, тот же, что задокументирован для
+переменной @code{window-system} выше.
 @end defun
 
-  Do @emph{not} use @code{window-system} and
-@code{initial-window-system} as predicates or boolean flag variables,
-if you want to write code that works differently on text terminals and
-graphic displays.  That is because @code{window-system} is not a good
-indicator of Emacs capabilities on a given display type.  Instead, use
-@code{display-graphic-p} or any of the other @code{display-*-p}
-predicates described in @ref{Display Feature Testing}.
+  @emph{Не} использовать @code{window-system} и @code{initial-window-system} в
+качестве предикатов или переменных логического флага, если требуется написать код,
+который по-разному работает на текстовых терминалах и графических дисплеях.  Это
+потому, что @code{window-system} не является хорошим индикатором возможностей Emacs
+для данного типа отображения.  Вместо этого использовать @code{display-graphic-p} или
+любой другой предикат @code{display-*-p}, описанный в @ref{Display Feature Testing}.
 
 @node Tooltips
-@section Tooltips
+@section Всплывающие Подсказки
 @cindex tooltips
-@dfn{Tooltips} are special frames (@pxref{Frames}) that are used to
-display helpful hints (a.k.a.@: ``tips'') related to the current
-position of the mouse pointer.  Emacs uses tooltips to display help
-strings about active portions of text (@pxref{Special Properties}) and
-about various UI elements, such as menu items (@pxref{Extended Menu
-Items}) and tool-bar buttons (@pxref{Tool Bar}).
+@dfn{Всплывающие подсказки} - это специальные фреймы (@pxref{Frames}), которые
+используются для отображения полезных подсказок (также известных как@: ``tips''),
+связанных с текущим положением указателя мыши.  Emacs использует всплывающие подсказки
+для отображения строк справки об активных частях текста (@pxref{Special Properties})
+и о различных элементах пользовательского интерфейса, таких как пункты меню
+(@pxref{Extended Menu Items}) и кнопки панели инструментов (@pxref{Tool Bar}).
 
 @defun tooltip-mode
-Tooltip Mode is a minor mode that enables display of tooltips.
-Turning off this mode causes the tooltips be displayed in the echo
-area.  On text-mode (a.k.a.@: ``TTY'') frames, tooltips are always
-displayed in the echo area.
+Режим всплывающих подсказок - это второстепенный режим, который позволяет отображать
+всплывающие подсказки.  Отключение этого режима вызывает отображение всплывающих
+подсказок в эхо-области.  Во фреймах текстового режима (он же@: ``TTY'') всплывающие
+подсказки всегда отображаются в эхо-области.
 @end defun
 
 @vindex x-gtk-use-system-tooltips
-When Emacs is built with GTK+ support, it by default displays tooltips
-using GTK+ functions, and the appearance of the tooltips is then
-controlled by GTK+ settings.  GTK+ tooltips can be disabled by
-changing the value of the variable @code{x-gtk-use-system-tooltips} to
-@code{nil}.  The rest of this subsection describes how to control
-non-GTK+ tooltips, which are presented by Emacs itself.
+Когда Emacs построен с поддержкой GTK+, по умолчанию отображает всплывающие подсказки
+с использованием функций GTK+, а внешний вид всплывающих подсказок затем управляется
+настройками GTK+.  Всплывающие подсказки GTK+ можно отключить, изменив значение
+переменной @code{x-gtk-use-system-tooltips} на @code{nil}.  Остальная часть этого
+подраздела описывает, как управлять всплывающими подсказками, не относящимися к GTK+,
+которые предоставляются самим Emacs.
 
 @cindex tooltip frames
-Tooltips are displayed in special frames called tooltip frames, which
-have their own frame parameters (@pxref{Frame Parameters}).  Unlike
-other frames, the default parameters for tooltip frames are stored in a
-special variable.
+Всплывающие подсказки отображаются в специальных фреймах, называемых фреймами
+всплывающих подсказок, которые имеют собственные параметры фрейма
+(@pxref{Frame Parameters}).  В отличие от других фреймов, параметры по умолчанию для
+фреймов всплывающих подсказок хранятся в специальной переменной.
 
 @defopt tooltip-frame-parameters
-This customizable option holds the default frame parameters used for
-displaying tooltips.  Any font and color parameters are ignored, and the
-corresponding attributes of the @code{tooltip} face are used instead.
-If @code{left} or @code{top} parameters are included, they are used as
-absolute frame-relative coordinates where the tooltip should be shown.
-(Mouse-relative position of the tooltip can be customized using the
-variables described in @ref{Tooltips,,, emacs, The GNU Emacs Manual}.)
-Note that the @code{left} and @code{top} parameters, if present,
-override the values of mouse-relative offsets.
+Настраиваемый параметр содержит параметры фрейма по умолчанию, используемые для
+отображения всплывающих подсказок.  Любые параметры шрифта и цвета игнорируются, и
+вместо них используются соответствующие атрибуты вида @code{tooltip}.  Если включены
+параметры @code{left} или @code{top}, они используются как абсолютные координаты
+относительно фрейма, в которых должна отображаться всплывающая подсказка.  (Положение
+всплывающей подсказки относительно мыши можно настроить с помощью переменных,
+описанных в @ref{Tooltips,,, emacs, The GNU Emacs Manual}.)  Обратить внимание, что
+параметры @code{left} и @code{top}, если присутствуют, переопределяют значения
+смещений относительно мыши.
 @end defopt
 
-@vindex tooltip@r{ face}
-The @code{tooltip} face determines the appearance of text shown in
-tooltips.  It should generally use a variable-pitch font of size that
-is preferably smaller than the default frame font.
+@vindex tooltip@r{ вид отображения}
+@code{tooltip} вид определяет внешний вид текста, отображаемого во всплывающих
+подсказках.  Как правило, следует использовать шрифт с переменным шагом, размер
+которого предпочтительно меньше, чем шрифт фрейма по умолчанию.
 
 @findex tooltip-help-tips
 @defvar tooltip-functions
-This abnormal hook is a list of functions to call when Emacs needs to
-display a tooltip.  Each function is called with a single argument
-@var{event} which is a copy of the last mouse movement event.  If a
-function on this list actually displays the tooltip, it should return
-не-@code{nil}, and then the rest of the functions will not be
-called.  The default value of this variable is a single function
+Этот ненормальный перехватчик представляет собой список функций, которые нужно
+вызывать, когда Emacs должен показать всплывающую подсказку.  Каждая функция
+вызывается с одним аргументом @var{event}, который является копией последнего события
+движения мыши.  Если функция в этом списке действительно отображает всплывающую
+подсказку, она должна вернуть не-@code{nil}, и тогда остальные функции не будут
+вызываться.  Значение по умолчанию этой переменной - одна функция
 @code{tooltip-help-tips}.
 @end defvar
 
-If you write your own function to be put on the
-@code{tooltip-functions} list, you may need to know the buffer of the
-mouse event that triggered the tooltip display.  The following
-function provides that information.
+Если пишется собственная функция, которая будет помещена в список
+@code{tooltip-functions}, может потребоваться знать буфер события мыши, вызвавшего
+отображение всплывающей подсказки.  Эту информацию предоставляет следующая функция.
 
 @defun tooltip-event-buffer event
-This function returns the buffer over which @var{event} occurred.
-Call it with the argument of the function from
-@code{tooltip-functions} to obtain the buffer whose text triggered the
-tooltip.  Note that the event might occur not over a buffer (e.g.,
-over the tool bar), in which case this function will return
-@code{nil}.
+Функция возвращает буфер, в котором произошло @var{event}.  Вызвать его с аргументом
+функции из @code{tooltip-functions}, чтобы получить буфер, текст которого вызвал
+всплывающую подсказку.  Обратить внимание, что событие может произойти не в буфере
+(например, на панели инструментов), и в этом случае эта функция вернет @code{nil}.
 @end defun
 
-Other aspects of tooltip display are controlled by several
-customizable settings; see @ref{Tooltips,,, emacs, The GNU Emacs
-Manual}.
+Другие аспекты отображения всплывающей подсказки контролируются несколькими
+настраиваемыми параметрами.; смотреть @ref{Tooltips,,, emacs, The GNU Emacs Manual}.
 
 @node Bidirectional Display
-@section Bidirectional Display
+@section Двунаправленное Отображение
 @cindex bidirectional display
 @cindex right-to-left text
 
-  Emacs can display text written in scripts, such as Arabic, Farsi,
-and Hebrew, whose natural ordering for horizontal text display runs
-from right to left.  Furthermore, segments of Latin script and digits
-embedded in right-to-left text are displayed left-to-right, while
-segments of right-to-left script embedded in left-to-right text
-(e.g., Arabic or Hebrew text in comments or strings in a program
-source file) are appropriately displayed right-to-left.  We call such
-mixtures of left-to-right and right-to-left text @dfn{bidirectional
-text}.  This section describes the facilities and options for editing
-and displaying bidirectional text.
+  Emacs может отображать текст, написанный сценариями, такими как арабский, фарси и
+иврит, чей естественный порядок для горизонтального отображения текста выполняется
+справа налево.  Кроме того, сегменты латинского алфавита и цифры, встроенные в текст
+с письмом справа налево, отображаются слева направо, а сегменты сценария с письмом
+справа налево, встроенные в текст с письмом слева направо (например, текст на
+арабском языке или иврите в комментариях или строки в исходном файле программы)
+соответственно отображаются справа налево.  Называются такие сочетания текста с
+написанием слева направо и справа налево @dfn{двунаправленный текст}.  В этом разделе
+описаны возможности и параметры для редактирования и отображения двунаправленного
+текста.
 
 @cindex logical order
 @cindex reading order
@@ -7109,59 +7022,54 @@ and displaying bidirectional text.
 @cindex UBA
 @cindex bidirectional reordering
 @cindex reordering, of bidirectional text
-  Text is stored in Emacs buffers and strings in @dfn{logical} (or
-@dfn{reading}) order, i.e., the order in which a human would read
-each character.  In right-to-left and bidirectional text, the order in
-which characters are displayed on the screen (called @dfn{visual
-order}) is not the same as logical order; the characters' screen
-positions do not increase monotonically with string or buffer
-position.  In performing this @dfn{bidirectional reordering}, Emacs
-follows the Unicode Bidirectional Algorithm (a.k.a.@: @acronym{UBA}),
-which is described in Annex #9 of the Unicode standard
-(@url{http://www.unicode.org/reports/tr9/}).  Emacs provides a ``Full
-Bidirectionality'' class implementation of the @acronym{UBA},
-consistent with the requirements of the Unicode Standard v9.0.  Note,
-however, that the way Emacs displays continuation lines when text
-direction is opposite to the base paragraph direction deviates from
-the UBA, which requires to perform line wrapping before reordering
-text for display.
+  Текст хранится в буферах и строках Emacs в @dfn{логичном} порядке
+(или @dfn{чтения}), то есть в порядке, в котором человек прочитал бы каждый символ.
+В тексте справа налево и в двунаправленном тексте порядок, в котором символы
+отображаются на экране (называемом @dfn{визуальный порядок}) - это не то же самое,
+что логический порядок; положение символов на экране не увеличивается монотонно с
+положением строки или буфера.  Выполняя это @dfn{двунаправленное переупорядочивание},
+Emacs следует двунаправленному алгоритму Unicode (он же@: @acronym{UBA}), который
+описан в приложении № 9 к стандарту Unicode
+(@url{http://www.unicode.org/reports/tr9/}).  Emacs обеспечивает реализацию
+@acronym{UBA} класса «Полная двунаправленность» в соответствии с требованиями
+стандарта Unicode v9.0.  Обратить внимание, однако, что способ, которым Emacs
+отображает строки продолжения, когда направление текста противоположно основному
+направлению абзаца, отклоняется от UBA, который требует выполнения переноса строк
+перед изменением порядка текста для отображения.
 
 @defvar bidi-display-reordering
-If the value of this buffer-local variable is не-@code{nil} (the
-default), Emacs performs bidirectional reordering for display.  The
-reordering affects buffer text, as well as display strings and overlay
-strings from text and overlay properties in the buffer (@pxref{Overlay
-Properties}, and @pxref{Display Property}).  If the value is
-@code{nil}, Emacs does not perform bidirectional reordering in the
-buffer.
+Если значение этой локальной переменной буфера - не-@code{nil} (по умолчанию), Emacs
+выполняет двунаправленное переупорядочение для отображения.  Переупорядочение влияет
+на текст буфера, а также на отображаемые строки и строки наложения из текста и
+свойств наложения в буфере (@pxref{Overlay Properties} и @pxref{Display Property}).
+Если значение равно @code{nil}, Emacs не выполняет двунаправленное переупорядочение
+в буфере.
 
-The default value of @code{bidi-display-reordering} controls the
-reordering of strings which are not directly supplied by a buffer,
-including the text displayed in mode lines (@pxref{Mode Line Format})
-and header lines (@pxref{Header Lines}).
+Значение по умолчанию @code{bidi-display-reordering} управляет переупорядочиванием
+строк, которые напрямую не поставляются буфером, включая текст, отображаемый в
+строках режима (@pxref{Mode Line Format}) и строках заголовков (@pxref{Header Lines}).
 @end defvar
 
 @cindex unibyte buffers, and bidi reordering
-  Emacs never reorders the text of a unibyte buffer, even if
-@code{bidi-display-reordering} is не-@code{nil} in the buffer.  This
-is because unibyte buffers contain raw bytes, not characters, and thus
-lack the directionality properties required for reordering.
-Therefore, to test whether text in a buffer will be reordered for
-display, it is not enough to test the value of
-@code{bidi-display-reordering} alone.  The correct test is this:
+  Emacs никогда не изменяет порядок текста в однобайтовом буфере, даже если
+@code{bidi-display-reordering} равно не-@code{nil} в буфере.  Это связано с тем, что
+однобайтовые буферы содержат необработанные байты, а не символы, и, следовательно,
+не имеют свойств направленности, необходимых для переупорядочения.  Следовательно,
+чтобы проверить, будет ли текст в буфере переупорядочен для отображения, недостаточно
+проверить значение только @code{bidi-display-reordering}.  Правильный тест такой:
 
 @example
  (if (and enable-multibyte-characters
           bidi-display-reordering)
-     ;; Buffer is being reordered for display
+     ;; Буфер переупорядочивается для отображения
    )
 @end example
 
-  However, unibyte display and overlay strings @emph{are} reordered if
-their parent buffer is reordered.  This is because plain-@sc{ascii}
-strings are stored by Emacs as unibyte strings.  If a unibyte display
-or overlay string includes non-@sc{ascii} characters, these characters
-are assumed to have left-to-right direction.
+  Однако строки отображения и наложения unibyte @emph{находят} переупорядочивание,
+если их родительский буфер переупорядочивается.  Это потому, что строки
+plain-@sc{ascii} хранятся в Emacs как однобайтовые строки.  Если однобайтная
+отображаемая или строка с наложением включает символы не-@sc{ascii}, предполагается,
+что эти символы имеют направление слева направо.
 
 @cindex display properties, and bidi reordering of text
   Text covered by @code{display} text properties, by overlays with
