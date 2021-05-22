@@ -7071,256 +7071,230 @@ plain-@sc{ascii} хранятся в Emacs как однобайтовые ст�
 отображаемая или строка с наложением включает символы не-@sc{ascii}, предполагается,
 что эти символы имеют направление слева направо.
 
-@cindex display properties, and bidi reordering of text
-  Text covered by @code{display} text properties, by overlays with
-@code{display} properties whose value is a string, and by any other
-properties that replace buffer text, is treated as a single unit when
-it is reordered for display.  That is, the entire chunk of text
-covered by these properties is reordered together.  Moreover, the
-bidirectional properties of the characters in such a chunk of text are
-ignored, and Emacs reorders them as if they were replaced with a
-single character @code{U+FFFC}, known as the @dfn{Object Replacement
-Character}.  This means that placing a display property over a portion
-of text may change the way that the surrounding text is reordered for
-display.  To prevent this unexpected effect, always place such
-properties on text whose directionality is identical with text that
-surrounds it.
+@cindex отображение свойств и переупорядочение в двунаправленном тексте
+  Текст, охватываемый свойствами текста @code{display}, наложениями со свойствами
+@code{display}, значение которых является строкой, и любыми другими свойствами,
+заменяющими текст буфера, обрабатывается как единый блок, когда он переупорядочивается
+для отображения.  То есть весь кусок текста, охватываемый этими свойствами,
+переупорядочивается вместе.  Более того, двунаправленные свойства символов в таком
+фрагменте текста игнорируются, и Emacs переупорядочивает их, как если бы они были
+заменены одним символом @code{U+FFFC}, известным как @dfn{Символ замены объекта}.
+Это означает, что размещение свойства отображения над частью текста может изменить
+способ переупорядочения окружающего текста для отображения.  Чтобы предотвратить этот
+неожиданный эффект, всегда помещать такие свойства в текст, направленность которого
+идентична тексту, который его окружает.
 
-@cindex base direction of a paragraph
-  Each paragraph of bidirectional text has a @dfn{base direction},
-either right-to-left or left-to-right.  Left-to-right paragraphs are
-displayed beginning at the left margin of the window, and are
-truncated or continued when the text reaches the right margin.
-Right-to-left paragraphs are displayed beginning at the right margin,
-and are continued or truncated at the left margin.
+@cindex базовое направление абзаца
+  Каждый абзац двунаправленного текста имеет @dfn{базовое направление}, пишущий
+справа налево или слева направо.  Абзацы с написанием слева направо отображаются,
+начиная с левого поля окна, и обрезаются или продолжаются, когда текст достигает
+правого поля.  Абзацы с написанием справа налево отображаются, начиная с правого поля,
+и продолжаются или обрезаются на левом поле.
 
-@cindex paragraph-start, and bidirectional display
-@cindex paragraph-separate, and bidirectional display
-  Where exactly paragraphs start and end, for the purpose of the Emacs
-@acronym{UBA} implementation, is determined by the following two
-buffer-local variables (note that @code{paragraph-start} and
-@code{paragraph-separate} have no influence on this).  By default both
-of these variables are @code{nil}, and paragraphs are bounded by empty
-lines, i.e., lines that consist entirely of zero or more whitespace
-characters followed by a newline.
+@cindex начало абзаца и двунаправленное отображение
+@cindex разделение на абзацы и двунаправленное отображение
+  Где именно начинается и заканчивается абзац для целей реализации Emacs
+@acronym{UBA}, определяется следующими двумя локальными переменными буфера (обратить
+внимание, что @code{paragraph-start} и @code{paragraph-separate} не влияют на это).
+По умолчанию обе эти переменные имеют формат @code{nil}, а абзацы ограничиваются
+пустыми строками, то есть строками, полностью состоящими из нуля или более пробелов,
+за которыми следует новая строка.
 
 @defvar bidi-paragraph-start-re
-If не-@code{nil}, this variable's value should be a regular
-expression matching a line that starts or separates two paragraphs.
-The regular expression is always matched after a newline, so it is
-best to anchor it, i.e., begin it with a @code{"^"}.
+Если не-@code{nil}, значение этой переменной должно быть регулярным выражением,
+соответствующее строке, которая начинается или разделяет два абзаца.  Регулярное
+выражение всегда сопоставляется после новой строки, поэтому лучше всего привязать его,
+то есть начинать с @code{"^"}.
 @end defvar
 
 @defvar bidi-paragraph-separate-re
-If не-@code{nil}, this variable's value should be a regular
-expression matching a line separates two paragraphs.  The regular
-expression is always matched after a newline, so it is best to anchor
-it, i.e., begin it with a @code{"^"}.
+Если не-@code{nil}, значение этой переменной должно быть регулярным выражением,
+совпадающим со строкой, разделяющей два абзаца.  Регулярное выражение всегда
+сопоставляется после новой строки, поэтому лучше всего привязать его, то есть
+начинать с @code{"^"}.
 @end defvar
 
-  If you modify any of these two variables, you should normally modify
-both, to make sure they describe paragraphs consistently.  For
-example, to have each new line start a new paragraph for
-bidi-reordering purposes, set both variables to @code{"^"}.
+  Если изменить любую из этих двух переменных, обычно следует изменять обе, чтобы
+обеспечить единообразное описание абзацев.  Например, чтобы каждая новая строка
+начинала новый абзац с целью переупорядочения двунаправленного текста, установить
+для обеих переменных значение @code{"^"}.
 
-  By default, Emacs determines the base direction of each paragraph by
-looking at the text at its beginning.  The precise method of
-determining the base direction is specified by the @acronym{UBA}; in a
-nutshell, the first character in a paragraph that has an explicit
-directionality determines the base direction of the paragraph.
-However, sometimes a buffer may need to force a certain base direction
-for its paragraphs.  For example, buffers containing program source
-code should force all paragraphs to be displayed left-to-right.  You
-can use following variable to do this:
+  По умолчанию Emacs определяет базовое направление каждого абзаца, глядя на текст в
+его начале.  Точный метод определения базового направления определяется параметром
+@acronym{UBA};  Короче говоря, первый символ в абзаце, имеющий явную направленность,
+определяет базовое направление абзаца.  Однако иногда буферу может потребоваться
+задать определенное базовое направление для его абзацев.  Например, буферы, содержащие
+исходный код программы, должны заставлять все абзацы отображаться слева направо.  Для
+этого можно использовать следующую переменную:
 
 @defopt bidi-paragraph-direction
-If the value of this buffer-local variable is the symbol
-@code{right-to-left} or @code{left-to-right}, all paragraphs in the
-buffer are assumed to have that specified direction.  Any other value
-is equivalent to @code{nil} (the default), which means to determine
-the base direction of each paragraph from its contents.
+Если значением этой локальной переменной буфера является символ @code{right-to-left}
+или @code{left-to-right}, предполагается, что все абзацы в буфере имеют это указанное
+направление.  Любое другое значение эквивалентно @code{nil} (по умолчанию), что
+означает определение базового направления каждого абзаца по его содержимому.
 
-@cindex @code{prog-mode}, and @code{bidi-paragraph-direction}
-Modes for program source code should set this to @code{left-to-right}.
-Prog mode does this by default, so modes derived from Prog mode do not
-need to set this explicitly (@pxref{Basic Major Modes}).
+@cindex @code{prog-mode} и @code{bidi-paragraph-direction}
+Режимы для исходного кода программы должны установить это в @code{left-to-right}.
+Режим Prog делает это по умолчанию, поэтому для режимов, производных от режима Prog,
+не нужно явно устанавливать это (@pxref{Basic Major Modes}).
 @end defopt
 
 @defun current-bidi-paragraph-direction &optional buffer
-This function returns the paragraph direction at point in the named
-@var{buffer}.  The returned value is a symbol, either
-@code{left-to-right} or @code{right-to-left}.  If @var{buffer} is
-omitted or @code{nil}, it defaults to the current buffer.  If the
-buffer-local value of the variable @code{bidi-paragraph-direction} is
-не-@code{nil}, the returned value will be identical to that value;
-otherwise, the returned value reflects the paragraph direction
-determined dynamically by Emacs.  For buffers whose value of
-@code{bidi-display-reordering} is @code{nil} as well as unibyte
-buffers, this function always returns @code{left-to-right}.
+Функция возвращает направление абзаца в названном @var{buffer}.  Возвращаемое значение
+представляет собой символ @code{left-to-right} или @code{right-to-left}.  Если
+@var{buffer} опущено или @code{nil}, по умолчанию используется текущий буфер.  Если
+локальное в буфере значение переменной @code{bidi-paragraph-direction} -
+не-@code{nil}, возвращаемое значение будет идентично этому значению; в противном
+случае возвращаемое значение отражает направление абзаца, динамически определяемое
+Emacs.  Для буферов, значение @code{bidi-display-reordering} которых равно
+@code{nil}, а также для однобайтовых буферов, эта функция всегда возвращает
+@code{left-to-right}.
 @end defun
 
 @cindex visual-order cursor motion
-  Sometimes there's a need to move point in strict visual order,
-either to the left or to the right of its current screen position.
-Emacs provides a primitive to do that.
+  Иногда возникает необходимость переместить точку в строгом визуальном порядке либо
+влево, либо вправо от ее текущего положения на экране.  Emacs предоставляет для этого
+примитив.
 
 @defun move-point-visually direction
-This function moves point of the currently selected window to the
-buffer position that appears immediately to the right or to the left
-of point on the screen.  If @var{direction} is positive, point will
-move one screen position to the right, otherwise it will move one
-screen position to the left.  Note that, depending on the surrounding
-bidirectional context, this could potentially move point many buffer
-positions away.  If invoked at the end of a screen line, the function
-moves point to the rightmost or leftmost screen position of the next
-or previous screen line, as appropriate for the value of
-@var{direction}.
+Функция перемещает точку текущего выбранного окна в буферную позицию, которая
+появляется сразу справа или слева от точки на экране.  Если @var{direction}
+положительно, точка переместится на одну позицию экрана вправо, в противном случае
+она переместится на одну позицию влево экрана.  Обратить внимание, что, в зависимости
+от окружающего двунаправленного контекста, это может потенциально сдвинуть точку на
+много позиций в буфере.  Если вызывается в конце строки экрана, функция перемещает
+точку в крайнее правое или крайнее левое положение на экране следующей или предыдущей
+строки экрана, в зависимости от значения @var{direction}.
 
-The function returns the new buffer position as its value.
+Функция возвращает новую позицию буфера в качестве своего значения.
 @end defun
 
-@cindex layout on display, and bidirectional text
-@cindex jumbled display of bidirectional text
-@cindex concatenating bidirectional strings
-  Bidirectional reordering can have surprising and unpleasant effects
-when two strings with bidirectional content are juxtaposed in a
-buffer, or otherwise programmatically concatenated into a string of
-text.  A typical problematic case is when a buffer consists of
-sequences of text fields separated by whitespace or punctuation
-characters, like Buffer Menu mode or Rmail Summary Mode.  Because the
-punctuation characters used as separators have @dfn{weak
-directionality}, they take on the directionality of surrounding text.
-As result, a numeric field that follows a field with bidirectional
-content can be displayed @emph{to the left} of the preceding field,
-messing up the expected layout.  There are several ways to avoid this
-problem:
+@cindex макет отображения и двунаправленный текст
+@cindex беспорядочное отображение двунаправленного текста
+@cindex конкатенация двунаправленных строк
+  Двунаправленное переупорядочение может иметь неожиданные и неприятные эффекты, когда
+две строки с двунаправленным содержимым накладываются друг на друга в буфере или иным
+образом программно объединяются в строку текста.  Типичный проблемный случай - это
+когда буфер состоит из последовательностей текстовых полей, разделенных пробелами или
+знаками пунктуации, как в режиме меню буфера или в режиме сводки Rmail.  Поскольку
+символы пунктуации, используемые в качестве разделителей, имеют
+@dfn{слабую направленность}, они принимают направленность окружающего текста.  В
+результате числовое поле, следующее за полем с двунаправленным содержимым, может
+отображаться @emph{Слева} от предыдущего поля, нарушая ожидаемый макет.  Есть
+несколько способов избежать этой проблемы:
 
 @itemize @minus
 @item
-Append the special character U+200E @sc{left-to-right mark}, or
-@acronym{LRM}, to the end of each field that may have bidirectional
-content, or prepend it to the beginning of the following field.  The
-function @code{bidi-string-mark-left-to-right}, described below, comes
-in handy for this purpose.  (In a right-to-left paragraph, use
-U+200F @sc{right-to-left mark}, or @acronym{RLM}, instead.)  This
-is one of the solutions recommended by the UBA.
+Добавить специальный символ U+200E слева направо, @sc{знак слева направо} или
+@acronym{LRM}, в конец каждого поля, которое может иметь двунаправленное содержимое,
+или добавьте его в начало следующего поля.  Для этого пригодится функция
+@code{bidi-string-mark-left-to-right}, описанная ниже.  (В абзаце с письмом справа
+налево использовать вместо U+200F @sc{знак справа налево} или @acronym{RLM}.)  Это
+одно из решений, рекомендованных UBA.
 
 @item
-Include the tab character in the field separator.  The tab character
-plays the role of @dfn{segment separator} in bidirectional reordering,
-causing the text on either side to be reordered separately.
+Включить символ табуляции в разделитель полей.  Символ табуляции играет роль
+@dfn{разделителя сегментов} в двунаправленном переупорядочивании, заставляя текст с
+каждой стороны переупорядочиваться отдельно.
 
-@cindex @code{space} display spec, and bidirectional text
+@cindex @code{space} специальное отображение и двунаправленный текст
 @item
-Separate fields with a @code{display} property or overlay with a
-property value of the form @code{(space . PROPS)} (@pxref{Specified
-Space}).  Emacs treats this display specification as a @dfn{paragraph
-separator}, and reorders the text on either side separately.
+Разделить поля свойством @code{display} или наложением со значением свойства в форме
+@code{(space . PROPS)} (@pxref{Specified Space}).  Emacs рассматривает эту
+спецификацию отображения как @dfn{разделитель абзацев} и переупорядочивает текст с
+каждой стороны отдельно.
 @end itemize
 
 @defun bidi-string-mark-left-to-right string
-This function returns its argument @var{string}, possibly modified,
-such that the result can be safely concatenated with another string,
-or juxtaposed with another string in a buffer, without disrupting the
-relative layout of this string and the next one on display.  If the
-string returned by this function is displayed as part of a
-left-to-right paragraph, it will always appear on display to the left
-of the text that follows it.  The function works by examining the
-characters of its argument, and if any of those characters could cause
-reordering on display, the function appends the @acronym{LRM}
-character to the string.  The appended @acronym{LRM} character is made
-invisible by giving it an @code{invisible} text property of @code{t}
+Функция возвращает свой аргумент @var{string}, возможно модифицированный, так что
+результат можно безопасно объединить с другой строкой или сопоставить с другой строкой
+в буфере, не нарушая относительного расположения этой строки и следующей отображаемой
+строки.  Если строка, возвращаемая этой функцией, отображается как часть абзаца с
+написанием слева направо, она всегда будет отображаться слева от текста, который
+следует за ней.  Функция работает, исследуя символы своего аргумента, и если
+какой-либо из этих символов может вызвать переупорядочение при отображении, функция
+добавляет в строку символ @acronym{LRM}.  Добавленный символ @acronym{LRM} становится
+невидимым, если ему присваивается текстовое свойство @code{invisible} @code{t}
 (@pxref{Invisible Text}).
 @end defun
 
-  The reordering algorithm uses the bidirectional properties of the
-characters stored as their @code{bidi-class} property
-(@pxref{Character Properties}).  Lisp programs can change these
-properties by calling the @code{put-char-code-property} function.
-However, doing this requires a thorough understanding of the
-@acronym{UBA}, and is therefore not recommended.  Any changes to the
-bidirectional properties of a character have global effect: they
-affect all Emacs frames and windows.
+  Алгоритм переупорядочения использует двунаправленные свойства символов, сохраненные
+как их свойство @code{bidi-class} (@pxref{Character Properties}).  Программы на Lisp
+могут изменять эти свойства, вызывая функцию @code{put-char-code-property}.  Однако
+это требует глубокого понимания @acronym{UBA} и поэтому не рекомендуется.  Любые
+изменения двунаправленных свойств символа имеют глобальный эффект: они влияют на все
+фреймы и окна Emacs.
 
-  Similarly, the @code{mirroring} property is used to display the
-appropriate mirrored character in the reordered text.  Lisp programs
-can affect the mirrored display by changing this property.  Again, any
-such changes affect all of Emacs display.
+  Точно так же свойство @code{mirroring} используется для отображения соответствующего
+зеркального символа в переупорядоченном тексте.  Программы на Lisp могут влиять на
+зеркальное отображение, изменяя это свойство.  Опять же, любые такие изменения
+влияют на все отображение Emacs.
 
-@cindex overriding bidirectional properties
-@cindex directional overrides
+@cindex переопределение двунаправленных свойств
+@cindex направленное переопределение
 @cindex LRO
 @cindex RLO
-  The bidirectional properties of characters can be overridden by
-inserting into the text special directional control characters,
-LEFT-TO-RIGHT OVERRIDE (@acronym{LRO}) and RIGHT-TO-LEFT OVERRIDE
-(@acronym{RLO}).  Any characters between a @acronym{RLO} and the
-following newline or POP DIRECTIONAL FORMATTING (@acronym{PDF})
-control character, whichever comes first, will be displayed as if they
-were strong right-to-left characters, i.e.@: they will be reversed on
-display.  Similarly, any characters between @acronym{LRO} and
-@acronym{PDF} or newline will display as if they were strong
-left-to-right, and will @emph{not} be reversed even if they are strong
-right-to-left characters.
+  Двунаправленные свойства символов можно переопределить, вставив в текст специальные
+управляющие символы направления, ПЕРЕОПРЕДЕЛЕНИЕ ВЛЕВО (@acronym{LRO}) и ПЕРЕХОД
+ВПРАВО (@acronym{RLO}).  Любые символы между @acronym{RLO} и следующей новой строкой
+или управляющим символом POP DIRECTIONAL FORMATTING (@acronym{PDF}), в зависимости от
+того, что наступит раньше, будут отображаться так, как если бы они были строгими
+символами с письмом справа налево, то есть@: они будут перевернуты в отображении.
+Точно так же любые символы между @acronym{LRO} и @acronym{PDF} или новой строкой будут
+отображаться так, как если бы они были строго написаны слева направо, и @emph{не}
+будут перевернуты, даже если они являются сильными символами с письмом справа налево.
 
-@cindex phishing using directional overrides
-@cindex malicious use of directional overrides
-  These overrides are useful when you want to make some text
-unaffected by the reordering algorithm, and instead directly control
-the display order.  But they can also be used for malicious purposes,
-known as @dfn{phishing}.  Specifically, a URL on a Web page or a link
-in an email message can be manipulated to make its visual appearance
-unrecognizable, or similar to some popular benign location, while the
-real location, interpreted by a browser in the logical order, is very
-different.
+@cindex фишинг с использованием направленных переопределений
+@cindex злонамеренное использование переопределений направления
+  Эти переопределения полезны, когда требуется, чтобы некоторый текст не подвергался
+влиянию алгоритма переупорядочения, а вместо этого напрямую управлялся порядком
+отображения.  Это также можно использовать в злонамеренных целях, известных как
+@dfn{фишинг}.  В частности, URL-адресом на веб-странице или ссылкой в сообщении
+электронной почты можно манипулировать, чтобы сделать его внешний вид неузнаваемым
+или похожим на какое-то популярное безопасное местоположение, в то время как реальное
+местоположение, интерпретируемое браузером в логическом порядке, сильно отличается .
 
-  Emacs provides a primitive that applications can use to detect
-instances of text whose bidirectional properties were overridden so as
-to make a left-to-right character display as if it were a
-right-to-left character, or vise versa.
+  Emacs предоставляет примитив, который приложения могут использовать для обнаружения
+экземпляров текста, двунаправленные свойства которого были переопределены, чтобы
+отображать символы слева направо, как если бы это были символы справа налево, или
+наоборот.
 
 @defun bidi-find-overridden-directionality from to &optional object
-This function looks at the text of the specified @var{object} between
-positions @var{from} (inclusive) and @var{to} (exclusive), and returns
-the first position where it finds a strong left-to-right character
-whose directional properties were forced to display the character as
-right-to-left, or for a strong right-to-left character that was forced
-to display as left-to-right.  If it finds no such characters in the
-specified region of text, it returns @code{nil}.
+Функция просматривает текст указанного @var{object} между позициями @var{from}
+(включая) и @var{to} (исключая) и возвращает первую позицию, в которой находит
+сильный символ с письмом слева направо, свойства направления которого были вынуждены
+отображать символ как с право на лево, или для сильного символа с письмом справа
+налево, который был принудительно отображен как слева направо.  Если не находит таких
+символов в указанной области текста, возвращается @code{nil}.
 
-The optional argument @var{object} specifies which text to search, and
-defaults to the current buffer.  If @var{object} is не-@code{nil}, it
-can be some other buffer, or it can be a string or a window.  If it is
-a string, the function searches that string.  If it is a window, the
-function searches the buffer displayed in that window.  If a buffer
-whose text you want to examine is displayed in some window, we
-recommend to specify it by that window, rather than pass the buffer to
-the function.  This is because telling the function about the window
-allows it to correctly account for window-specific overlays, which
-might change the result of the function if some text in the buffer is
-covered by overlays.
+Необязательный аргумент @var{object} указывает, какой текст искать, и по умолчанию
+используется текущий буфер.  Если @var{object} равно не-@code{nil}, это может быть
+другой буфер, строка или окно.  Если это строка, функция ищет эту строку.  Если это
+окно, функция ищет буфер, отображаемый в этом окне.  Если в каком-то окне отображается
+буфер, текст которого требуется исследовать, рекомендуется указать его в этом окне,
+а не передавать буфер функции.  Это связано с тем, что сообщение функции об окне
+позволяет ей правильно учитывать наложения, зависящие от окна, которые могут изменить
+результат функции, если некоторый текст в буфере покрыт наложениями.
 @end defun
 
-@cindex copying bidirectional text, preserve visual order
-@cindex visual order, preserve when copying bidirectional text
-  When text that includes mixed right-to-left and left-to-right
-characters and bidirectional controls is copied into a different
-location, it can change its visual appearance, and also can affect the
-visual appearance of the surrounding text at destination.  This is
-because reordering of bidirectional text specified by the
-@acronym{UBA} has non-trivial context-dependent effects both on the
-copied text and on the text at copy destination that will surround it.
+@cindex копирование двунаправленного текста, сохранение визуального порядка
+@cindex визуальный порядок, сохранить при копировании двунаправленного текста
+  Когда текст, содержащий смешанные символы с письмом справа налево и слева направо,
+а также двунаправленные элементы управления, копируется в другое место, может
+измениться внешний вид, а также может повлиять на внешний вид окружающего текста в
+месте назначения.  Это связано с тем, что переупорядочение двунаправленного текста,
+заданного @acronym{UBA}, имеет нетривиальные контекстно-зависимые эффекты как для
+копируемого текста, так и для текста в месте назначения копирования, который его
+окружает.
 
-  Sometimes, a Lisp program may need to preserve the exact visual
-appearance of the copied text at destination, and of the text that
-surrounds the copy.  Lisp programs can use the following function to
-achieve that effect.
+  Иногда программе на Lisp может потребоваться сохранить точный внешний вид
+скопированного текста в месте назначения и текста, окружающего копию.  Программы на
+Дшыз могут использовать следующую функцию для достижения этого эффекта.
 
 @defun buffer-substring-with-bidi-context start end &optional no-properties
-This function works similar to @code{buffer-substring} (@pxref{Buffer
-Contents}), but it prepends and appends to the copied text bidi
-directional control characters necessary to preserve the visual
-appearance of the text when it is inserted at another place.  Optional
-argument @var{no-properties}, if не-@code{nil}, means remove the text
-properties from the copy of the text.
+Функция работает аналогично @code{buffer-substring} (@pxref{Buffer Contents}), но
+добавляет к скопированному тексту двунаправленные управляющие символы, необходимые
+для сохранения внешнего вида текста, когда он вставляется в другое место.
+Необязательный аргумент @var{no-properties}, если не-@code{nil}, означает удаление
+свойств текста из копии текста.
 @end defun
