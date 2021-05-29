@@ -6,771 +6,738 @@
 @node System Interface
 @chapter Operating System Interface
 
-  This chapter is about starting and getting out of Emacs, access to
-values in the operating system environment, and terminal input, output.
+  Эта глава посвящена запуску и выходу из Emacs, доступу к значениям в среде
+операционной системы и терминальному вводу и выводу.
 
-  @xref{Building Emacs}, for related information.  @xref{Display}, for
-additional operating system status information pertaining to the
-terminal and the screen.
+  @xref{Building Emacs}, для получения дополнительной информации.  @xref{Display},
+для получения дополнительной информации о состоянии операционной системы, относящейся
+к терминалу и экрану.
 
 @menu
-* Starting Up::         Customizing Emacs startup processing.
-* Getting Out::         How exiting works (permanent or temporary).
-* System Environment::  Distinguish the name and kind of system.
-* User Identification:: Finding the name and user id of the user.
-* Time of Day::         Getting the current time.
-* Time Zone Rules::     Rules for time zones and daylight saving time.
-* Time Conversion::     Converting a time from numeric form to
-                          calendrical data and vice versa.
-* Time Parsing::        Converting a time from numeric form to text
-                          and vice versa.
-* Processor Run Time::  Getting the run time used by Emacs.
-* Time Calculations::   Adding, subtracting, comparing times, etc.
-* Timers::              Setting a timer to call a function at a certain time.
-* Idle Timers::         Setting a timer to call a function when Emacs has
-                          been idle for a certain length of time.
-* Terminal Input::      Accessing and recording terminal input.
-* Terminal Output::     Controlling and recording terminal output.
-* Sound Output::        Playing sounds on the computer's speaker.
-* X11 Keysyms::         Operating on key symbols for X Windows.
-* Batch Mode::          Running Emacs without terminal interaction.
-* Session Management::  Saving and restoring state with X Session Management.
-* Desktop Notifications:: Desktop notifications.
-* File Notifications::  File notifications.
-* Dynamic Libraries::   On-demand loading of support libraries.
-* Security Considerations:: Running Emacs in an unfriendly environment.
+* Starting Up::         Настройка обработки запуска Emacs.
+* Getting Out::         Как работает выход (постоянный или временный).
+* System Environment::  Различают название и вид системы.
+* User Identification:: Нахождение имени и идентификатора пользователя.
+* Time of Day::         Получение текущего времени.
+* Time Zone Rules::     Правила для часовых поясов и летнего времени.
+* Time Conversion::     Преобразование времени из числовой формы в
+                            календарные данные и наоборот.
+* Time Parsing::        Преобразование времени из числовой формы
+                            в текст и наоборот.
+* Processor Run Time::  Получение времени выполнения, используемого Emacs.
+* Time Calculations::   Сложение, вычитание, сравнение времени и так далее.
+* Timers::              Установка таймера для вызова функции в определенное время.
+* Idle Timers::         Установка таймера для вызова функции, когда Emacs
+                            бездействует в течение определенного времени.
+* Terminal Input::      Доступ к входу терминала и запись.
+* Terminal Output::     Выходной терминал управления и записи.
+* Sound Output::        Воспроизведение звуков через динамик компьютера.
+* X11 Keysyms::         Работа с ключевыми символами для X Windows.
+* Batch Mode::          Запуск Emacs без взаимодействия с терминалом.
+* Session Management::  Сохранение и восстановление состояния с помощью
+                            X Session Management.
+* Desktop Notifications:: Уведомления на рабочем столе.
+* File Notifications::  Уведомления о файлах.
+* Dynamic Libraries::   Загрузка вспомогательных библиотек по запросу.
+* Security Considerations:: Запуск Emacs в недружественной среде.
 @end menu
 
 @node Starting Up
-@section Starting Up Emacs
+@section Запуск Emacs
 
-  This section describes what Emacs does when it is started, and how you
-can customize these actions.
+  В этом разделе описывается, что делает Emacs при запуске и как можно настроить эти
+действия.
 
 @menu
-* Startup Summary::         Sequence of actions Emacs performs at startup.
-* Init File::               Details on reading the init file.
-* Terminal-Specific::       How the terminal-specific Lisp file is read.
-* Command-Line Arguments::  How command-line arguments are processed,
-                              and how you can customize them.
+* Startup Summary::         Последовательность действий, которые Emacs выполняет
+                                при запуске.
+* Init File::               Подробности чтения файла инициализации.
+* Terminal-Specific::       Как читается файл Lisp, специфичный для терминала.
+* Command-Line Arguments::  Как обрабатываются аргументы командной строки и
+                                как их настраивать.
 @end menu
 
 @node Startup Summary
-@subsection Summary: Sequence of Actions at Startup
+@subsection Summary: Последовательность Действий при Запуске
 @cindex initialization of Emacs
 @cindex startup of Emacs
 @cindex @file{startup.el}
 
-  When Emacs is started up, it performs the following operations
-(see @code{normal-top-level} in @file{startup.el}):
+  Когда Emacs запущен, выполняются следующие операции (смотреть
+@code{normal-top-level} в @file{startup.el}):
 
 @enumerate
 @item
-It adds subdirectories to @code{load-path}, by running the file named
-@file{subdirs.el} in each directory in the list.  Normally, this file
-adds the directory's subdirectories to the list, and those are scanned
-in their turn.  The files @file{subdirs.el} are normally generated
-automatically when Emacs is installed.
+Добавляются подкаталоги в @code{load-path}, запустив файл с именем @file{subdirs.el}
+в каждом каталоге в списке.  Обычно этот файл добавляет подкаталоги каталога в список,
+которые, в свою очередь, проверяются.  Файлы @file{subdirs.el} обычно генерируются
+автоматически при установке Emacs.
 
 @item
-It loads any @file{leim-list.el} that it finds in the @code{load-path}
-directories.  This file is intended for registering input methods.
-The search is only for any personal @file{leim-list.el} files that you
-may have created; it skips the directories containing the standard Emacs
-libraries (these should contain only a single @file{leim-list.el} file,
-which is compiled into the Emacs executable).
+Загружается любой @file{leim-list.el}, который находится в каталогах @code{load-path}.
+Этот файл предназначен для регистрации методов ввода.  Поиск осуществляется только для
+любых личных файлов @file{leim-list.el}, которые можно создать; пропускаются каталоги,
+содержащие стандартные библиотеки Emacs (они должны содержать только один файл
+@file{leim-list.el}, который скомпилирован в исполняемый файл Emacs).
 
 @vindex before-init-time
 @item
-It sets the variable @code{before-init-time} to the value of
-@code{current-time} (@pxref{Time of Day}).  It also sets
-@code{after-init-time} to @code{nil}, which signals to Lisp programs
-that Emacs is being initialized.
+Устанавливается переменная @code{before-init-time} в значение @code{current-time}
+(@pxref{Time of Day}).  Также устанавливается @code{after-init-time} в @code{nil}, что
+сигнализирует программам на Lisp, что Emacs инициализируется.
 
 @c set-locale-environment
 @item
-It sets the language environment and the terminal coding system,
-if requested by environment variables such as @env{LANG}.
+Устанавливается языковая среда и систему кодирования терминала, если этого требуют
+переменные среды, такие как @env{LANG}.
 
 @item
-It does some basic parsing of the command-line arguments.
+Выполняет базовый анализ аргументов командной строки.
 
 @vindex initial-window-system@r{, and startup}
 @findex window-system-initialization
 @item
-If not running in batch mode, it initializes the window system that
-the variable @code{initial-window-system} specifies (@pxref{Window
-Systems, initial-window-system}).  The initialization function,
-@code{window-system-initialization}, is a @dfn{generic function}
-(@pxref{Generic Functions}) whose actual implementation is different
-for each supported window system.  If the value of
-@code{initial-window-system} is @var{windowsystem}, then the
-appropriate implementation of the initialization function is defined
-in the file @file{term/@var{windowsystem}-win.el}.  This file should
-have been compiled into the Emacs executable when it was built.
+Если не работает в пакетном режиме, инициализируется оконная система, которую
+переменная @code{initial-window-system} указывает
+(@pxref{Window Systems, initial-window-system}).  Функция инициализации
+@code{window-system-initialization} - это @dfn{общая функция}
+(@pxref{Generic Functions}), реальная реализация которой отличается для каждой
+поддерживаемой оконной системы.  Если значение @code{initial-window-system} -
+@var{windowsystem}, то соответствующая реализация функции инициализации определяется
+в файле @file{term/@var{windowsystem}-win.el}.  Этот файл должен был быть
+скомпилирован в исполняемый файл Emacs при его сборке.
 
 @item
-It runs the normal hook @code{before-init-hook}.
+Запускается нормальный перехватчик @code{before-init-hook}.
 
 @item
-If appropriate, it creates a graphical frame.  As part of creating the
-graphical frame, it initializes the window system specified by
-@code{initial-frame-alist} and @code{default-frame-alist}
-(@pxref{Initial Parameters}) for the graphical frame, by calling the
-@code{window-system-initialization} function for that window system.
-This is not done in batch (noninteractive) or daemon mode.
+При необходимости создается графический фрейм.  Как часть создания графического
+фрейма, инициализируется оконная система, указанная @code{initial-frame-alist} и
+@code{default-frame-alist} (@pxref{Initial Parameters}) для графического фрейма,
+путем вызова функции @code{window-system-initialization} для этой оконной системы.
+Это не выполняется в пакетном (не интерактивном) режиме или режиме демона.
 
 @item
-It initializes the initial frame's faces, and sets up the menu bar
-and tool bar if needed.  If graphical frames are supported, it sets up
-the tool bar even if the current frame is not a graphical one, since a
-graphical frame may be created later on.
+Инициализирует начальные виды отображения фрейма и при необходимости настраивает
+строку меню и панель инструментов.  Если графические фреймы поддерживаются,
+устанавливается панель инструментов, даже если текущий фрейм не является графическим,
+поскольку графический фрейм может быть создан позже.
 
 @item
-It use @code{custom-reevaluate-setting} to re-initialize the members
-of the list @code{custom-delayed-init-variables}.  These are any
-pre-loaded user options whose default value depends on the run-time,
-rather than build-time, context.
+Использует @code{custom-reevaluate-setting} для повторной инициализации элементов
+списка @code{custom-delayed-init-variables}.  Это любые предварительно загруженные
+пользовательские параметры, значение которых по умолчанию зависит от контекста
+времени выполнения, а не времени сборки.
 @xref{Building Emacs, custom-initialize-delay}.
 
 @c @item
-@c It registers the colors available for tty frames.
+@c Регистрирует цвета, доступные для кадров tty.
 
 @item
-It loads the library @file{site-start}, if it exists.  This is not
-done if the options @samp{-Q} or @samp{--no-site-file} were specified.
+Загружается библиотека @file{site-start}, если она существует.  Этого не происходит,
+если были указаны параметры @samp{-Q} или @samp{--no-site-file}.
 @cindex @file{site-start.el}
 
 @item
-It loads your init file (@pxref{Init File}).  This is not done if the
-options @samp{-q}, @samp{-Q}, or @samp{--batch} were specified.  If
-the @samp{-u} option was specified, Emacs looks for the init file in
-that user's home directory instead.
+Загружается предоставляемый файл инициализации (@pxref{Init File}).  Этого не
+происходит, если были указаны параметры @samp{-q}, @samp{-Q} или @samp{--batch}.
+Если была указана опция @samp{-u}, Emacs вместо этого ищет файл инициализации в
+домашнем каталоге указанного пользователя.
 
 @item
-It loads the library @file{default}, if it exists.  This is not done
-if @code{inhibit-default-init} is non-@code{nil}, nor if the options
-@samp{-q}, @samp{-Q}, or @samp{--batch} were specified.
+Загружается библиотека @file{default}, если она существует.  Этого не происходит,
+если @code{inhibit-default-init} равен не-@code{nil} или если были указаны параметры
+@samp{-q}, @samp{-Q} и @samp{--batch}.
 @cindex @file{default.el}
 
 @item
-It loads your abbrevs from the file specified by
-@code{abbrev-file-name}, if that file exists and can be read
-(@pxref{Abbrev Files, abbrev-file-name}).  This is not done if the
-option @samp{--batch} was specified.
+Загружаются сокращения из файла, указанного в @code{abbrev-file-name}, если этот файл
+существует и может быть прочитан (@pxref{Abbrev Files, abbrev-file-name}).  Этого не
+происходит, если была указана опция @samp{--batch}.
 
 @item
-It calls the function @code{package-initialize} to activate any
-optional Emacs Lisp package that has been installed.  @xref{Packaging
-Basics}.  However, Emacs doesn't initialize packages when
-@code{package-enable-at-startup} is @code{nil} or when it's started
-with one of the options @samp{-q}, @samp{-Q}, or @samp{--batch}.  To
-initialize packages in the latter case, @code{package-initialize}
-should be called explicitly (e.g., via the @samp{--funcall} option).
+Вызывается функция @code{package-initialize} для активации любого установленного
+дополнительного пакета Emacs Lisp.  @xref{Packaging Basics}.  Однако Emacs не
+инициализирует пакеты, когда @code{package-enable-at-startup} имеет значение
+@code{nil} или когда запускается с одним из параметров @samp{-q}, @samp{-Q} или
+@samp{--batch}.  Для инициализации пакетов в последнем случае нужно явно вызвать
+@code{package-initialize} (например, через опцию @samp{--funcall}).
 
 @vindex after-init-time
 @item
-It sets the variable @code{after-init-time} to the value of
-@code{current-time}.  This variable was set to @code{nil} earlier;
-setting it to the current time signals that the initialization phase
-is over, and, together with @code{before-init-time}, provides the
-measurement of how long it took.
+Устанавливается переменная @code{after-init-time} в значение @code{current-time}.
+Ранее для этой переменной было установлено значение @code{nil}; установка его на
+текущее время сигнализирует о завершении фазы инициализации и вместе с
+@code{before-init-time} обеспечивает измерение того, сколько времени это заняло.
 
 @item
-It runs the normal hook @code{after-init-hook}.
+Запускает нормальный перехватчик @code{after-init-hook}.
 
 @item
-If the buffer @file{*scratch*} exists and is still in Fundamental mode
-(as it should be by default), it sets its major mode according to
+Если буфер @file{*scratch*} существует и все еще находится в основном режиме
+(как и должно быть по умолчанию), устанавливается свой основной режим в соответствии с
 @code{initial-major-mode}.
 
 @item
-If started on a text terminal, it loads the terminal-specific
-Lisp library (@pxref{Terminal-Specific}), and runs the hook
-@code{tty-setup-hook}.  This is not done
-in @code{--batch} mode, nor if @code{term-file-prefix} is @code{nil}.
+Если запущен на текстовом терминале, загружается специфичная для терминала библиотека
+Lisp (@pxref{Terminal-Specific}) и запускается перехватчик @code{tty-setup-hook}.
+Это не выполняется ни в режиме @code{--batch}, ни в том случае, если
+@code{term-file-prefix} равно @code{nil}.
 
-@c Now command-line calls command-line-1.
-
-@item
-It displays the initial echo area message, unless you have suppressed
-that with @code{inhibit-startup-echo-area-message}.
+@c Теперь командная строка вызывает command-line-1.
 
 @item
-It processes any command-line options that were not handled earlier.
-
-@c This next one is back in command-line, but the remaining bits of
-@c command-line-1 are not done if noninteractive.
-@item
-It now exits if the option @code{--batch} was specified.
+Отображается начальное сообщение эхо-области, если не подавлено с помощью
+@code{inhibit-startup-echo-area-message}.
 
 @item
-If the @file{*scratch*} buffer exists and is empty, it inserts
-@code{(substitute-command-keys initial-scratch-message)} into that buffer.
+Обрабатываются любые параметры командной строки, которые не обрабатывались ранее.
+
+@c Следующий снова в командной строке, но оставшиеся биты
+@c command-line-1 не выполняются, если они не интерактивны.
+@item
+Теперь закрывается, если была указана опция @code{--batch}.
 
 @item
-If @code{initial-buffer-choice} is a string, it visits the file (or
-directory) with that name.  If it is a function, it calls the function
-with no arguments and selects the buffer that it returns.  If one file
-is given as a command line argument, that file is visited and its
-buffer displayed alongside @code{initial-buffer-choice}.  If more than
-one file is given, all of the files are visited and the @file{*Buffer
-List*} buffer is displayed alongside @code{initial-buffer-choice}.
+Если буфер @file{*scratch*} существует и пуст, вставляется
+@code{(substitute-command-keys initial-scratch-message)} в этот буфер.
+
+@item
+Если @code{initial-buffer-choice} - строка, происходит обращение к файлу
+(или каталогу) с этим именем.  Если это функция, вызывается функция без аргументов и
+выбирается возвращаемый буфер.  Если один файл указан в качестве аргумента командной
+строки, этот файл будет посещен и его буфер отображается рядом с
+@code{initial-buffer-choice}.  Если указано более одного файла, все файлы будут
+посещены, и буфер @file{*Buffer List*} отображается рядом с
+@code{initial-buffer-choice}.
 
 @ignore
-@c I do not think this should be mentioned.  AFAICS it is just a dodge
-@c around inhibit-startup-screen not being settable on a site-wide basis.
-If it is @code{t}, it selects the @file{*scratch*} buffer.
+@c Я не думаю, что об этом следует говорить.  AFAICS, это просто перехватчик 
+@c вокруг inhibit-startup-screen, которую нельзя настроить для всего сайта. 
+@c Если это @code{t}, выбирается буфер @file{*scratch*}.
 @end ignore
 
-@c To make things nice and confusing, the next three items can be
-@c called from two places.  If displaying a startup screen, they are
-@c called in command-line-1 before the startup screen is shown.
-@c inhibit-startup-hooks is then set and window-setup-hook set to nil.
-@c If not displaying a startup screen, they are called in
+@c Чтобы сделать вещи красивыми и запутанными, следующие три элемента можно вызывать
+@c из двух мест.  При отображении экрана запуска они вызываются
+@c в command-line-1 перед отображением экрана запуска.  Затем устанавливается
+@c inhibit-startup-hooks, а для window-setup-hook устанавливается значение nil.
+@c Если не отображается заставка, вызываются в
 @c normal-top-level.
-@c FIXME?  So it seems they can be called before or after the
-@c daemon/session restore step?
+@c FIXME?  Кажется, их можно вызвать до или после этапа восстановления
+@c демона/сеанса
 
 @item
-It runs @code{emacs-startup-hook}.
+Запускается @code{emacs-startup-hook}.
 
 @item
-It calls @code{frame-notice-user-settings}, which modifies the
-parameters of the selected frame according to whatever the init files
-specify.
+Вызывается @code{frame-notice-user-settings}, который изменяет параметры выбранного
+фрейма в соответствии с тем, что указано в файлах инициализации.
 
 @item
-It runs @code{window-setup-hook}.  The only difference between this
-hook and @code{emacs-startup-hook} is that this one runs after the
-previously mentioned modifications to the frame parameters.
+Запускается @code{window-setup-hook}.  Единственная разница между этим перехватчиком
+и @code{emacs-startup-hook} заключается в том, что запуск происходит после ранее
+упомянутых изменений параметров фрейма.
 
 @item
 @cindex startup screen
-It displays the @dfn{startup screen}, which is a special buffer that
-contains information about copyleft and basic Emacs usage.  This is
-not done if @code{inhibit-startup-screen} or @code{initial-buffer-choice}
-are non-@code{nil}, or if the @samp{--no-splash} or @samp{-Q} command-line
-options were specified.
+Отображается @dfn{стартовый экран}, специальный буфер, содержащий информацию об
+авторском праве и базовом использовании Emacs.  Не выполняется, если
+@code{inhibit-startup-screen} или @code{initial-buffer-choice} равно не-@code{nil}
+или если были указаны параметры командной строки @samp{--no-splash} или @samp{-Q}.
 
-@c End of command-line-1.
+@c Окончание описания command-line-1.
 
-@c Back to command-line from command-line-1.
+@c Вернуться к командной строке из command-line-1.
 
-@c This is the point at which we actually exit in batch mode, but the
-@c last few bits of command-line-1 are not done in batch mode.
-
-@item
-If a daemon was requested, it calls @code{server-start}.
-(On POSIX systems, if a background daemon was requested, it then
-detaches from the controlling terminal.)  @xref{Emacs
-Server,,, emacs, The GNU Emacs Manual}.
+@c Это момент, когда фактически происходит выход из пакетного режима, но последние
+@c несколько бит command-line-1 не выполняются в пакетном режиме.
 
 @item
-If started by the X session manager, it calls
-@code{emacs-session-restore} passing it as argument the ID of the
-previous session.  @xref{Session Management}.
+Если был запрошен демон, вызывается @code{server-start}.  (В системах POSIX, если был
+запрошен фоновый демон, он затем отсоединяется от управляющего терминала.)
+@xref{Emacs Server,,, emacs, The GNU Emacs Manual}.
 
-@c End of command-line.
+@item
+Если запускается менеджером X-сеанса, вызывается @code{emacs-session-restore} и
+передаётся в качестве аргумента идентификатор предыдущего сеанса.
+@xref{Session Management}.
 
-@c Back to normal-top-level from command-line.
+@c Конец command-line.
+
+@c Вернуться к normal-top-level из command-line.
 
 @end enumerate
 
 @noindent
-The following options affect some aspects of the startup sequence.
+Следующие параметры влияют на некоторые аспекты последовательности запуска.
 
 @defopt inhibit-startup-screen
-This variable, if non-@code{nil}, inhibits the startup screen.  In
-that case, Emacs typically displays the @file{*scratch*} buffer; but
-see @code{initial-buffer-choice}, below.
+Переменная, если не-@code{nil}, запрещает запуск отображения.  В этом случае Emacs
+обычно отображает буфер @file{*scratch*}; смотреть @code{initial-buffer-choice},
+ниже.
 
-Do not set this variable in the init file of a new user, or in a way
-that affects more than one user, as that would prevent new users from
-receiving information about copyleft and basic Emacs usage.
+Не устанавливать эту переменную в файле инициализации нового пользователя или таким
+образом, который затрагивает более чем одного пользователя, так как это помешает
+новым пользователям получать информацию об авторском прове и базовом использовании
+Emacs.
 
 @vindex inhibit-startup-message
 @vindex inhibit-splash-screen
-@code{inhibit-startup-message} and @code{inhibit-splash-screen} are
-aliases for this variable.
+@code{inhibit-startup-message} и @code{inhibit-splash-screen} - псевдонимы для этой
+переменной.
 @end defopt
 
 @defopt initial-buffer-choice
-If non-@code{nil}, this variable is a string that specifies a file or
-directory for Emacs to display after starting up, instead of the
-startup screen.
-If its value is a function, Emacs calls that function which must
-return a buffer which is then displayed.
-If its value is @code{t}, Emacs displays the @file{*scratch*} buffer.
+Если не-@code{nil}, переменная представляет собой строку, определяющую файл или
+каталог, который Emacs будет отображать после запуска, а не экран запуска.  Если 
+значением является функция, Emacs вызывает функцию, которая должна возвращать
+буфер, который затем отображается.  Если значение - @code{t}, Emacs отображает
+буфер @file{*scratch*}.
 @end defopt
 
 @defopt inhibit-startup-echo-area-message
-This variable controls the display of the startup echo area message.
-You can suppress the startup echo area message by adding text with this
-form to your init file:
+Переменная управляет отображением сообщения начальной эхо-области.  Можно подавить
+сообщение запуска эхо-области, добавив текст с этой формой в свой файл инициализации:
 
 @example
 (setq inhibit-startup-echo-area-message
       "@var{your-login-name}")
 @end example
 
-Emacs explicitly checks for an expression as shown above in your init
-file; your login name must appear in the expression as a Lisp string
-constant.  You can also use the Customize interface.  Other methods of
-setting @code{inhibit-startup-echo-area-message} to the same value do
-not inhibit the startup message.  This way, you can easily inhibit the
-message for yourself if you wish, but thoughtless copying of your init
-file will not inhibit the message for someone else.
+Emacs явно проверяет выражение, как показано выше, в файле инициализации; имя
+пользователя должно появиться в выражении как строковая константа Lisp.  Также можно
+использовать интерфейс настройки.  Другие методы установки того же значения
+@code{inhibit-startup-echo-area-message} не запрещают запуск сообщения.  Таким
+образом, можно легко заблокировать сообщение, если требуется, но бездумное копирование
+файла инициализации не заблокирует сообщение для кого-то еще.
 @end defopt
 
 @defopt initial-scratch-message
-This variable, if non-@code{nil}, should be a string, which is
-treated as documentation to be
-inserted into the @file{*scratch*} buffer when Emacs starts up.  If it
-is @code{nil}, the @file{*scratch*} buffer is empty.
+Переменная, если не-@code{nil}, должна быть строкой, которая рассматривается как
+документация, которая должна быть вставлена в буфер @file{*scratch*} при запуске
+Emacs.  Если @code{nil}, буфер @file{*scratch*} пуст.
 @end defopt
 
 @noindent
-The following command-line options affect some aspects of the startup
-sequence.  @xref{Initial Options,,, emacs, The GNU Emacs Manual}.
+Следующие параметры командной строки влияют на некоторые аспекты последовательности
+запуска.  @xref{Initial Options,,, emacs, The GNU Emacs Manual}.
 
 @table @code
 @item --no-splash
-Do not display a splash screen.
+Не отображать заставку.
 
 @item --batch
-Run without an interactive terminal.  @xref{Batch Mode}.
+Запускать без интерактивного терминала.  @xref{Batch Mode}.
 
 @item --daemon
 @itemx --bg-daemon
 @itemx --fg-daemon
-Do not initialize any display; just start a server.
-(A ``background'' daemon automatically runs in the background.)
+Не инициализировать никакое отображение; просто запустить сервер.  (Демон
+``background'' автоматически запускается в фоновом режиме.)
 
 @item --no-init-file
 @itemx -q
-Do not load either the init file, or the @file{default} library.
+Не загружать ни файл инициализации, ни библиотеку @file{default}.
 
 @item --no-site-file
-Do not load the @file{site-start} library.
+Не загружать библиотеку @file{site-start}.
 
 @item --quick
 @itemx -Q
-Equivalent to @samp{-q --no-site-file --no-splash}.
-@c and --no-site-lisp, but let's not mention that here.
+Эквивалент @samp{-q --no-site-file --no-splash}.
+@c и --no-site-lisp, но не будем упоминать об этом здесь.
 @end table
 
 
 @node Init File
-@subsection The Init File
+@subsection Файл Инициализации
 @cindex init file
 @cindex @file{.emacs}
 @cindex @file{init.el}
 
-  When you start Emacs, it normally attempts to load your @dfn{init
-file}.  This is either a file named @file{.emacs} or @file{.emacs.el}
-in your home directory, or a file named @file{init.el} in a
-subdirectory named @file{.emacs.d} in your home directory.
+  Когда запускается Emacs, обычно проводится попытка загрузить
+@dfn{файл инициализации}.  Это либо файл с именем @file{.emacs} или @file{.emacs.el}
+в домашнем каталоге, либо файл с именем @file{init.el} в подкаталоге с именем
+@file{.emacs.d} в домашнем каталоге.
 @ignore
-Whichever place you use, you can also compile the file (@pxref{Byte
-Compilation}); then the actual file loaded will be @file{.emacs.elc}
-or @file{init.elc}.
+Какое бы место ни использовалось, также можно скомпилировать файл
+(@pxref{Byte Compilation}); тогда фактически загруженный файл будет
+@file{.emacs.elc} или @file{init.elc}.
 @end ignore
 
-  The command-line switches @samp{-q}, @samp{-Q}, and @samp{-u}
-control whether and where to find the init file; @samp{-q} (and the
-stronger @samp{-Q}) says not to load an init file, while @samp{-u
-@var{user}} says to load @var{user}'s init file instead of yours.
-@xref{Entering Emacs,,, emacs, The GNU Emacs Manual}.  If neither
-option is specified, Emacs uses the @env{LOGNAME} environment
-variable, or the @env{USER} (most systems) or @env{USERNAME} (MS
-systems) variable, to find your home directory and thus your init
-file; this way, even if you have su'd, Emacs still loads your own init
-file.  If those environment variables are absent, though, Emacs uses
-your user-id to find your home directory.
+  Опции командной строки @samp{-q}, @samp{-Q} и @samp{-u} определяют, нужно ли и где
+искать файл инициализации; @samp{-q} (и более сильный @samp{-Q}) говорит не загружать
+файл инициализации, в то время как @samp{-u @var{user}} говорит загружать файл
+инициализации @var{user} вместо текущего пользователя.
+@xref{Entering Emacs,,, emacs, The GNU Emacs Manual}.  Если ни одна из опций не
+указана, Emacs использует переменную окружения @env{LOGNAME} или переменную @env{USER}
+(большинство систем) или @env{USERNAME} (системы MS), чтобы найти домашний каталог и,
+следовательно, файл инициализации; таким образом, даже если выполнить sudo, Emacs все
+равно загрузит собственный файл инициализации.  Однако, если эти переменные среды
+отсутствуют, Emacs использует идентификатор пользователя, чтобы найти домашний
+каталог.
 
 @cindex default init file
-  An Emacs installation may have a @dfn{default init file}, which is a
-Lisp library named @file{default.el}.  Emacs finds this file through
-the standard search path for libraries (@pxref{How Programs Do
-Loading}).  The Emacs distribution does not come with this file; it is
-intended for local customizations.  If the default init file exists,
-it is loaded whenever you start Emacs.  But your own personal init
-file, if any, is loaded first; if it sets @code{inhibit-default-init}
-to a non-@code{nil} value, then Emacs does not subsequently load the
-@file{default.el} file.  In batch mode, or if you specify @samp{-q}
-(or @samp{-Q}), Emacs loads neither your personal init file nor
-the default init file.
+  В инсталляции Emacs может быть @dfn{файл инициализации по умолчанию}, библиотека
+Lisp с именем @file{default.el}.  Emacs находит этот файл по стандартному пути поиска
+библиотек (@pxref{How Programs Do Loading}).  Дистрибутив Emacs не поставляется с
+этим файлом; предназначается для локальной настройки.  Если файл инициализации по
+умолчанию существует, загружается при каждом запуске Emacs.  Но собственный личный
+файл инициализации, если есть, загружается первым; если устанавливается
+@code{inhibit-default-init} в значение не-@code{nil}, то Emacs впоследствии не
+загружает файл @file{default.el}.  В пакетном режиме или если указать @samp{-q}
+(или @samp{-Q}), Emacs не загружает ни личный файл инициализации, ни файл
+инициализации по умолчанию.
 
-  Another file for site-customization is @file{site-start.el}.  Emacs
-loads this @emph{before} the user's init file.  You can inhibit the
-loading of this file with the option @samp{--no-site-file}.
+  Еще один файл для настройки сайта - @file{site-start.el}.  Emacs загружает
+@emph{до} файла инициализации пользователя.  Можно запретить загрузку этого файла с
+помощью опции @samp{--no-site-file}.
 
 @defopt site-run-file
-This variable specifies the site-customization file to load before the
-user's init file.  Its normal value is @code{"site-start"}.  The only
-way you can change it with real effect is to do so before dumping
-Emacs.
-@c So why even mention it here.  I imagine it is almost never changed.
+Переменная указывает файл настройки сайта, загружаемый перед файлом инициализации
+пользователя.  Нормальное значение - @code{"site-start"}.  Единственный способ
+изменить его с реальным эффектом - это сделать это до сброса Emacs.
+@c Так зачем даже упоминать об этом здесь.  Я думаю, это почти никогда не менялось.
 @end defopt
 
-  @xref{Init Examples,, Init File Examples, emacs, The GNU Emacs Manual}, for
-examples of how to make various commonly desired customizations in your
-@file{.emacs} file.
+  @xref{Init Examples,, Init File Examples, emacs, The GNU Emacs Manual}, где
+приведены примеры того, как сделать различные часто желаемые настройки в
+файле @file{.emacs}.
 
 @defopt inhibit-default-init
-If this variable is non-@code{nil}, it prevents Emacs from loading the
-default initialization library file.  The default value is @code{nil}.
+Если переменная - не-@code{nil}, не позволяется Emacs загружать файл библиотеки
+инициализации по умолчанию.  Значение по умолчанию - @code{nil}.
 @end defopt
 
 @defvar before-init-hook
-This normal hook is run, once, just before loading all the init files
-(@file{site-start.el}, your init file, and @file{default.el}).
-(The only way to change it with real effect is before dumping Emacs.)
+Обычный обработчик запускается один раз перед загрузкой всех файлов инициализации
+(@file{site-start.el}, файл инициализации и @file{default.el}).  (Единственный способ
+изменить это с реальным эффектом - это перед сбросом Emacs.)
 @end defvar
 
 @defvar after-init-hook
-This normal hook is run, once, just after loading all the init files
-(@file{site-start.el}, your init file, and @file{default.el}),
-before loading the terminal-specific library (if started on a text
-terminal) and processing the command-line action arguments.
+Обычный обработчик запускается один раз, сразу после загрузки всех файлов
+инициализации (@file{site-start.el}, файл инициализации и @file{default.el}), перед
+загрузкой библиотеки, специфичной для терминала (если она запущена на текстовом
+терминале) и обработкой аргументов действия командной строки.
 @end defvar
 
 @defvar emacs-startup-hook
-This normal hook is run, once, just after handling the command line
-arguments.  In batch mode, Emacs does not run this hook.
+Обычный обработчик запускается один раз сразу после обработки аргументов командной
+строки.  В пакетном режиме Emacs не запускает этот перехватчик.
 @end defvar
 
 @defvar window-setup-hook
-This normal hook is very similar to @code{emacs-startup-hook}.
-The only difference is that it runs slightly later, after setting
-of the frame parameters.  @xref{Startup Summary, window-setup-hook}.
+Обычный перехватчик очень похож на @code{emacs-startup-hook}.  Единственное отличие
+в том, что запускается чуть позже, после установки параметров фрейма.
+@xref{Startup Summary, window-setup-hook}.
 @end defvar
 
 @defvar user-init-file
-This variable holds the absolute file name of the user's init file.  If the
-actual init file loaded is a compiled file, such as @file{.emacs.elc},
-the value refers to the corresponding source file.
+Переменная содержит абсолютное имя файла инициализации пользователя.  Если фактически
+загруженный файл инициализации является скомпилированным файлом, например
+@file{.emacs.elc}, значение относится к соответствующему исходному файлу.
 @end defvar
 
 @defvar user-emacs-directory
-This variable holds the name of the @file{.emacs.d} directory.  It is
-@file{~/.emacs.d} on all platforms but MS-DOS.
+Переменная содержит имя каталога @file{.emacs.d}.  Это @file{~/.emacs.d} на всех
+платформах, кроме MS-DOS.
 @end defvar
 
 @node Terminal-Specific
-@subsection Terminal-Specific Initialization
+@subsection Инициализация для Конкретного Терминала
 @cindex terminal-specific initialization
 
-  Each terminal type can have its own Lisp library that Emacs loads when
-run on that type of terminal.  The library's name is constructed by
-concatenating the value of the variable @code{term-file-prefix} and the
-terminal type (specified by the environment variable @env{TERM}).
-Normally, @code{term-file-prefix} has the value @code{"term/"};
-changing this is not recommended.  If there is an entry matching
-@env{TERM} in the @code{term-file-aliases} association list,
-Emacs uses the associated value in place of @env{TERM}.
-Emacs finds the file in the normal manner, by searching the
-@code{load-path} directories, and trying the @samp{.elc} and
-@samp{.el} suffixes.
+  Каждый тип терминала может иметь свою собственную библиотеку Lisp, которую Emacs
+загружает при запуске на терминале этого типа.  Имя библиотеки создается путем
+объединения значения переменной @code{term-file-prefix} и типа терминала (указанного
+переменной окружения @env{TERM}).  Обычно @code{term-file-prefix} имеет значение
+@code{"term/"}; менять это не рекомендуется.  Если в списке ассоциаций
+@code{term-file-aliases} есть запись, соответствующая @env{TERM}, Emacs использует
+ассоциированное значение вместо @env{TERM}.  Emacs находит файл обычным способом,
+просматривая каталоги @code{load-path} и пробуя суффиксы @samp{.elc} и @samp{.el}.
 
 @cindex Termcap
-  The usual role of a terminal-specific library is to enable special
-keys to send sequences that Emacs can recognize.  It may also need to
-set or add to @code{input-decode-map} if the Termcap or Terminfo entry
-does not specify all the terminal's function keys.  @xref{Terminal Input}.
+  Обычная роль библиотеки, специфичной для терминала, состоит в том, чтобы разрешить
+специальным клавишам отправлять последовательности, которые Emacs может распознать.
+Также может потребоваться установить или добавить @code{input-decode-map}, если
+запись Termcap или Terminfo не определяет все функциональные клавиши терминала.
+@xref{Terminal Input}.
 
-  When the name of the terminal type contains a hyphen or underscore,
-and no library is found whose name is identical to the terminal's
-name, Emacs strips from the terminal's name the last hyphen or
-underscore and everything that follows
-it, and tries again.  This process is repeated until Emacs finds a
-matching library, or until there are no more hyphens or underscores in the name
-(i.e., there is no terminal-specific library).  For example, if the
-terminal name is @samp{xterm-256color} and there is no
-@file{term/xterm-256color.el} library, Emacs tries to load
-@file{term/xterm.el}.  If necessary, the terminal library can evaluate
-@code{(getenv "TERM")} to find the full name of the terminal type.
+  Когда имя типа терминала содержит дефис или подчеркивание и не найдена библиотека,
+имя которой совпадает с именем терминала, Emacs удаляет из имени терминала последний
+дефис или подчеркивание и все, что следует за ним, и пытается снова.  Этот процесс
+повторяется до тех пор, пока Emacs не найдет подходящую библиотеку или пока в имени
+не останется дефисов или подчеркиваний (то есть нет библиотеки, специфичной для
+терминала).  Например, если имя терминала - @samp{xterm-256color} и нет библиотеки
+@file{term/xterm-256color.el}, Emacs пытается загрузить @file{term/xterm.el}.  При
+необходимости библиотека терминала может оценить @code{(getenv "TERM")}, чтобы найти
+полное имя типа терминала.
 
-  Your init file can prevent the loading of the terminal-specific
-library by setting the variable @code{term-file-prefix} to @code{nil}.
+  Файл инициализации может предотвратить загрузку библиотеки, специфичную для
+терминала, установив для переменной @code{term-file-prefix} значение @code{nil}.
 
-  You can also arrange to override some of the actions of the
-terminal-specific library by using @code{tty-setup-hook}.  This is
-a normal hook that Emacs runs after initializing a new text terminal.
-You could use this hook to define initializations for terminals that do not
-have their own libraries.  @xref{Hooks}.
+  Также можно изменить некоторые действия библиотеки, специфичные для терминала, с
+помощью @code{tty-setup-hook}.  Это обычный перехватчик, который Emacs запускает после
+инициализации нового текстового терминала.  Можно использовать этот обработчик для
+определения инициализации для терминалов, у которых нет собственных библиотек.
+@xref{Hooks}.
 
 @defopt term-file-prefix
 @cindex @env{TERM} environment variable
-If the value of this variable is non-@code{nil}, Emacs loads a
-terminal-specific initialization file as follows:
+Если значение этой переменной - не-@code{nil}, Emacs загружает специфичный для
+терминала файл инициализации следующим образом:
 
 @example
 (load (concat term-file-prefix (getenv "TERM")))
 @end example
 
 @noindent
-You may set the @code{term-file-prefix} variable to @code{nil} in your
-init file if you do not wish to load the
-terminal-initialization file.
+Можно установить для переменной @code{term-file-prefix} значение @code{nil} в вашем
+файле инициализации, если не требуется загружать файл инициализации терминала.
 
-On MS-DOS, Emacs sets the @env{TERM} environment variable to @samp{internal}.
+В MS-DOS Emacs устанавливает для переменной среды @env{TERM} значение @samp{internal}.
 @end defopt
 
 @defopt term-file-aliases
-This variable is an association list mapping terminal types to
-their aliases.  For example, an element of the form @code{("vt102"
-. "vt100")} means to treat a terminal of type @samp{vt102} like one of
-type @samp{vt100}.
+Переменная представляет собой список ассоциаций, отображающий типы терминалов на их
+псевдонимы.  Например, элемент формы @code{("vt102" . "vt100")} означает рассматривать
+терминал типа @samp{vt102} как терминал типа @samp{vt100}.
 @end defopt
 
 @defvar tty-setup-hook
-This variable is a normal hook that Emacs runs after initializing a
-new text terminal.  (This applies when Emacs starts up in non-windowed
-mode, and when making a tty @command{emacsclient} connection.)  The
-hook runs after loading your init file (if applicable) and the
-terminal-specific Lisp file, so you can use it to adjust the
-definitions made by that file.
+Переменная - обычный перехватчик, который Emacs запускает после инициализации нового
+текстового терминала.  (Это применимо, когда Emacs запускается в безоконном режиме и
+при создании соединения tty @command{emacsclient}.)  Перехватчик запускается после
+загрузки файла инициализации (если применимо) и файла Lisp, специфичного для
+терминала, поэтому можно использовать его для настройки определения, сделанные
+этим файлом.
 
-For a related feature, @pxref{Init File, window-setup-hook}.
+Для связанной функции, @pxref{Init File, window-setup-hook}.
 @end defvar
 
 @node Command-Line Arguments
-@subsection Command-Line Arguments
+@subsection Аргументы Командной Строки
 @cindex command-line arguments
 
-  You can use command-line arguments to request various actions when
-you start Emacs.  Note that the recommended way of using Emacs is to
-start it just once, after logging in, and then do all editing in the same
-Emacs session (@pxref{Entering Emacs,,, emacs, The GNU Emacs Manual}).
-For this reason, you might not use command-line arguments very often;
-nonetheless, they can be useful when invoking Emacs from session
-scripts or debugging Emacs.  This section describes how Emacs
-processes command-line arguments.
+  Можно использовать аргументы командной строки для запроса различных действий при
+запуске Emacs.  Обратить внимание, что рекомендуемый способ использования Emacs -
+запустить его только один раз после входа в систему, а затем выполнить все
+редактирование в том же сеансе Emacs
+(@pxref{Entering Emacs,,, emacs, The GNU Emacs Manual}).  По этой причине можно не
+очень часто использовать аргументы командной строки; тем не менее, они могут быть
+полезны при вызове Emacs из сценариев сеанса или отладке Emacs.  В этом разделе
+описывается, как Emacs обрабатывает аргументы командной строки.
 
 @defun command-line
-This function parses the command line that Emacs was called with,
-processes it, and (amongst other things) loads the user's init file and
-displays the startup messages.
+Функция анализирует командную строку, с которой был вызван Emacs, обрабатывает ее и
+(среди прочего) загружает файл инициализации пользователя и отображает сообщения
+запуска.
 @end defun
 
 @defvar command-line-processed
-The value of this variable is @code{t} once the command line has been
-processed.
+После обработки командной строки значение этой переменной - @code{t}.
 
-If you redump Emacs by calling @code{dump-emacs} (@pxref{Building
-Emacs}), you may wish to set this variable to @code{nil} first in
-order to cause the new dumped Emacs to process its new command-line
-arguments.
+Если перенаправляется Emacs, вызовом @code{dump-emacs} (@pxref{Building Emacs}),
+можно сначала установить для этой переменной значение @code{nil}, чтобы заставить
+новый выгруженный Emacs обработать свои новые аргументы командной строки.
 @end defvar
 
 @defvar command-switch-alist
 @cindex switches on command line
 @cindex options on command line
 @cindex command-line options
-This variable is an alist of user-defined command-line options and
-associated handler functions.  By default it is empty, but you can
-add elements if you wish.
+Переменная представляет собой список определяемых пользователем параметров командной
+строки и связанных функций-обработчиков.  По умолчанию пуст, но можно добавлять
+элементы, если требуется.
 
-A @dfn{command-line option} is an argument on the command line, which
-has the form:
+@dfn{параметр командной строки} - это аргумент командной строки, имеющий вид:
 
 @example
 -@var{option}
 @end example
 
-The elements of the @code{command-switch-alist} look like this:
+Элементы @code{command-switch-alist} выглядят так:
 
 @example
 (@var{option} . @var{handler-function})
 @end example
 
-The @sc{car}, @var{option}, is a string, the name of a command-line
-option (not including the initial hyphen).  The @var{handler-function}
-is called to handle @var{option}, and receives the option name as its
-sole argument.
+@sc{car}, @var{option} - это строка, имя параметра командной строки (не включая
+начальный дефис).  @var{handler-function} вызывается для обработки @var{option} и
+получает имя параметра в качестве единственного аргумента.
 
-In some cases, the option is followed in the command line by an
-argument.  In these cases, the @var{handler-function} can find all the
-remaining command-line arguments in the variable
-@code{command-line-args-left} (see below).  (The entire list of
-command-line arguments is in @code{command-line-args}.)
+В некоторых случаях за параметром в командной строке следует аргумент.  В этих случаях
+@var{handler-function} может найти все оставшиеся аргументы командной строки в
+переменной @code{command-line-args-left} (смотреть ниже).  (Полный список аргументов
+командной строки находится в @code{command-line-args}.)
 
-The command-line arguments are parsed by the @code{command-line-1}
-function in the @file{startup.el} file.  See also @ref{Emacs
-Invocation, , Command Line Arguments for Emacs Invocation, emacs, The
+Аргументы командной строки анализируются функцией @code{command-line-1} в файле
+@file{startup.el}. Смотреть также
+@ref{Emacs Invocation, , Command Line Arguments for Emacs Invocation, emacs, The
 GNU Emacs Manual}.
 @end defvar
 
 @defvar command-line-args
-The value of this variable is the list of command-line arguments passed
-to Emacs.
+Значение этой переменной - это список аргументов командной строки, переданных в Emacs.
 @end defvar
 
 @defvar command-line-args-left
 @vindex argv
-The value of this variable is the list of command-line arguments that
-have not yet been processed.
-@c Don't mention this, since it is a "bad name for a dynamically bound variable"
-@c @code{argv} is an alias for this.
+Значение этой переменной - это список аргументов командной строки, которые еще не
+были обработаны.
+@c Не упоминать об этом, так как это плохой
+@c @code{argv} - псевдоним для этого.
 @end defvar
 
 @defvar command-line-functions
-This variable's value is a list of functions for handling an
-unrecognized command-line argument.  Each time the next argument to be
-processed has no special meaning, the functions in this list are called,
-in order of appearance, until one of them returns a non-@code{nil}
-value.
+Значение этой переменной представляет собой список функций для обработки
+нераспознанного аргумента командной строки.  Каждый раз, когда следующий
+обрабатываемый аргумент не имеет особого значения, функции в этом списке вызываются
+в порядке появления, пока одна из них не вернет значение не-@code{nil}.
 
-These functions are called with no arguments.  They can access the
-command-line argument under consideration through the variable
-@code{argi}, which is bound temporarily at this point.  The remaining
-arguments (not including the current one) are in the variable
+Функции вызываются без аргументов.  Могут получить доступ к рассматриваемому аргументу
+командной строки через переменную @code{argi}, которая временно привязана в этот
+момент.  Остальные аргументы (не считая текущего) находятся в переменной
 @code{command-line-args-left}.
 
-When a function recognizes and processes the argument in @code{argi}, it
-should return a non-@code{nil} value to say it has dealt with that
-argument.  If it has also dealt with some of the following arguments, it
-can indicate that by deleting them from @code{command-line-args-left}.
+Когда функция распознает и обрабатывает аргумент в @code{argi}, должна вернуть
+значение не-@code{nil}, чтобы сказать, что она обработала этот аргумент.  Если также
+имелось дело с некоторыми из следующих аргументов, может указываться на это, удалением
+их из @code{command-line-args-left}.
 
-If all of these functions return @code{nil}, then the argument is treated
-as a file name to visit.
+Если все эти функции возвращают @code{nil}, то аргумент рассматривается как имя
+файла для посещения.
 @end defvar
 
 @node Getting Out
-@section Getting Out of Emacs
+@section Выход из Emacs
 @cindex exiting Emacs
 
-  There are two ways to get out of Emacs: you can kill the Emacs job,
-which exits permanently, or you can suspend it, which permits you to
-reenter the Emacs process later.  (In a graphical environment, you can
-of course simply switch to another application without doing anything
-special to Emacs, then switch back to Emacs when you want.)
+  Есть два способа выйти из Emacs: можно убить задание Emacs, которое завершается
+навсегда, или можно приостановить, что позволит повторно войти в процесс Emacs позже.
+(В графической среде, конечно, можно просто переключиться на другое приложение, не
+делая ничего особенного для Emacs, а затем снова переключиться на Emacs, когда
+потребуется.)
 
 @menu
-* Killing Emacs::        Exiting Emacs irreversibly.
-* Suspending Emacs::     Exiting Emacs reversibly.
+* Killing Emacs::        Безвозвратный выход из Emacs.
+* Suspending Emacs::     Обратимый выход из Emacs.
 @end menu
 
 @node Killing Emacs
-@subsection Killing Emacs
+@subsection Убиваем Emacs
 @cindex killing Emacs
 
-  Killing Emacs means ending the execution of the Emacs process.
-If you started Emacs from a terminal, the parent process normally
-resumes control.  The low-level primitive for killing Emacs is
-@code{kill-emacs}.
+  Убить Emacs означает завершить выполнение процесса Emacs.  Если запущен Emacs с
+терминала, родительский процесс обычно возобновляет управление.  Низкоуровневым
+примитивом для уничтожения Emacs является @code{kill-emacs}.
 
 @deffn Command kill-emacs &optional exit-data
-This command calls the hook @code{kill-emacs-hook}, then exits the
-Emacs process and kills it.
+Команда вызывает перехватчик @code{kill-emacs-hook}, затем завершает процесс Emacs и
+завершает его.
 
-If @var{exit-data} is an integer, that is used as the exit status of
-the Emacs process.  (This is useful primarily in batch operation; see
+Если @var{exit-data} - целое число, оно используется как статус завершения процесса
+Emacs.  (Это полезно в первую очередь при пакетной работе.; смотреть
 @ref{Batch Mode}.)
 
-If @var{exit-data} is a string, its contents are stuffed into the
-terminal input buffer so that the shell (or whatever program next reads
-input) can read them.
+Если @var{exit-data} является строкой, ее содержимое помещается во входной буфер
+терминала, чтобы оболочка (или любая другая программа, которая затем считывает
+входные данные) могла их прочитать.
 @end deffn
 
 @cindex SIGTERM
 @cindex SIGHUP
 @cindex SIGINT
 @cindex operating system signal
-  The @code{kill-emacs} function is normally called via the
-higher-level command @kbd{C-x C-c}
-(@code{save-buffers-kill-terminal}).  @xref{Exiting,,, emacs, The GNU
-Emacs Manual}.  It is also called automatically if Emacs receives a
-@code{SIGTERM} or @code{SIGHUP} operating system signal (e.g., when the
-controlling terminal is disconnected), or if it receives a
-@code{SIGINT} signal while running in batch mode (@pxref{Batch Mode}).
+  Функция @code{kill-emacs} обычно вызывается с помощью команды верхнего уровня
+@kbd{C-x C-c} (@code{save-buffers-kill-terminal}).
+@xref{Exiting,,, emacs, The GNU Emacs Manual}.
+Также вызывается автоматически, если Emacs получает сигнал операционной системы
+@code{SIGTERM} или @code{SIGHUP} (например, когда управляющий терминал отключен) или
+если он получает сигнал @code{SIGINT} во время работы в пакетном режиме
+(@pxref{Batch Mode}).
 
 @defvar kill-emacs-hook
-This normal hook is run by @code{kill-emacs}, before it kills Emacs.
+Этот нормальный перехватчик запускается @code{kill-emacs}, прежде чем он убьет Emacs.
 
-Because @code{kill-emacs} can be called in situations where user
-interaction is impossible (e.g., when the terminal is disconnected),
-functions on this hook should not attempt to interact with the user.
-If you want to interact with the user when Emacs is shutting down, use
-@code{kill-emacs-query-functions}, described below.
+Поскольку @code{kill-emacs} может быть вызвано в ситуациях, когда взаимодействие с
+пользователем невозможно (например, когда терминал отключен), функции на этом
+перехватчике не должны пытаться взаимодействовать с пользователем.  Если требуется
+взаимодействовать с пользователем, когда Emacs завершает работу, использовать
+@code{kill-emacs-query-functions}, как описано ниже.
 @end defvar
 
-  When Emacs is killed, all the information in the Emacs process,
-aside from files that have been saved, is lost.  Because killing Emacs
-inadvertently can lose a lot of work, the
-@code{save-buffers-kill-terminal} command queries for confirmation if
-you have buffers that need saving or subprocesses that are running.
-It also runs the abnormal hook @code{kill-emacs-query-functions}:
+  Когда Emacs завершается, вся информация в процессе Emacs, за исключением файлов,
+которые были сохранены, теряется.  Поскольку непреднамеренное завершение работы Emacs
+может привести к потере большого объема работы, команда
+@code{save-buffers-kill-terminal} запрашивает подтверждение, если есть буферы, которые
+нужно сохранить или есть запущенные подпроцессы.  Также запускается ненормальная
+ловушка @code{kill-emacs-query-functions}:
 
 @defopt kill-emacs-query-functions
-When @code{save-buffers-kill-terminal} is killing Emacs, it calls the
-functions in this hook, after asking the standard questions and before
-calling @code{kill-emacs}.  The functions are called in order of
-appearance, with no arguments.  Each function can ask for additional
-confirmation from the user.  If any of them returns @code{nil},
-@code{save-buffers-kill-emacs} does not kill Emacs, and does not run
-the remaining functions in this hook.  Calling @code{kill-emacs}
-directly does not run this hook.
+Когда @code{save-buffers-kill-terminal} убивает Emacs, вызывается функция в этой
+ловушке, задав стандартные вопросы и перед вызовом @code{kill-emacs}.  Функции
+вызываются в порядке появления без аргументов.  Каждая функция может запрашивать у
+пользователя дополнительное подтверждение.  Если какая-либо из них возвращает
+@code{save-buffers-kill-emacs} установленное в @code{nil}, Emacs не уничтожается и не
+запускаются остальные функции в этой ловушке.  Вызов @code{kill-emacs} напрямую не
+запускает этот перехватчик.
 @end defopt
 
 @node Suspending Emacs
-@subsection Suspending Emacs
+@subsection Приостановка Emacs
 @cindex suspending Emacs
 
-  On text terminals, it is possible to @dfn{suspend Emacs}, which
-means stopping Emacs temporarily and returning control to its superior
-process, which is usually the shell.  This allows you to resume
-editing later in the same Emacs process, with the same buffers, the
-same kill ring, the same undo history, and so on.  To resume Emacs,
-use the appropriate command in the parent shell---most likely
-@code{fg}.
+  На текстовых терминалах возможно @dfn{приостановить Emacs}, что означает временную
+остановку Emacs и возвращение управления его вышестоящему процессу, которым обычно
+является оболочка.  Это позволяет возобновить редактирование позже в том же процессе
+Emacs, с теми же буферами, тем же кругом уничтожений, той же историей отмены и так
+далее.  Чтобы возобновить работу Emacs, использовать соответствующую команду в
+родительской оболочке - скорее всего, @code{fg}.
 
 @cindex controlling terminal
-  Suspending works only on a terminal device from which the Emacs
-session was started.  We call that device the @dfn{controlling
-terminal} of the session.  Suspending is not allowed if the
-controlling terminal is a graphical terminal.  Suspending is usually
-not relevant in graphical environments, since you can simply switch to
-another application without doing anything special to Emacs.
+  Приостановка работает только конечном устройстве, с которого был запущен сеанс
+Emacs.  Называется это устройство @dfn{управляющий терминал} сеанса.  Приостановка не
+допускается, если управляющий терминал является графическим.  Приостановка обычно не
+актуальна в графических средах, так как можно просто переключиться на другое
+приложение, не делая ничего особенного с Emacs.
 
-@c FIXME?  Are there any systems Emacs still supports that do not
-@c have SIGTSTP?
+@c FIXME?  Есть ли системы, которые еще поддерживает Emacs, без
+@c SIGTSTP?
 @cindex SIGTSTP
-  Some operating systems (those without @code{SIGTSTP}, or MS-DOS) do
-not support suspension of jobs; on these systems, suspension
-actually creates a new shell temporarily as a subprocess of Emacs.
-Then you would exit the shell to return to Emacs.
+  Некоторые операционные системы (без @code{SIGTSTP} или MS-DOS) не поддерживают
+приостановку заданий; в этих системах приостановка фактически временно создает новую
+оболочку как подпроцесс Emacs.  Затем потребуется выйти из оболочки, чтобы вернуться
+в Emacs.
 
 @deffn Command suspend-emacs &optional string
-This function stops Emacs and returns control to the superior process.
-If and when the superior process resumes Emacs, @code{suspend-emacs}
-returns @code{nil} to its caller in Lisp.
+Функция останавливает Emacs и возвращает управление вышестоящему процессу.  Если и
+когда вышестоящий процесс возобновляет Emacs, @code{suspend-emacs} возвращает
+@code{nil} вызывающей стороне в Lisp.
 
-This function works only on the controlling terminal of the Emacs
-session; to relinquish control of other tty devices, use
-@code{suspend-tty} (see below).  If the Emacs session uses more than
-one terminal, you must delete the frames on all the other terminals
-before suspending Emacs, or this function signals an error.
-@xref{Multiple Terminals}.
+Функция работает только на управляющем терминале сеанса Emacs; чтобы отказаться от
+управления другими устройствами tty, использовать @code{suspend-tty} (смотреть ниже).
+Если сеанс Emacs использует более одного терминала, потребуется удалить фреймы на всех
+других терминалах перед приостановкой Emacs, иначе эта функция сигнализирует об
+ошибке.  @xref{Multiple Terminals}.
 
-If @var{string} is non-@code{nil}, its characters are sent to Emacs's
-superior shell, to be read as terminal input.
-@c FIXME?  It seems to me that shell does echo STRING.
-The characters in @var{string} are not echoed by the superior shell;
-only the results appear.
+Если @var{string} равно не-@code{nil}, его символы отправляются в вышестоящую оболочку
+Emacs для чтения как ввод терминала.
+@c FIXME?  Мне кажется, что оболочка отображает STRING.
+Символы в @var{string} не отображаются вышестоящей оболочкой; появляются только
+результаты.
 
-Before suspending, @code{suspend-emacs} runs the normal hook
-@code{suspend-hook}.  After the user resumes Emacs,
-@code{suspend-emacs} runs the normal hook @code{suspend-resume-hook}.
+Перед приостановкой @code{suspend-emacs} запускает обычный обработчик
+@code{suspend-hook}.  После того, как пользователь возобновляет работу Emacs,
+@code{suspend-emacs} запускает обычный обработчик @code{suspend-resume-hook}.
 @xref{Hooks}.
 
-The next redisplay after resumption will redraw the entire screen,
-unless the variable @code{no-redraw-on-reenter} is non-@code{nil}.
-@xref{Refresh Screen}.
+Следующее повторное отображение после возобновления приведет к перерисовке всего
+экрана, если только переменная @code{no-redraw-on-reenter} не имеет значения
+не-@code{nil}.  @xref{Refresh Screen}.
 
-Here is an example of how you could use these hooks:
+Вот пример того, как можно использовать эти перехватчики:
 
 @smallexample
 @group
@@ -781,10 +748,10 @@ Here is an example of how you could use these hooks:
 (add-hook 'suspend-resume-hook (lambda () (message "Resumed!")
                                  (sit-for 2)))
 @end smallexample
-@c The sit-for prevents the @code{nil} that suspend-emacs returns
-@c hiding the message.
+@c Функция sit-for предотвращает @code {nil}, который suspend-emacs возвращает,
+@c скрывая сообщение.
 
-Here is what you would see upon evaluating @code{(suspend-emacs "pwd")}:
+Вот что видно при оценке @code{(suspend-emacs "pwd")}:
 
 @smallexample
 @group
@@ -805,156 +772,148 @@ Resumed!
 @end group
 @end smallexample
 
-@c FIXME?  AFAICS, it is echoed.
-Note that @samp{pwd} is not echoed after Emacs is suspended.  But it
-is read and executed by the shell.
+@c FIXME?  AFAICS, это повторяется.
+Обратить внимание, что @samp{pwd} не отображается после приостановки Emacs.
+Но читается и выполняется оболочкой.
 @end deffn
 
 @defvar suspend-hook
-This variable is a normal hook that Emacs runs before suspending.
+Переменная - обычная ловушка, которую Emacs запускает перед приостановкой.
 @end defvar
 
 @defvar suspend-resume-hook
-This variable is a normal hook that Emacs runs on resuming
-after a suspension.
+Переменная - обычная ловушка, которую Emacs запускает при возобновлении после
+приостановки.
 @end defvar
 
 @defun suspend-tty &optional tty
-If @var{tty} specifies a terminal device used by Emacs, this function
-relinquishes the device and restores it to its prior state.  Frames
-that used the device continue to exist, but are not updated and Emacs
-doesn't read input from them.  @var{tty} can be a terminal object, a
-frame (meaning the terminal for that frame), or @code{nil} (meaning
-the terminal for the selected frame).  @xref{Multiple Terminals}.
+Если @var{tty} указывает конечное устройство, используемое Emacs, функция освобождает
+устройство и восстанавливает его в предыдущее состояние.  Фреймы, которые использовали
+устройство, продолжают существовать, но не обновляются, и Emacs не считывает ввод с
+них.  @var{tty} может быть конечным объектом, фреймом (имеется в виду терминал для
+этого фрейма) или @code{nil} (что означает терминал для выбранного фрейма).
+@xref{Multiple Terminals}.
 
-If @var{tty} is already suspended, this function does nothing.
+Если @var{tty} уже приостановлено, эта функция ничего не делает.
 
 @vindex suspend-tty-functions
-This function runs the hook @code{suspend-tty-functions}, passing the
-terminal object as an argument to each function.
+Функция запускает ловушку @code{suspend-tty-functions}, передавая объект терминала
+в качестве аргумента каждой функции.
 @end defun
 
 @defun resume-tty &optional tty
-This function resumes the previously suspended terminal device
-@var{tty}; where @var{tty} has the same possible values as it does
-for @code{suspend-tty}.
+Функция возобновляет ранее приостановленное оконечное устройство @var{tty}; где
+@var{tty} имеет те же возможные значения, что и @code{suspend-tty}.
 
 @vindex resume-tty-functions
-This function reopens the terminal device, re-initializes it, and
-redraws it with that terminal's selected frame.  It then runs the
-hook @code{resume-tty-functions}, passing the terminal object as an
-argument to each function.
+Функция повторно открывает конечное устройство, повторно инициализирует его и
+перерисовывает его с выбранным фреймом этого терминала.  Затем запускается ловушка
+@code{resume-tty-functions}, передаётся объект терминала в качестве аргумента каждой
+функции.
 
-If the same device is already used by another Emacs terminal, this
-function signals an error.  If @var{tty} is not suspended, this
-function does nothing.
+Если то же устройство уже используется другим терминалом Emacs, функция сигнализирует
+об ошибке.  Если @var{tty} не приостановлено, эта функция ничего не делает.
 @end defun
 
 @defun controlling-tty-p &optional tty
-This function returns non-@code{nil} if @var{tty} is the
-controlling terminal of the Emacs session; @var{tty} can be a
-terminal object, a frame (meaning the terminal for that frame), or
-@code{nil} (meaning the terminal for the selected frame).
+Функция возвращает не-@code{nil}, если @var{tty} является управляющим терминалом
+сеанса Emacs; @var{tty} может быть конечным объектом, фреймом (то есть терминалом для
+этого фрейма) или @code{nil} (что означает терминал для выбранного фрейма).
 @end defun
 
 @deffn Command suspend-frame
-This command @dfn{suspends} a frame.  For GUI frames, it calls
-@code{iconify-frame} (@pxref{Visibility of Frames}); for frames on
-text terminals, it calls either @code{suspend-emacs} or
-@code{suspend-tty}, depending on whether the frame is displayed on the
-controlling terminal device or not.
+Команда @dfn{приостанавливает} фрейм.  Для GUI фреймов вызывается @code{iconify-frame}
+(@pxref{Visibility of Frames}); для фреймов на текстовых терминалах вызывается либо
+@code{suspend-emacs} либо @code{suspend-tty}, в зависимости от того, отображается ли
+фрейм на управляющем терминальном устройстве или нет.
 @end deffn
 
 @node System Environment
-@section Operating System Environment
+@section Среда Опреционной Системы
 @cindex operating system environment
 
-  Emacs provides access to variables in the operating system environment
-through various functions.  These variables include the name of the
-system, the user's @acronym{UID}, and so on.
+  Emacs предоставляет доступ к переменным в среде операционной системы с помощью
+различных функций.  Эти переменные включают имя системы, @acronym{UID} пользователя
+и так далее.
 
 @defvar system-configuration
-This variable holds the standard GNU configuration name for the
-hardware/software configuration of your system, as a string.  For
-example, a typical value for a 64-bit GNU/Linux system is
-@samp{"x86_64-unknown-linux-gnu"}.
+Переменная содержит стандартное имя конфигурации GNU для аппаратной/программной
+конфигурации вашей системы в виде строки.  Например, типичное значение для 64-битной
+системы GNU/Linux - @samp{"x86_64-unknown-linux-gnu"}.
 @end defvar
 
 @cindex system type and name
 @defvar system-type
-The value of this variable is a symbol indicating the type of operating
-system Emacs is running on.  The possible values are:
+Значение этой переменной - это символ, указывающий на тип операционной системы, в
+которой работает Emacs.  Возможные значения:
 
 @table @code
 @item aix
-IBM's AIX.
+IBM AIX.
 
 @item berkeley-unix
-Berkeley BSD and its variants.
+Berkeley BSD и его варианты.
 
 @item cygwin
-Cygwin, a POSIX layer on top of MS-Windows.
+Cygwin, слой POSIX поверх MS-Windows.
 
 @item darwin
-Darwin (macOS).
+Дарвин (macOS).
 
 @item gnu
-The GNU system (using the GNU kernel, which consists of the HURD and Mach).
+Система GNU (с использованием ядра GNU, которое состоит из HURD и Mach).
 
 @item gnu/linux
-A GNU/Linux system---that is, a variant GNU system, using the Linux
-kernel.  (These systems are the ones people often call ``Linux'', but
-actually Linux is just the kernel, not the whole system.)
+Система GNU/Linux --- то есть вариант системы GNU, использующая ядро Linux.  (Эти
+системы часто называют ``Linux'', но на самом деле Linux - это просто ядро, а не вся
+система.)
 
 @item gnu/kfreebsd
-A GNU (glibc-based) system with a FreeBSD kernel.
+Система GNU (на основе glibc) с ядром FreeBSD.
 
 @item hpux
-Hewlett-Packard HPUX operating system.
+Операционная система Hewlett-Packard HPUX.
 
 @item nacl
-Google Native Client (@acronym{NaCl}) sandboxing system.
+Система песочницы Google Native Client (@acronym{NaCl}).
 
 @item ms-dos
-Microsoft's DOS@.  Emacs compiled with DJGPP for MS-DOS binds
-@code{system-type} to @code{ms-dos} even when you run it on MS-Windows.
+Microsoft DOS@.  Emacs, скомпилированный с DJGPP для MS-DOS, связывает
+@code{system-type} с @code{ms-dos}, даже когда запускается в MS-Windows.
 
 @item usg-unix-v
 AT&T Unix System V.
 
 @item windows-nt
-Microsoft Windows NT, 9X and later.  The value of @code{system-type}
-is always @code{windows-nt}, e.g., even on Windows 10.
+Microsoft Windows NT, 9X и новее.  Значение @code{system-type} всегда
+@code{windows-nt}, например, даже в Windows 10.
 
 @end table
 
-We do not wish to add new symbols to make finer distinctions unless it
-is absolutely necessary!  In fact, we hope to eliminate some of these
-alternatives in the future.  If you need to make a finer distinction
-than @code{system-type} allows for, you can test
-@code{system-configuration}, e.g., against a regexp.
+Нет желания добавлять новые символы для более тонких различий, кроме случаев крайней
+необходимости!  Фактически, есть надежде устранить некоторые из этих альтернатив в
+будущем.  Если нужно провести более тонкое различие, чем позволяет @code{system-type},
+можно протестировать @code{system-configuration}, например, с регулярным выражением.
 @end defvar
 
 @defun system-name
-This function returns the name of the machine you are running on, as a
-string.
+Функция возвращает имя компьютера, на котором происходит работа, в виде строки.
 @end defun
 
-@c FIXME seems like this section is not the best place for this option?
+@c FIXME кажется, этот раздел не лучшее место для этого варианта?
 @defopt mail-host-address
-If this variable is non-@code{nil}, it is used instead of
-@code{system-name} for purposes of generating email addresses.  For
-example, it is used when constructing the default value of
-@code{user-mail-address}.  @xref{User Identification}.
+Если переменная - не-@code{nil}, используется вместо @code{system-name} для создания
+адресов электронной почты.  Например, используется при построении значения по
+умолчанию @code{user-mail-address}.  @xref{User Identification}.
 @end defopt
 
 @deffn Command getenv var &optional frame
 @cindex environment variable access
-This function returns the value of the environment variable @var{var},
-as a string.  @var{var} should be a string.  If @var{var} is undefined
-in the environment, @code{getenv} returns @code{nil}.  It returns
-@samp{""} if @var{var} is set but null.  Within Emacs, a list of environment
-variables and their values is kept in the variable @code{process-environment}.
+Функция возвращает значение переменной окружения @var{var} в виде строки.  @var{var}
+должно быть строкой.  Если @var{var} в среде не определено, @code{getenv} возвращает
+@code{nil}.  Возвращает @samp{""}, если @var{var} установлено, но равно нулю.  В Emacs
+список переменных окружения и их значений хранится в переменной
+@code{process-environment}.
 
 @example
 @group
@@ -963,7 +922,7 @@ variables and their values is kept in the variable @code{process-environment}.
 @end group
 @end example
 
-The shell command @code{printenv} prints all or part of the environment:
+Команда оболочки @code{printenv} печатает все или часть среды:
 
 @example
 @group
@@ -981,33 +940,30 @@ HOME=/home/lewis
 @end deffn
 
 @deffn Command setenv variable &optional value substitute
-This command sets the value of the environment variable named
-@var{variable} to @var{value}.  @var{variable} should be a string.
-Internally, Emacs Lisp can handle any string.  However, normally
-@var{variable} should be a valid shell identifier, that is, a sequence
-of letters, digits and underscores, starting with a letter or
-underscore.  Otherwise, errors may occur if subprocesses of Emacs try
-to access the value of @var{variable}.  If @var{value} is omitted or
-@code{nil} (or, interactively, with a prefix argument), @code{setenv}
-removes @var{variable} from the environment.  Otherwise, @var{value}
-should be a string.
+Команда устанавливает значение переменной окружения @var{variable} равное @var{value}.
+@var{variable} должно быть строкой.  Внутренне Emacs Lisp может обрабатывать любую
+строку.  Однако обычно @var{variable} должно быть допустимым идентификатором оболочки,
+то есть последовательностью букв, цифр и символов подчеркивания, начинающейся с буквы
+или символа подчеркивания.  В противном случае могут возникнуть ошибки, если
+подпроцессы Emacs попытаются получить доступ к значению @var{variable}.  Если
+@var{value} опущено или @code{nil} (или, в интерактивном режиме, с аргументом
+префикса), @code{setenv} удаляет @var{variable} из окружения.  В противном случае
+@var{value} должно быть строкой.
 
-@c FIXME: Document 'substitute-env-vars'?  --xfq
-If the optional argument @var{substitute} is non-@code{nil}, Emacs
-calls the function @code{substitute-env-vars} to expand any
-environment variables in @var{value}.
+@c FIXME: Документировать 'replace-env-vars'?  --xfq
+Если необязательный аргумент @var{substitute} - не-@code{nil}, Emacs вызывает функцию
+@code{substitute-env-vars} для раскрытия любых переменных среды в @var{value}.
 
-@code{setenv} works by modifying @code{process-environment}; binding
-that variable with @code{let} is also reasonable practice.
+@code{setenv} работает путем изменения @code{process-environment}; Связывание этой
+переменной с @code{let} также является разумной практикой.
 
-@code{setenv} returns the new value of @var{variable}, or @code{nil}
-if it removed @var{variable} from the environment.
+@code{setenv} возвращается новое значение @var{variable} или @code{nil}, если удалено
+@var{variable} из окружения.
 @end deffn
 
 @defvar process-environment
-This variable is a list of strings, each describing one environment
-variable.  The functions @code{getenv} and @code{setenv} work by means
-of this variable.
+Переменная представляет собой список строк, каждая из которых описывает одну
+переменную среды.  Функции @code{getenv} и @code{setenv} работают с этой переменной.
 
 @smallexample
 @group
@@ -1023,28 +979,27 @@ process-environment
 @end group
 @end smallexample
 
-If @code{process-environment} contains multiple elements that
-specify the same environment variable, the first of these elements
-specifies the variable, and the others are ignored.
+Если @code{process-environment} содержит несколько элементов, которые определяют одну
+и ту же переменную среды, первый из этих элементов указывает переменную, а остальные
+игнорируются.
 @end defvar
 
 @defvar initial-environment
-This variable holds the list of environment variables Emacs inherited
-from its parent process when Emacs started.
+Переменная содержит список переменных среды, унаследованных Emacs от родительского
+процесса при запуске Emacs.
 @end defvar
 
 @defvar path-separator
-This variable holds a string that says which character separates
-directories in a search path (as found in an environment variable).  Its
-value is @code{":"} for Unix and GNU systems, and @code{";"} for MS systems.
+Переменная содержит строку, которая говорит, какой символ разделяет каталоги в пути
+поиска (как указано в переменной среды).  Её значение - @code{":"} для систем Unix и
+GNU и @code{";"} для систем MS.
 @end defvar
 
 @defun parse-colon-path path
-This function takes a search path string such as the value of
-the @env{PATH} environment variable, and splits it at the separators,
-returning a list of directories.  @code{nil} in this list means
-the current directory.  Although the function's name says
-``colon'', it actually uses the value of @code{path-separator}.
+Функция берет строку пути поиска, такую как значение переменной среды @env{PATH}, и
+разделяет ее по разделителям, возвращая список каталогов.  @code{nil} в этом списке
+означает текущий каталог.  Хотя в названии функции написано ``colon'', на самом деле
+она использует значение @code{path-separator}.
 
 @example
 (parse-colon-path ":/foo:/bar")
@@ -1053,43 +1008,40 @@ the current directory.  Although the function's name says
 @end defun
 
 @defvar invocation-name
-This variable holds the program name under which Emacs was invoked.  The
-value is a string, and does not include a directory name.
+Переменная содержит имя программы, под которой был вызван Emacs.  Значение
+представляет собой строку и не включает имя каталога.
 @end defvar
 
 @defvar invocation-directory
-This variable holds the directory in which the Emacs executable was
-located when it was run, or @code{nil} if that directory cannot be
-determined.
+Переменная содержит каталог, в котором исполняемый файл Emacs находился при запуске,
+или @code{nil}, если этот каталог не может быть определен.
 @end defvar
 
 @defvar installation-directory
-If non-@code{nil}, this is a directory within which to look for the
-@file{lib-src} and @file{etc} subdirectories.  In an installed Emacs,
-it is normally @code{nil}.  It is non-@code{nil}
-when Emacs can't find those directories in their standard installed
-locations, but can find them in a directory related somehow to the one
-containing the Emacs executable (i.e., @code{invocation-directory}).
+Если не-@code{nil}, это каталог, в котором нужно искать подкаталоги @file{lib-src} и
+@file{etc}.  В установленном Emacs это обычно @code{nil}.  Не-@code{nil}, когда Emacs
+не может найти эти каталоги в их стандартных установленных местах, но может найти их
+в каталоге, так или иначе связанном с тем, который содержит исполняемый файл Emacs
+(то есть @code{invocation-directory}).
 @end defvar
 
 @defun load-average &optional use-float
-This function returns the current 1-minute, 5-minute, and 15-minute
-system load averages, in a list.  The load average indicates the
-number of processes trying to run on the system.
+Функция возвращает текущие средние значения загрузки системы за 1, 5 и 15 минут в виде
+списка.  Средняя загрузка указывает количество процессов, пытающихся запуститься в
+системе.
 
-By default, the values are integers that are 100 times the system load
-averages, but if @var{use-float} is non-@code{nil}, then they are
-returned as floating-point numbers without multiplying by 100.
+По умолчанию значения представляют собой целые числа, которые в 100 раз превышают
+средние значения загрузки системы, но если @var{use-float} равно не-@code{nil}, они
+возвращаются как числа с плавающей запятой без умножения на 100.
 
-If it is impossible to obtain the load average, this function signals
-an error.  On some platforms, access to load averages requires
-installing Emacs as setuid or setgid so that it can read kernel
-information, and that usually isn't advisable.
-@c FIXME which platforms are these?  Are they still relevant?
+Если невозможно получить среднюю нагрузку, эта функция сигнализирует об ошибке.  На
+некоторых платформах для доступа к средним значениям нагрузки требуется установить
+Emacs как setuid или setgid, чтобы он мог читать информацию о ядре, а это обычно не
+рекомендуется.
+@c FIXME какие это платформы? Они все еще актуальны?
 
-If the 1-minute load average is available, but the 5- or 15-minute
-averages are not, this function returns a shortened list containing
-the available averages.
+Если доступно 1-минутное среднее значение нагрузки, а 5- или 15-минутное - нет, эта
+функция возвращает сокращенный список, содержащий доступные средние значения.
 
 @example
 @group
@@ -1102,131 +1054,129 @@ the available averages.
 @end group
 @end example
 
-The shell command @code{uptime} returns similar information.
+Аналогичную информацию возвращает команда оболочки @code{uptime}.
 @end defun
 
 @defun emacs-pid
-This function returns the process @acronym{ID} of the Emacs process,
-as an integer.
+Функция возвращает процесс @acronym{ID} процесса Emacs в виде целого числа.
 @end defun
 
 @defvar tty-erase-char
-This variable holds the erase character that was selected
-in the system's terminal driver, before Emacs was started.
-@c FIXME?  Seems untrue since 23.1.  For me, it is 0.
-@c The value is @code{nil} if Emacs is running under a window system.
+Переменная содержит символ стирания, который был выбран в системном драйвере
+терминала до запуска Emacs.
+@c FIXME?  Кажется неправдой, поскольку 23.1.2019. Для меня это 0.
+@c Значение @code{nil}, если Emacs работает в оконной системе.
 @end defvar
 
 @node User Identification
-@section User Identification
+@section Идентификация Пользователя
 @cindex user identification
 
 @defvar init-file-user
-This variable says which user's init files should be used by
-Emacs---or @code{nil} if none.  @code{""} stands for the user who
-originally logged in.  The value reflects command-line options such as
-@samp{-q} or @samp{-u @var{user}}.
+Переменная говорит, какие файлы инициализации пользователя должны использоваться
+Emacs --- или @code{nil}, если их нет.  @code{""} обозначает пользователя, который
+изначально вошел в систему.  Значение отражает параметры командной строки, такие как
+@samp{-q} или @samp{-u @var{user}}.
 
-Lisp packages that load files of customizations, or any other sort of
-user profile, should obey this variable in deciding where to find it.
-They should load the profile of the user name found in this variable.
-If @code{init-file-user} is @code{nil}, meaning that the @samp{-q},
-@samp{-Q}, or @samp{-batch} option was used, then Lisp packages should
-not load any customization files or user profile.
+Пакеты Lisp, которые загружают файлы настроек или любой другой тип профиля
+пользователя, должны подчиняться этой переменной при принятии решения, где ее найти.
+Должны загружать профиль имени пользователя, найденный в этой переменной.  Если
+@code{init-file-user} равно @code{nil}, что означает, что использовалась опция
+@samp{-q}, @samp{-Q} или @samp{-batch}, тогда пакеты Lisp не должны загружать никакие
+файлы настройки или профиль пользователя.
 @end defvar
 
 @defopt user-mail-address
-This holds the email address of the user who is using Emacs.
+Содержит адрес электронной почты пользователя, использующего Emacs.
 @end defopt
 
 @defun user-login-name &optional uid
-This function returns the name under which the user is logged in.
-It uses the environment variables @env{LOGNAME} or @env{USER} if
-either is set.  Otherwise, the value is based on the effective
-@acronym{UID}, not the real @acronym{UID}.
+Функция возвращает имя, под которым пользователь вошел в систему.  Используются
+переменные среды @env{LOGNAME} или @env{USER}, если они установлены.  В противном
+случае значение основывается на эффективном @acronym{UID}, а не на реальном
+@acronym{UID}.
 
-If you specify @var{uid} (a number), the result is the user name that
-corresponds to @var{uid}, or @code{nil} if there is no such user.
+Если указать @var{uid} (число), результатом будет имя пользователя, которое
+соответствует @var{uid} или @code{nil}, если такого пользователя нет.
 @end defun
 
 @defun user-real-login-name
-This function returns the user name corresponding to Emacs's real
-@acronym{UID}.  This ignores the effective @acronym{UID}, and the
-environment variables @env{LOGNAME} and @env{USER}.
+Функция возвращает имя пользователя, соответствующее реальному @acronym{UID} Emacs.
+Это игнорирует эффективный @acronym{UID} и переменные окружения @env{LOGNAME} и
+@env{USER}.
 @end defun
 
 @defun user-full-name &optional uid
-This function returns the full name of the logged-in user---or the value
-of the environment variable @env{NAME}, if that is set.
+Функция возвращает полное имя вошедшего в систему пользователя --- или значение
+переменной окружения @env{NAME}, если она установлена.
 
-If the Emacs process's user-id does not correspond to any known user (and
-provided @code{NAME} is not set), the result is @code{"unknown"}.
+Если идентификатор пользователя процесса Emacs не соответствует ни одному известному
+пользователю (и при условии, что @code{NAME} не установлен), результатом будет
+@code{"unknown"}.
 
-If @var{uid} is non-@code{nil}, then it should be a number (a user-id)
-or a string (a login name).  Then @code{user-full-name} returns the full
-name corresponding to that user-id or login name.  If you specify a
-user-id or login name that isn't defined, it returns @code{nil}.
+Если @var{uid} - не-@code{nil}, то это должно быть число (идентификатор пользователя)
+или строка (имя пользователя).  Затем @code{user-full-name} возвращает полное имя,
+соответствующее этому идентификатору пользователя или имени входа.  Если указать
+идентификатор пользователя или имя для входа, которые не определены, возвращается
+@code{nil}.
 @end defun
 
 @vindex user-full-name
 @vindex user-real-login-name
 @vindex user-login-name
-  The symbols @code{user-login-name}, @code{user-real-login-name} and
-@code{user-full-name} are variables as well as functions.  The functions
-return the same values that the variables hold.  These variables allow
-you to fake out Emacs by telling the functions what to return.  The
-variables are also useful for constructing frame titles (@pxref{Frame
-Titles}).
+  Символы @code{user-login-name}, @code{user-real-login-name} и @code{user-full-name}
+- это не только функции, но и переменные.  Функции возвращают те же значения, что и
+переменные.  Эти переменные позволяют обмануть Emacs, сообщая функциям, что
+возвращать.  Переменные также полезны для создания заголовков фреймов.
+(@pxref{Frame Titles}).
 
 @cindex UID
 @defun user-real-uid
-This function returns the real @acronym{UID} of the user.
-The value may be floating point, in the (unlikely) event that
-the UID is too large to fit in a Lisp integer.
+Функция возвращает реальный @acronym{UID} пользователя.  Значение может быть с
+плавающей запятой в том (маловероятном) случае, когда UID слишком велик, чтобы
+поместиться в целое число Lisp.
 @end defun
 
 @defun user-uid
-This function returns the effective @acronym{UID} of the user.
-The value may be floating point.
+Функция возвращает эффективный @acronym{UID} пользователя.  Значение может быть с
+плавающей точкой.
 @end defun
 
 @cindex GID
 @defun group-gid
-This function returns the effective @acronym{GID} of the Emacs process.
-The value may be floating point.
+Функция возвращает эффективный @acronym{GID} процесса Emacs.  Значение может быть
+числом с плавающей точкой.
 @end defun
 
 @defun group-real-gid
-This function returns the real @acronym{GID} of the Emacs process.
-The value may be floating point.
+Функция возвращает реальный @acronym{GID} процесса Emacs.  Значение может быть
+числом с плавающей точкой.
 @end defun
 
 @defun system-users
-This function returns a list of strings, listing the user names on the
-system.  If Emacs cannot retrieve this information, the return value
-is a list containing just the value of @code{user-real-login-name}.
+Функция возвращает список строк, в котором перечислены имена пользователей в системе.
+Если Emacs не может получить эту информацию, возвращается значение - список,
+содержащий только значение @code{user-real-login-name}.
 @end defun
 
 @cindex user groups
 @defun system-groups
-This function returns a list of strings, listing the names of user
-groups on the system.  If Emacs cannot retrieve this information, the
-return value is @code{nil}.
+Функция возвращает список строк, в котором перечислены имена групп пользователей в
+системе.  Если Emacs не может получить эту информацию, возвращается значение
+@code{nil}.
 @end defun
 
 
 @node Time of Day
-@section Time of Day
+@section Время Суток
 @cindex time of day
 
-  This section explains how to determine the current time and time
-zone.
+  В этом разделе объясняется, как определить текущее время и часовой пояс.
 
 @cindex epoch
-  Most of these functions represent time as a list of four integers
-@code{(@var{sec-high} @var{sec-low} @var{microsec} @var{picosec})}.
-This represents the number of seconds from the @dfn{epoch} (January
-1, 1970 at 00:00 UTC), using the formula:
+  Большинство этих функций представляют время в виде списка из четырех целых чисел
+@code{(@var{sec-high} @var{sec-low} @var{microsec} @var{picosec})}.  Представляется
+количество секунд от @dfn{эпохи} (1 января 1970 г., 00:00 UTC) по формуле:
 @ifnottex
 @var{high} * 2**16 + @var{low} + @var{micro} * 10**@minus{}6 +
 @var{pico} * 10**@minus{}12.
@@ -1234,38 +1184,33 @@ This represents the number of seconds from the @dfn{epoch} (January
 @tex
 $high*2^{16} + low + micro*10^{-6} + pico*10^{-12}$.
 @end tex
-The return value of @code{current-time} represents time using this
-form, as do the timestamps in the return values of other functions
-such as @code{file-attributes} (@pxref{Definition of
-file-attributes}).  In some cases, functions may return two- or
-three-element lists, with omitted @var{microsec} and @var{picosec}
-components defaulting to zero.
+Возвращаемое значение @code{current-time} представляет время с использованием
+этой формы, как и временные метки в возвращаемых значениях других функций, таких как
+@code{file-attributes} (@pxref{Definition of file-attributes}).  В некоторых случаях
+функции могут возвращать двух- или трехэлементные списки, при этом пропущенные
+компоненты @var{microsec} и @var{picosec} по умолчанию равны нулю.
 
 @cindex time value
-  Function arguments, e.g., the @var{time} argument to
-@code{current-time-string}, accept a more-general @dfn{time value}
-format, which can be a list of integers as above, or a single number
-for seconds since the epoch, or @code{nil} for the current time.  You
-can convert a time value into a human-readable string using
-@code{current-time-string} and @code{format-time-string}, into a list
-of integers using @code{seconds-to-time}, and into other forms using
-@code{decode-time} and @code{float-time}.  These functions are
-described in the following sections.
+  Аргументы функции, например, аргумент @var{time} для @code{current-time-string},
+принимают более общий формат @dfn{временного значения}, который может быть списком
+целых чисел, как указано выше, или одним числом в секундах с эпохи, или @code{nil}
+для текущего времени.  Можно преобразовать значение времени в удобочитаемую строку с
+помощью @code{current-time-string} и @code{format-time-string}, в список целых чисел
+с помощью @code{seconds-to-time} и в другие формы с помощью @code{decode-time} и
+@code{float-time}.  Эти функции описаны в следующих разделах.
 
 @defun current-time-string &optional time zone
-This function returns the current time and date as a human-readable
-string.  The format does not vary for the initial part of the string,
-which contains the day of week, month, day of month, and time of day
-in that order: the number of characters used for these fields is
-always the same, so you can reliably
-use @code{substring} to extract them.  You should count
-characters from the beginning of the string rather than from the end,
-as the year might not have exactly four digits, and additional
-information may some day be added at the end.
+Функция возвращает текущее время и дату в виде удобочитаемой строки.  Формат не
+меняется для начальной части строки, которая содержит день недели, месяц, день месяца
+и время суток в указанном порядке: количество символов, используемых в этих полях,
+всегда одинаково, поэтому можно надежно использовать @code{подстроку} для их
+извлечения.  Должны считаться символы с начала строки, а не с конца, так как год может
+не содержать ровно четырех цифр, и в какой-то день в конце может быть добавлена
+дополнительная информация.
 
-The argument @var{time}, if given, specifies a time to format,
-instead of the current time.  The optional argument @var{zone}
-defaults to the current time zone rule.  @xref{Time Zone Rules}.
+Аргумент @var{time}, если он задан, указывает время форматирования вместо текущего
+времени.  Необязательный аргумент @var{zone} по умолчанию соответствует правилу
+текущего часового пояса.  @xref{Time Zone Rules}.
 
 @example
 @group
@@ -1276,493 +1221,468 @@ defaults to the current time zone rule.  @xref{Time Zone Rules}.
 @end defun
 
 @defun current-time
-This function returns the current time, represented as a list of four
-integers @code{(@var{sec-high} @var{sec-low} @var{microsec} @var{picosec})}.
-These integers have trailing zeros on systems that return time with
-lower resolutions.  On all current machines @var{picosec} is a
-multiple of 1000, but this may change as higher-resolution clocks
-become available.
+Функция возвращает текущее время, представленное списком из четырех целых чисел
+@code{(@var{sec-high} @var{sec-low} @var{microsec} @var{picosec})}.  Эти целые числа
+имеют конечные нули в системах, которые возвращают время с более низким разрешением.
+На всех современных машинах @var{picosec} кратно 1000, но это может измениться, когда
+станут доступны часы с более высоким разрешением.
 @end defun
 
 @defun float-time &optional time
-This function returns the current time as a floating-point number of
-seconds since the epoch.  The optional argument @var{time}, if
-given, specifies a time to convert instead of the current time.
+Функция возвращает текущее время в виде числа секунд с плавающей запятой, прошедших с
+начала эпохи.  Необязательный аргумент @var{time}, если он задан, указывает время для
+преобразования вместо текущего времени.
 
-@emph{Warning}: Since the result is floating point, it may not be
-exact.  Do not use this function if precise time stamps are required.
+@emph{Предупреждение}: Поскольку результат - с плавающей запятой, может быть
+неточность.  Не использовать эту функцию, если требуются точные отметки времени.
 
-@code{time-to-seconds} is an alias for this function.
+@code{time-to-seconds} - это псевдоним для этой функции.
 @end defun
 
 @defun seconds-to-time time
-This function converts a time value to list-of-integer form.
-For example, if @var{time} is a number, @code{(time-to-seconds
-(seconds-to-time @var{time}))} equals the number unless overflow
-or rounding errors occur.
+Функция преобразует значение времени в целочисленный список.  Например, если
+@var{time} - число, @code{(time-to-seconds (seconds-to-time @var{time}))} равно этому
+числу, если не возникают ошибки переполнения или округления.
 @end defun
 
 @node Time Zone Rules
-@section Time Zone Rules
+@section Правила Часовых Поясов
 @cindex time zone rules
 
 @vindex TZ@r{, environment variable}
-The default time zone is determined by the @env{TZ} environment
-variable.  @xref{System Environment}.  For example, you can tell Emacs
-to default to Universal Time with @code{(setenv "TZ" "UTC0")}.  If
-@env{TZ} is not in the environment, Emacs uses system wall clock time,
-which is a platform-dependent default time zone.
+Часовой пояс по умолчанию определяется переменной среды @env{TZ}.
+@xref{System Environment}.  Например, можно указать Emacs по умолчанию использовать
+универсальное время с помощью @code{(setenv "TZ" "UTC0")}.  Если @env{TZ} отсутствует
+в среде, Emacs использует время системных часов, которое является часовым поясом по
+умолчанию, зависящим от платформы.
 
-The set of supported @env{TZ} strings is system-dependent.  GNU and
-many other systems support the tzdata database, e.g.,
-@samp{"America/New_York"} specifies the time zone and daylight saving
-time history for locations near New York City.  GNU and most other
-systems support POSIX-style @env{TZ} strings, e.g.,
-@samp{"EST+5EDT,M4.1.0/2,M10.5.0/2"} specifies the rules used in New
-York from 1987 through 2006.  All systems support the string
-@samp{"UTC0"} meaning Universal Time.
+Набор поддерживаемых строк @env{TZ} зависит от системы.  GNU и многие другие системы
+поддерживают базу данных tzdata, например, @samp{"America/New_York"} указывает часовой
+пояс и историю перехода на летнее время для мест около Нью-Йорка.  GNU и большинство
+других систем поддерживают строки @env{TZ} в стиле POSIX, например,
+@samp{"EST+5EDT,M4.1.0/2,M10.5.0/2"} определяет правила, используемые в Нью-Йорке с
+1987 по 2006 год.  Все системы поддерживают строку @samp{"UTC0"}, означающую
+всемирное время.
 
 @cindex time zone rule
-Functions that convert to and from local time accept an optional
-@dfn{time zone rule} argument, which specifies the conversion's time
-zone and daylight saving time history.  If the time zone rule is
-omitted or @code{nil}, the conversion uses Emacs's default time zone.
-If it is @code{t}, the conversion uses Universal Time.  If it is
-@code{wall}, the conversion uses the system wall clock time.  If it is
-a string, the conversion uses the time zone rule equivalent to setting
-@env{TZ} to that string.  If it is a list (@var{offset} @var{abbr}), where
-@var{offset} is an integer number of seconds east of Universal Time
-and @var{abbr} is a string, the conversion uses a fixed time zone with
-the given offset and abbreviation.  An integer @var{offset} is treated
-as if it were (@var{offset} @var{abbr}), where @var{abbr} is a numeric
-abbreviation on POSIX-compatible platforms and is unspecified on
-MS-Windows.
+Функции, выполняющие преобразование в местное время и обратно, принимают
+необязательный аргумент @dfn{правило часового пояса}, который указывает часовой пояс
+преобразования и историю перехода на летнее время.  Если правило часового пояса
+опущено или @code{nil}, преобразование использует часовой пояс Emacs по умолчанию.
+Если это @code{t}, при преобразовании используется всемирное время.  Если это
+@code{wall}, при преобразовании используются настенные системные часы.  Если это
+строка, преобразование использует правило часового пояса, эквивалентное установке
+@env{TZ} для этой строки.  Если это список (@var{offset} @var{abbr}), где @var{offset}
+- целое число секунд к востоку от всемирного времени, а @var{abbr} - строка, при
+преобразовании используется фиксированный часовой пояс с заданным смещением и
+сокращением.  Целое число @var{offset} обрабатывается так, как если бы оно было
+(@var{offset} @var{abbr}), где @var{abbr} - это числовое сокращение на
+POSIX-совместимых платформах и не определено в MS-Windows.
 
 @defun current-time-zone &optional time zone
 @cindex time zone, current
-This function returns a list describing the time zone that the user is
-in.
+Функция возвращает список с описанием часового пояса, в котором находится
+пользователь.
 
-The value has the form @code{(@var{offset} @var{abbr})}.  Here
-@var{offset} is an integer giving the number of seconds ahead of Universal Time
-(east of Greenwich).  A negative value means west of Greenwich.  The
-second element, @var{abbr}, is a string giving an abbreviation for the
-time zone, e.g., @samp{"CST"} for China Standard Time or for
-U.S. Central Standard Time.  Both elements can change when daylight
-saving time begins or ends; if the user has specified a time zone that
-does not use a seasonal time adjustment, then the value is constant
-through time.
+Значение имеет вид @code{(@var{offset} @var{abbr})}.  Здесь @var{offset} - целое
+число, дающее количество секунд до всемирного времени (к востоку от Гринвича).
+Отрицательное значение означает запад от Гринвича.  Второй элемент, @var{abbr},
+представляет собой строку, дающую сокращенное обозначение часового пояса, например,
+@samp{"CST"} для китайского стандартного времени или для центрального стандартного
+времени США.  Оба элемента могут измениться, когда начинается или заканчивается
+летнее время; если пользователь указал часовой пояс, в котором не используется
+сезонная корректировка времени, то значение будет постоянным во времени.
 
-If the operating system doesn't supply all the information necessary to
-compute the value, the unknown elements of the list are @code{nil}.
+Если операционная система не предоставляет всю информацию, необходимую для вычисления
+значения, неизвестными элементами списка являются @code{nil}.
 
-The argument @var{time}, if given, specifies a time value to
-analyze instead of the current time.  The optional argument @var{zone}
-defaults to the current time zone rule.
+Аргумент @var{time}, если он задан, указывает значение времени для анализа вместо
+текущего времени.  Необязательный аргумент @var{zone} по умолчанию соответствует
+правилу текущего часового пояса.
 @end defun
 
 @node Time Conversion
-@section Time Conversion
+@section Преобразование Dремени
 @cindex calendrical information
 @cindex time conversion
 
-  These functions convert time values (@pxref{Time of Day}) into
-calendrical information and vice versa.
+  Функции преобразуют значения времени (@pxref{Time of Day}) в календарную информацию
+и наоборот.
 
-  Many 32-bit operating systems are limited to system times containing
-32 bits of information in their seconds component; these systems
-typically handle only the times from 1901-12-13 20:45:52 through
-2038-01-19 03:14:07 Universal Time.  However, 64-bit and some 32-bit operating
-systems have larger seconds components, and can represent times far in
-the past or future.
+  Многие 32-разрядные операционные системы ограничены системным временем, содержащим
+32 бита информации в их секундном компоненте; эти системы обычно обрабатывают только
+время с 1901-12-13 20:45:52 по 19.01.2038 03:14:07 всемирного времени.  Однако
+64-разрядные и некоторые 32-разрядные операционные системы имеют компоненты с более
+крупными секундами и могут отображать времена в далеком прошлом или будущем.
 
-  Time conversion functions always use the Gregorian calendar, even
-for dates before the Gregorian calendar was introduced.  Year numbers
-count the number of years since the year 1 B.C., and do not skip zero
-as traditional Gregorian years do; for example, the year number
-@minus{}37 represents the Gregorian year 38 B.C@.
+  Функции преобразования времени всегда используют григорианский календарь, даже для
+дат до того, как григорианский календарь был введен.  Цифры в годах подсчитывают
+количество лет, прошедших с 1 года до нашей эры, и не пропускают ноль, как это делают
+традиционные григорианские годы; например, номер года @minus{}37 представляет 38-й
+год по григорианскому календарю.
 
 @defun decode-time &optional time zone
-This function converts a time value into calendrical information.  If
-you don't specify @var{time}, it decodes the current time, and similarly
-@var{zone} defaults to the current time zone rule.  @xref{Time Zone Rules}.
-The return value is a list of nine elements, as follows:
+Функция преобразует значение времени в календарную информацию.  Если не указать
+@var{time}, декодируется текущее время, и аналогично @var{zone} по умолчанию
+использует правило текущего часового пояса.  @xref{Time Zone Rules}.
+Возвращаемое значение - это список из девяти элементов, как показано ниже:
 
 @example
 (@var{seconds} @var{minutes} @var{hour} @var{day} @var{month} @var{year} @var{dow} @var{dst} @var{utcoff})
 @end example
 
-Here is what the elements mean:
+Вот что означают элементы:
 
 @table @var
 @item seconds
-The number of seconds past the minute, as an integer between 0 and 59.
-On some operating systems, this is 60 for leap seconds.
+Число секунд после минуты в виде целого числа от 0 до 59.  В некоторых операционных
+системах это 60 секунд прыжка.
 @item minutes
-The number of minutes past the hour, as an integer between 0 and 59.
+Количество минут после часа в виде целого числа от 0 до 59.
 @item hour
-The hour of the day, as an integer between 0 and 23.
+Час дня в виде целого числа от 0 до 23.
 @item day
-The day of the month, as an integer between 1 and 31.
+День месяца в виде целого числа от 1 до 31.
 @item month
-The month of the year, as an integer between 1 and 12.
+Месяц года в виде целого числа от 1 до 12.
 @item year
-The year, an integer typically greater than 1900.
+Год, обычно целое число больше 1900.
 @item dow
-The day of week, as an integer between 0 and 6, where 0 stands for
-Sunday.
+День недели в виде целого числа от 0 до 6, где 0 означает воскресенье.
 @item dst
-@code{t} if daylight saving time is effect, otherwise @code{nil}.
+@code{t}, если действует летнее время, иначе @code{nil}.
 @item utcoff
-An integer indicating the Universal Time offset in seconds, i.e., the number of
-seconds east of Greenwich.
+Целое число, указывающее смещение всемирного времени в секундах, то есть количество
+секунд к востоку от Гринвича.
 @end table
 
-@strong{Common Lisp Note:} Common Lisp has different meanings for
-@var{dow} and @var{utcoff}.
+@strong{Common Lisp Примечание:} Common Lisp имеет другое значение для @var{dow} и
+@var{utcoff}.
 @end defun
 
 @defun encode-time seconds minutes hour day month year &optional zone
-This function is the inverse of @code{decode-time}.  It converts seven
-items of calendrical data into a list-of-integer time value.  For the
-meanings of the arguments, see the table above under
-@code{decode-time}.
+Функция является обратной для @code{decode-time}.  Преобразуется семь элементов
+календарных данных в целочисленное значение времени.  Значения аргументов смотреть в
+таблице выше под @code{decode-time}.
 
-Year numbers less than 100 are not treated specially.  If you want them
-to stand for years above 1900, or years above 2000, you must alter them
-yourself before you call @code{encode-time}.
+Годовые числа меньше 100 специально не обрабатываются.  Если требуется, чтобы они
+оставались более 1900 или более 2000 лет, следует изменить их самостоятельно, прежде
+чем вызывать @code{encode-time}.
 
-The optional argument @var{zone} defaults to the current time zone rule.
-@xref{Time Zone Rules}.
+Необязательный аргумент @var{zone} по умолчанию соответствует правилу текущего
+часового пояса.  @xref{Time Zone Rules}.
 
-If you pass more than seven arguments to @code{encode-time}, the first
-six are used as @var{seconds} through @var{year}, the last argument is
-used as @var{zone}, and the arguments in between are ignored.  This
-feature makes it possible to use the elements of a list returned by
-@code{decode-time} as the arguments to @code{encode-time}, like this:
+Если передать более семи аргументов в @code{encode-time}, первые шесть используются
+как @var{seconds} - @var{year}, последний аргумент используется как @var{zone}, а
+аргументы между ними игнорируются.  Функция позволяет использовать элементы списка,
+возвращаемого @code{decode-time}, в качестве аргументов @code{encode-time}, например:
 
 @example
 (apply 'encode-time (decode-time @dots{}))
 @end example
 
-You can perform simple date arithmetic by using out-of-range values for
-the @var{seconds}, @var{minutes}, @var{hour}, @var{day}, and @var{month}
-arguments; for example, day 0 means the day preceding the given month.
+Можно выполнить простую арифметику даты, используя значения вне диапазона для
+аргументов @var{seconds}, @var{minutes}, @var{hour}, @var{day} и @var{month};
+например, день 0 означает день, предшествующий данному месяцу.
 
-The operating system puts limits on the range of possible time values;
-if you try to encode a time that is out of range, an error results.
-For instance, years before 1970 do not work on some systems;
-on others, years as early as 1901 do work.
+Операционная система ограничивает диапазон возможных значений времени; если попытаться
+закодировать время, выходящее за пределы допустимого диапазона, возникнет ошибка.
+Например, годы до 1970 года не работают на некоторых системах; в других, годы уже
+1901 года действительно работают.
 @end defun
 
 @node Time Parsing
-@section Parsing and Formatting Times
+@section Время Синтаксического Анализа и Форматирования
 @cindex time parsing
 @cindex time formatting
 @cindex formatting time values
 
-  These functions convert time values to text in a string, and vice versa.
-Time values include @code{nil}, numbers, and lists of two to four
-integers (@pxref{Time of Day}).
+  Функции преобразуют значения времени в текст в строке и наоборот.  Значения времени
+включают @code{nil}, числа и списки от двух до четырех целых чисел
+(@pxref{Time of Day}).
 
 @defun date-to-time string
-This function parses the time-string @var{string} and returns the
-corresponding time value.  The argument @var{string} should represent
-a date-time, and should be in one of the forms recognized by
-@code{parse-time-string} (see below).  This function assumes the GMT
-timezone if @var{string} lacks an explicit timezone information.
+Функция анализирует строку времени @var{string} и возвращает соответствующее значение
+времени.  Аргумент @var{string} должен представлять дату и время и должен быть в одной
+из форм, распознаваемых @code{parse-time-string} (смотреть ниже).  Эта функция
+принимает часовой пояс по Гринвичу, если в @var{string} отсутствует явная информация
+о часовом поясе.
 @end defun
 
 @defun parse-time-string string
-This function parses the time-string @var{string} into a list of the
-following form:
+Функция анализирует строку времени @var{string} в список следующего вида:
 
 @example
 (@var{sec} @var{min} @var{hour} @var{day} @var{mon} @var{year} @var{dow} @var{dst} @var{tz})
 @end example
 
 @noindent
-The format of this list is the same as what @code{decode-time} accepts
-(@pxref{Time Conversion}), and is described in more detail there.  Any
-element that cannot be determined from the input will be set to
-@code{nil}.  The argument @var{string} should resemble an RFC 822 (or later) or
-ISO 8601 string, like ``Fri, 25 Mar 2016 16:24:56 +0100'' or
-``1998-09-12T12:21:54-0200'', but this function will attempt to parse
-less well-formed time strings as well.
+Формат этого списка такой же, как у @code{decode-time}, который принимает
+(@pxref{Time Conversion}), и более подробно описан там.  Любой элемент, который не
+может быть определен из ввода, будет установлен в @code{nil}.  Аргумент @var{string}
+должен напоминать строку RFC 822 (или новее) или ISO 8601, например
+``Fri, 25 Mar 2016 16:24:56 +0100'' или ``1998-09-12T12:21:54-0200'', но эта функция
+также попытается проанализировать менее правильно сформированные строки времени.
 @end defun
 
 @defun format-time-string format-string &optional time zone
 
-This function converts @var{time} (or the current time, if
-@var{time} is omitted or @code{nil}) to a string according to
-@var{format-string}.  The conversion uses the time zone rule @var{zone}, which
-defaults to the current time zone rule.  @xref{Time Zone Rules}.  The argument
-@var{format-string} may contain @samp{%}-sequences which say to
-substitute parts of the time.  Here is a table of what the
-@samp{%}-sequences mean:
+Функция конвертирует @var{time} (или текущее время, если @var{time} опущено или
+@code{nil}) в строку в соответствии с @var{format-string}.  При преобразовании
+используется правило часового пояса @var{zone}, которое по умолчанию соответствует
+правилу текущего часового пояса.  @xref{Time Zone Rules}.  Аргумент
+@var{format-string} может содержать @samp{%}-последовательности, которые указывают,
+что заменяют части времени.  Вот таблица того, что означают
+@samp{%}-последовательности:
 
 @table @samp
 @item %a
-This stands for the abbreviated name of the day of week.
+Сокращенное название дня недели.
 @item %A
-This stands for the full name of the day of week.
+Полное название дня недели.
 @item %b
-This stands for the abbreviated name of the month.
+Сокращенное название месяца.
 @item %B
-This stands for the full name of the month.
+Полное название месяца.
 @item %c
-This is a synonym for @samp{%x %X}.
+Синоним @samp{%x %X}.
 @item %C
-This stands for the century, that is, the year divided by 100,
-truncated toward zero.
-The default field width is 2.
+Означает век, то есть год, разделенный на 100, с усечением до нуля.  Ширина поля по
+умолчанию - 2.
 @item %d
-This stands for the day of month, zero-padded.
+Означает день месяца с нуля.
 @item %D
-This is a synonym for @samp{%m/%d/%y}.
+Синоним @samp{%m/%d/%y}.
 @item %e
-This stands for the day of month, blank-padded.
+Означает день месяца, заполненный пробелами.
 @item %F
-This stands for the ISO 8601 date format, i.e., @samp{"%Y-%m-%d"}.
+Означает формат даты ISO 8601, то есть @samp{"%Y-%m-%d"}.
 @item %g
-This stands for the year corresponding to the ISO week within the century.
+Год, соответствующий неделе ISO в столетии.
 @item %G
-This stands for the year corresponding to the ISO week.
+Год, соответствующий неделе ISO.
 @item %h
-This is a synonym for @samp{%b}.
+Синоним @samp{%b}.
 @item %H
-This stands for the hour (00--23).
+Означает час (00-23).
 @item %I
-This stands for the hour (01--12).
+Означает час (01-12).
 @item %j
-This stands for the day of the year (001--366).
+Означает день года (001-366).
 @item %k
-This stands for the hour (0--23), blank padded.
+Означает час (0-23), дополненный пробелами.
 @item %l
-This stands for the hour (1--12), blank padded.
+Означает час (1-12), дополненный пробелами.
 @item %m
-This stands for the month (01--12).
+Означает месяц (01-12).
 @item %M
-This stands for the minute (00--59).
+Означает минуты (00-59).
 @item %n
-This stands for a newline.
+Означает новую строку.
 @item %N
-This stands for the nanoseconds (000000000--999999999).  To ask for
-fewer digits, use @samp{%3N} for milliseconds, @samp{%6N} for
-microseconds, etc.  Any excess digits are discarded, without rounding.
+Обозначает наносекунды (000000000--999999999).  Чтобы запросить меньшее количество
+цифр, использовать @samp{%3N} для миллисекунд, @samp{%6N} для микросекунд и так далее.
+Любые лишние цифры отбрасываются без округления.
 @item %p
-This stands for @samp{AM} or @samp{PM}, as appropriate.
+Означает @samp{AM} или @samp{PM}, соответственно.
 @item %q
-This stands for the calendar quarter (1--4).
+Означает календарный квартал (1-4).
 @item %r
-This is a synonym for @samp{%I:%M:%S %p}.
+Синоним @samp{%I:%M:%S %p}.
 @item %R
-This is a synonym for @samp{%H:%M}.
+Синоним @samp{%H:%M}.
 @item %s
-This stands for the integer number of seconds since the epoch.
+Означает целое число секунд с начала эпохи.
 @item %S
-This stands for the second (00--59, or 00--60 on platforms
-that support leap seconds).
+Означает секунду (00-59 или 00-60 на платформах, поддерживающих дополнительные
+секунды).
 @item %t
-This stands for a tab character.
+Символ табуляции.
 @item %T
-This is a synonym for @samp{%H:%M:%S}.
+Синоним @samp{%H:%M:%S}.
 @item %u
-This stands for the numeric day of week (1--7).  Monday is day 1.
+День недели числом (1-7).  Понедельник - день 1.
 @item %U
-This stands for the week of the year (01--52), assuming that weeks
-start on Sunday.
+Означает неделю в году (01-52), при условии, что недели начинаются в воскресенье.
 @item %V
-This stands for the week of the year according to ISO 8601.
+Означает неделю в году согласно ISO 8601.
 @item %w
-This stands for the numeric day of week (0--6).  Sunday is day 0.
+День недели числом (0-6).  Воскресенье - день 0.
 @item %W
-This stands for the week of the year (01--52), assuming that weeks
-start on Monday.
+Означает неделю в году (01-52), при условии, что недели начинаются в понедельник.
 @item %x
-This has a locale-specific meaning.  In the default locale (named
-@samp{C}), it is equivalent to @samp{%D}.
+Имеет значение, зависящее от локали.  В локали по умолчанию (с именем @samp{C}) 
+эквивалентно @samp{%D}.
 @item %X
-This has a locale-specific meaning.  In the default locale (named
-@samp{C}), it is equivalent to @samp{%T}.
+Имеет значение, зависящее от локали.  В локали по умолчанию (с именем @samp{C})
+эквивалентно @samp{%T}.
 @item %y
-This stands for the year without century (00--99).
+Означает год без века (00-99).
 @item %Y
-This stands for the year with century.
+Год со столетием.
 @item %Z
-This stands for the time zone abbreviation (e.g., @samp{EST}).
+Аббревиатура часового пояса (например, @samp{EST}).
 @item %z
-This stands for the time zone numerical offset.  The @samp{z} can be
-preceded by one, two, or three colons; if plain @samp{%z} stands for
-@samp{-0500}, then @samp{%:z} stands for @samp{-05:00}, @samp{%::z}
-stands for @samp{-05:00:00}, and @samp{%:::z} is like @samp{%::z}
-except it suppresses trailing instances of @samp{:00} so it stands for
-@samp{-05} in the same example.
+Числовое смещение часового пояса.  Перед @samp{z} может стоять одно, два или три
+двоеточия; если простой @samp{%z} обозначает @samp{-0500}, тогда @samp{%:z} обозначает
+@samp{-05:00}, @samp{%::z}, обозначает @samp{-05:00:00} и @samp{%:::z}, аналогично
+@samp{%::z}, за исключением того, что подавляются конечные экземпляры @samp{:00},
+поэтому в том же примере это обозначает @samp{-05}.
 @item %%
-This stands for a single @samp{%}.
+Означает одиночный @samp{%}.
 @end table
 
-One or more flag characters can appear immediately after the @samp{%}.
-@samp{0} pads with zeros, @samp{_} pads with blanks, @samp{-}
-suppresses padding, @samp{^} upper-cases letters, and @samp{#}
-reverses the case of letters.
+Один или несколько символов флага могут появиться сразу после @samp{%}.  @samp{0}
+заполняет нулями, @samp{_} дополняет пробелами, @samp{-} подавляет заполнение,
+@samp{^} заглавные буквы, а @samp{#} меняет регистр букв.
 
-You can also specify the field width and type of padding for any of
-these @samp{%}-sequences.  This works as in @code{printf}: you write
-the field width as digits in a @samp{%}-sequence, after any flags.
-For example, @samp{%S} specifies the number of seconds since the minute;
-@samp{%03S} means to pad this with zeros to 3 positions, @samp{%_3S} to
-pad with spaces to 3 positions.  Plain @samp{%3S} pads with zeros,
-because that is how @samp{%S} normally pads to two positions.
+Также можно указать ширину поля и тип заполнения для любой из этих
+@samp{%}-последовательностей.  Это работает как в @code{printf}: записывается ширина
+поля цифрами в @samp{%}-последовательности после любых флагов.  Например, @samp{%S}
+указывает количество секунд с минуты; @samp{%03S} означает заполнить это нулями до 3
+позиций, @samp{%_3S} - заполнить пробелами до трех позиций.  Обычные контактные
+площадки @samp{%3S} с нулями, потому что именно так @samp{%S} обычно приводит к двум
+позициям.
 
-The characters @samp{E} and @samp{O} act as modifiers when used after
-any flags and field widths in a @samp{%}-sequence.  @samp{E} specifies
-using the current locale's alternative version of the date and time.
-In a Japanese locale, for example, @code{%Ex} might yield a date format
-based on the Japanese Emperors' reigns.  @samp{E} is allowed in
-@samp{%Ec}, @samp{%EC}, @samp{%Ex}, @samp{%EX}, @samp{%Ey}, and
+Символы @samp{E} и @samp{O} действуют как модификаторы при использовании после любых
+флагов и ширины полей в @samp{%}-sequence.  @samp{E} указывает использование
+альтернативной версии даты и времени для текущей локали.  Например, в японском языке
+@code{%Ex} может дать формат даты, основанный на правлении японских императоров.
+@samp{E} допускается в @samp{%Ec}, @samp{%EC}, @samp{%Ex}, @samp{%EX}, @samp{%Ey} и
 @samp{%EY}.
 
-@samp{O} means to use the current locale's alternative
-representation of numbers, instead of the ordinary decimal digits.  This
-is allowed with most letters, all the ones that output numbers.
+@samp{O} означает использование альтернативного представления чисел текущей локали
+вместо обычных десятичных цифр.  Разрешено для большинства букв, всех тех, которые
+выводят числа.
 
-To help debug programs, unrecognized @samp{%}-sequences stand for
-themselves and are output as-is.  Programs should not rely on this
-behavior, as future versions of Emacs may recognize new
-@samp{%}-sequences as extensions.
+Чтобы облегчить отладку программ, нераспознанные @samp{%}-последовательности
+обозначают сами себя и выводятся как есть.  Программы не должны полагаться на это
+поведение, поскольку будущие версии Emacs могут распознавать новые
+@samp{%}-последовательности как расширения.
 
-This function uses the C library function @code{strftime}
-(@pxref{Formatting Calendar Time,,, libc, The GNU C Library Reference
-Manual}) to do most of the work.  In order to communicate with that
-function, it first encodes its argument using the coding system
-specified by @code{locale-coding-system} (@pxref{Locales}); after
-@code{strftime} returns the resulting string,
-@code{format-time-string} decodes the string using that same coding
-system.
+Функция использует библиотечную функцию @code{strftime}
+(@pxref{Formatting Calendar Time,,, libc, The GNU C Library Reference Manual}) для
+выполнения большей части работы.  Чтобы связаться с этой функцией, сначала кодируется
+аргумент, используя систему кодирования, указанную в @code{locale-coding-system}
+(@pxref{Locales}); после того, как @code{strftime} вернет результирующую строку,
+@code{format-time-string} декодирует строку, используя ту же систему кодирования.
 @end defun
 
 @defun format-seconds format-string seconds
-This function converts its argument @var{seconds} into a string of
-years, days, hours, etc., according to @var{format-string}.  The
-argument @var{format-string} may contain @samp{%}-sequences which
-control the conversion.  Here is a table of what the
-@samp{%}-sequences mean:
+Функция преобразует свой аргумент @var{seconds} в строку лет, дней, часов и так далее.
+В соответствии с @var{format-string}, аргумент @var{format-string} может содержать
+@samp{%}-последовательности, которые управляют преобразованием.  Вот таблица значений
+@samp{%}-последовательностей:
 
 @table @samp
 @item %y
 @itemx %Y
-The integer number of 365-day years.
+Целое число 365-дневных лет.
 @item %d
 @itemx %D
-The integer number of days.
+Целое число дней.
 @item %h
 @itemx %H
-The integer number of hours.
+Целое число часов.
 @item %m
 @itemx %M
-The integer number of minutes.
+Целое число минут.
 @item %s
 @itemx %S
-The integer number of seconds.
+Целое число секунд.
 @item %z
-Non-printing control flag.  When it is used, other specifiers must be
-given in the order of decreasing size, i.e., years before days, hours
-before minutes, etc.  Nothing will be produced in the result string to
-the left of @samp{%z} until the first non-zero conversion is
-encountered.  For example, the default format used by
-@code{emacs-uptime} (@pxref{Processor Run Time, emacs-uptime})
-@w{@code{"%Y, %D, %H, %M, %z%S"}} means that the number of seconds
-will always be produced, but years, days, hours, and minutes will only
-be shown if they are non-zero.
+Контрольный флаг непечатаемого изображения.  Когда используется, другие спецификаторы
+должны быть указаны в порядке убывания размера, то есть годы перед днями, часы перед
+минутами и так далее.  Ничего не будет произведено в строке результата слева от
+@samp{%z} до тех пор, пока не будет выполнено первое попавшееся ненулевое
+преобразование.  Например, формат по умолчанию, используемый @code{emacs-uptime}
+(@pxref{Processor Run Time, emacs-uptime}) @w{@code{"%Y, %D, %H, %M, %z%S"}},
+означает, что всегда будет производиться количество секунд, но годы, дни, часы и
+минуты будут отображаться только в том случае, если они не равны нулю.
 @item %%
-Produces a literal @samp{%}.
+Создается @samp{%} буквально.
 @end table
 
-Upper-case format sequences produce the units in addition to the
-numbers, lower-case formats produce only the numbers.
+Последовательности формата в верхнем регистре производят единицы в дополнение к
+числам, форматы в нижнем регистре производят только числа.
 
-You can also specify the field width by following the @samp{%} with a
-number; shorter numbers will be padded with blanks.  An optional
-period before the width requests zero-padding instead.  For example,
-@code{"%.3Y"} might produce @code{"004 years"}.
+Также можно указать ширину поля, поставив после @samp{%} номер; короткие номера будут
+дополнены пробелами.  Необязательная точка перед шириной запрашивает заполнение
+нулями.  Например, @code{"%.3Y"} может создать @code{"004 years"}.
 
-@emph{Warning:} This function works only with values of @var{seconds}
-that don't exceed @code{most-positive-fixnum} (@pxref{Integer Basics,
-most-positive-fixnum}).
+@emph{Предупреждение:} Функция работает только со значениями @var{seconds}, которые
+не превышают @code{most-positive-fixnum}
+(@pxref{Integer Basics, most-positive-fixnum}).
 @end defun
 
 @node Processor Run Time
-@section Processor Run time
+@section Время Работы Процессора
 @cindex processor run time
 @cindex Emacs process run time
 
-  Emacs provides several functions and primitives that return time,
-both elapsed and processor time, used by the Emacs process.
+  Emacs предоставляет несколько функций и примитивов, которые возвращают время, как
+прошедшее, так и время процессора, используемое процессом Emacs.
 
 @deffn Command emacs-uptime &optional format
 @cindex uptime of Emacs
-This function returns a string representing the Emacs
-@dfn{uptime}---the elapsed wall-clock time this instance of Emacs is
-running.  The string is formatted by @code{format-seconds} according
-to the optional argument @var{format}.  For the available format
-descriptors, see @ref{Time Parsing, format-seconds}.  If @var{format}
-is @code{nil} or omitted, it defaults to @code{"%Y, %D, %H, %M,
-%z%S"}.
+Функция возвращает строку, представляющую Emacs @dfn{время безотказной работы} -
+время, прошедшее с начала работы этого экземпляра Emacs.  Строка форматируется
+@code{format-seconds} в соответствии с необязательным аргументом @var{format}.  Для
+доступных дескрипторов формата смотреть @ref{Time Parsing, format-seconds}.  Если
+@var{format} равно @code{nil} или опущено, по умолчанию используется
+@code{"%Y, %D, %H, %M, %z%S"}.
 
-When called interactively, it prints the uptime in the echo area.
+При интерактивном вызове выводится время безотказной работы в эхо-области.
 @end deffn
 
 @defun get-internal-run-time
-This function returns the processor run time used by Emacs as a list
-of four integers: @code{(@var{sec-high} @var{sec-low} @var{microsec}
-@var{picosec})}, using the same format as @code{current-time}
-(@pxref{Time of Day}).
+Функция возвращает время работы процессора, используемое Emacs, в виде списка из
+четырех целых чисел:
+@code{(@var{sec-high} @var{sec-low} @var{microsec} @var{picosec})}, используя тот же
+формат, что и @code{current-time} (@pxref{Time of Day}).
 
-Note that the time returned by this function excludes the time Emacs
-was not using the processor, and if the Emacs process has several
-threads, the returned value is the sum of the processor times used up
-by all Emacs threads.
+Обратить внимание, что время, возвращаемое этой функцией, не включает время, в течение
+которого Emacs не использовал процессор, и если процесс Emacs имеет несколько потоков,
+возвращаемое значение является суммой времени процессора, использованного всеми
+потоками Emacs.
 
-If the system doesn't provide a way to determine the processor run
-time, @code{get-internal-run-time} returns the same time as
-@code{current-time}.
+Если система не позволяет определить время работы процессора,
+@code{get-internal-run-time} возвращает то же время, что и @code{current-time}.
 @end defun
 
 @deffn Command emacs-init-time
-This function returns the duration of the Emacs initialization
-(@pxref{Startup Summary}) in seconds, as a string.  When called
-interactively, it prints the duration in the echo area.
+Функция возвращает продолжительность (@pxref{Startup Summary}) инициализации Emacs в
+секундах в виде строки.  При интерактивном вызове выводит продолжительность в
+эхо-области.
 @end deffn
 
 @node Time Calculations
-@section Time Calculations
+@section Расчет Времени
 @cindex time calculations
 @cindex comparing time values
 @cindex calendrical computations
 
-  These functions perform calendrical computations using time values
-(@pxref{Time of Day}).  A value of @code{nil} for any of their
-time-value arguments stands for the current system time, and a single
-integer number stands for the number of seconds since the epoch.
+  Функции выполняют календарные вычисления, используя значения времени
+(@pxref{Time of Day}).  Значение @code{nil} для любого из их аргументов значения
+времени обозначает текущее системное время, а одно целое число обозначает количество
+секунд с начала эпохи.
 
 @defun time-less-p t1 t2
-This returns @code{t} if time value @var{t1} is less than time value
+Возвращается @code{t}, если значение времени @var{t1} меньше значения времени
 @var{t2}.
 @end defun
 
 @defun time-subtract t1 t2
-This returns the time difference @var{t1} @minus{} @var{t2} between
-two time values, as a time value.  If you need the difference in units
-of elapsed seconds, use @code{float-time} (@pxref{Time of Day,
-float-time}) to convert the result into seconds.
+Возвращается разница во времени @var{t1} @minus{} @var{t2} между двумя значениями
+времени как значение времени.  Если требуется разница в единицах прошедших секунд,
+использовать @code{float-time} (@pxref{Time of Day, float-time}) для преобразования
+результата в секунды.
 @end defun
 
 @defun time-add t1 t2
-This returns the sum of two time values, as a time value.
-One argument should represent a time difference rather than a point in time,
-either as a list or as a single number of elapsed seconds.
-Here is how to add a number of seconds to a time value:
+Возвращается сумма двух значений времени как значение времени.  Один аргумент должен
+представлять разницу во времени, а не момент времени, либо в виде списка, либо в виде
+одного числа прошедших секунд.  Вот как добавить количество секунд к значению времени:
 
 @example
 (time-add @var{time} @var{seconds})
@@ -1770,420 +1690,391 @@ Here is how to add a number of seconds to a time value:
 @end defun
 
 @defun time-to-days time-value
-This function returns the number of days between the beginning of year
-1 and @var{time-value}.
+Функция возвращает количество дней между началом года 1 и @var{time-value}.
 @end defun
 
 @defun time-to-day-in-year time-value
-This returns the day number within the year corresponding to @var{time-value}.
+Возвращается номер дня в году, соответствующего @var{time-value}.
 @end defun
 
 @defun date-leap-year-p year
-This function returns @code{t} if @var{year} is a leap year.
+Функцией возвращается @code{t}, если @var{year} - високосный год.
 @end defun
 
 @node Timers
-@section Timers for Delayed Execution
+@section Таймеры для Отложенного Выполнения
 @cindex timers
 
-  You can set up a @dfn{timer} to call a function at a specified
-future time or after a certain length of idleness.  A timer is a
-special object that stores the information about the next invocation
-times and the function to invoke.
+  Можно настроить @dfn{таймер} для вызова функции в указанное время в будущем или
+после определенного периода бездействия.  Таймер - это специальный объект, в котором
+хранится информация о времени следующего вызова и вызываемой функции.
 
 @defun timerp object
-This predicate function returns non-@code{nil} if @code{object} is a
-timer.
+Функция-предикат возвращается не-@code{nil}, если @code{object} - таймер.
 @end defun
 
-  Emacs cannot run timers at any arbitrary point in a Lisp program; it
-can run them only when Emacs could accept output from a subprocess:
-namely, while waiting or inside certain primitive functions such as
-@code{sit-for} or @code{read-event} which @emph{can} wait.  Therefore, a
-timer's execution may be delayed if Emacs is busy.  However, the time of
-execution is very precise if Emacs is idle.
+  Emacs не может запускать таймеры в любой произвольной точке программы на Lisp; может
+запускать их только тогда, когда Emacs может принимать вывод от подпроцесса: а именно,
+во время ожидания или внутри некоторых примитивных функций, таких как @code{sit-for}
+или @code{read-event}, которые @emph{могут} ждать.  Следовательно, выполнение таймера
+может быть отложено, если Emacs занят.  Однако время выполнения очень точное, если
+Emacs простаивает.
 
-  Emacs binds @code{inhibit-quit} to @code{t} before calling the timer
-function, because quitting out of many timer functions can leave
-things in an inconsistent state.  This is normally unproblematical
-because most timer functions don't do a lot of work.  Indeed, for a
-timer to call a function that takes substantial time to run is likely
-to be annoying.  If a timer function needs to allow quitting, it
-should use @code{with-local-quit} (@pxref{Quitting}).  For example, if
-a timer function calls @code{accept-process-output} to receive output
-from an external process, that call should be wrapped inside
-@code{with-local-quit}, to ensure that @kbd{C-g} works if the external
-process hangs.
+  Emacs связывает @code{inhibit-quit} с @code{t} перед вызовом функции таймера, потому
+что выход из многих функций таймера может оставить вещи в несогласованном состоянии.
+Обычно это не вызывает проблем, потому что большинство функций таймера мало работают.
+Действительно, вызов таймером функции, выполнение которой требует значительного
+времени, может раздражать.  Если функция таймера должна разрешить выход, она должна
+использовать @code{with-local-quit} (@pxref{Quitting}).  Например, если функция
+таймера вызывает @code{accept-process-output} для получения вывода от внешнего
+процесса, этот вызов должен быть заключен в @code{with-local-quit}, чтобы
+гарантировать, что @kbd{C-g} работает, если внешний процесс зависает.
 
-  It is usually a bad idea for timer functions to alter buffer
-contents.  When they do, they usually should call @code{undo-boundary}
-both before and after changing the buffer, to separate the timer's
-changes from user commands' changes and prevent a single undo entry
-from growing to be quite large.
+  Как правило, изменение содержимого буфера для функций таймера - плохая идея.  Когда
+это делается, обычно должно вызываться @code{undo-boundary} как до, так и после
+изменения буфера, чтобы отделить изменения таймера от изменений пользовательских
+команд и предотвратить рост одной записи отмены до довольно большого размера.
 
-  Timer functions should also avoid calling functions that cause Emacs
-to wait, such as @code{sit-for} (@pxref{Waiting}).  This can lead to
-unpredictable effects, since other timers (or even the same timer) can
-run while waiting.  If a timer function needs to perform an action
-after a certain time has elapsed, it can do this by scheduling a new
-timer.
+  Функции таймера также должны избегать вызова функций, которые заставляют Emacs
+ждать, например @code{sit-for} (@pxref{Waiting}).  Это может привести к
+непредсказуемым эффектам, поскольку во время ожидания могут работать другие таймеры
+(или даже тот же таймер).  Если функции таймера необходимо выполнить действие по
+истечении определенного времени, она может сделать это, запланировав новый таймер.
 
-  If a timer function calls functions that can change the match data,
-it should save and restore the match data.  @xref{Saving Match Data}.
+  Если функция таймера вызывает функции, которые могут изменять данные соответствия,
+она должна сохранять и восстанавливать данные соответствия.  @xref{Saving Match Data}.
 
 @deffn Command run-at-time time repeat function &rest args
-This sets up a timer that calls the function @var{function} with
-arguments @var{args} at time @var{time}.  If @var{repeat} is a number
-(integer or floating point), the timer is scheduled to run again every
-@var{repeat} seconds after @var{time}.  If @var{repeat} is @code{nil},
-the timer runs only once.
+Устанавливается таймер, который вызывает функцию @var{function} с аргументами
+@var{args} в момент времени @var{time}.  Если @var{repeat} - это число (целое или с
+плавающей запятой), таймер будет запускаться заново каждые @var{repeat} секунды после
+@var{time}.  Если @var{repeat} равно @code{nil}, таймер запускается только один раз.
 
-@var{time} may specify an absolute or a relative time.
+@var{time} может указывать абсолютное или относительное время.
 
-Absolute times may be specified using a string with a limited variety
-of formats, and are taken to be times @emph{today}, even if already in
-the past.  The recognized forms are @samp{@var{xxxx}},
-@samp{@var{x}:@var{xx}}, or @samp{@var{xx}:@var{xx}} (military time),
-and @samp{@var{xx}am}, @samp{@var{xx}AM}, @samp{@var{xx}pm},
-@samp{@var{xx}PM}, @samp{@var{xx}:@var{xx}am},
-@samp{@var{xx}:@var{xx}AM}, @samp{@var{xx}:@var{xx}pm}, or
-@samp{@var{xx}:@var{xx}PM}.  A period can be used instead of a colon
-to separate the hour and minute parts.
+Абсолютное время может быть указано с использованием строки с ограниченным набором
+форматов, и считается, что это @emph{настоящее} время, даже если оно уже было в
+прошлом.  Распознаваемые формы: @samp{@var{xxxx}}, @samp{@var{x}:@var{xx}} или
+@samp{@var{xx}:@var{xx}} (военное время) и @samp{@var{xx}am}, @samp{@var{xx}AM},
+@samp{@var{xx}pm}, @samp{@var{xx}PM}, @samp{@var{xx}:@var{xx}am},
+@samp{@var{xx}:@var{xx}AM}, @samp{@var{xx}:@var{xx}pm} или @samp{@var{xx}:@var{xx}PM}.
+Для разделения часов и минут вместо двоеточия можно использовать точку.
 
-To specify a relative time as a string, use numbers followed by units.
-For example:
+Чтобы указать относительное время в виде строки, использовать числа, за которыми
+следуют единицы.  Например:
 
 @table @samp
 @item 1 min
-denotes 1 minute from now.
+обозначает 1 минуту с этого момента.
 @item 1 min 5 sec
-denotes 65 seconds from now.
+обозначает 65 секунд с этого момента.
 @item 1 min 2 sec 3 hour 4 day 5 week 6 fortnight 7 month 8 year
-denotes exactly 103 months, 123 days, and 10862 seconds from now.
+обозначает ровно 103 месяца, 123 дня и 10862 секунды с этого момента.
 @end table
 
-For relative time values, Emacs considers a month to be exactly thirty
-days, and a year to be exactly 365.25 days.
+Для относительных значений времени Emacs считает месяц ровно тридцатью днями, а год -
+точно 365,25 днями.
 
-Not all convenient formats are strings.  If @var{time} is a number
-(integer or floating point), that specifies a relative time measured in
-seconds.  The result of @code{encode-time} can also be used to specify
-an absolute value for @var{time}.
+Не все удобные форматы - это строки.  Если @var{time} - это число (целое или с
+плавающей запятой), это указывает относительное время, измеряемое в секундах.
+Результат @code{encode-time} также можно использовать для указания абсолютного
+значения @var{time}.
 
-In most cases, @var{repeat} has no effect on when @emph{first} call
-takes place---@var{time} alone specifies that.  There is one exception:
-if @var{time} is @code{t}, then the timer runs whenever the time is a
-multiple of @var{repeat} seconds after the epoch.  This is useful for
-functions like @code{display-time}.
+В большинстве случаев @var{repeat} не влияет на то, когда происходит @emph{первый}
+вызов - это определяет только @var{time}.  Есть одно исключение: если @var{time} равно
+@code{t}, то таймер запускается всякий раз, когда время кратно @var{repeat} секундам
+после эпохи.  Это полезно для таких функций, как @code{display-time}.
 
-The function @code{run-at-time} returns a timer value that identifies
-the particular scheduled future action.  You can use this value to call
-@code{cancel-timer} (see below).
+Функция @code{run-at-time} возвращает значение таймера, которое идентифицирует
+конкретное запланированное будущее действие.  Можно использовать это значение для
+вызова @code{cancel-timer} (смотреть ниже).
 @end deffn
 
-  A repeating timer nominally ought to run every @var{repeat} seconds,
-but remember that any invocation of a timer can be late.  Lateness of
-one repetition has no effect on the scheduled time of the next
-repetition.  For instance, if Emacs is busy computing for long enough
-to cover three scheduled repetitions of the timer, and then starts to
-wait, it will immediately call the timer function three times in
-immediate succession (presuming no other timers trigger before or
-between them).  If you want a timer to run again no less than @var{n}
-seconds after the last invocation, don't use the @var{repeat} argument.
-Instead, the timer function should explicitly reschedule the timer.
+  Повторяющийся таймер номинально должен запускаться каждые @var{repeat} секунд, но
+помнить, что любой вызов таймера может быть запоздалым.  Задержка одного повторения не
+влияет на запланированное время следующего повторения.  Например, если Emacs занят
+вычислениями достаточно долго, чтобы покрыть три запланированных повтора таймера, а
+затем начинает ждать, он немедленно вызовет функцию таймера три раза подряд (при
+условии, что другие таймеры не сработают до или между ними).  Если требуется, чтобы
+таймер запускался снова не менее чем через @var{n} секунд после последнего вызова, не
+использовать аргумент @var{repeat}.  Вместо этого функция таймера должна явно
+перепланировать таймер.
 
 @defopt timer-max-repeats
-This variable's value specifies the maximum number of times to repeat
-calling a timer function in a row, when many previously scheduled
-calls were unavoidably delayed.
+Значение этой переменной указывает максимальное количество раз для повторения вызова
+функции таймера в строке, когда многие ранее запланированные вызовы неизбежно
+откладывались.
 @end defopt
 
 @defmac with-timeout (seconds timeout-forms@dots{}) body@dots{}
-Execute @var{body}, but give up after @var{seconds} seconds.  If
-@var{body} finishes before the time is up, @code{with-timeout} returns
-the value of the last form in @var{body}.  If, however, the execution of
-@var{body} is cut short by the timeout, then @code{with-timeout}
-executes all the @var{timeout-forms} and returns the value of the last
-of them.
+Выполнить @var{body}, но завершить через @var{seconds} секунды.  Если @var{body}
+завершается до истечения времени, @code{with-timeout} возвращает значение последней
+формы в @var{body}.  Если же выполнение @var{body} прерывается таймаутом, то
+@code{with-timeout} выполняются все @var{timeout-forms} и возвращается значение
+последнего из них.
 
-This macro works by setting a timer to run after @var{seconds} seconds.  If
-@var{body} finishes before that time, it cancels the timer.  If the
-timer actually runs, it terminates execution of @var{body}, then
-executes @var{timeout-forms}.
+Макрос работает, устанавливая таймер на запуск через @var{seconds} секунд.  Если
+@var{body} завершает работу до этого времени, таймер отменяется.  Если таймер
+действительно работает, он прекращает выполнение @var{body}, а затем выполняет
+@var{timeout-forms}.
 
-Since timers can run within a Lisp program only when the program calls a
-primitive that can wait, @code{with-timeout} cannot stop executing
-@var{body} while it is in the midst of a computation---only when it
-calls one of those primitives.  So use @code{with-timeout} only with a
-@var{body} that waits for input, not one that does a long computation.
+Поскольку таймеры могут работать в программе на Lisp только тогда, когда программа
+вызывает примитив, который может ждать, @code{with-timeout} не может остановить
+выполнение @var{body}, пока находится в процессе вычисления - только когда вызывается
+один из этих примитивов.  Поэтому использовать @code{with-timeout} только с
+@var{body}, который ожидает ввода, а не с тем, что выполняет долгие вычисления.
 @end defmac
 
-  The function @code{y-or-n-p-with-timeout} provides a simple way to use
-a timer to avoid waiting too long for an answer.  @xref{Yes-or-No
-Queries}.
+  Функция @code{y-or-n-p-with-timeout} предоставляет простой способ использования
+таймера, чтобы избежать слишком долгого ожидания ответа.  @xref{Yes-or-No Queries}.
 
 @defun cancel-timer timer
-This cancels the requested action for @var{timer}, which should be a
-timer---usually, one previously returned by @code{run-at-time} or
-@code{run-with-idle-timer}.  This cancels the effect of that call to
-one of these functions; the arrival of the specified time will not
-cause anything special to happen.
+Отменяет запрошенное действие для @var{timer}, которым должен быть таймер - обычно
+тот, который ранее был возвращен @code{run-at-time} или @code{run-with-idle-timer}.
+Это отменяет эффект вызова одной из этих функций; указанное время не
+вызовет ничего особенного.
 @end defun
 
 @findex list-timers
-The @code{list-timers} command lists all the currently active timers.
-There's only one command available in the buffer displayed: @kbd{c}
-(@code{timer-list-cancel}) that will cancel the timer on the line
-under point.
+Команда @code{list-timers} выводит список всех активных в данный момент таймеров.
+В отображаемом буфере доступна только одна команда: @kbd{c}
+(@code{timer-list-cancel}), которая отменяет таймер в строке под точкой.
 
 @node Idle Timers
-@section Idle Timers
+@section Таймеры Простоя
 @cindex idle timers
 
-  Here is how to set up a timer that runs when Emacs is idle for a
-certain length of time.  Aside from how to set them up, idle timers
-work just like ordinary timers.
+  Вот как настроить таймер, который запускается, когда Emacs бездействует в течение
+определенного периода времени.  Помимо того, как это настроить, таймеры простоя
+работают так же, как и обычные таймеры.
 
 @deffn Command run-with-idle-timer secs repeat function &rest args
-Set up a timer which runs the next time Emacs is idle for @var{secs}
-seconds.  The value of @var{secs} may be a number or a value of the type
-returned by @code{current-idle-time}.
+Установить таймер, который запустится в следующий раз, когда Emacs будет
+бездействовать в течение @var{secs} секунд.  Значение @var{secs} может быть числом
+или значением типа, возвращаемого @code{current-idle-time}.
 
-If @var{repeat} is @code{nil}, the timer runs just once, the first time
-Emacs remains idle for a long enough time.  More often @var{repeat} is
-non-@code{nil}, which means to run the timer @emph{each time} Emacs
-remains idle for @var{secs} seconds.
+Если @var{repeat} равно @code{nil}, таймер запускается только один раз, первый раз,
+когда Emacs простаивает достаточно долгое время.  Чаще @var{repeat} - это
+не-@code{nil}, что означает запускать таймер @emph{каждый раз}, когда  Emacs
+бездействует в течение @var{secs} секунд.
 
-The function @code{run-with-idle-timer} returns a timer value which you
-can use in calling @code{cancel-timer} (@pxref{Timers}).
+Функция @code{run-with-idle-timer} возвращает значение таймера, которое можно
+использовать при вызове @code{cancel-timer} (@pxref{Timers}).
 @end deffn
 
 @cindex idleness
-  Emacs becomes @dfn{idle} when it starts waiting for user input, and
-it remains idle until the user provides some input.  If a timer is set
-for five seconds of idleness, it runs approximately five seconds after
-Emacs first becomes idle.  Even if @var{repeat} is non-@code{nil},
-this timer will not run again as long as Emacs remains idle, because
-the duration of idleness will continue to increase and will not go
-down to five seconds again.
+  Emacs переходит в режим @dfn{ожидания}, когда начинает ожидать ввода данных
+пользователем, и остается в режиме ожидания, пока пользователь не предоставит
+какой-либо ввод.  Если таймер установлен на пять секунд бездействия, он запускается
+примерно через пять секунд после того, как Emacs впервые перейдет в режим ожидания.
+Даже если @var{repeat} равно не-@code{nil}, этот таймер не будет работать снова, пока
+Emacs остается в режиме ожидания, потому что продолжительность бездействия будет
+продолжать увеличиваться и больше не снизится до пяти секунд.
 
-  Emacs can do various things while idle: garbage collect, autosave or
-handle data from a subprocess.  But these interludes during idleness do
-not interfere with idle timers, because they do not reset the clock of
-idleness to zero.  An idle timer set for 600 seconds will run when ten
-minutes have elapsed since the last user command was finished, even if
-subprocess output has been accepted thousands of times within those ten
-minutes, and even if there have been garbage collections and autosaves.
+  Emacs может делать разные вещи в режиме ожидания: собирать мусор, автосохранение или
+обрабатывать данные из подпроцесса.  Но эти перерывы во время простоя не влияют на
+таймеры простоя, потому что они не сбрасывают часы простоя на ноль.  Таймер простоя,
+установленный на 600 секунд, запустится по истечении десяти минут с момента завершения
+последней пользовательской команды, даже если выходные данные подпроцесса были приняты
+тысячи раз в течение этих десяти минут, и даже если был сбор мусора и
+автосохранение.
 
-  When the user supplies input, Emacs becomes non-idle while executing the
-input.  Then it becomes idle again, and all the idle timers that are
-set up to repeat will subsequently run another time, one by one.
+  Когда пользователь вводит ввод, Emacs переходит в режим ожидания во время выполнения
+ввода.  Затем снова переходит в режим ожидания, и все таймеры простоя, настроенные на
+повторение, впоследствии будут работать в другой раз, один за другим.
 
-  Do not write an idle timer function containing a loop which does a
-certain amount of processing each time around, and exits when
-@code{(input-pending-p)} is non-@code{nil}.  This approach seems very
-natural but has two problems:
+  Не писать функцию таймера простоя, содержащую цикл, который каждый раз выполняет
+определенную обработку и завершается, когда @code{(input-pending-p)} равно
+не-@code{nil}.  Такой подход кажется очень естественным, но имеет две проблемы:
 
 @itemize
 @item
-It blocks out all process output (since Emacs accepts process output
-only while waiting).
+Блокируется весь вывод процесса (поскольку Emacs принимает вывод процесса только во
+время ожидания).
 
 @item
-It blocks out any idle timers that ought to run during that time.
+Блокируются любые таймеры простоя, которые должны работать в течение этого времени.
 @end itemize
 
 @noindent
-Similarly, do not write an idle timer function that sets up another
-idle timer (including the same idle timer) with @var{secs} argument
-less than or equal to the current idleness time.  Such a timer will
-run almost immediately, and continue running again and again, instead
-of waiting for the next time Emacs becomes idle.  The correct approach
-is to reschedule with an appropriate increment of the current value of
-the idleness time, as described below.
+Точно так же не писать функцию таймера простоя, которая устанавливает другой таймер
+простоя (включая тот же таймер простоя) с аргументом @var{secs}, меньшим или равным
+текущему времени простоя.  Такой таймер запустится почти сразу и продолжит работу
+снова и снова, вместо того, чтобы ждать, когда Emacs в следующий раз перейдет в режим
+ожидания.  Правильный подход - перепланировать с соответствующим приращением текущего
+значения времени простоя, как описано ниже.
 
 @defun current-idle-time
-If Emacs is idle, this function returns the length of time Emacs has
-been idle, as a list of four integers: @code{(@var{sec-high}
-@var{sec-low} @var{microsec} @var{picosec})}, using the same format as
-@code{current-time} (@pxref{Time of Day}).
+Если Emacs простаивает, функция возвращает продолжительность простоя Emacs в виде
+списка из четырех целых чисел:
+@code{(@var{sec-high} @var{sec-low} @var{microsec} @var{picosec})}, используя тот же
+формат, что и @code{current-time} (@pxref{Time of Day}).
 
-When Emacs is not idle, @code{current-idle-time} returns @code{nil}.
-This is a convenient way to test whether Emacs is idle.
+Когда Emacs не простаивает, @code{current-idle-time} возвращается @code{nil}.  Это
+удобный способ проверить, простаивает ли Emacs.
 @end defun
 
-  The main use of @code{current-idle-time} is when an idle timer
-function wants to ``take a break'' for a while.  It can set up another
-idle timer to call the same function again, after a few seconds more
-idleness.  Here's an example:
+  Основное использование @code{current-idle-time} - это когда функция таймера простоя
+хочет на время ``сделать перерыв''.  Может настроить другой таймер простоя для
+повторного вызова той же функции через несколько секунд простоя.  Вот пример:
 
 @example
 (defvar my-resume-timer nil
   "Timer for `my-timer-function' to reschedule itself, or nil.")
 
 (defun my-timer-function ()
-  ;; @r{If the user types a command while @code{my-resume-timer}}
-  ;; @r{is active, the next time this function is called from}
-  ;; @r{its main idle timer, deactivate @code{my-resume-timer}.}
+  ;; @r{Если пользователь набирает команду, пока @code{my-resume-timer}}
+  ;; @r{активно, в следующий раз, когда функция будет вызвана из основного}
+  ;; @r{таймера ожидания, деактивировать @code{my-resume-timer}.}
   (when my-resume-timer
     (cancel-timer my-resume-timer))
   ...@var{do the work for a while}...
   (when @var{taking-a-break}
     (setq my-resume-timer
           (run-with-idle-timer
-            ;; Compute an idle time @var{break-length}
-            ;; more than the current value.
+            ;; Вычислить время простоя @var{break-length}
+            ;; большего текущего значения.
             (time-add (current-idle-time) @var{break-length})
             nil
             'my-timer-function))))
 @end example
 
 @node Terminal Input
-@section Terminal Input
+@section Терминальный Вход
 @cindex terminal input
 
-  This section describes functions and variables for recording or
-manipulating terminal input.  See @ref{Display}, for related
-functions.
+  В этом разделе описаны функции и переменные для записи или управления вводом
+терминала.  Смотреть @ref{Display}, для связанных функций.
 
 @menu
-* Input Modes::         Options for how input is processed.
-* Recording Input::     Saving histories of recent or all input events.
+* Input Modes::         Варианты обработки ввода.
+* Recording Input::     Сохранение истории недавних или всех входных событий.
 @end menu
 
 @node Input Modes
-@subsection Input Modes
+@subsection Режимы Ввода
 @cindex input modes
 @cindex terminal input modes
 
 @defun set-input-mode interrupt flow meta &optional quit-char
-This function sets the mode for reading keyboard input.  If
-@var{interrupt} is non-@code{nil}, then Emacs uses input interrupts.
-If it is @code{nil}, then it uses @sc{cbreak} mode.  The default
-setting is system-dependent.  Some systems always use @sc{cbreak} mode
-regardless of what is specified.
+Функция устанавливает режим чтения ввода с клавиатуры.  Если @var{interrupt} равно
+не-@code{nil}, то Emacs использует входные прерывания.  Если это @code{nil}, то
+используется режим @sc{cbreak}.  Настройка по умолчанию зависит от системы.  Некоторые
+системы всегда используют режим @sc{cbreak} независимо от того, что указано.
 
-When Emacs communicates directly with X, it ignores this argument and
-uses interrupts if that is the way it knows how to communicate.
+Когда Emacs напрямую связывается с X, игнорируется этот аргумент и используется
+прерывания, если известно, как общаться таким образом.
 
-If @var{flow} is non-@code{nil}, then Emacs uses @sc{xon/xoff}
-(@kbd{C-q}, @kbd{C-s}) flow control for output to the terminal.  This
-has no effect except in @sc{cbreak} mode.
+Если @var{flow} равно не-@code{nil}, то Emacs использует управление потоком
+@sc{xon/xoff} (@kbd{C-q}, @kbd{C-s}) для вывода на терминал.  Это не действует, кроме
+режима @sc{cbreak}.
 
-The argument @var{meta} controls support for input character codes
-above 127.  If @var{meta} is @code{t}, Emacs converts characters with
-the 8th bit set into Meta characters.  If @var{meta} is @code{nil},
-Emacs disregards the 8th bit; this is necessary when the terminal uses
-it as a parity bit.  If @var{meta} is neither @code{t} nor @code{nil},
-Emacs uses all 8 bits of input unchanged.  This is good for terminals
-that use 8-bit character sets.
+Аргумент @var{meta} управляет поддержкой кодов входных символов выше 127.  Если
+@var{meta} равно @code{t}, Emacs преобразует символы с 8-м битом в мета-символы.  Если
+@var{meta} равно @code{nil}, Emacs игнорирует 8-й бит; это необходимо, когда терминал
+использует его как бит четности.  Если @var{meta} не является ни @code{t}, ни
+@code{nil}, Emacs использует все 8 битов ввода без изменений.  Это хорошо для
+терминалов, использующих 8-битные наборы символов.
 
-If @var{quit-char} is non-@code{nil}, it specifies the character to
-use for quitting.  Normally this character is @kbd{C-g}.
-@xref{Quitting}.
+Если @var{quit-char} равно не-@code{nil}, указывается символ, используемый для выхода.
+Обычно это символ @kbd{C-g}.  @xref{Quitting}.
 @end defun
 
-The @code{current-input-mode} function returns the input mode settings
-Emacs is currently using.
+Функция @code{current-input-mode} возвращает настройки режима ввода, которые Emacs
+использует в настоящее время.
 
 @defun current-input-mode
-This function returns the current mode for reading keyboard input.  It
-returns a list, corresponding to the arguments of @code{set-input-mode},
-of the form @code{(@var{interrupt} @var{flow} @var{meta} @var{quit})} in
-which:
+Функция возвращает текущий режим чтения ввода с клавиатуры.  Возвращается список,
+соответствующий аргументам @code{set-input-mode}, в форме
+@code{(@var{interrupt} @var{flow} @var{meta} @var{quit})}, в котором:
 @table @var
 @item interrupt
-is non-@code{nil} when Emacs is using interrupt-driven input.  If
-@code{nil}, Emacs is using @sc{cbreak} mode.
+равно не-@code{nil}, когда Emacs использует ввод, управляемый прерываниями.  Если
+@code{nil}, Emacs использует режим @sc{cbreak}.
 @item flow
-is non-@code{nil} if Emacs uses @sc{xon/xoff} (@kbd{C-q}, @kbd{C-s})
-flow control for output to the terminal.  This value is meaningful only
-when @var{interrupt} is @code{nil}.
+равно не-@code{nil}, если Emacs использует управление потоком @sc{xon/xoff}
+(@kbd{C-q}, @kbd{C-s}) для вывода на терминал.  Это значение имеет смысл только тогда,
+когда @var{interrupt} равно @code{nil}.
 @item meta
-is @code{t} if Emacs treats the eighth bit of input characters as
-the meta bit; @code{nil} means Emacs clears the eighth bit of every
-input character; any other value means Emacs uses all eight bits as the
-basic character code.
+есть @code{t}, если Emacs обрабатывает восьмой бит входных символов как мета-бит;
+@code{nil} означает, что Emacs очищает восьмой бит каждого входного символа; любое
+другое значение означает, что Emacs использует все восемь битов в качестве основного
+кода символа.
 @item quit
-is the character Emacs currently uses for quitting, usually @kbd{C-g}.
+это символ, который Emacs в настоящее время использует для выхода, обычно @kbd{C-g}.
 @end table
 @end defun
 
 @node Recording Input
-@subsection Recording Input
+@subsection Запись Ввода
 @cindex recording input
 
 @defun recent-keys
-This function returns a vector containing the last 300 input events from
-the keyboard or mouse.  All input events are included, whether or not
-they were used as parts of key sequences.  Thus, you always get the last
-300 input events, not counting events generated by keyboard macros.
-(These are excluded because they are less interesting for debugging; it
-should be enough to see the events that invoked the macros.)
+Функция возвращает вектор, содержащий последние 300 событий ввода с клавиатуры или
+мыши.  Включены все входные события, независимо от того, использовались ли они как
+части последовательности ключей.  Таким образом, всегда получаются последние 300
+событий ввода, не считая событий, сгенерированных макросами клавиатуры.  (Они
+исключены, потому что менее интересны для отладки; этого должно быть достаточно,
+чтобы увидеть события, вызвавшие макросы.)
 
-A call to @code{clear-this-command-keys} (@pxref{Command Loop Info})
-causes this function to return an empty vector immediately afterward.
+Вызов @code{clear-this-command-keys} (@pxref{Command Loop Info}) заставляет эту
+функцию сразу же после этого возвращать пустой вектор.
 @end defun
 
 @deffn Command open-dribble-file filename
 @cindex dribble file
-This function opens a @dfn{dribble file} named @var{filename}.  When a
-dribble file is open, each input event from the keyboard or mouse (but
-not those from keyboard macros) is written in that file.  A
-non-character event is expressed using its printed representation
-surrounded by @samp{<@dots{}>}.  Be aware that sensitive information
-(such as passwords) may end up recorded in the dribble file.
+Функция открывает @dfn{сопутствующий файл} с именем @var{filename}.  Когда файл
+открыт, каждое событие ввода с клавиатуры или мыши (но не от макроса клавиатуры)
+записывается в этот файл.  Несимвольное событие выражается с использованием его
+печатного представления, окруженного @samp{<@dots{}>}.  Иметь в виду, что
+конфиденциальная информация (например, пароли) может быть записана в этот файл.
 
-You close the dribble file by calling this function with an argument
-of @code{nil}.
+Закрывается сопутствующий файл dribble, вызовом функции с аргументом @code{nil}.
 @end deffn
 
-  See also the @code{open-termscript} function (@pxref{Terminal Output}).
+  Смотреть также функцию @code{open-termscript} (@pxref{Terminal Output}).
 
 @node Terminal Output
-@section Terminal Output
+@section Терминальный Вывод
 @cindex terminal output
 
-  The terminal output functions send output to a text terminal, or keep
-track of output sent to the terminal.  The variable @code{baud-rate}
-tells you what Emacs thinks is the output speed of the terminal.
+  Функции вывода терминала отправляют вывод на текстовый терминал или отслеживают
+вывод, отправленный на терминал.  Переменная @code{baud-rate} сообщает, скорость
+считывания Emacs вывода терминала.
 
 @defopt baud-rate
-This variable's value is the output speed of the terminal, as far as
-Emacs knows.  Setting this variable does not change the speed of actual
-data transmission, but the value is used for calculations such as
-padding.
+Насколько известно Emacs, значение этой переменной - это скорость вывода терминала.
+Установка этой переменной не изменяет скорость фактической передачи данных, но
+значение используется для вычислений, таких как заполнение.
 
-  It also affects decisions about whether to scroll part of the
-screen or repaint on text terminals.  @xref{Forcing Redisplay},
-for the corresponding functionality on graphical terminals.
+  Это также влияет на решения о том, прокручивать ли часть экрана или перерисовывать
+текстовые терминалы.  @xref{Forcing Redisplay},
+для соответствующей функциональности на графических терминалах.
 
-The value is measured in baud.
+Значение измеряется в бодах.
 @end defopt
 
-  If you are running across a network, and different parts of the
-network work at different baud rates, the value returned by Emacs may be
-different from the value used by your local terminal.  Some network
-protocols communicate the local terminal speed to the remote machine, so
-that Emacs and other programs can get the proper value, but others do
-not.  If Emacs has the wrong value, it makes decisions that are less
-than optimal.  To fix the problem, set @code{baud-rate}.
+  Если работа в сети, и разные части сети работают с разной скоростью передачи,
+значение, возвращаемое Emacs, может отличаться от значения, используемого вашим
+локальным терминалом.  Некоторые сетевые протоколы сообщают скорость локального
+терминала удаленному компьютеру, чтобы Emacs и другие программы могли получить
+правильное значение, а другие - нет.  Если Emacs имеет неправильное значение, он
+принимает менее чем оптимальные решения.  Чтобы устранить проблему, установить
+@code{baud-rate}.
 
 @defun send-string-to-terminal string &optional terminal
-This function sends @var{string} to @var{terminal} without alteration.
-Control characters in @var{string} have terminal-dependent effects.
-(If you need to display non-ASCII text on the terminal, encode it
-using one of the functions described in @ref{Explicit Encoding}.)
-This function operates only on text terminals.  @var{terminal} may be
-a terminal object, a frame, or @code{nil} for the selected frame's
-terminal.  In batch mode, @var{string} is sent to @code{stdout} when
-@var{terminal} is @code{nil}.
+Функция отправляет @var{string} в @var{terminal} без изменений.  Управляющие символы
+в @var{string} имеют эффекты, зависящие от терминала.  (Если нужно отобразить на
+терминале не-ASCII текст, закодировать его с помощью одной из функций, описанных в
+@ref{Explicit Encoding}.)  Эта функция работает только на текстовых терминалах.
+@var{terminal} может быть конечным объектом, фреймом или @code{nil} для терминала
+выбранного фрейма.  В пакетном режиме @var{string} отправляется в @code{stdout},
+когда @var{terminal} имеет значение @code{nil}.
 
-One use of this function is to define function keys on terminals that
-have downloadable function key definitions.  For example, this is how (on
-certain terminals) to define function key 4 to move forward four
-characters (by transmitting the characters @kbd{C-u C-f} to the
-computer):
+Одно из применений этой функции - определение функциональных клавиш на терминалах,
+которые имеют загружаемые определения функциональных клавиш.  Например, вот как (на
+некоторых терминалах) определить функциональную клавишу 4 для перемещения вперед на
+четыре символа (путем передачи символов @kbd{C-u C-f} на компьютер):
 
 @example
 @group
@@ -2195,14 +2086,13 @@ computer):
 
 @deffn Command open-termscript filename
 @cindex termscript file
-This function is used to open a @dfn{termscript file} that will record
-all the characters sent by Emacs to the terminal.  It returns
-@code{nil}.  Termscript files are useful for investigating problems
-where Emacs garbles the screen, problems that are due to incorrect
-Termcap entries or to undesirable settings of terminal options more
-often than to actual Emacs bugs.  Once you are certain which characters
-were actually output, you can determine reliably whether they correspond
-to the Termcap specifications in use.
+Функция используется для открытия @dfn{терминологического файла}, который будет
+записывать все символы, отправленные Emacs на терминал.  Возвращается @code{nil}.
+Файлы Termscript полезны для исследования проблем, при которых Emacs искажает экран,
+проблем, которые возникают из-за неправильных записей Termcap или нежелательных
+настроек параметров терминала чаще, чем из-за фактических ошибок Emacs.  Как только
+есть уверенность, какие символы были фактически выведены, можно надежно определить,
+соответствуют ли они используемым спецификациям Termcap.
 
 @example
 @group
@@ -2211,91 +2101,87 @@ to the Termcap specifications in use.
 @end group
 @end example
 
-You close the termscript file by calling this function with an
-argument of @code{nil}.
+Закрывается файл termscript, вызовом этой функции с аргументом @code{nil}.
 
-See also @code{open-dribble-file} in @ref{Recording Input}.
+Смотреть также @code{open-dribble-file} в @ref{Recording Input}.
 @end deffn
 
 @node Sound Output
-@section Sound Output
+@section Звуковой Вывод
 @cindex sound
 
-  To play sound using Emacs, use the function @code{play-sound}.  Only
-certain systems are supported; if you call @code{play-sound} on a
-system which cannot really do the job, it gives an error.
+  Чтобы воспроизводить звук с помощью Emacs, используется функция @code{play-sound}.
+Поддерживаются только определенные системы; если вызывается @code{play-sound} в
+системе, которая действительно не может выполнять эту работу, выдается ошибка.
 
-@c FIXME: Add indexes for Au and WAV?  --xfq
-  The sound must be stored as a file in RIFF-WAVE format (@samp{.wav})
-or Sun Audio format (@samp{.au}).
+@c FIXME: Добавить индексы для Au и WAV?  --xfq
+  Звук необходимо сохранить в виде файла в формате RIFF-WAVE (@samp{.wav}) или Sun
+Audio в формате (@samp{.au}).
 
 @defun play-sound sound
-This function plays a specified sound.  The argument, @var{sound}, has
-the form @code{(sound @var{properties}...)}, where the @var{properties}
-consist of alternating keywords (particular symbols recognized
-specially) and values corresponding to them.
+Функция воспроизводит указанный звук.  Аргумент @var{sound} имеет вид
+@code{(sound @var{properties}...)}, где @var{properties} состоит из чередующихся
+ключевых слов (определенные символы распознаются особым образом) и соответствующих
+им значений.
 
-Here is a table of the keywords that are currently meaningful in
-@var{sound}, and their meanings:
+Вот таблица ключевых слов, которые в настоящее время имеют значение в
+@var{sound}, и их значений:
 
 @table @code
 @item :file @var{file}
-This specifies the file containing the sound to play.
-If the file name is not absolute, it is expanded against
-the directory @code{data-directory}.
+Определяется файл, содержащий звук для воспроизведения.  Если имя файла не является
+абсолютным, оно раскрывается в каталоге @code{data-directory}.
 
 @item :data @var{data}
-This specifies the sound to play without need to refer to a file.  The
-value, @var{data}, should be a string containing the same bytes as a
-sound file.  We recommend using a unibyte string.
+Определяется звук для воспроизведения без необходимости ссылаться на файл.  Значение
+@var{data} должно быть строкой, содержащей те же байты, что и звуковой файл.
+Рекомендуется использовать однобайтную строку.
 
 @item :volume @var{volume}
-This specifies how loud to play the sound.  It should be a number in the
-range of 0 to 1.  The default is to use whatever volume has been
-specified before.
+Определяет, насколько громко воспроизводить звук.  Должно быть число в диапазоне от
+0 до 1.  По умолчанию используется тот объем, который был указан ранее.
 
 @item :device @var{device}
-This specifies the system device on which to play the sound, as a
-string.  The default device is system-dependent.
+Определяется системное устройство, на котором воспроизводится звук в виде строки.
+Устройство по умолчанию зависит от системы.
 @end table
 
-Before actually playing the sound, @code{play-sound}
-calls the functions in the list @code{play-sound-functions}.
-Each function is called with one argument, @var{sound}.
+Перед фактическим воспроизведением звука @code{play-sound} вызывает функции из списка
+@code{play-sound-functions}.  Каждая функция вызывается с одним
+аргументом @var{sound}.
 @end defun
 
 @deffn Command play-sound-file file &optional volume device
-This function is an alternative interface to playing a sound @var{file}
-specifying an optional @var{volume} and @var{device}.
+Функция является альтернативным интерфейсом для воспроизведения звука @var{file} с
+указанием необязательного @var{volume} и @var{device}.
 @end deffn
 
 @defvar play-sound-functions
-A list of functions to be called before playing a sound.  Each function
-is called with one argument, a property list that describes the sound.
+Список функций, которые необходимо вызвать перед воспроизведением звука.
+Каждая функция вызывается с одним аргументом - списком свойств, описывающим звук.
 @end defvar
 
 @node X11 Keysyms
-@section Operating on X11 Keysyms
+@section Работа с Символами Ключей X11
 @cindex X11 keysyms
 
-To define system-specific X11 keysyms, set the variable
+Чтобы определить системные символы ключей X11, установить переменную
 @code{system-key-alist}.
 
 @defvar system-key-alist
-This variable's value should be an alist with one element for each
-system-specific keysym.  Each element has the form @code{(@var{code}
-. @var{symbol})}, where @var{code} is the numeric keysym code (not
-including the vendor-specific bit,
+Значение переменной должно быть списком с одним элементом для каждого ключевого
+символа системы.  Каждый элемент имеет форму @code{(@var{code} . @var{symbol})}, где
+@var{code} - это числовой символьный код (не включая бит, зависящий от производителя,
 @ifnottex
 @minus{}2**28),
 @end ifnottex
 @tex
 $-2^{28}$),
 @end tex
-and @var{symbol} is the name for the function key.
+а @var{symbol} - это имя функционального ключа.
 
-For example @code{(168 . mute-acute)} defines a system-specific key (used
-by HP X servers) whose numeric code is
+Например, @code{(168 . mute-acute)} определяет системный ключ (используемый серверами
+HP X), числовой код которого
 @ifnottex
 @minus{}2**28
 @end ifnottex
@@ -2304,25 +2190,25 @@ $-2^{28}$
 @end tex
 + 168.
 
-It is not crucial to exclude from the alist the keysyms of other X
-servers; those do no harm, as long as they don't conflict with the ones
-used by the X server actually in use.
+Не обязательно исключать из списка ключевые слова других X-серверов; они не причиняют
+вреда, пока они не конфликтуют с теми, которые используются фактически используемым
+X-сервером.
 
-The variable is always local to the current terminal, and cannot be
-buffer-local.  @xref{Multiple Terminals}.
+Переменная всегда является локальной для текущего терминала и не может быть локальной
+для буфера.  @xref{Multiple Terminals}.
 @end defvar
 
-You can specify which keysyms Emacs should use for the Control, Meta,
-Alt, Hyper, and Super modifiers by setting these variables:
+Можно указать, какие ключевый символы Emacs должен использовать для модификаторов
+Control, Meta, Alt, Hyper и Super, установив эти переменные:
 
 @defvar x-ctrl-keysym
 @defvarx x-alt-keysym
 @defvarx x-meta-keysym
 @defvarx x-hyper-keysym
 @defvarx x-super-keysym
-The name of the keysym that should stand for the Control modifier
-(respectively, for Alt, Meta, Hyper, and Super).  For example, here is
-how to swap the Meta and Alt modifiers within Emacs:
+Название ключевого символа, который должен обозначать модификатор Control
+(соответственно для Alt, Meta, Hyper и Super).  Например, вот как поменять местами
+модификаторы Meta и Alt в Emacs:
 @lisp
 (setq x-alt-keysym 'meta)
 (setq x-meta-keysym 'alt)
@@ -2330,80 +2216,73 @@ how to swap the Meta and Alt modifiers within Emacs:
 @end defvar
 
 @node Batch Mode
-@section Batch Mode
+@section Пакетный Режим
 @cindex batch mode
 
-  The command-line option @samp{-batch} causes Emacs to run
-noninteractively.  In this mode, Emacs does not read commands from the
-terminal, it does not alter the terminal modes, and it does not expect
-to be outputting to an erasable screen.  The idea is that you specify
-Lisp programs to run; when they are finished, Emacs should exit.  The
-way to specify the programs to run is with @samp{-l @var{file}}, which
-loads the library named @var{file}, or @samp{-f @var{function}}, which
-calls @var{function} with no arguments, or @samp{--eval=@var{form}}.
+  Параметр командной строки @samp{-batch} заставляет Emacs работать без
+взаимодействия.  В этом режиме Emacs не считывает команды с терминала, не изменяет
+режимы терминала и не ожидает вывода на стираемый экран.  Идея состоит в том, что
+указываются программы на Lisp для запуска; когда они закончатся, Emacs должен
+завершиться.  Можно указать программы для запуска с помощью @samp{-l @var{file}},
+который загружает библиотеку с именем @var{file}, или @samp{-f @var{function}},
+что вызывает @var{function} без аргументов, или @samp{--eval=@var{form}}.
 
-  Any Lisp program output that would normally go to the echo area,
-either using @code{message}, or using @code{prin1}, etc., with
-@code{t} as the stream, goes instead to Emacs's standard descriptors
-when in batch mode: @code{message} writes to the standard error
-descriptor, while @code{prin1} and other print functions write to the
-standard output.  Similarly, input that would normally come from the
-minibuffer is read from the standard input descriptor.  Thus, Emacs
-behaves much like a noninteractive application program.  (The echo
-area output that Emacs itself normally generates, such as command
-echoing, is suppressed entirely.)
+  Любой вывод программы Lisp, который обычно попадает в эхо-область, либо с
+использованием @code{message}, либо с использованием @code{prin1} и так далее, с
+@code{t} в качестве потока, вместо этого отправляется в стандартные дескрипторы Emacs
+в пакетном режиме: @code{message} записывает в стандартный дескриптор ошибки, в то
+время как @code{prin1} и другие функции печати записывают в стандартный вывод.  Точно
+так же ввод, который обычно поступает из минибуфера, читается из стандартного
+дескриптора ввода.  Таким образом, Emacs ведет себя как неинтерактивная прикладная
+программа.  (Вывод эхо-области, который обычно генерируется самим Emacs, например,
+эхо-сигнал команды, полностью подавляется.)
 
-Non-ASCII text written to the standard output or error descriptors is
-by default encoded using @code{locale-coding-system} (@pxref{Locales})
-if it is non-@code{nil}; this can be overridden by binding
-@code{coding-system-for-write} to a coding system of you choice
-(@pxref{Explicit Encoding}).
+Текст Не-ASCII, записываемый в стандартный вывод или дескрипторы ошибок, по умолчанию
+кодируется с использованием @code{locale-coding-system} (@pxref{Locales}), если это
+не-@code{nil}; можно изменить это, привязав @code{coding-system-for-write} к выбранной
+системе кодирования (@pxref{Explicit Encoding}).
 
 @defvar noninteractive
-This variable is non-@code{nil} when Emacs is running in batch mode.
+Переменная - не-@code{nil}, когда Emacs работает в пакетном режиме.
 @end defvar
 
 @node Session Management
-@section Session Management
+@section Управление Сессией
 @cindex session manager
 
-Emacs supports the X Session Management Protocol, which is used to
-suspend and restart applications.  In the X Window System, a program
-called the @dfn{session manager} is responsible for keeping track of
-the applications that are running.  When the X server shuts down, the
-session manager asks applications to save their state, and delays the
-actual shutdown until they respond.  An application can also cancel
-the shutdown.
+Emacs поддерживает протокол управления сеансом X, который используется для
+приостановки и перезапуска приложений.  В системе X Window за отслеживание запущенных
+приложений отвечает программа @dfn{менеджер сеанса}.  Когда X-сервер завершает работу,
+диспетчер сеанса просит приложения сохранить свое состояние и откладывает фактическое
+завершение работы до тех пор, пока они не ответят.  Приложение также может отменить
+выключение.
 
-When the session manager restarts a suspended session, it directs
-these applications to individually reload their saved state.  It does
-this by specifying a special command-line argument that says what
-saved session to restore.  For Emacs, this argument is @samp{--smid
-@var{session}}.
+Когда диспетчер сеанса перезапускает приостановленный сеанс, предписывается этим
+приложениям по отдельности перезагружать свое сохраненное состояние.  Это достигается
+путем указания специального аргумента командной строки, в котором указывается, какой
+сохраненный сеанс нужно восстановить.  Для Emacs это аргумент
+@samp{--smid @var{session}}.
 
 @defvar emacs-save-session-functions
 @cindex session file
-Emacs supports saving state via a hook called
-@code{emacs-save-session-functions}.  Emacs runs this hook when the
-session manager tells it that the window system is shutting down.  The
-functions are called with no arguments, and with the current buffer
-set to a temporary buffer.  Each function can use @code{insert} to add
-Lisp code to this buffer.  At the end, Emacs saves the buffer in a
-file, called the @dfn{session file}.
+Emacs поддерживает сохранение состояния с помощью перехватчика
+@code{emacs-save-session-functions}.  Emacs запускает эту ловушку, когда менеджер
+сеанса сообщает ему, что оконная система закрывается.  Функции вызываются без
+аргументов и с текущим буфером, установленным во временный буфер.  Каждая функция
+может использовать @code{insert} для добавления кода Lisp в этот буфер.  В конце
+Emacs сохраняет буфер в файл, называемый @dfn{файл сеанса}.
 
 @findex emacs-session-restore
-Subsequently, when the session manager restarts Emacs, it loads the
-session file automatically (@pxref{Loading}).  This is performed by a
-function named @code{emacs-session-restore}, which is called during
-startup.  @xref{Startup Summary}.
+Впоследствии, когда менеджер сеанса перезапускает Emacs, автоматически загружается
+файл сеанса (@pxref{Loading}).  Это выполняется функцией @code{emacs-session-restore},
+которая вызывается при запуске.  @xref{Startup Summary}.
 
-If a function in @code{emacs-save-session-functions} returns
-non-@code{nil}, Emacs tells the session manager to cancel the
-shutdown.
+Если функцией в @code{emacs-save-session-functions} возвращается не-@code{nil}, Emacs
+сообщает диспетчеру сеансов отменить завершение работы.
 @end defvar
 
-Here is an example that just inserts some text into @file{*scratch*} when
-Emacs is restarted by the session manager.
+Вот пример, который просто вставляет некоторый текст в @file{*scratch*}, когда Emacs
+перезапускается менеджером сеанса.
 
 @example
 @group
@@ -2420,128 +2299,122 @@ Emacs is restarted by the session manager.
 @end example
 
 @node Desktop Notifications
-@section Desktop Notifications
+@section Уведомления на Рабочем Столе
 @cindex desktop notifications
 @cindex notifications, on desktop
 
-Emacs is able to send @dfn{notifications} on systems that support the
-freedesktop.org Desktop Notifications Specification and on MS-Windows.
-In order to use this functionality on POSIX hosts, Emacs must have
-been compiled with D-Bus support, and the @code{notifications} library
-must be loaded.  @xref{Top, , D-Bus,dbus,D-Bus integration in Emacs}.
-The following function is supported when D-Bus support is available:
+Emacs может отправлять @dfn{уведомления} в системах, которые поддерживают спецификацию
+уведомлений рабочего стола freedesktop.org и в MS-Windows.  Чтобы использовать эту
+функциональность на хостах POSIX, Emacs должен быть скомпилирован с поддержкой D-Bus
+и должна быть загружена библиотека @code{notifications}.
+@xref{Top, , D-Bus,dbus,D-Bus integration in Emacs}.
+При наличии поддержки D-Bus поддерживается следующая функция:
 
 @defun notifications-notify &rest params
-This function sends a notification to the desktop via D-Bus,
-consisting of the parameters specified by the @var{params} arguments.
-These arguments should consist of alternating keyword and value pairs.
-The supported keywords and values are as follows:
+Функция отправляет уведомление на рабочий стол через D-Bus, состоящее из параметров,
+заданных аргументами @var{params}.  Аргументы должны состоять из чередующихся пар
+ключевых слов и значений.  Поддерживаются следующие ключевые слова и значения:
 
 @table @code
 @item :bus @var{bus}
-The D-Bus bus.  This argument is needed only if a bus other than
-@code{:session} shall be used.
+D-Bus bus.  Этот аргумент необходим только в том случае, если должна использоваться
+шина, отличная от @code{:session}.
 
 @item :title @var{title}
-The notification title.
+Заголовок уведомления.
 
 @item :body @var{text}
-The notification body text.  Depending on the implementation of the
-notification server, the text could contain HTML markups, like
-@samp{"<b>bold text</b>"}, hyperlinks, or images.  Special HTML
-characters must be encoded, as @samp{"Contact
-&lt;postmaster@@localhost&gt;!"}.
+Текст сообщения.  В зависимости от реализации сервера уведомлений текст может
+содержать разметку HTML, например @samp{"<b>bold text</b>"}, гиперссылки или
+изображения.  Специальные символы HTML должны быть закодированы как
+@samp{"Contact &lt;postmaster@@localhost&gt;!"}.
 
 @item :app-name @var{name}
-The name of the application sending the notification.  The default is
+Название приложения, отправляющего уведомление.  По умолчанию
 @code{notifications-application-name}.
 
 @item :replaces-id @var{id}
-The notification @var{id} that this notification replaces.  @var{id}
-must be the result of a previous @code{notifications-notify} call.
+Уведомление @var{id}, которое заменяет это уведомление.  @var{id} должно быть
+результатом предыдущего вызова @code{notifications-notify}.
 
 @item :app-icon @var{icon-file}
-The file name of the notification icon.  If set to @code{nil}, no icon
-is displayed.  The default is @code{notifications-application-icon}.
+Имя файла значка уведомления.  Если установлено значение @code{nil}, значок не
+отображается.  По умолчанию @code{notifications-application-icon}.
 
 @item :actions (@var{key} @var{title} @var{key} @var{title} ...)
-A list of actions to be applied.  @var{key} and @var{title} are both
-strings.  The default action (usually invoked by clicking the
-notification) should have a key named @samp{"default"}.  The title can
-be anything, though implementations are free not to display it.
+Список действий, которые нужно применить.  @var{key} и @var{title} - это строки.
+Действие по умолчанию (обычно вызываемое щелчком по уведомлению) должно иметь ключ с
+именем @samp{"default"}.  Заголовок может быть любым, хотя реализации могут не
+отображать его.
 
 @item :timeout @var{timeout}
-The timeout time in milliseconds since the display of the notification
-at which the notification should automatically close.  If @minus{}1, the
-notification's expiration time is dependent on the notification
-server's settings, and may vary for the type of notification.  If 0,
-the notification never expires.  Default value is @minus{}1.
+Время ожидания в миллисекундах с момента отображения уведомления, по истечении
+которого уведомление должно автоматически закрыться.  Если @minus{}1, время истечения
+срока действия уведомления зависит от настроек сервера уведомлений и может различаться
+в зависимости от типа уведомления.  Если 0, срок уведомления никогда не истекает.
+Значение по умолчанию - @minus{}1.
 
 @item :urgency @var{urgency}
-The urgency level.  It can be @code{low}, @code{normal}, or @code{critical}.
+Уровень срочности.  Это может быть @code{low}, @code{normal} или @code{critical}.
 
 @item :action-items
-When this keyword is given, the @var{title} string of the actions is
-interpreted as icon name.
+Когда задано это ключевое слово, строка действий @var{title} интерпретируется как
+имя значка.
 
 @item :category @var{category}
-The type of notification this is, a string.  See the
-@uref{http://developer.gnome.org/notification-spec/#categories,
-Desktop Notifications Specification} for a list of standard
-categories.
+Тип уведомления - строка.  Список стандартных категорий смотреть в
+@uref{http://developer.gnome.org/notification-spec/#categories, Desktop Notifications Specification}.
 
 @item :desktop-entry @var{filename}
-This specifies the name of the desktop filename representing the
-calling program, like @samp{"emacs"}.
+Определяет имя файла рабочего стола, представляющего вызывающую программу, например
+@samp{"emacs"}.
 
 @item :image-data (@var{width} @var{height} @var{rowstride} @var{has-alpha} @var{bits} @var{channels} @var{data})
-This is a raw data image format that describes the width, height,
-rowstride, whether there is an alpha channel, bits per sample,
-channels and image data, respectively.
+Формат изображения необработанных данных, который описывает ширину, высоту, строку,
+наличие альфа-канала, количество бит на выборку, каналы и данные изображения
+соответственно.
 
 @item :image-path @var{path}
-This is represented either as a URI (@samp{file://} is the only URI
-schema supported right now) or a name in a freedesktop.org-compliant
-icon theme from @samp{$XDG_DATA_DIRS/icons}.
+Представлено либо как URI (@samp{file://} - единственная поддерживаемая сейчас схема
+URI), либо как имя в теме значков, совместимой с freedesktop.org, из
+@samp{$XDG_DATA_DIRS/icons}.
 
 @item :sound-file @var{filename}
-The path to a sound file to play when the notification pops up.
+Путь к звуковому файлу, который будет воспроизводиться при появлении уведомления.
 
 @item :sound-name @var{name}
-A themable named sound from the freedesktop.org sound naming
-specification from @samp{$XDG_DATA_DIRS/sounds}, to play when the
-notification pops up.  Similar to the icon name, only for sounds.  An
-example would be @samp{"message-new-instant"}.
+Тематический именованный звук из спецификации именования звуков freedesktop.org от
+@samp{$XDG_DATA_DIRS/sounds}, который воспроизводится при появлении уведомления.
+Аналогично названию значка, только для звуков.  Например,
+@samp{"message-new-instant"}.
 
 @item :suppress-sound
-Causes the server to suppress playing any sounds, if it has that
-ability.
+Заставляет сервер подавлять воспроизведение любых звуков, если у него есть
+такая возможность.
 
 @item :resident
-When set the server will not automatically remove the notification
-when an action has been invoked.  The notification will remain resident
-in the server until it is explicitly removed by the user or by the
-sender.  This hint is likely only useful when the server has the
-@code{:persistence} capability.
+Если установлено, сервер не будет автоматически удалять уведомление при вызове
+действия.  Уведомление будет оставаться на сервере до тех пор, пока оно не будет явно
+удалено пользователем или отправителем.  Эта подсказка, вероятно, полезна только
+тогда, когда сервер имеет возможность @code{:persistence}.
 
 @item :transient
-When set the server will treat the notification as transient and
-by-pass the server's persistence capability, if it should exist.
+Если установлено, сервер будет рассматривать уведомление как временное и игнорировать
+возможность персистентности сервера, если она должна существовать.
 
 @item :x @var{position}
 @itemx :y @var{position}
-Specifies the X, Y location on the screen that the
-notification should point to.  Both arguments must be used together.
+Указывает положение X, Y на экране, на которое должно указывать уведомление.
+Оба аргумента необходимо использовать вместе.
 
 @item :on-action @var{function}
-Function to call when an action is invoked.  The notification @var{id}
-and the @var{key} of the action are passed as arguments to the
-function.
+Функция, вызываемая при вызове действия.  Уведомление @var{id} и @var{key} действия
+передаются в качестве аргументов функции.
 
 @item :on-close @var{function}
-Function to call when the notification has been closed by timeout or
-by the user.  The function receive the notification @var{id} and the closing
-@var{reason} as arguments:
+Функция для вызова, когда уведомление было закрыто по таймауту или пользователем.
+Функция получает в качестве аргументов уведомление @var{id} и закрывающий
+@var{reason}:
 
 @itemize
 @item @code{expired} if the notification has expired
@@ -2552,13 +2425,13 @@ by the user.  The function receive the notification @var{id} and the closing
 @end itemize
 @end table
 
-Which parameters are accepted by the notification server can be
-checked via @code{notifications-get-capabilities}.
+Какие параметры принимает сервер уведомлений, можно проверить через
+@code{notifications-get-capabilities}.
 
-This function returns a notification id, an integer, which can be used
-to manipulate the notification item with
-@code{notifications-close-notification} or the @code{:replaces-id}
-argument of another @code{notifications-notify} call.  For example:
+Функция возвращает идентификатор уведомления, целое число, которое можно использовать
+для управления элементом уведомления с помощью @code{notifications-close-notification}
+или аргумента @code{:replaces-id} другого вызова @code{notifications-notify}.
+Например:
 
 @example
 @group
@@ -2592,80 +2465,76 @@ A message window opens on the desktop.  Press ``I agree''.
 @end defun
 
 @defun notifications-close-notification id &optional bus
-This function closes a notification with identifier @var{id}.
-@var{bus} can be a string denoting a D-Bus connection, the default is
-@code{:session}.
+Функция закрывает уведомление с идентификатором @var{id}.  @var{bus} может быть
+строкой, обозначающей соединение D-Bus, по умолчанию - @code{:session}.
 @end defun
 
 @defun notifications-get-capabilities &optional bus
-Returns the capabilities of the notification server, a list of
-symbols.  @var{bus} can be a string denoting a D-Bus connection, the
-default is @code{:session}.  The following capabilities can be
-expected:
+Возвращает возможности сервера уведомлений, список символов.  @var{bus} может быть
+строкой, обозначающей соединение D-Bus, по умолчанию - @code{:session}.  Ожидаются
+следующие возможности:
 
 @table @code
 @item :actions
-The server will provide the specified actions to the user.
+Сервер предоставит пользователю указанные действия.
 
 @item :body
-Supports body text.
+Поддерживает основной текст.
 
 @item :body-hyperlinks
-The server supports hyperlinks in the notifications.
+Сервер поддерживает гиперссылки в уведомлениях.
 
 @item :body-images
-The server supports images in the notifications.
+Сервер поддерживает изображения в уведомлениях.
 
 @item :body-markup
-Supports markup in the body text.
+Поддерживает разметку в основном тексте.
 
 @item :icon-multi
-The server will render an animation of all the frames in a given image
-array.
+Сервер отобразит анимацию всех фреймов в заданном массиве изображений.
 
 @item :icon-static
-Supports display of exactly 1 frame of any given image array.  This
-value is mutually exclusive with @code{:icon-multi}.
+Поддерживает отображение ровно 1 кадра любого заданного массива изображений.
+Это значение является взаимоисключающим с @code{:icon-multi}.
 
 @item :persistence
-The server supports persistence of notifications.
+Сервер поддерживает постоянство уведомлений.
 
 @item :sound
-The server supports sounds on notifications.
+Сервер поддерживает звуки уведомлений.
 @end table
 
-Further vendor-specific caps start with @code{:x-vendor}, like
-@code{:x-gnome-foo-cap}.
+Дальнейшие ограничения, зависящие от производителя, начинаются с @code{:x-vendor},
+например @code{:x-gnome-foo-cap}.
 @end defun
 
 @defun notifications-get-server-information &optional bus
-Return information on the notification server, a list of strings.
-@var{bus} can be a string denoting a D-Bus connection, the default is
-@code{:session}.  The returned list is @code{(@var{name} @var{vendor}
-@var{version} @var{spec-version})}.
+Возврат информации на сервере уведомлений, список строк.  @var{bus} может быть
+строкой, обозначающей соединение D-Bus, по умолчанию - @code{:session}.  Возвращенный
+список @code{(@var{name} @var{vendor} @var{version} @var{spec-version})}.
 
 @table @var
 @item name
-The product name of the server.
+Название продукта сервера.
 
 @item vendor
-The vendor name.  For example, @samp{"KDE"}, @samp{"GNOME"}.
+Имя поставщика.  Например, @samp{"KDE"}, @samp{"GNOME"}.
 
 @item version
-The server's version number.
+Номер версии сервера.
 
 @item spec-version
-The specification version the server is compliant with.
+Версия спецификации, которой соответствует сервер.
 @end table
 
-If @var{spec_version} is @code{nil}, the server supports a
-specification prior to @samp{"1.0"}.
+Если @var{spec_version} равно @code{nil}, сервер поддерживает спецификацию до
+@samp{"1.0"}.
 @end defun
 
 @cindex tray notifications, MS-Windows
-When Emacs runs on MS-Windows as a GUI session, it supports a small
-subset of the D-Bus notifications functionality via a native
-primitive:
+Когда Emacs запускается в MS-Windows в качестве сеанса графического интерфейса
+пользователя, он поддерживает небольшое подмножество функций уведомлений D-Bus через
+собственный примитив:
 
 @defun w32-notification-notify &rest params
 This function displays an MS-Windows tray notification as specified by
@@ -2771,7 +2640,7 @@ If the @var{file} cannot be watched for some reason, this function
 signals a @code{file-notify-error} error.
 
 Sometimes, mounted filesystems cannot be watched for file changes.
-This is not detected by this function, a non-@code{nil} return value
+This is not detected by this function, a не-@code{nil} return value
 does not guarantee that changes on @var{file} will be notified.
 
 @var{flags} is a list of conditions to set what will be watched for.
