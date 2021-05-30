@@ -2537,166 +2537,156 @@ A message window opens on the desktop.  Press ``I agree''.
 собственный примитив:
 
 @defun w32-notification-notify &rest params
-This function displays an MS-Windows tray notification as specified by
-@var{params}.  MS-Windows tray notifications are displayed in a
-balloon from an icon in the notification area of the taskbar.
+Функция отображает уведомление на панели задач MS-Windows, как указано в @var{params}.
+Уведомления в области уведомлений MS-Windows отображаются в виде всплывающего окна с
+помощью значка в области уведомлений на панели задач.
 
-Value is the integer unique ID of the notification that can be used to
-remove the notification using @code{w32-notification-close}, described
-below.  If the function fails, the return value is @code{nil}.
+Value - целочисленный уникальный идентификатор уведомления, который можно
+использовать для удаления уведомления с помощью @code{w32-notification-close}, как
+описано ниже.  В случае сбоя функции возвращается значение @code{nil}.
 
-The arguments @var{params} are specified as keyword/value pairs.  All the
-parameters are optional, but if no parameters are specified, the
-function will do nothing and return @code{nil}.
+Аргументы @var{params} указываются как пары ключевое слово/значение.  Все параметры
+необязательны, но если параметры не указаны, функция ничего не сделает и вернет
+@code{nil}.
 
-The following parameters are supported:
+Поддерживаются следующие параметры:
 
 @table @code
 @item :icon @var{icon}
-Display @var{icon} in the system tray.  If @var{icon} is a string, it
-should specify a file name from which to load the icon; the specified
-file should be a @file{.ico} Windows icon file.  If @var{icon} is not
-a string, or if this parameter is not specified, the standard Emacs
-icon will be used.
+Отображение @var{icon} в системном трее.  Если @var{icon} - строка, должна указывать
+имя файла, из которого загружается значок; указанный файл должен быть файлом значка
+Windows @file{.ico}.  Если @var{icon} не является строкой или если этот параметр не
+указан, будет использоваться стандартный значок Emacs.
 
 @item :tip @var{tip}
-Use @var{tip} as the tooltip for the notification.  If @var{tip} is a
-string, this is the text of a tooltip that will be shown when the
-mouse pointer hovers over the tray icon added by the notification.  If
-@var{tip} is not a string, or if this parameter is not specified, the
-default tooltip text is @samp{Emacs notification}.  The tooltip text can
-be up to 127 characters long (63 on Windows versions before W2K).
-Longer strings will be truncated.
+Использовать @var{tip} как всплывающую подсказку для уведомления.  Если @var{tip}
+является строкой, это текст всплывающей подсказки, которая будет отображаться при
+наведении указателя мыши на значок в трее, добавленный уведомлением.  Если @var{tip}
+не является строкой или этот параметр не указан, текст всплывающей подсказки по
+умолчанию - @samp{Emacs notification}.  Текст всплывающей подсказки может содержать до
+127 символов (63 в версиях Windows до W2K).  Более длинные строки будут обрезаны.
 
 @item :level @var{level}
-Notification severity level, one of @code{info}, @code{warning}, or
-@code{error}.  If given, the value determines the icon displayed to the
-left of the notification title, but only if the @code{:title} parameter
-(see below) is also specified and is a string.
+Уровень важности уведомления, один из @code{info}, @code{warning} или @code{error}.
+Если задано, значение определяет значок, отображаемый слева от заголовка уведомления,
+но только если параметр @code{:title} (смотреть ниже) также указан и является строкой.
 
 @item :title @var{title}
-The title of the notification.  If @var{title} is a string, it is
-displayed in a larger font immediately above the body text.  The title
-text can be up to 63 characters long; longer text will be truncated.
+Заголовок уведомления.  Если @var{title} является строкой, она отображается более
+крупным шрифтом непосредственно над основным текстом.  Текст заголовка может содержать
+до 63 символов; более длинный текст будет обрезан.
 
 @item :body @var{body}
-The body of the notification.  If @var{body} is a string, it specifies
-the text of the notification message.  Use embedded newlines to
-control how the text is broken into lines.  The body text can be up to
-255 characters long, and will be truncated if it's longer.  Unlike
-with D-Bus, the body text should be plain text, with no markup.
+Тело уведомления.  Если @var{body} - строка, она определяет текст сообщения
+уведомления.  Использовать встроенные символы новой строки, чтобы контролировать, как
+текст разбивается на строки.  Основной текст может иметь длину до 255 символов и будет
+обрезан, если он длиннее.  В отличие от D-Bus, основной текст должен быть простым
+текстом без разметки.
 @end table
 
-Note that versions of Windows before W2K support only @code{:icon} and
-@code{:tip}.  The other parameters can be passed, but they will be
-ignored on those old systems.
+Обратить внимание, что версии Windows до W2K поддерживают только @code{:icon} и
+@code{:tip}.  Остальные параметры можно передавать, но они будут игнорироваться в
+этих старых системах.
 
-There can be at most one active notification at any given time.  An
-active notification must be removed by calling
-@code{w32-notification-close} before a new one can be shown.
+В любой момент времени может быть не более одного активного уведомления.  Активное
+уведомление необходимо удалить, вызвав @code{w32-notification-close}, прежде чем
+можно будет отобразить новое.
 @end defun
 
-To remove the notification and its icon from the taskbar, use the
-following function:
+Чтобы удалить уведомление и его значок с панели задач, использовать следующую функцию:
 
 @defun w32-notification-close id
-This function removes the tray notification given by its unique
-@var{id}.
+Функция удаляет уведомление в трее, заданное его уникальным @var{id}.
 @end defun
 
 @node File Notifications
-@section Notifications on File Changes
+@section Уведомления об Изменениях Файлов
 @cindex file notifications
 @cindex watch, for filesystem events
 
-Several operating systems support watching of filesystems for changes
-of files.  If configured properly, Emacs links a respective library
-like @file{inotify}, @file{kqueue}, @file{gfilenotify}, or
-@file{w32notify} statically.  These libraries enable watching of
-filesystems on the local machine.
+Некоторые операционные системы поддерживают наблюдение за файловыми системами на
+предмет изменений файлов.  При правильной настройке Emacs связывает соответствующую
+библиотеку, например @file{inotify}, @file{kqueue}, @file{gfilenotify} или
+@file{w32notify}, статически.  Эти библиотеки позволяют наблюдать за файловыми
+системами на локальном компьютере.
 
-It is also possible to watch filesystems on remote machines,
-@pxref{Remote Files,, Remote Files, emacs, The GNU Emacs Manual}
-This does not depend on one of the libraries linked to Emacs.
+Также возможно наблюдать за файловыми системами на удаленных машинах,
+@pxref{Remote Files,, Remote Files, emacs, The GNU Emacs Manual}.  Это не зависит от
+одной из библиотек, связанных с Emacs.
 
-Since all these libraries emit different events on notified file
-changes, there is the Emacs library @code{filenotify} which provides a
-unified interface.  Lisp programs that want to receive file
-notifications should always use this library in preference to the
-native ones.
+Поскольку все эти библиотеки генерируют разные события при уведомлении об изменениях
+файлов, существует библиотека Emacs @code{filenotify}, которая обеспечивает
+унифицированный интерфейс.  Программы на Lisp, которые хотят получать уведомления о
+файлах, всегда должны использовать эту библиотеку вместо собственных.
 
 
 @defun file-notify-add-watch file flags callback
-Add a watch for filesystem events pertaining to @var{file}.  This
-arranges for filesystem events pertaining to @var{file} to be reported
-to Emacs.
+Добавьте наблюдение за событиями файловой системы, относящимися к @var{file}.  Это
+позволяет сообщать Emacs о событиях файловой системы, относящихся к @var{file}.
 
-The returned value is a descriptor for the added watch.  Its type
-depends on the underlying library, it cannot be assumed to be an
-integer as in the example below.  It should be used for comparison by
-@code{equal} only.
+Возвращаемое значение является дескриптором добавленных наблюдателей.  Их тип зависит
+от базовой библиотеки, не может быть целым числом, как в примере ниже.  Его следует
+использовать только для сравнения с помощью @code{equal}.
 
-If the @var{file} cannot be watched for some reason, this function
-signals a @code{file-notify-error} error.
+Если @var{file} по какой-то причине не может быть просмотрено, эта функция
+сигнализирует об ошибке @code{file-notify-error}.
 
-Sometimes, mounted filesystems cannot be watched for file changes.
-This is not detected by this function, a не-@code{nil} return value
-does not guarantee that changes on @var{file} will be notified.
+Иногда смонтированные файловые системы невозможно отслеживать на предмет изменений
+файлов.  Это не обнаруживается этой функцией, возвращаемое значение не-@code{nil} не
+гарантирует уведомления об изменениях в @var{file}.
 
-@var{flags} is a list of conditions to set what will be watched for.
-It can include the following symbols:
+@var{flags} - это список условий для установки того, за чем будет проводиться
+наблюдение.  Он может включать следующие символы:
 
 @table @code
 @item change
-watch for file changes
+следить за изменениями файлов
 @item attribute-change
-watch for file attribute changes, like permissions or modification
-time
+следить за изменениями атрибутов файла, такими как разрешения или время модификации
 @end table
 
-If @var{file} is a directory, changes for all files in that directory
-will be notified.  This does not work recursively.
+Если @var{file} - это каталог, будут уведомлены изменения для всех файлов в этом
+каталоге.  Это не работает рекурсивно.
 
-When any event happens, Emacs will call the @var{callback} function
-passing it a single argument @var{event}, which is of the form
+Когда происходит какое-либо событие, Emacs вызывает функцию @var{callback}, передавая
+ей единственный аргумент @var{event}, который имеет форму
 
 @lisp
 (@var{descriptor} @var{action} @var{file} [@var{file1}])
 @end lisp
 
-@var{descriptor} is the same object as the one returned by this
-function.  @var{action} is the description of the event.  It could be
-any one of the following symbols:
+@var{descriptor} - это тот же объект, что и возвращаемый этой функцией.  @var{action}
+- описание события.  Это может быть любой из следующих символов:
 
 @table @code
 @item created
-@var{file} was created
+@var{file} был создан
 @item deleted
-@var{file} was deleted
+@var{file} был удален
 @item changed
-@var{file}'s contents has changed; with @file{w32notify} library,
-reports attribute changes as well
+содержимое @var{file}-ов изменилось; с библиотекой @file{w32notify}, также
+сообщает об изменении атрибутов
 @item renamed
-@var{file} has been renamed to @var{file1}
+@var{file} был переименован в @var{file1}
 @item attribute-changed
-a @var{file} attribute was changed
+атрибут @var{file} был изменен
 @item stopped
-watching @var{file} has been stopped
+просмотр @var{file} был остановлен
 @end table
 
-Note that the @file{w32notify} library does not report
-@code{attribute-changed} events.  When some file's attribute, like
-permissions or modification time, has changed, this library reports a
-@code{changed} event.  Likewise, the @file{kqueue} library does not
-report reliably file attribute changes when watching a directory.
+Обратить внимание, что библиотека @file{w32notify} не сообщает о событиях
+@code{attribute-changed}.  Когда какой-либо атрибут файла, например права доступа или
+время модификации, изменился, библиотека сообщает о событии @code{changed}.  Точно
+так же библиотека @file{kqueue} не сообщает достоверно об изменениях атрибутов файла
+при просмотре каталога.
 
-The @code{stopped} event reports, that watching the file has been
-stopped.  This could be because @code{file-notify-rm-watch} was called
-(see below), or because the file being watched was deleted, or due to
-another error reported from the underlying library.
+Событие @code{stopped} сообщает, что просмотр файла остановлен.  Это могло произойти
+из-за того, что был вызван @code{file-notify-rm-watch} (смотреть ниже), или из-за
+того, что наблюдаемый файл был удален, или из-за другой ошибки, полученной из базовой
+библиотеки.
 
-@var{file} and @var{file1} are the name of the file(s) whose event is
-being reported.  For example:
+@var{file} and @var{file1} - это имя файла(ов), о событии которого сообщается.
+Например:
 
 @example
 @group
@@ -2737,9 +2727,9 @@ being reported.  For example:
 @end group
 @end example
 
-Whether the action @code{renamed} is returned, depends on the used
-watch library.  Otherwise, the actions @code{deleted} and
-@code{created} could be returned in a random order.
+Будет ли возвращено действие @code{renamed}, зависит от используемой библиотеки
+наблюдателя.  В противном случае действия @code{deleted} и @code{created} могли быть
+возвращены в случайном порядке.
 
 @example
 @group
@@ -2755,20 +2745,18 @@ watch library.  Otherwise, the actions @code{deleted} and
 @end defun
 
 @defun file-notify-rm-watch descriptor
-Removes an existing file watch specified by its @var{descriptor}.
-@var{descriptor} should be an object returned by
-@code{file-notify-add-watch}.
+Удаляет существующее наблюдение за файлом, указанное его @var{descriptor}.
+@var{descriptor} должен быть объектом, возвращаемым @code{file-notify-add-watch}.
 @end defun
 
 @defun file-notify-valid-p descriptor
-Checks a watch specified by its @var{descriptor} for validity.
-@var{descriptor} should be an object returned by
-@code{file-notify-add-watch}.
+Проверяет наблюдаетелей, указанных в @var{descriptor}, на достоверность.
+@var{descriptor} должен быть объектом, возвращаемым @code{file-notify-add-watch}.
 
-A watch can become invalid if the file or directory it watches is
-deleted, or if the watcher thread exits abnormally for any other
-reason.  Removing the watch by calling @code{file-notify-rm-watch}
-also makes it invalid.
+Наблюдение может стать недействительным, если файл или каталог, который отслеживается,
+будет удален, или если поток-наблюдатель завершится ненормально по любой другой
+причине.  Удаление наблюдения с помощью вызова @code{file-notify-rm-watch} также
+делает наблюдателей недействительными.
 
 @example
 @group
@@ -2797,7 +2785,7 @@ also makes it invalid.
 @end group
 
 @group
-;; Deleting a file in the directory doesn't invalidate the watch.
+;; Удаление файла в каталоге не делает наблюдателей недействительными.
 (delete-file "/tmp/foo/bla")
      @result{} Event (11359632 deleted "/tmp/foo/bla")
 @end group
@@ -2828,29 +2816,27 @@ also makes it invalid.
 @end defun
 
 @node Dynamic Libraries
-@section Dynamically Loaded Libraries
+@section Динамически Загружаемые Библиотеки
 @cindex dynamic libraries
 
-  A @dfn{dynamically loaded library} is a library that is loaded on
-demand, when its facilities are first needed.  Emacs supports such
-on-demand loading of support libraries for some of its features.
+  @dfn{Динамически загружаемая библиотека} - это библиотека, которая загружается по
+запросу, когда ее средства необходимы.  Emacs поддерживает такую загрузку библиотек
+поддержки по запросу для некоторых своих функций.
 
 @defvar dynamic-library-alist
-This is an alist of dynamic libraries and external library files
-implementing them.
+Список динамических библиотек и файлов внешних библиотек, реализующих их.
 
-Each element is a list of the form
-@w{@code{(@var{library} @var{files}@dots{})}}, where the @code{car} is
-a symbol representing a supported external library, and the rest are
-strings giving alternate filenames for that library.
+Каждый элемент представляет собой список вида
+@w{@code{(@var{library} @var{files}@dots{})}}, где @code{car} - это символ,
+представляющий поддерживаемую внешнюю библиотеку, а остальные - строки, дающие
+альтернативные имена файлов для этой библиотеки.
 
-Emacs tries to load the library from the files in the order they
-appear in the list; if none is found, the Emacs session won't have
-access to that library, and the features it provides will be
-unavailable.
+Emacs пытается загрузить библиотеку из файлов в том порядке, в котором они появляются
+в списке; если ничего не найдено, сеанс Emacs не будет иметь доступа к этой
+библиотеке, и функции, которые он предоставляет, будут недоступны.
 
-Image support on some platforms uses this facility.  Here's an example
-of setting this variable for supporting images on MS-Windows:
+Поддержка изображений на некоторых платформах использует эту возможность.  Вот пример
+установки этой переменной для поддержки изображений в MS-Windows:
 
 @example
 (setq dynamic-library-alist
@@ -2867,138 +2853,127 @@ of setting this variable for supporting images on MS-Windows:
         (gobject "libgobject-2.0-0.dll")))
 @end example
 
-Note that image types @code{pbm} and @code{xbm} do not need entries in
-this variable because they do not depend on external libraries and are
-always available in Emacs.
+Обратить внимание, что типы изображений @code{pbm} и @code{xbm} не нуждаются в записях
+в этой переменной, потому что они не зависят от внешних библиотек и всегда доступны в
+Emacs.
 
-Also note that this variable is not meant to be a generic facility for
-accessing external libraries; only those already known by Emacs can
-be loaded through it.
+Также обратить внимание, что эта переменная не предназначена для использования в
+качестве универсального средства доступа к внешним библиотекам; только те, которые
+уже известны Emacs, могут быть загружены через него.
 
-This variable is ignored if the given @var{library} is statically
-linked into Emacs.
+Переменная игнорируется, если данная @var{library} статически связана с Emacs.
 @end defvar
 
 @node Security Considerations
-@section Security Considerations
+@section Соображения Безопасности
 @cindex security
 @cindex hardening
 
-Like any application, Emacs can be run in a secure environment, where
-the operating system enforces rules about access and the like.  With
-some care, Emacs-based applications can also be part of a security
-perimeter that checks such rules.  Although the default settings for
-Emacs work well for a typical software development environment, they
-may require adjustment in environments containing untrusted users that
-may include attackers.  Here is a compendium of security issues that
-may be helpful if you are developing such applications.  It is by no
-means complete; it is intended to give you an idea of the security
-issues involved, rather than to be a security checklist.
+Как и любое приложение, Emacs можно запускать в безопасной среде, где операционная
+система применяет правила доступа и тому подобное.  При некоторой осторожности
+приложения на основе Emacs также могут быть частью периметра безопасности, который
+проверяет такие правила.  Хотя настройки Emacs по умолчанию хорошо работают в типичной
+среде разработки программного обеспечения, они могут потребовать корректировки в
+средах, содержащих ненадежных пользователей, в том числе злоумышленников.  Вот список
+проблем безопасности, которые могут быть полезны при разработке таких приложений.  Это
+ни в коем случае не является полным; он предназначен для того, чтобы дать
+представление о проблемах безопасности, а не быть контрольным списком безопасности.
 
 @table @asis
 @item File local variables
 @cindex file local variables
-A file that Emacs visits can contain variable settings that affect
-the buffer visiting that file; @xref{File Local Variables}.
-Similarly, a directory can specify local variable values common to all
-files in that directory; see @ref{Directory Local Variables}.  Although
-Emacs takes some effort to protect against misuse of these variables,
-a security hole can be created merely by a package setting
-@code{safe-local-variable} too optimistically, a problem that is all
-too common.  To disable this feature for both files and directories,
-set @code{enable-local-variables} to @code{nil}.
+Файл, который посещает Emacs, может содержать настройки переменных, которые влияют на
+буфер, обращающийся к этому файлу; @xref{File Local Variables}.  Точно так же каталог
+может указывать значения локальных переменных, общие для всех файлов в этом каталоге;
+смотреть @ref{Directory Local Variables}.  Хотя Emacs прилагает некоторые усилия для
+защиты от неправильного использования этих переменных, дыра в безопасности может быть
+создана просто из-за слишком оптимистичной установки пакета
+@code{safe-local-variable}, что является очень распространенной проблемой.  Чтобы
+отключить эту функцию как для файлов, так и для каталогов, установить для
+@code{enable-local-variables} значение @code{nil}.
 
 @item Access control
-Although Emacs normally respects access permissions of the underlying
-operating system, in some cases it handles accesses specially.  For
-example, file names can have handlers that treat the files specially,
-with their own access checking.  @xref{Magic File Names}.  Also, a
-buffer can be read-only even if the corresponding file is writable,
-and vice versa, which can result in messages such as @samp{File passwd
-is write-protected; try to save anyway? (yes or no)}.  @xref{Read Only
-Buffers}.
+Хотя Emacs обычно уважает права доступа базовой операционной системы, в некоторых
+случаях он обрабатывает доступ особым образом.  Например, имена файлов могут иметь
+обработчики, которые обрабатывают файлы особым образом, со своей собственной проверкой
+доступа.  @xref{Magic File Names}.  Кроме того, буфер может быть доступен только для
+чтения, даже если соответствующий файл доступен для записи, и наоборот, что может
+привести к появлению таких сообщений, как
+@samp{File passwd is write-protected; try to save anyway? (yes or no)}.
+@xref{Read Only Buffers}.
 
 @item Authentication
-Emacs has several functions that deal with passwords, e.g.,
-@code{read-passwd}.  @xref{Reading a Password}.
-Although these functions do not attempt to
-broadcast passwords to the world, their implementations are not proof
-against determined attackers with access to Emacs internals.  For
-example, even if Elisp code uses @code{clear-string} to scrub a password from
-its memory after using it, remnants of the password may still reside
-in the garbage-collected free list.  @xref{Modifying Strings}.
+В Emacs есть несколько функций, которые работают с паролями, например,
+@code{read-passwd}.  @xref{Reading a Password}.  Хотя эти функции не пытаются
+транслировать пароли в мир, их реализация не защищает от решительных злоумышленников,
+имеющих доступ к внутреннему устройству Emacs.  Например, даже если код Elisp
+использует @code{clear-string} для удаления пароля из своей памяти после его
+использования, остатки пароля могут по-прежнему находиться в списке свободных от
+сборщика мусора.  @xref{Modifying Strings}.
 
 @item Code injection
-Emacs can send commands to many other applications, and applications
-should take care that strings sent as operands of these commands are
-not misinterpreted as directives.  For example, when using a shell
-command to rename a file @var{a} to @var{b}, do not simply use the
-string @code{mv @var{a} @var{b}}, because either file name might start
-with @samp{-}, or might contain shell metacharacters like @samp{;}.
-Although functions like @code{shell-quote-argument} can help avoid
-this sort of problem, they are not panaceas; for example, on a POSIX
-platform @code{shell-quote-argument} quotes shell metacharacters but
-not leading @samp{-}.  On MS-Windows, quoting for @samp{%} assumes
-none of the environment variables have @samp{^} in their name.
-@xref{Shell Arguments}.  Typically it is safer
-to use @code{call-process} than a subshell.  @xref{Synchronous
-Processes}.  And it is safer yet to use builtin Emacs functions; for
-example, use @code{(rename-file "@var{a}" "@var{b}" t)} instead of
-invoking @command{mv}.  @xref{Changing Files}.
+Emacs может отправлять команды многим другим приложениям, и приложения должны
+позаботиться о том, чтобы строки, отправленные как операнды этих команд, не были
+неверно интерпретированы как директивы.  Например, при использовании команды оболочки
+для переименования файла @var{a} в @var{b} не использовать просто строку
+@code{mv @var{a} @var{b}}, потому что любое имя файла может начинаться с @samp{-} или
+может содержать метасимволы оболочки, такие как @samp{;}.  Хотя такие функции, как
+@code{shell-quote-argument}, могут помочь избежать подобных проблем, они не являются
+панацеей; например, на платформе POSIX @code{shell-quote-argument} цитирует
+метасимволы оболочки, но не ведет @samp{-}.  В MS-Windows цитирование @samp{%}
+предполагает, что ни одна из переменных среды не содержит @samp{^} в своем имени.
+@xref{Shell Arguments}.  Обычно безопаснее использовать @code{call-process}, чем
+подоболочку.  @xref{Synchronous Processes}.  И еще безопаснее использовать встроенные
+функции Emacs; например, использовать @code{(rename-file "@var{a}" "@var{b}" t)}
+вместо вызова @command{mv}.  @xref{Changing Files}.
 
 @item Coding systems
-Emacs attempts to infer the coding systems of the files and network
-connections it accesses.  @xref{Coding Systems}.
-If Emacs infers incorrectly, or if the other
-parties to the network connection disagree with Emacs's inferences,
-the resulting system could be unreliable.  Also, even when it infers
-correctly, Emacs often can use bytes that other programs cannot.  For
-example, although to Emacs the null byte is just a
-character like any other, many other applications treat it as a string
-terminator and mishandle strings or files containing null bytes.
+Emacs пытается определить системы кодирования файлов и сетевых подключений, к которым
+он обращается.  @xref{Coding Systems}.  Если Emacs делает неверный вывод или если
+другие участники сетевого подключения не согласны с выводами Emacs, результирующая
+система может быть ненадежной.  Кроме того, даже если делается правильный вывод, Emacs
+часто может использовать байты, которые другие программы не могут.  Например, хотя для
+Emacs нулевой байт является просто символом, как и любой другой, многие другие
+приложения рассматривают его как терминатор строки и неправильно обрабатывают строки
+или файлы, содержащие нулевые байты.
 
 @item Environment and configuration variables
-POSIX specifies several environment variables that can affect how
-Emacs behaves.  Any environment variable whose name consists entirely
-of uppercase ASCII letters, digits, and the underscore may affect the
-internal behavior of Emacs.  Emacs uses several such variables, e.g.,
-@env{EMACSLOADPATH}.  @xref{Library Search}.  On some platforms some
-environment variables (e.g., @env{PATH}, @env{POSIXLY_CORRECT},
-@env{SHELL}, @env{TMPDIR}) need to have properly-configured values in
-order to get standard behavior for any utility Emacs might invoke.
-Even seemingly-benign variables like @env{TZ} may have security
-implications.  @xref{System Environment}.
+POSIX определяет несколько переменных среды, которые могут влиять на поведение Emacs.
+Любая переменная среды, имя которой полностью состоит из прописных букв ASCII, цифр и
+символа подчеркивания, может повлиять на внутреннее поведение Emacs.  Emacs использует
+несколько таких переменных, например, @env{EMACSLOADPATH}.  @xref{Library Search}.
+На некоторых платформах некоторые переменные окружения (такие как, @env{PATH},
+@env{POSIXLY_CORRECT}, @env{SHELL}, @env{TMPDIR}) должны иметь правильно
+сконфигурированные значения, чтобы получить стандартное поведение для любой утилиты,
+которую может вызывать Emacs.  Даже такие, казалось бы, безобидные переменные, как
+@env{TZ}, могут иметь проблемы с безопасностью.  @xref{System Environment}.
 
-Emacs has customization and other variables with similar
-considerations.  For example, if the variable @code{shell-file-name}
-specifies a shell with nonstandard behavior, an Emacs-based
-application may misbehave.
+Emacs имеет настройки и другие переменные с аналогичными соображениями.  Например,
+если переменная @code{shell-file-name} указывает оболочку с нестандартным поведением,
+приложение на основе Emacs может вести себя неправильно.
 
 @item Installation
-When Emacs is installed, if the installation directory hierarchy can
-be modified by untrusted users, the application cannot be trusted.
-This applies also to the directory hierarchies of the programs that
-Emacs uses, and of the files that Emacs reads and writes.
+Установленному Emacs, с изменённой иерархией каталогов установки недоверенными
+пользователями, нельзя доверять как приложению.  Это относится также к иерархиям
+каталогов программ, которые использует Emacs, и файлов, которые Emacs читает и
+записывает.
 
 @item Network access
-Emacs often accesses the network, and you may want to configure it to
-avoid network accesses that it would normally do.  For example, unless
-you set @code{tramp-mode} to @code{nil}, file names using a certain
-syntax are interpreted as being network files, and are retrieved
-across the network.  @xref{Top, The Tramp Manual,, tramp, The Tramp
-Manual}.
+Emacs часто обращается к сети, и можно настроить его так, чтобы избежать доступа к
+сети, как это обычно бывает.  Например, если не установить @code{tramp-mode} на
+@code{nil}, имена файлов с использованием определенного синтаксиса интерпретируются
+как сетевые файлы и извлекаются по сети.
+@xref{Top, The Tramp Manual,, tramp, The Tramp Manual}.
 
 @item Race conditions
-Emacs applications have the same sort of race-condition issues that
-other applications do.  For example, even when
-@code{(file-readable-p "foo.txt")} returns @code{t}, it could be that
-@file{foo.txt} is unreadable because some other program changed the
-file's permissions between the call to @code{file-readable-p} and now.
-@xref{Testing Accessibility}.
+Приложения Emacs имеют те же проблемы, что и другие приложения.  Например, даже когда
+@code{(file-readable-p "foo.txt")} возвращает @code{t}, возможно, что @file{foo.txt}
+не читается, потому что какая-то другая программа изменила права доступа к файлу
+между вызовом @code{file-readable-p} и сейчас.  @xref{Testing Accessibility}.
 
 @item Resource limits
-When Emacs exhausts memory or other operating system resources, its
-behavior can be less reliable, in that computations that ordinarily
-run to completion may abort back to the top level.  This may cause
-Emacs to neglect operations that it normally would have done.
+Когда Emacs исчерпывает память или другие ресурсы операционной системы, его поведение
+может быть менее надежным, поскольку вычисления, которые обычно выполняются до
+завершения, могут прерваться обратно на верхний уровень.  Это может привести к тому,
+что Emacs будет пренебрегать операциями, которые он обычно выполнял бы.
 @end table
