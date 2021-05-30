@@ -4,188 +4,174 @@
 @c Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Tips
-@appendix Tips and Conventions
+@appendix Советы и Условные Обозначения
 @cindex tips for writing Lisp
 @cindex standards of coding style
 @cindex coding standards
 
-  This chapter describes no additional features of Emacs Lisp.  Instead
-it gives advice on making effective use of the features described in the
-previous chapters, and describes conventions Emacs Lisp programmers
-should follow.
+  Эта глава не описывает никаких дополнительных возможностей Emacs Lisp.  Вместо
+этого дает советы по эффективному использованию возможностей, описанных в предыдущих
+главах, и описывает соглашения, которым должны следовать программисты Emacs Lisp.
 
 @findex checkdoc
 @findex checkdoc-current-buffer
 @findex checkdoc-file
-  You can automatically check some of the conventions described below
-by running the command @kbd{M-x checkdoc @key{RET}} when visiting a
-Lisp file.  It cannot check all of the conventions, and not all the
-warnings it gives necessarily correspond to problems, but it is worth
-examining them all.  Alternatively, use the command @kbd{M-x
-checkdoc-current-buffer @key{RET}} to check the conventions in the
-current buffer, or @code{checkdoc-file} when you want to check a file
-in batch mode, e.g., with a command run by @kbd{@w{M-x compile
-@key{RET}}}.
+  Можно автоматически проверить некоторые из соглашений, описанных ниже, запустив
+команду @kbd{M-x checkdoc @key{RET}} при посещении файла Lisp.  Не выйдет проверить
+все условные обозначения, и не все предупреждения, которые выдаются, обязательно
+соответствуют проблемам, но стоит изучить их все.  В качестве альтернативы
+использовать команду @kbd{M-x checkdoc-current-buffer @key{RET}}, чтобы проверить
+соглашения в текущем буфере, или @code{checkdoc-file}, если требуется проверить файл
+в пакетном режиме, например, с помощью команды, выполняемой
+@kbd{@w{M-x compile @key{RET}}}.
 
 @menu
-* Coding Conventions::        Conventions for clean and robust programs.
-* Key Binding Conventions::   Which keys should be bound by which programs.
-* Programming Tips::          Making Emacs code fit smoothly in Emacs.
-* Compilation Tips::          Making compiled code run fast.
-* Warning Tips::              Turning off compiler warnings.
-* Documentation Tips::        Writing readable documentation strings.
-* Comment Tips::              Conventions for writing comments.
-* Library Headers::           Standard headers for library packages.
+* Coding Conventions::        Условные обозначения для чистых и надежных программ.
+* Key Binding Conventions::   Какие ключи должны быть связаны какими программами.
+* Programming Tips::          Приведение кода Emacs в соответствие с Emacs.
+* Compilation Tips::          Обеспечение быстрой работы скомпилированного кода.
+* Warning Tips::              Отключение предупреждений компилятора.
+* Documentation Tips::        Написание читаемых строк документации.
+* Comment Tips::              Правила написания комментариев.
+* Library Headers::           Стандартные заголовки для библиотечных пакетов.
 @end menu
 
 @node Coding Conventions
-@section Emacs Lisp Coding Conventions
+@section Соглашения о кодировании Emacs Lisp
 
 @cindex coding conventions in Emacs Lisp
-  Here are conventions that you should follow when writing Emacs Lisp
-code intended for widespread use:
+  Вот соглашения, которым требуется следовать при написании кода Emacs Lisp,
+предназначенного для широкого использования:
 
 @itemize @bullet
 @item
-Simply loading a package should not change Emacs's editing behavior.
-Include a command or commands to enable and disable the feature,
-or to invoke it.
+Простая загрузка пакета не должна изменять поведение Emacs при редактировании.
+Включить команду или команды для включения и отключения функции или для ее вызова.
 
-This convention is mandatory for any file that includes custom
-definitions.  If fixing such a file to follow this convention requires
-an incompatible change, go ahead and make the incompatible change;
-don't postpone it.
-
-@item
-You should choose a short word to distinguish your program from other
-Lisp programs.  The names of all global symbols in your program, that
-is the names of variables, constants, and functions, should begin with
-that chosen prefix.  Separate the prefix from the rest of the name
-with a hyphen, @samp{-}.  This practice helps avoid name conflicts,
-since all global variables in Emacs Lisp share the same name space,
-and all functions share another name space@footnote{The benefits of a
-Common Lisp-style package system are considered not to outweigh the
-costs.}.  Use two hyphens to separate prefix and name if the symbol is
-not meant to be used by other packages.
-
-Occasionally, for a command name intended for users to use, it is more
-convenient if some words come before the package's name prefix.  For
-example, it is our convention to have commands that list objects named
-as @samp{list-@var{something}}, e.g., a package called @samp{frob}
-could have a command @samp{list-frobs}, when its other global symbols
-begin with @samp{frob-}.  Also, constructs that define functions,
-variables, etc., work better if they start with @samp{defun} or
-@samp{defvar}, so put the name prefix later on in the name.
-
-This recommendation applies even to names for traditional Lisp
-primitives that are not primitives in Emacs Lisp---such as
-@code{copy-list}.  Believe it or not, there is more than one plausible
-way to define @code{copy-list}.  Play it safe; append your name prefix
-to produce a name like @code{foo-copy-list} or @code{mylib-copy-list}
-instead.
-
-If you write a function that you think ought to be added to Emacs under
-a certain name, such as @code{twiddle-files}, don't call it by that name
-in your program.  Call it @code{mylib-twiddle-files} in your program,
-and send mail to @samp{bug-gnu-emacs@@gnu.org} suggesting we add
-it to Emacs.  If and when we do, we can change the name easily enough.
-
-If one prefix is insufficient, your package can use two or three
-alternative common prefixes, so long as they make sense.
+Это соглашение является обязательным для любого файла, который включает
+пользовательские определения.  Если для исправления такого файла в соответствии с этим
+соглашением требуется несовместимое изменение, сделайте несовместимое изменение; не
+откладывать это.
 
 @item
-Put a call to @code{provide} at the end of each separate Lisp file.
+Требуется выбрать короткое слово, чтобы отличить программу от других программ на
+Lisp.  Имена всех глобальных символов в программе, то есть имена переменных, констант
+и функций, должны начинаться с выбранного префикса.  Отделитm префикс от остальной
+части имени дефисом @samp{-}.  Эта практика помогает избежать конфликтов имен,
+поскольку все глобальные переменные в Emacs Lisp используют одно и то же пространство
+имен, а все функции совместно используют другое пространство имен @footnote{Считается,
+что преимущества системы пакетов в стиле Common Lisp не перевешивают затрат.}.
+Используйте два дефиса для разделения префикса и имени, если символ не предназначен
+для использования другими пакетами.
+
+Иногда для имени команды, предназначенной для использования пользователями, удобнее,
+если перед префиксом имени пакета стоит несколько слов.  Например, по соглашению
+команды, перечисляющие объекты с именем @samp{list-@var{something}}, например, пакет
+с именем @samp{frob} может иметь команду @samp{list-frobs}, когда другие его
+глобальные символы начинаются с @samp{frob-}.  Кроме того, конструкции, которые
+определяют функции, переменные и так далее, работают лучше, если начинаются с
+@samp{defun} или @samp{defvar}, поэтому вставить префикс имени позже в имя.
+
+Эта рекомендация применима даже к именам традиционных примитивов Lisp, которые не
+являются примитивами в Emacs Lisp, например, @code{copy-list}.  Хотите верьте, хотите
+нет, но существует более одного правдоподобного способа определить @code{copy-list}.
+Играть безопасно; добавить префикс своего имени, чтобы вместо него получилось имя
+типа @code{foo-copy-list} или @code{mylib-copy-list}.
+
+Если писать функцию, которую, следует добавить в Emacs под определенным именем,
+например @code{twiddle-files}, не называть ее этим именем в программе. Назвать её
+@code{mylib-twiddle-files} в программе и отправить письмо на
+@samp{bug-gnu-emacs@@gnu.org} с предложением добавить его в Emacs.  Если и когда это
+осуществится, можно достаточно легко изменить имя.
+
+Если одного префикса недостаточно, пакет может использовать два или три альтернативных
+общих префикса, если это имеет смысл.
+
+@item
+Добавить вызов @code{provide} в конец каждого отдельного файла Lisp.
 @xref{Named Features}.
 
 @item
-If a file requires certain other Lisp programs to be loaded
-beforehand, then the comments at the beginning of the file should say
-so.  Also, use @code{require} to make sure they are loaded.
-@xref{Named Features}.
+Если файл требует предварительной загрузки некоторых других программ на Lisp, то об
+этом должно быть сказано в комментариях в начале файла.  Также использовать
+@code{require}, чтобы убедиться, что они загружены.  @xref{Named Features}.
 
 @item
-If a file @var{foo} uses a macro defined in another file @var{bar},
-but does not use any functions or variables defined in @var{bar}, then
-@var{foo} should contain the following expression:
+Если файл @var{foo} использует макрос, определенный в другом файле @var{bar}, но не
+использует никаких функций или переменных, определенных в @var{bar}, то @var{foo}
+должно содержать следующее выражение:
 
 @example
 (eval-when-compile (require '@var{bar}))
 @end example
 
 @noindent
-This tells Emacs to load @var{bar} just before byte-compiling
-@var{foo}, so that the macro definition is available during
-compilation.  Using @code{eval-when-compile} avoids loading @var{bar}
-when the compiled version of @var{foo} is @emph{used}.  It should be
-called before the first use of the macro in the file.  @xref{Compiling
-Macros}.
+Указывает Emacs загрузить @var{bar} непосредственно перед байт-компиляцией @var{foo},
+чтобы определение макроса было доступно во время компиляции.  Использование
+@code{eval-when-compile} позволяет избежать загрузки @var{bar}, когда
+@emph{используется} скомпилированная версия @var{foo}.  Это следует вызывать перед
+первым использованием макроса в файле.  @xref{Compiling Macros}.
 
 @item
-Avoid loading additional libraries at run time unless they are really
-needed.  If your file simply cannot work without some other library,
-then just @code{require} that library at the top-level and be done
-with it.  But if your file contains several independent features, and
-only one or two require the extra library, then consider putting
-@code{require} statements inside the relevant functions rather than at
-the top-level.  Or use @code{autoload} statements to load the extra
-library when needed.  This way people who don't use those aspects of
-your file do not need to load the extra library.
+Избегать загрузки дополнительных библиотек во время выполнения, если они действительно
+не нужны.  Если файл просто не может работать без какой-либо другой библиотеки, тогда
+просто обрезать эту библиотеку на верхнем уровне и покончить с ней.  Но если файл
+содержит несколько независимых функций, и только для одного или двух требуется
+дополнительная библиотека, рассмотреть возможность размещения операторов
+@code{require} внутри соответствующих функций, а не на верхнем уровне.  Или
+использовать операторы @code{autoload} для загрузки дополнительной библиотеки, когда
+это необходимо.  Таким образом, людям, которые не используют эти аспекты файла, не
+требуется загружать дополнительную библиотеку.
 
 @item
-If you need Common Lisp extensions, use the @code{cl-lib} library
-rather than the old @code{cl} library.  The latter does not
-use a clean namespace (i.e., its definitions do not
-start with a @samp{cl-} prefix).  If your package loads @code{cl} at
-run time, that could cause name clashes for users who don't use that
-package.
+Если нужны расширения Common Lisp, использовать библиотеку @code{cl-lib}, а не старую
+библиотеку @code{cl}.  Последнее не использует чистое пространство имен (то есть её
+определения не начинаются с префикса @samp{cl-}).  Если пакет загружает @code{cl} во
+время выполнения, это может вызвать конфликты имен для пользователей, которые не
+используют этот пакет.
 
-There is no problem with using the @code{cl} package at @emph{compile}
-time, with @code{(eval-when-compile (require 'cl))}.  That's
-sufficient for using the macros in the @code{cl} package, because the
-compiler expands them before generating the byte-code.  It is still
-better to use the more modern @code{cl-lib} in this case, though.
+Нет проблем с использованием пакета @code{cl} во время @emph{компиляции}, с
+@code{(eval-when-compile (require 'cl))}.  Этого достаточно для использования макросов
+в пакете @code{cl}, потому что компилятор расширяет их перед генерацией байт-кода.
+Однако в этом случае все же лучше использовать более современный @code{cl-lib}.
 
 @item
-When defining a major mode, please follow the major mode
-conventions.  @xref{Major Mode Conventions}.
+При определении основного режима следовать правилам основного режима.
+@xref{Major Mode Conventions}.
 
 @item
-When defining a minor mode, please follow the minor mode
-conventions.  @xref{Minor Mode Conventions}.
+При определении второстепенного режима следуйте правилам второстепенного режима.
+@xref{Minor Mode Conventions}.
 
 @item
-If the purpose of a function is to tell you whether a certain
-condition is true or false, give the function a name that ends in
-@samp{p} (which stands for ``predicate'').  If the name is one word,
-add just @samp{p}; if the name is multiple words, add @samp{-p}.
-Examples are @code{framep} and @code{frame-live-p}.
+Если цель функции - сказать, истинно ли определенное условие или нет, дать функции
+имя, которое заканчивается на @samp{p} (что означает ``предикат'').  Если имя состоит
+из одного слова, добавить просто @samp{p}; если имя состоит из нескольких слов,
+добавить @samp{-p}.  Примеры: @code{framep} и @code{frame-live-p}.
 
 @item
-If the purpose of a variable is to store a single function, give it a
-name that ends in @samp{-function}.  If the purpose of a variable is
-to store a list of functions (i.e., the variable is a hook), please
-follow the naming conventions for hooks.  @xref{Hooks}.
+Если цель переменной - сохранить одну функцию, дать ей имя, заканчивающееся на
+@samp{-function}.  Если целью переменной является хранение списка функций (то есть
+переменная является ловушкой), пожалуйста, следовать соглашениям об именах для
+ловушек.  @xref{Hooks}.
 
 @item
 @cindex unloading packages, preparing for
-If loading the file adds functions to hooks, define a function
-@code{@var{feature}-unload-function}, where @var{feature} is the name
-of the feature the package provides, and make it undo any such
-changes.  Using @code{unload-feature} to unload the file will run this
-function.  @xref{Unloading}.
+Если загрузка файла добавляет функции к перехватчикам, определить функцию
+@code{@var{feature}-unload-function}, где @var{feature} - это имя функции,
+предоставляемой пакетом, и отменить любые такие изменения.  Использование
+@code{unload-feature} для выгрузки файла запустит эту функцию.  @xref{Unloading}.
 
 @item
-It is a bad idea to define aliases for the Emacs primitives.  Normally
-you should use the standard names instead.  The case where an alias
-may be useful is where it facilitates backwards compatibility or
-portability.
+Определение псевдонимов для примитивов Emacs - плохая идея.  Обычно вместо этого
+следует использовать стандартные имена.  Случай, когда псевдоним может быть полезен,
+- это когда он способствует обратной совместимости или переносимости.
 
 @item
-If a package needs to define an alias or a new function for
-compatibility with some other version of Emacs, name it with the package
-prefix, not with the raw name with which it occurs in the other version.
-Here is an example from Gnus, which provides many examples of such
-compatibility issues.
+Если пакету необходимо определить псевдоним или новую функцию для совместимости с
+какой-либо другой версией Emacs, назвать его префиксом пакета, а не исходным именем,
+с которым встречается в другой версии.  Вот пример от Gnus, который предоставляет
+множество примеров таких проблем с совместимостью.
 
 @example
 (defalias 'gnus-point-at-bol
@@ -195,164 +181,158 @@ compatibility issues.
 @end example
 
 @item
-Redefining or advising an Emacs primitive is a bad idea.  It may do
-the right thing for a particular program, but there is no telling what
-other programs might break as a result.
+Переопределять или рекомендовать примитив Emacs - плохая идея.  Это может быть
+правильным для конкретной программы, но неизвестно, какие другие программы могут
+сломаться в результате.
 
 @item
-It is likewise a bad idea for one Lisp package to advise a function in
-another Lisp package (@pxref{Advising Functions}).
+Точно так же плохая идея для одного пакета Lisp рекомендовать функцию в другом
+пакете Lisp.  (@pxref{Advising Functions}).
 
 @item
-Avoid using @code{eval-after-load} and @code{with-eval-after-load} in
-libraries and packages (@pxref{Hooks for Loading}).  This feature is
-meant for personal customizations; using it in a Lisp program is
-unclean, because it modifies the behavior of another Lisp file in a
-way that's not visible in that file.  This is an obstacle for
-debugging, much like advising a function in the other package.
+Избегать использования @code{eval-after-load} и @code{with-eval-after-load} в
+библиотеках и пакетах (@pxref{Hooks for Loading}).  Эта функция предназначена для
+личных настроек; использовать её в программе на lisp нечисто, потому что изменяется
+поведение другого файла Lisp таким образом, который не виден в этом файле.  Это
+препятствие для отладки, очень похоже на функцию рекомендацию в другом пакете.
 
 @item
-If a file does replace any of the standard functions or library
-programs of Emacs, prominent comments at the beginning of the file
-should say which functions are replaced, and how the behavior of the
-replacements differs from that of the originals.
+Если файл действительно заменяет какие-либо стандартные функции или библиотечные
+программы Emacs, заметные комментарии в начале файла должны указывать, какие функции
+заменяются и чем поведение замен отличается от поведения оригиналов.
 
 @item
-Constructs that define a function or variable should be macros,
-not functions, and their names should start with @samp{define-}.
-The macro should receive the name to be
-defined as the first argument.  That will help various tools find the
-definition automatically.  Avoid constructing the names in the macro
-itself, since that would confuse these tools.
+Конструкции, определяющие функцию или переменную, должны быть макросами, а не
+функциями, и их имена должны начинаться с @samp{define-}.  Макрос должен получить имя,
+которое будет определено в качестве первого аргумента.  Это поможет различным
+инструментам автоматически находить определение.  Избегать создания имен в самом
+макросе, поскольку это может сбить с толку эти инструменты.
 
 @item
-In some other systems there is a convention of choosing variable names
-that begin and end with @samp{*}.  We don't use that convention in Emacs
-Lisp, so please don't use it in your programs.  (Emacs uses such names
-only for special-purpose buffers.)  People will find Emacs more
-coherent if all libraries use the same conventions.
+В некоторых других системах существует соглашение о выборе имен переменных, которые
+начинаются и заканчиваются на @samp{*}.  Не используется это соглашение в Emacs Lisp,
+поэтому, пожалуйста, не использовать его в программах.  (Emacs использует такие имена
+только для буферов специального назначения.)  Люди сочтут Emacs более согласованным,
+если все библиотеки используют одни и те же соглашения.
 
 @item
-The default file coding system for Emacs Lisp source files is UTF-8
-(@pxref{Text Representations}).  In the rare event that your program
-contains characters which are @emph{not} in UTF-8, you should specify
-an appropriate coding system in the source file's @samp{-*-} line or
-local variables list.  @xref{File Variables, , Local Variables in
-Files, emacs, The GNU Emacs Manual}.
+Система кодирования файлов по умолчанию для исходных файлов Emacs Lisp - UTF-8
+(@pxref{Text Representations}).  В редких случаях, когда программа содержит символы,
+которые @emph{не} являются UTF-8, потребуется указать соответствующую систему
+кодирования в строке @samp{-*-} исходного файла или в списке локальных переменных.
+@xref{File Variables, , Local Variables in Files, emacs, The GNU Emacs Manual}.
 
 @item
-Indent the file using the default indentation parameters.
+Сделать отступ файла, используя параметры отступа по умолчанию.
 
 @item
-Don't make a habit of putting close-parentheses on lines by
-themselves; Lisp programmers find this disconcerting.
+Не делать привычкой ставить закрывающие скобки на строки сами по себе;
+Программистов на Lisp это смущает.
 
 @item
-Please put a copyright notice and copying permission notice on the
-file if you distribute copies.  @xref{Library Headers}.
+Пожалуйста, поместить уведомление об авторских правах и уведомление о разрешении на
+копирование в файл, если распространяются копии.  @xref{Library Headers}.
 
 @end itemize
 
 @node Key Binding Conventions
-@section Key Binding Conventions
+@section Основные Соглашения о Привязке
 @cindex key binding, conventions for
 
 @itemize @bullet
 @item
 @cindex mouse-2
 @cindex references, following
-Many special major modes, like Dired, Info, Compilation, and Occur,
-are designed to handle read-only text that contains @dfn{hyper-links}.
-Such a major mode should redefine @kbd{mouse-2} and @key{RET} to
-follow the links.  It should also set up a @code{follow-link}
-condition, so that the link obeys @code{mouse-1-click-follows-link}.
-@xref{Clickable Text}.  @xref{Buttons}, for an easy method of
-implementing such clickable links.
+Многие специальные основные режимы, такие как Dired, Info, Compilation и Occur,
+предназначены для обработки текста, доступного только для чтения, который содержит
+@dfn{гиперссылки}.  Такой основной режим должен переопределить @kbd{mouse-2} и
+@key{RET} для перехода по ссылкам.  Также требуется установить условие
+@code{follow-link}, чтобы ссылка подчинялась @code{mouse-1-click-follows-link}.
+@xref{Clickable Text}.  @xref{Buttons}, для простого способа реализации таких
+интерактивных ссылок.
 
 @item
 @cindex reserved keys
 @cindex keys, reserved
-Don't define @kbd{C-c @var{letter}} as a key in Lisp programs.
-Sequences consisting of @kbd{C-c} and a letter (either upper or lower
-case) are reserved for users; they are the @strong{only} sequences
-reserved for users, so do not block them.
+Не определять @kbd{C-c @var{letter}} как ключ в программах на Lisp.
+Последовательности, состоящие из @kbd{C-c} и буквы (верхнего или нижнего регистра),
+зарезервированы для пользователей; это @strong{единственные} последовательности,
+зарезервированные для пользователей, поэтому не блокировать их.
 
-Changing all the Emacs major modes to respect this convention was a
-lot of work; abandoning this convention would make that work go to
-waste, and inconvenience users.  Please comply with it.
-
-@item
-Function keys @key{F5} through @key{F9} without modifier keys are
-also reserved for users to define.
+Изменение всех основных режимов Emacs в соответствии с этим соглашением потребовало
+много усилий; отказ от этой конвенции сделает эту работу напрасной и доставит
+неудобства пользователям.  Пожалуйста, соблюдать это.
 
 @item
-Sequences consisting of @kbd{C-c} followed by a control character or a
-digit are reserved for major modes.
+Функциональные клавиши с @key{F5} по @key{F9} без клавиш-модификаторов также
+зарезервированы для определения пользователями.
 
 @item
-Sequences consisting of @kbd{C-c} followed by @kbd{@{}, @kbd{@}},
-@kbd{<}, @kbd{>}, @kbd{:} or @kbd{;} are also reserved for major modes.
+Последовательности, состоящие из @kbd{C-c}, за которыми следует управляющий символ
+или цифра, зарезервированы для основных режимов.
 
 @item
-Sequences consisting of @kbd{C-c} followed by any other
-@acronym{ASCII} punctuation or symbol character are allocated for
-minor modes.  Using them in a major mode is not absolutely prohibited,
-but if you do that, the major mode binding may be shadowed from time
-to time by minor modes.
+Последовательности, состоящие из @kbd{C-c}, за которым следует @kbd{@{}, @kbd{@}},
+@kbd{<}, @kbd{>}, @kbd{:} или @kbd{;}, также зарезервированы для основных режимов.
 
 @item
-Don't bind @kbd{C-h} following any prefix character (including
-@kbd{C-c}).  If you don't bind @kbd{C-h}, it is automatically
-available as a help character for listing the subcommands of the
-prefix character.
+Последовательности, состоящие из @kbd{C-c}, за которым следует любой другой знак
+препинания или символ @acronym{ASCII}, выделяются для второстепенных режимов.
+Использование их в основном режиме не является абсолютно запрещенным, но если это
+сделать, привязка основного режима может время от времени затеняться второстепенными
+режимами.
 
 @item
-Don't bind a key sequence ending in @key{ESC} except following another
-@key{ESC}.  (That is, it is OK to bind a sequence ending in
+Не привязывать @kbd{C-h} к любому символу префикса (включая @kbd{C-c}).  Если не
+привязывать @kbd{C-h}, оно автоматически доступно в качестве символа справки для
+перечисления подкоманд символа префикса.
+
+@item
+Не привязывать последовательность ключей, оканчивающуюся на @key{ESC}, кроме следующих
+за другим @key{ESC}.  (То есть можно связать последовательность, заканчивающуюся на
 @kbd{@key{ESC} @key{ESC}}.)
 
-The reason for this rule is that a non-prefix binding for @key{ESC} in
-any context prevents recognition of escape sequences as function keys in
-that context.
+Причина этого правила в том, что привязка без префикса для @key{ESC} в любом контексте
+предотвращает распознавание escape-последовательностей как функциональных клавиш в
+этом контексте.
 
 @item
-Similarly, don't bind a key sequence ending in @kbd{C-g}, since that
-is commonly used to cancel a key sequence.
+Точно так же не привязывать последовательность ключей, заканчивающуюся на @kbd{C-g},
+поскольку это обычно используется для отмены последовательности ключей.
 
 @item
-Anything that acts like a temporary mode or state that the user can
-enter and leave should define @kbd{@key{ESC} @key{ESC}} or
-@kbd{@key{ESC} @key{ESC} @key{ESC}} as a way to escape.
+Все, что действует как временный режим или состояние, в которое пользователь может
+войти и выйти, должно определять @kbd{@key{ESC} @key{ESC}} или
+@kbd{@key{ESC} @key{ESC} @key{ESC}} как способ выхода.
 
-For a state that accepts ordinary Emacs commands, or more generally any
-kind of state in which @key{ESC} followed by a function key or arrow key
-is potentially meaningful, then you must not define @kbd{@key{ESC}
-@key{ESC}}, since that would preclude recognizing an escape sequence
-after @key{ESC}.  In these states, you should define @kbd{@key{ESC}
-@key{ESC} @key{ESC}} as the way to escape.  Otherwise, define
-@kbd{@key{ESC} @key{ESC}} instead.
+Для состояния, которое принимает обычные команды Emacs, или, в более общем смысле,
+любого состояния, в котором потенциально значимым является @key{ESC}, за которым
+следует функциональная клавиша или клавиша со стрелкой, тогда не нужно определять
+@kbd{@key{ESC} @key{ESC}}, так как это помешает распознать escape-последовательность
+после @key{ESC}.  В этих состояниях потребуется определить
+@kbd{@key{ESC} @key{ESC} @key{ESC}} как способ выхода.  В противном случае вместо
+этого определить @kbd{@key{ESC} @key{ESC}}.
 @end itemize
 
 @node Programming Tips
-@section Emacs Programming Tips
+@section Советы по Программированию в Emacs
 @cindex programming conventions
 
-  Following these conventions will make your program fit better
-into Emacs when it runs.
+  Следование этим соглашениям поможет программе лучше вписаться в Emacs при
+ее запуске.
 
 @itemize @bullet
 @item
-Don't use @code{next-line} or @code{previous-line} in programs; nearly
-always, @code{forward-line} is more convenient as well as more
-predictable and robust.  @xref{Text Lines}.
+Не использовать @code{next-line} или @code{previous-line} в программах; почти всегда
+@code{forward-line} удобнее, а также более предсказуемо и надежно.  @xref{Text Lines}.
 
 @item
-Don't call functions that set the mark, unless setting the mark is one
-of the intended features of your program.  The mark is a user-level
-feature, so it is incorrect to change the mark except to supply a value
-for the user's benefit.  @xref{The Mark}.
+Не вызывать функции, устанавливающие метку, если установка метки не является одной из
+предполагаемых функций программы.  Метка - это функция на уровне пользователя, поэтому
+ее нельзя изменять, кроме как для указания значения в интересах пользователя.
+@xref{The Mark}.
 
-In particular, don't use any of these functions:
+В частности, не использовать ни одну из этих функций:
 
 @itemize @bullet
 @item
@@ -363,57 +343,52 @@ In particular, don't use any of these functions:
 @code{insert-file}, @code{insert-buffer}
 @end itemize
 
-If you just want to move point, or replace a certain string, or insert
-a file or buffer's contents, without any of the other features
-intended for interactive users, you can replace these functions with
-one or two lines of simple Lisp code.
+Если просто требуется переместить точку, или заменить определенную строку, или
+вставить содержимое файла или буфера, без каких-либо других функций, предназначенных
+для интерактивных пользователей, можно заменить эти функции одной или двумя строками
+простого кода Lisp.
 
 @item
-Use lists rather than vectors, except when there is a particular reason
-to use a vector.  Lisp has more facilities for manipulating lists than
-for vectors, and working with lists is usually more convenient.
+Использовать списки, а не векторы, за исключением случаев, когда есть особая причина
+для использования вектора.  В Lisp больше возможностей для работы со списками, чем с
+векторами, и работа со списками обычно более удобна.
 
-Vectors are advantageous for tables that are substantial in size and are
-accessed in random order (not searched front to back), provided there is
-no need to insert or delete elements (only lists allow that).
-
-@item
-The recommended way to show a message in the echo area is with
-the @code{message} function, not @code{princ}.  @xref{The Echo Area}.
+Векторы выгодны для таблиц, которые имеют значительный размер и доступ к ним
+осуществляется в случайном порядке (поиск не выполняется спереди назад), при условии,
+что нет необходимости вставлять или удалять элементы (это позволяют только списки).
 
 @item
-When you encounter an error condition, call the function @code{error}
-(or @code{signal}).  The function @code{error} does not return.
-@xref{Signaling Errors}.
-
-Don't use @code{message}, @code{throw}, @code{sleep-for}, or
-@code{beep} to report errors.
+Рекомендуемый способ показать сообщение в эхо-области - использовать функцию
+@code{message}, а не @code{princ}.  @xref{The Echo Area}.
 
 @item
-An error message should start with a capital letter but should not end
-with a period.
+Когда столкнуться с ошибкой, вызвать функцию @code{error} (или @code{signal}).
+Функция @code{error} не возвращает.  @xref{Signaling Errors}.
+
+Не использовать @code{message}, @code{throw}, @code{sleep-for} или @code{beep} для
+сообщения об ошибках.
 
 @item
-A question asked in the minibuffer with @code{yes-or-no-p} or
-@code{y-or-n-p} should start with a capital letter and end with
-@samp{? }.
+Сообщение об ошибке должно начинаться с заглавной буквы, но не заканчиваться точкой.
 
 @item
-When you mention a default value in a minibuffer prompt,
-put it and the word @samp{default} inside parentheses.
-It should look like this:
+Вопрос, задаваемый в минибуфере с @code{yes-or-no-p} или @code{y-or-n-p}, должен
+начинаться с заглавной буквы и заканчиваться @samp{? }.
+
+@item
+Когда упоминается значение по умолчанию в приглашении минибуфера, поместить его и
+слово @samp{default} в круглые скобки.  Должно получиться так:
 
 @example
 Enter the answer (default 42):
 @end example
 
 @item
-In @code{interactive}, if you use a Lisp expression to produce a list
-of arguments, don't try to provide the correct default values for
-region or position arguments.  Instead, provide @code{nil} for those
-arguments if they were not specified, and have the function body
-compute the default value when the argument is @code{nil}.  For
-instance, write this:
+В @code{interactive}, если используется выражение Lisp для создания списка аргументов,
+не пытаться предоставить правильные значения по умолчанию для аргументов региона или
+позиции.  Вместо этого предоставить @code{nil} для этих аргументов, если они не
+указаны, и попросить тело функции вычислить значение по умолчанию, если аргумент -
+@code{nil}.  Например, написать это:
 
 @example
 (defun foo (pos)
@@ -424,7 +399,7 @@ instance, write this:
 @end example
 
 @noindent
-rather than this:
+а не это:
 
 @example
 (defun foo (pos)
@@ -435,63 +410,60 @@ rather than this:
 @end example
 
 @noindent
-This is so that repetition of the command will recompute
-these defaults based on the current circumstances.
+Это сделано для того, чтобы повторение команды пересчитало эти значения по умолчанию
+в зависимости от текущих обстоятельств.
 
-You do not need to take such precautions when you use interactive
-specs @samp{d}, @samp{m} and @samp{r}, because they make special
-arrangements to recompute the argument values on repetition of the
-command.
-
-@item
-Many commands that take a long time to execute display a message that
-says something like @samp{Operating...} when they start, and change it
-to @samp{Operating...done} when they finish.  Please keep the style of
-these messages uniform: @emph{no} space around the ellipsis, and
-@emph{no} period after @samp{done}.  @xref{Progress}, for an easy way
-to generate such messages.
+Не нужно принимать такие меры предосторожности при использовании интерактивных
+спецификаций @samp{d}, @samp{m} и @samp{r}, потому что они принимают специальные
+меры для пересчета значений аргументов при повторении команды.
 
 @item
-Try to avoid using recursive edits.  Instead, do what the Rmail @kbd{e}
-command does: use a new local keymap that contains a command defined
-to switch back to the old local keymap.  Or simply switch to another
-buffer and let the user switch back at will.  @xref{Recursive Editing}.
+Многие команды, выполнение которых занимает много времени, при запуске выводят
+сообщение, которое говорит что-то вроде @samp{Operating...}, и меняют его на
+@samp{Operating...done} по завершении.  Пожалуйста, сохранять единообразный стиль
+этих сообщений: @emph{без} пробела вокруг многоточия и @emph{без} точки после
+@samp{done}.  @xref{Progress}, чтобы упростить создание таких сообщений.
+
+@item
+Стараться избегать рекурсивного редактирования.  Вместо этого сделать то, что делает
+команда Rmail @kbd{e}: использовать новую локальную карту, содержащую команду,
+определенную для возврата к старой локальной ключевой карте.  Или просто переключиться
+на другой буфер и позволить пользователю переключиться обратно по желанию.
+@xref{Recursive Editing}.
 @end itemize
 
 @node Compilation Tips
-@section Tips for Making Compiled Code Fast
+@section Советы по Ускорению Скомпилированного Кода
 @cindex execution speed
 @cindex speedups
 
-  Here are ways of improving the execution speed of byte-compiled
-Lisp programs.
+  Вот способы улучшить скорость выполнения байт-скомпилированных программ на Lisp.
 
 @itemize @bullet
 @item
-Profile your program, to find out where the time is being spent.
+Профилировать свою программу, чтобы узнать, на что тратиться время.
 @xref{Profiling}.
 
 @item
-Use iteration rather than recursion whenever possible.
-Function calls are slow in Emacs Lisp even when a compiled function
-is calling another compiled function.
+По возможности использовать итерацию, а не рекурсию.  Вызов функций в Emacs Lisp
+выполняется медленно, даже когда скомпилированная функция вызывает другую
+скомпилированную функцию.
 
 @item
-Using the primitive list-searching functions @code{memq}, @code{member},
-@code{assq}, or @code{assoc} is even faster than explicit iteration.  It
-can be worth rearranging a data structure so that one of these primitive
-search functions can be used.
+Использование примитивных функций поиска по списку @code{memq}, @code{member},
+@code{assq} или @code{assoc} даже быстрее, чем явная итерация.  Возможно, стоит
+перестроить структуру данных так, чтобы можно было использовать одну из этих
+примитивных функций поиска.
 
 @item
-Certain built-in functions are handled specially in byte-compiled code,
-avoiding the need for an ordinary function call.  It is a good idea to
-use these functions rather than alternatives.  To see whether a function
-is handled specially by the compiler, examine its @code{byte-compile}
-property.  If the property is non-@code{nil}, then the function is
-handled specially.
+Некоторые встроенные функции обрабатываются особым образом в байт-скомпилированном
+коде, что позволяет избежать необходимости в обычном вызове функции.  Рекомендуется
+использовать эти функции, а не альтернативы.  Чтобы узнать, обрабатывается ли функция
+специально компилятором, изучить ее свойство @code{byte-compile}.  Если свойство -
+не-@code{nil}, то функция обрабатывается особым образом.
 
-For example, the following input will show you that @code{aref} is
-compiled specially (@pxref{Array Functions}):
+Например, следующий ввод покажет, что @code{aref} скомпилирована специально
+(@pxref{Array Functions}):
 
 @example
 @group
@@ -501,51 +473,50 @@ compiled specially (@pxref{Array Functions}):
 @end example
 
 @noindent
-Note that in this case (and many others), you must first load the
-@file{bytecomp} library, which defines the @code{byte-compile} property.
+Обратить внимание, что в этом случае (и во многих других) потребуется сначала
+загрузить библиотеку @file{bytecomp}, которая определяет свойство @code{byte-compile}.
 
 @item
-If calling a small function accounts for a substantial part of your
-program's running time, make the function inline.  This eliminates
-the function call overhead.  Since making a function inline reduces
-the flexibility of changing the program, don't do it unless it gives
-a noticeable speedup in something slow enough that users care about
-the speed.  @xref{Inline Functions}.
+Если на вызов небольшой функции приходится значительная часть времени выполнения
+программы, сделать функцию встроенной.  Это устраняет накладные расходы на вызов
+функции.  Поскольку встроенная функция снижает гибкость изменения программы, не
+делать этого, если это не дает заметного ускорения в чем-то достаточно медленном,
+чтобы пользователи заботились о скорости.  @xref{Inline Functions}.
 @end itemize
 
 @node Warning Tips
-@section Tips for Avoiding Compiler Warnings
+@section Советы по Тому, как Избежать Предупреждения Компилятора
 @cindex byte compiler warnings, how to avoid
 
 @itemize @bullet
 @item
-Try to avoid compiler warnings about undefined free variables, by adding
-dummy @code{defvar} definitions for these variables, like this:
+Стараться избегать предупреждений компилятора о неопределенных свободных переменных,
+добавляя фиктивные определения @code{defvar} для этих переменных, например:
 
 @example
 (defvar foo)
 @end example
 
-Such a definition has no effect except to tell the compiler
-not to warn about uses of the variable @code{foo} in this file.
+Такое определение не имеет никакого эффекта, кроме указания компилятору не
+предупреждать об использовании переменной @code{foo} в этом файле.
 
 @item
-Similarly, to avoid a compiler warning about an undefined function
-that you know @emph{will} be defined, use a @code{declare-function}
-statement (@pxref{Declaring Functions}).
+Точно так же, чтобы избежать предупреждения компилятора о неопределенной функции,
+которая, как известно, @emph{будет} определена, использовать оператор
+@code{declare-function} (@pxref{Declaring Functions}).
 
 @item
-If you use many functions, macros, and variables from a certain file,
-you can add a @code{require} (@pxref{Named Features, require}) for
-that package to avoid compilation warnings for them, like this:
+Если использовать много функций, макросов и переменных из определенного файла, можно
+добавить @code{require} (@pxref{Named Features, require}) для этого пакета, чтобы
+избежать предупреждений компиляции для них, например:
 
 @example
 (require 'foo)
 @end example
 
 @noindent
-If you need only macros from some file, you can require it only at
-compile time (@pxref{Eval During Compile}).  For instance,
+Если нужны только макросы из какого-то файла, можно потребовать их только во время
+компиляции (@pxref{Eval During Compile}).  Например,
 
 @example
 (eval-when-compile
@@ -553,450 +524,419 @@ compile time (@pxref{Eval During Compile}).  For instance,
 @end example
 
 @item
-If you bind a variable in one function, and use it or set it in
-another function, the compiler warns about the latter function unless
-the variable has a definition.  But adding a definition would be
-unclean if the variable has a short name, since Lisp packages should
-not define short variable names.  The right thing to do is to rename
-this variable to start with the name prefix used for the other
-functions and variables in your package.
+Если привязать переменную к одной функции и использовать ее или устанавливать в другой
+функции, компилятор предупреждает о последней функции, если переменная не имеет
+определения.  Но добавление определения было бы нечистым, если переменная имеет
+короткое имя, поскольку пакеты Lisp не должны определять короткие имена переменных.
+Правильнее всего переименовать эту переменную, чтобы она начиналась с префикса имени,
+используемого для других функций и переменных в вашем пакете.
 
 @item
-The last resort for avoiding a warning, when you want to do something
-that is usually a mistake but you know is not a mistake in your usage,
-is to put it inside @code{with-no-warnings}.  @xref{Compiler Errors}.
+Последнее средство, позволяющее избежать предупреждения, если требуется сделать
+что-то, что обычно является ошибкой, знать, что это не ошибка в таком использовании,
+- поместить это в @code{with-no-warnings}.  @xref{Compiler Errors}.
 @end itemize
 
 @node Documentation Tips
-@section Tips for Documentation Strings
+@section Советы по Строкам Документации
 @cindex documentation strings, conventions and tips
 
 @findex checkdoc-minor-mode
-  Here are some tips and conventions for the writing of documentation
-strings.  You can check many of these conventions by running the command
-@kbd{M-x checkdoc-minor-mode}.
+  Вот несколько советов и соглашений по написанию строк документации.  Можно проверить
+многие из этих соглашений, выполнив команду @kbd{M-x checkdoc-minor-mode}.
 
 @itemize @bullet
 @item
-Every command, function, or variable intended for users to know about
-should have a documentation string.
+Каждая команда, функция или переменная, предназначенная для пользователей, должна
+иметь строку документации.
 
 @item
-An internal variable or subroutine of a Lisp program might as well
-have a documentation string.  Documentation strings take up very
-little space in a running Emacs.
+Внутренняя переменная или подпрограмма программы на Lisp также может иметь строку
+документации.  Строки документации занимают очень мало места в работающем Emacs.
 
 @item
-Format the documentation string so that it fits in an Emacs window on an
-80-column screen.  It is a good idea for most lines to be no wider than
-60 characters.  The first line should not be wider than 67 characters
-or it will look bad in the output of @code{apropos}.
+Отформатировать строку документации так, чтобы она поместилась в окне Emacs на экране
+с 80 столбцами.  Рекомендуется, чтобы длина большинства строк не превышала 60
+символов.  Первая строка не должна быть шире 67 символов, иначе она будет плохо
+выглядеть в выводе @code{apropos}.
 
 @vindex emacs-lisp-docstring-fill-column
-You can fill the text if that looks good.  Emacs Lisp mode fills
-documentation strings to the width specified by
-@code{emacs-lisp-docstring-fill-column}.  However, you can sometimes
-make a documentation string much more readable by adjusting its line
-breaks with care.  Use blank lines between sections if the
-documentation string is long.
+Можно заполнить текст, если он подходит.  Режим Emacs Lisp заполняет строки
+документации до ширины, указанной @code{emacs-lisp-docstring-fill-column}.  Тем не
+менее, иногда можно сделать строку документации более читаемой, осторожно изменив
+разрывы строк.  Использовать пустые строки между разделами, если строка документации
+длинная.
 
 @item
-The first line of the documentation string should consist of one or two
-complete sentences that stand on their own as a summary.  @kbd{M-x
-apropos} displays just the first line, and if that line's contents don't
-stand on their own, the result looks bad.  In particular, start the
-first line with a capital letter and end it with a period.
+Первая строка документации должна состоять из одного или двух полных предложений,
+которые представляют собой резюме.  @kbd{M-x apropos} отображает только первую строку,
+и если содержимое этой строки не стоит само по себе, результат выглядит плохим.  В
+частности, начинайте первую строку с заглавной буквы и заканчивайте точкой.
 
-For a function, the first line should briefly answer the question,
-``What does this function do?''  For a variable, the first line should
-briefly answer the question, ``What does this value mean?''
+Для функции первая строка должна кратко отвечать на вопрос ``Что делает эта функция?''
+Для переменной первая строка должна кратко отвечать на вопрос
+``Что означает это значение?''
 
-Don't limit the documentation string to one line; use as many lines as
-you need to explain the details of how to use the function or
-variable.  Please use complete sentences for the rest of the text too.
-
-@item
-When the user tries to use a disabled command, Emacs displays just the
-first paragraph of its documentation string---everything through the
-first blank line.  If you wish, you can choose which information to
-include before the first blank line so as to make this display useful.
+Не ограничивать строку документации одной строкой; использовать столько строк, сколько
+нужно, чтобы объяснить детали того, как использовать функцию или переменную.
+Пожалуйста, использовать полные предложения и для остального текста.
 
 @item
-The first line should mention all the important arguments of the
-function, and should mention them in the order that they are written
-in a function call.  If the function has many arguments, then it is
-not feasible to mention them all in the first line; in that case, the
-first line should mention the first few arguments, including the most
-important arguments.
+Когда пользователь пытается использовать отключенную команду, Emacs отображает только
+первый абзац своей строки документации - все до первой пустой строки.  При желании
+можно выбрать, какую информацию включать перед первой пустой строкой, чтобы сделать
+это отображение полезным.
 
 @item
-When a function's documentation string mentions the value of an argument
-of the function, use the argument name in capital letters as if it were
-a name for that value.  Thus, the documentation string of the function
-@code{eval} refers to its first argument as @samp{FORM}, because the
-actual argument name is @code{form}:
+В первой строке следует упомянуть все важные аргументы функции и указать их в том
+порядке, в котором они записаны при вызове функции.  Если у функции много аргументов,
+то невозможно указать их все в первой строке; в этом случае в первой строке должны
+быть указаны первые несколько аргументов, включая наиболее важные аргументы.
+
+@item
+Когда в строке документации функции упоминается значение аргумента функции,
+использовать имя аргумента заглавными буквами, как если бы это было имя для этого
+значения.  Таким образом, строка документации функции @code{eval} ссылается на свой
+первый аргумент как на @samp{FORM}, потому что фактическое имя аргумента -
+@code{form}:
 
 @example
-Evaluate FORM and return its value.
+Оценить FORM и вернуть его значение.
 @end example
 
-Also write metasyntactic variables in capital letters, such as when you
-show the decomposition of a list or vector into subunits, some of which
-may vary.  @samp{KEY} and @samp{VALUE} in the following example
-illustrate this practice:
+Также написать метасинтаксические переменные заглавными буквами, например, когда
+показываются разложение списка или вектора на подъединицы, некоторые из которых могут
+различаться.  @samp{KEY} и @samp{VALUE} в следующем примере иллюстрирует эту практику:
 
 @example
-The argument TABLE should be an alist whose elements
-have the form (KEY . VALUE).  Here, KEY is ...
+Аргумент TABLE должен быть списком, элементы которого имеют вид
+(KEY . VALUE).  Здесь KEY - это ...
 @end example
 
 @item
-Never change the case of a Lisp symbol when you mention it in a doc
-string.  If the symbol's name is @code{foo}, write ``foo'', not
-``Foo'' (which is a different symbol).
+Никогда не менять регистр символа Lisp, когда упоминается он в строке документации.
+Если имя символа - @code{foo}, писать ``foo'', а не ``Foo'' (это другой символ).
 
-This might appear to contradict the policy of writing function
-argument values, but there is no real contradiction; the argument
-@emph{value} is not the same thing as the @emph{symbol} that the
-function uses to hold the value.
+Может показаться, что это противоречит политике записи значений аргументов функции,
+но реального противоречия нет; @emph{значение} аргумента - это не то же самое, что
+@emph{символ}, который функция использует для хранения значения.
 
-If this puts a lower-case letter at the beginning of a sentence
-and that annoys you, rewrite the sentence so that the symbol
-is not at the start of it.
+Если это ставит строчную букву в начало предложения и это раздражает, переписать
+предложение так, чтобы символ не был в его начале.
 
 @item
-Do not start or end a documentation string with whitespace.
+Не начинать и не заканчивать строку документации пробелом.
 
 @item
-@strong{Do not} indent subsequent lines of a documentation string so
-that the text is lined up in the source code with the text of the first
-line.  This looks nice in the source code, but looks bizarre when users
-view the documentation.  Remember that the indentation before the
-starting double-quote is not part of the string!
+@strong{Не делать} отступы в последующих строках строки документации, чтобы текст в
+исходном коде выровнялся с текстом первой строки.  Это хорошо выглядит в исходном
+коде, но выглядит странно, когда пользователи просматривают документацию.  Помнить,
+что отступ перед начальной двойной кавычкой не является частью строки!
 
 @anchor{Docstring hyperlinks}
 @item
 @cindex curly quotes
 @cindex curved quotes
-When a documentation string refers to a Lisp symbol, write it as it
-would be printed (which usually means in lower case), surrounding it
-with curved single quotes (@t{‘..’}).  There are two exceptions: write
-@code{t} and @code{nil} without surrounding punctuation.  For example:
+Когда строка документации ссылается на символ Lisp, запиать ее так, как она будет
+напечатана (что обычно означает в нижнем регистре), заключив ее в изогнутые одинарные
+кавычки (@t{‘..’}).  Есть два исключения: написать @code{t} и @code{nil} без
+окружающих знаков препинания.  Например:
 
 @example
  CODE can be ‘lambda’, nil, or t.
 @end example
 
 @noindent
-@xref{Quotation Marks,,, emacs, The GNU Emacs Manual}, for how to
-enter curved single quotes.
+@xref{Quotation Marks,,, emacs, The GNU Emacs Manual}, о том, как вводить
+изогнутые одинарные кавычки.
 
-Documentation strings can also use an older single-quoting convention,
-which quotes symbols with grave accent @t{`} and apostrophe
-@t{'}: @t{`like-this'} rather than @t{‘like-this’}.  This
-older convention was designed for now-obsolete displays in which grave
-accent and apostrophe were mirror images.
-Documentation using this convention is converted to the user's
-preferred format when it is copied into a help buffer.  @xref{Keys in
-Documentation}.
+Строки документации также могут использовать старое соглашение об одинарных кавычках,
+в котором символы заключаются в кавычки с серьезным ударением @t{`} и апострофом
+@t{'}: @t{`like-this'}, а не @t{‘like-this’}.  Это старое соглашение было разработано
+для устаревших дисплеев, в которых серьезный акцент и апостроф были зеркальным
+отображением.  Документация, использующая это соглашение, преобразуется в
+предпочтительный для пользователя формат при копировании в буфер справки.
+@xref{Keys in Documentation}.
 
 @cindex hyperlinks in documentation strings
-Help mode automatically creates a hyperlink when a documentation string
-uses a single-quoted symbol name, if the symbol has either a
-function or a variable definition.  You do not need to do anything
-special to make use of this feature.  However, when a symbol has both a
-function definition and a variable definition, and you want to refer to
-just one of them, you can specify which one by writing one of the words
-@samp{variable}, @samp{option}, @samp{function}, or @samp{command},
-immediately before the symbol name.  (Case makes no difference in
-recognizing these indicator words.)  For example, if you write
+Режим справки автоматически создает гиперссылку, когда в строке документации
+используется имя символа в одинарных кавычках, если символ имеет либо функцию, либо
+определение переменной.  Не нужно делать ничего особенного, чтобы воспользоваться этой
+функцией.  Однако, если у символа есть и определение функции, и определение
+переменной, и требуется сослаться только на одно из них, можно указать, какое из них,
+написав одно из слов @samp{variable}, @samp{option}, @samp{function} или
+@samp{command} непосредственно перед именем символа.  (Регистр не имеет значения для
+распознавания этих индикаторных слов.)  Например, если написать
 
 @example
-This function sets the variable `buffer-file-name'.
+Эта функция устанавливает variable `buffer-file-name'.
 @end example
 
 @noindent
-then the hyperlink will refer only to the variable documentation of
-@code{buffer-file-name}, and not to its function documentation.
+тогда гиперссылка будет относиться только к документации переменных
+@code{buffer-file-name}, а не к документации по функциям.
 
-If a symbol has a function definition and/or a variable definition, but
-those are irrelevant to the use of the symbol that you are documenting,
-you can write the words @samp{symbol} or @samp{program} before the
-symbol name to prevent making any hyperlink.  For example,
+Если у символа есть определение функции и/или определение переменной, но они не имеют
+отношения к использованию символа, который документируется, можно написать слова
+@samp{symbol} или @samp{program} перед именем символа, чтобы предотвратить создание
+любой гиперссылки.  Например,
 
 @example
-If the argument KIND-OF-RESULT is the symbol `list',
-this function returns a list of all the objects
-that satisfy the criterion.
+Если аргумент KIND-OF-RESULT - это symbol `list', эта функция возвращает список всех
+объектов, удовлетворяющих критерию.
 @end example
 
 @noindent
-does not make a hyperlink to the documentation, irrelevant here, of the
-function @code{list}.
+не делает гиперссылку на не имеющую отношения к делу документацию функции @code{list}.
 
-Normally, no hyperlink is made for a variable without variable
-documentation.  You can force a hyperlink for such variables by
-preceding them with one of the words @samp{variable} or
-@samp{option}.
+Обычно для переменной без документации по переменной гиперссылки не создаются.
+Можно принудительно создать гиперссылку для таких переменных, поставив перед ними
+одно из слов @samp{variable} или @samp{option}.
 
-Hyperlinks for faces are only made if the face name is preceded or
-followed by the word @samp{face}.  In that case, only the face
-documentation will be shown, even if the symbol is also defined as a
-variable or as a function.
+Гиперссылки для видов отображения создаются только в том случае, если имени вида
+предшествует или следует слово @samp{face}.  В этом случае будет показана только
+документация вида, даже если символ также определен как переменная или как функция.
 
-To make a hyperlink to Info documentation, write the single-quoted
-name of the Info node (or anchor), preceded by
-@samp{info node}, @samp{Info node}, @samp{info anchor} or @samp{Info
-anchor}.  The Info file name defaults to @samp{emacs}.  For example,
+Чтобы сделать гиперссылку на документацию Info, написать в одинарных кавычках имя
+узла Info (или якоря), которому предшествует @samp{info node}, @samp{Info node},
+@samp{info anchor} или @samp{Info anchor}.  Имя Info-файла по умолчанию -
+@samp{emacs}.  Например,
 
 @smallexample
-See Info node `Font Lock' and Info node `(elisp)Font Lock Basics'.
+Смотреть Info node `Font Lock' и Info node `(elisp)Font Lock Basics'.
 @end smallexample
 
-Finally, to create a hyperlink to URLs, write the single-quoted URL,
-preceded by @samp{URL}.  For example,
+Наконец, чтобы создать гиперссылку на URL-адреса, написать URL-адрес в одинарных
+кавычках, которому предшествует @samp{URL}.  Например,
 
 @smallexample
-The home page for the GNU project has more information (see URL
+На домашней странице проекта GNU есть дополнительная информация.  (смотреть URL
 `https://www.gnu.org/').
 @end smallexample
 
 @item
-Don't write key sequences directly in documentation strings.  Instead,
-use the @samp{\\[@dots{}]} construct to stand for them.  For example,
-instead of writing @samp{C-f}, write the construct
-@samp{\\[forward-char]}.  When Emacs displays the documentation string,
-it substitutes whatever key is currently bound to @code{forward-char}.
-(This is normally @samp{C-f}, but it may be some other character if the
-user has moved key bindings.)  @xref{Keys in Documentation}.
+Не записывать последовательности ключей непосредственно в строках документации.
+Вместо этого использовать конструкцию @samp{\[@dots{}]} для их обозначения.  Например,
+вместо записи @samp{C-f} написать конструкцию @samp{\[forward-char]}.  Когда Emacs
+отображает строку документации, заменяется любой ключ, привязанный в настоящее время
+к @code{forward-char}.  (Обычно это @samp{C-f}, но это может быть другой символ,
+если пользователь переместил привязки ключей.)  @xref{Keys in Documentation}.
 
 @item
-In documentation strings for a major mode, you will want to refer to the
-key bindings of that mode's local map, rather than global ones.
-Therefore, use the construct @samp{\\<@dots{}>} once in the
-documentation string to specify which key map to use.  Do this before
-the first use of @samp{\\[@dots{}]}.  The text inside the
-@samp{\\<@dots{}>} should be the name of the variable containing the
-local keymap for the major mode.
+В строках документации для основного режима нужно будет ссылаться на привязки ключей
+локальной карты этого режима, а не на глобальные.  Поэтому использовать конструкцию
+@samp{\<@dots{}>} один раз в строке документации, чтобы указать, какую карту ключей
+использовать.  Сделать это перед первым использованием @samp{\[@dots{}]}.  Текст
+внутри @samp{\<@dots{}>} должен быть именем переменной, содержащей локальную
+карту ключей для основного режима.
 
-It is not practical to use @samp{\\[@dots{}]} very many times, because
-display of the documentation string will become slow.  So use this to
-describe the most important commands in your major mode, and then use
-@samp{\\@{@dots{}@}} to display the rest of the mode's keymap.
-
-@item
-For consistency, phrase the verb in the first sentence of a function's
-documentation string as an imperative---for instance, use ``Return the
-cons of A and B.@:'' in preference to ``Returns the cons of A and B@.''
-Usually it looks good to do likewise for the rest of the first
-paragraph.  Subsequent paragraphs usually look better if each sentence
-is indicative and has a proper subject.
+Нецелесообразно использовать @samp{\[@dots{}]} очень много раз, потому что отображение
+строки документации станет медленным.  Поэтому использовать это для описания наиболее
+важных команд в основном режиме, а затем использовать @samp{\@{@dots{}@}} для
+отображения остальной ключевой карты режима.
 
 @item
-The documentation string for a function that is a yes-or-no predicate
-should start with words such as ``Return t if'', to indicate
-explicitly what constitutes truth.  The word ``return'' avoids
-starting the sentence with lower-case ``t'', which could be somewhat
-distracting.
+Для единообразия, сформулировать глагол в первом предложении строки документации
+функции как императив --- например, использовать ``Return the cons of A and B.@:''
+вместо ``Returns the cons of A and B@.''.  Обычно выглядит хорошо, чтобы сделать то
+же самое для остальной части первого абзаца.  Последующие абзацы обычно выглядят
+лучше, если каждое предложение носит ориентировочный характер и имеет соответствующую
+тему.
 
 @item
-If a line in a documentation string begins with an open-parenthesis,
-write a backslash before the open-parenthesis, like this:
+Строка документации для функции, которая является предикатом да или нет, должна
+начинаться с таких слов, как ``Return t if'', чтобы явно указать, что составляет
+истину.  Слово ``return'' избегает начало предложения с ``t'' в нижнем регистре,
+что может несколько отвлекать.
+
+@item
+Если строка в строке документации начинается с открытой круглой скобки, написать
+обратную косую черту перед открывающей скобкой, например:
 
 @example
-The argument FOO can be either a number
-\(a buffer position) or a string (a file name).
+Аргумент FOO может быть числом
+\(позицией в буфере) или строкой (именем файла).
 @end example
 
-This prevents the open-parenthesis from being treated as the start of a
-defun (@pxref{Defuns,, Defuns, emacs, The GNU Emacs Manual}).
+Предотвращает обработку открывающей скобки как начала defun
+(@pxref{Defuns,, Defuns, emacs, The GNU Emacs Manual}).
 
 @item
-Write documentation strings in the active voice, not the passive, and in
-the present tense, not the future.  For instance, use ``Return a list
-containing A and B.@:'' instead of ``A list containing A and B will be
-returned.''
+Писать строки документации активным, а не пассивным, и в настоящем времени, а не в
+будущем.  Например, использовать ``Return a list containing A and B.@:'' вместо
+``A list containing A and B will be returned.''
 
 @item
-Avoid using the word ``cause'' (or its equivalents) unnecessarily.
-Instead of, ``Cause Emacs to display text in boldface'', write just
+Избегать ненужного использования слова ``cause'' (или его эквивалентов).  Вместо
+``Cause Emacs to display text in boldface'' написать просто
 ``Display text in boldface''.
 
 @item
-Avoid using ``iff'' (a mathematics term meaning ``if and only if''),
-since many people are unfamiliar with it and mistake it for a typo.  In
-most cases, the meaning is clear with just ``if''.  Otherwise, try to
-find an alternate phrasing that conveys the meaning.
+Избегать использования ``iff'' (математический термин, означающий ``if and only if''),
+поскольку многие люди с ним не знакомы и принимают его за опечатку.  В большинстве
+случаев смысл понятен только с помощью ``if''.  В противном случае пробовать найти
+альтернативную формулировку, передающую смысл.
 
 @item
-When a command is meaningful only in a certain mode or situation,
-do mention that in the documentation string.  For example,
-the documentation of @code{dired-find-file} is:
+Если команда имеет смысл только в определенном режиме или ситуации, обязательно
+указать это в строке документации.  Например, документация @code{dired-find-file}:
 
 @example
-In Dired, visit the file or directory named on this line.
+В Dired посетить файл или каталог, указанные в этой строке.
 @end example
 
 @item
-When you define a variable that represents an option users might want
-to set, use @code{defcustom}.  @xref{Defining Variables}.
+Когда определяется переменная, которая представляет параметр, который пользователи
+могут захотеть установить, использовать @code{defcustom}.  @xref{Defining Variables}.
 
 @item
-The documentation string for a variable that is a yes-or-no flag should
-start with words such as ``Non-nil means'', to make it clear that
-all non-@code{nil} values are equivalent and indicate explicitly what
-@code{nil} and non-@code{nil} mean.
+Строка документации для переменной, которая является флагом «да» или «нет», должна
+начинаться со слов, таких как ``Non-nil means'', чтобы было ясно, что все значения
+не-@code{nil} эквивалентны и явно указывают, что означают @code{nil} и не-@code{nil}.
 @end itemize
 
 @node Comment Tips
-@section Tips on Writing Comments
+@section Советы по Написанию Комментариев
 @cindex comments, Lisp convention for
 
-  We recommend these conventions for comments:
+  Рекомендуется следующие условные обозначения для комментариев:
 
 @table @samp
 @item ;
-Comments that start with a single semicolon, @samp{;}, should all be
-aligned to the same column on the right of the source code.  Such
-comments usually explain how the code on that line does its job.
-For example:
+Комментарии, начинающиеся с одной точки с запятой, @samp{;}, должны быть выровнены
+по одному столбцу справа от исходного кода.  Такие комментарии обычно объясняют, как
+код в этой строке выполняет свою работу.  Например:
 
 @smallexample
 @group
-(setq base-version-list                 ; There was a base
-      (assoc (substring fn 0 start-vn)  ; version to which
-             file-version-assoc-list))  ; this looks like
-                                        ; a subversion.
+(setq base-version-list                 ; Была базовая
+      (assoc (substring fn 0 start-vn)  ; версия, для которой
+             file-version-assoc-list))  ; это выглядело как
+                                        ; подверсия.
+
 @end group
 @end smallexample
 
 @item ;;
-Comments that start with two semicolons, @samp{;;}, should be aligned to
-the same level of indentation as the code.  Such comments usually
-describe the purpose of the following lines or the state of the program
-at that point.  For example:
+Комментарии, начинающиеся с двух точек с запятой, @samp{;;}, должны быть выровнены
+по тому же уровню отступа, что и код.  Такие комментарии обычно описывают цель
+следующих строк или состояние программы в этот момент.  Например:
 
 @smallexample
 @group
 (prog1 (setq auto-fill-function
              @dots{}
              @dots{}
-  ;; Update mode line.
+  ;; Обновление строки режима.
   (force-mode-line-update)))
 @end group
 @end smallexample
 
-We also normally use two semicolons for comments outside functions.
+Также обычно используются две точки с запятой для комментариев вне функций.
 
 @smallexample
 @group
-;; This Lisp code is run in Emacs when it is to operate as
-;; a server for other processes.
+;; Этот код Lisp запускается в Emacs, когда должен работать как
+;; сервер для других процессов.
 @end group
 @end smallexample
 
-If a function has no documentation string, it should instead have a
-two-semicolon comment right before the function, explaining what the
-function does and how to call it properly.  Explain precisely what
-each argument means and how the function interprets its possible
-values.  It is much better to convert such comments to documentation
-strings, though.
+Если у функции нет строки документации, вместо этого она должна иметь комментарий
+с двумя точками с запятой прямо перед функцией, объясняющий, что функция делает и как
+ее правильно вызывать.  Точно объяснить, что означает каждый аргумент и как функция
+интерпретирует его возможные значения.  Однако гораздо лучше преобразовать такие
+комментарии в строки документации.
 
 @item ;;;
-Comments that start with three semicolons, @samp{;;;}, should start at
-the left margin.  We use them
-for comments which should be considered a
-heading by Outline minor mode.  By default, comments starting with
-at least three semicolons (followed by a single space and a
-non-whitespace character) are considered headings, comments starting
-with two or fewer are not.  Historically, triple-semicolon comments have
-also been used for commenting out lines within a function, but this use
-is discouraged.
+Комментарии, начинающиеся с трех точек с запятой, @samp{;;;}, должны начинаться с
+левого поля.  Использовать их для комментариев, которые следует рассматривать как
+заголовок в второстепенном режиме Outline.  По умолчанию комментарии, начинающиеся
+как минимум с трех точек с запятой (за которыми следует один пробел и непробельный
+символ), считаются заголовками, а комментарии, начинающиеся с двух или менее, - нет.
+Исторически, комментарии с тройной точкой с запятой также использовались для
+комментирования строк внутри функции, но такое использование не рекомендуется.
 
-When commenting out entire functions, use two semicolons.
+Комментируя функции целиком, использовать две точки с запятой.
 
 @item ;;;;
-Comments that start with four semicolons, @samp{;;;;}, should be aligned
-to the left margin and are used for headings of major sections of a
-program.  For example:
+Комментарии, начинающиеся с четырех точек с запятой, @samp{;;;;}, должны быть
+выровнены по левому краю и используются для заголовков основных разделов программы.
+Например:
 
 @smallexample
-;;;; The kill ring
+;;;; Кольцо уничтожения
 @end smallexample
 @end table
 
 @noindent
-Generally speaking, the @kbd{M-;} (@code{comment-dwim}) command
-automatically starts a comment of the appropriate type; or indents an
-existing comment to the right place, depending on the number of
-semicolons.
+Вообще говоря, команда @kbd{M-;} (@code{comment-dwim}) автоматически запускает
+комментарий соответствующего типа; или переносит существующий комментарий в нужное
+место, в зависимости от количества точек с запятой.
 @xref{Comments,, Manipulating Comments, emacs, The GNU Emacs Manual}.
 
 @node Library Headers
-@section Conventional Headers for Emacs Libraries
+@section Обычные Заголовки для Библиотек Emacs
 @cindex header comments
 @cindex library header comments
 
-  Emacs has conventions for using special comments in Lisp libraries
-to divide them into sections and give information such as who wrote
-them.  Using a standard format for these items makes it easier for
-tools (and people) to extract the relevant information.  This section
-explains these conventions, starting with an example:
+  В Emacs есть соглашения об использовании специальных комментариев в библиотеках
+Lisp, чтобы разделить их на разделы и предоставить информацию, например, о том, кто
+их написал.  Использование стандартного формата для этих элементов облегчает
+инструментам (и людям) извлечение необходимой информации.  В этом разделе объясняются
+эти соглашения, начиная с примера:
 
 @smallexample
 @group
-;;; foo.el --- Support for the Foo programming language
+;;; foo.el --- Поддержка языка программирования Foo
 
-;; Copyright (C) 2010-2019 Your Name
+;; Copyright (C) 2010-2019 Ваше имя
 @end group
 
-;; Author: Your Name <yourname@@example.com>
-;; Maintainer: Someone Else <someone@@example.com>
+;; Author: Ваше имя <yourname@@example.com>
+;; Maintainer: Кто-то еще <someone@@example.com>
 ;; Created: 14 Jul 2010
 @group
-;; Keywords: languages
+;; Keywords: языки
 ;; Homepage: http://example.com/foo
 
-;; This file is not part of GNU Emacs.
+;; Этот файл не является частью GNU Emacs.
 
-;; This file is free software@dots{}
+;; Этот файл является бесплатным программным обеспечением@dots{}
 @dots{}
-;; along with this file.  If not, see <https://www.gnu.org/licenses/>.
+;; вместе с этим файлом.  Если нет, смотреть <https://www.gnu.org/licenses/>.
 @end group
 @end smallexample
 
-  The very first line should have this format:
+  Самая первая строка должна иметь такой формат:
 
 @example
 ;;; @var{filename} --- @var{description}
 @end example
 
 @noindent
-The description should be contained in one line.  If the file
-needs a @samp{-*-} specification, put it after @var{description}.
-If this would make the first line too long, use a Local Variables
-section at the end of the file.
+Описание должно содержаться в одной строке.  Если файлу требуется спецификация
+@samp{-*-}, поместить её после @var{description}.  Если это сделает первую строку
+слишком длинной, использовать раздел локальных переменных в конце файла.
 
-  The copyright notice usually lists your name (if you wrote the
-file).  If you have an employer who claims copyright on your work, you
-might need to list them instead.  Do not say that the copyright holder
-is the Free Software Foundation (or that the file is part of GNU
-Emacs) unless your file has been accepted into the Emacs distribution.
-For more information on the form of copyright and license notices, see
+  В уведомлении об авторских правах обычно указывается ваше имя (если вы написали
+файл).  Если у вас есть работодатель, заявляющий об авторских правах на вашу работу,
+вам, возможно, придется указать его вместо этого.  Не говорите, что владельцем
+авторских прав является Free Software Foundation (или что файл является частью GNU
+Emacs), если ваш файл не был принят в дистрибутив Emacs.  Для получения дополнительной
+информации о форме уведомлений об авторских правах и лицензиях, смотреть
 @uref{https://www.gnu.org/licenses/gpl-howto.html, the guide on the GNU
 website}.
 
-  After the copyright notice come several @dfn{header comment} lines,
-each beginning with @samp{;; @var{header-name}:}.  Here is a table of
-the conventional possibilities for @var{header-name}:
+  После уведомления об авторских правах идет несколько строк
+@dfn{заголовок комментария}, каждая из которых начинается с
+@samp{;; @var{header-name}:}.  Вот таблица стандартных возможностей @var{header-name}:
 
 @table @samp
 @item Author
-This line states the name and email address of at least the principal
-author of the library.  If there are multiple authors, list them on
-continuation lines led by @code{;;} and a tab or at least two spaces.
-We recommend including a contact email address, of the form
-@samp{<@dots{}>}.  For example:
+В этой строке указываются имя и адрес электронной почты, по крайней мере, основного
+автора библиотеки.  Если авторов несколько, указать их в строках продолжения,
+обозначенных @code{;;} и табуляцией или как минимум двумя пробелами.  Рекомендуется
+указать контактный адрес электронной почты в форме @samp{<@dots{}>}.  Например:
 
 @smallexample
 @group
@@ -1007,109 +947,103 @@ We recommend including a contact email address, of the form
 @end smallexample
 
 @item Maintainer
-This header has the same format as the Author header.  It lists the
-person(s) who currently maintain(s) the file (respond to bug reports,
-etc.).
+Этот заголовок имеет тот же формат, что и заголовок автора.  В нем перечислены лица,
+которые в настоящее время обслуживают файл (отвечают на отчеты об ошибках и так
+далее).
 
-If there is no maintainer line, the person(s) in the Author field
-is/are presumed to be the maintainers.  Some files in Emacs use
-@samp{FSF} for the maintainer.  This means that the original author is
-no longer responsible for the file, and that it is maintained as part
-of Emacs.
+Если нет строки сопровождающего, предполагается, что лица в поле «Автор» являются
+сопровождающими.  Некоторые файлы в Emacs используют @samp{FSF} для сопровождающего.
+Это означает, что первоначальный автор больше не несет ответственности за файл и что
+он поддерживается как часть Emacs.
 
 @item Created
-This optional line gives the original creation date of the file, and
-is for historical interest only.
+Необязательная строка дает исходную дату создания файла и предназначена только для
+исторического интереса.
 
 @item Version
-If you wish to record version numbers for the individual Lisp program,
-put them in this line.  Lisp files distributed with Emacs generally do
-not have a @samp{Version} header, since the version number of Emacs
-itself serves the same purpose.  If you are distributing a collection
-of multiple files, we recommend not writing the version in every file,
-but only the main one.
+Если требуется записать номера версий для отдельной программы на Lisp, поместить их в
+эту строку.  Файлы Lisp, распространяемые с Emacs, обычно не имеют заголовка
+@samp{Version}, поскольку номер версии самого Emacs служит той же цели.  Если
+распространяется коллекция из нескольких файлов, рекомендуется не записывать версию
+в каждом файле, а только в основном.
 
 @item Keywords
 @vindex checkdoc-package-keywords-flag
 @findex checkdoc-package-keywords
-This line lists keywords for the @code{finder-by-keyword} help command.
-Please use that command to see a list of the meaningful keywords.  The
-command @kbd{M-x checkdoc-package-keywords @key{RET}} will find and display
-any keywords that are not in @code{finder-known-keywords}.  If you set
-the variable @code{checkdoc-package-keywords-flag} non-@code{nil},
-checkdoc commands will include the keyword verification in its checks.
+В этой строке перечислены ключевые слова для команды справки @code{finder-by-keyword}.
+Использовать эту команду, чтобы просмотреть список значимых ключевых слов.  Команда
+@kbd{M-x checkdoc-package-keywords @key{RET}} найдет и отобразит любые ключевые слова,
+которых нет в @code{finder-known-keywords}.  Если установить переменную
+@code{checkdoc-package-keywords-flag} не-@code{nil}, команды checkdoc будут включать
+проверку ключевого слова в свои проверки.
 
-This field is how people will find your package when they're looking
-for things by topic.  To separate the keywords, you can use spaces,
-commas, or both.
+Это поле показывает, как люди найдут пакет, когда будут искать вещи по теме.  Чтобы
+разделить ключевые слова, можно использовать пробелы, запятые или и то, и другое.
 
-The name of this field is unfortunate, since people often assume it is
-the place to write arbitrary keywords that describe their package,
-rather than just the relevant Finder keywords.
+Имя этого поля неудачное, поскольку люди часто предполагают, что это место для
+написания произвольных ключевых слов, описывающих их пакет, а не только
+соответствующих ключевых слов Finder.
 
 @item Homepage
 @itemx URL
-These lines state the homepage of the library.
+В этих строках указывается домашняя страница библиотеки.
 
 @item Package-Version
-If @samp{Version} is not suitable for use by the package manager, then
-a package can define @samp{Package-Version}; it will be used instead.
-This is handy if @samp{Version} is an RCS id or something else that
-cannot be parsed by @code{version-to-list}.  @xref{Packaging Basics}.
+Если @samp{Version} не подходит для использования менеджером пакетов, тогда пакет
+может определять @samp{Package-Version}; будет использоваться вместо него.  Это
+удобно, если @samp{Version} - это идентификатор RCS или что-то еще, что не может быть
+проанализировано @code{version-to-list}.  @xref{Packaging Basics}.
 
 @item Package-Requires
-If this exists, it names packages on which the current package depends
-for proper operation.  @xref{Packaging Basics}.  This is used by the
-package manager both at download time (to ensure that a complete set
-of packages is downloaded) and at activation time (to ensure that a
-package is only activated if all its dependencies have been).
+Если существует, называет пакеты, от которых текущий пакет зависит для правильной
+работы.  @xref{Packaging Basics}.  Это используется диспетчером пакетов как во время
+загрузки (чтобы гарантировать, что полный набор пакетов загружен), так и во время
+активации (чтобы гарантировать, что пакет будет активирован только в том случае, если
+были выполнены все его зависимости).
 
-Its format is a list of lists on a single line.  The @code{car} of
-each sub-list is the name of a package, as a symbol.  The @code{cadr}
-of each sub-list is the minimum acceptable version number, as a string
-that can be parse by @code{version-to-list}.  An entry that lacks a
-version (i.e., an entry which is just a symbol, or a sub-list of one
-element) is equivalent to entry with version "0".  For instance:
+Его формат - список списков в одной строке.  @code{car} каждого подсписка - это имя
+пакета в виде символа.  @code{cadr} каждого подсписка - это минимально допустимый
+номер версии в виде строки, которую может проанализировать @code{version-to-list}.
+Запись, в которой отсутствует версия (то есть запись, которая представляет собой
+просто символ, или подсписок из одного элемента), эквивалентна записи с версией 0.
+Например:
 
 @smallexample
 ;; Package-Requires: ((gnus "1.0") (bubbles "2.7.2") cl-lib (seq))
 @end smallexample
 
-The package code automatically defines a package named @samp{emacs}
-with the version number of the currently running Emacs.  This can be
-used to require a minimal version of Emacs for a package.
+Код пакета автоматически определяет пакет с именем @samp{emacs} с номером версии
+текущего запущенного Emacs.  Это можно использовать, чтобы потребовать минимальную
+версию Emacs для пакета.
 @end table
 
-  Just about every Lisp library ought to have the @samp{Author} and
-@samp{Keywords} header comment lines.  Use the others if they are
-appropriate.  You can also put in header lines with other header
-names---they have no standard meanings, so they can't do any harm.
+  Практически каждая библиотека Lisp должна иметь строки комментариев заголовка
+@samp{Author} и @samp{Keywords}.  Использовать другие, если они подходят.  Также
+можете вставлять строки заголовков с другими именами заголовков - они не имеют
+стандартного значения, поэтому не могут причинить никакого вреда.
 
-  We use additional stylized comments to subdivide the contents of the
-library file.  These should be separated from anything else by blank
-lines.  Here is a table of them:
+  Используются дополнительные стилизованные комментарии для разделения содержимого
+файла библиотеки.  Они должны быть отделены от всего остального пустыми строками.
+Вот их таблица:
 
 @cindex commentary, in a Lisp library
 @table @samp
 @item ;;; Commentary:
-This begins introductory comments that explain how the library works.
-It should come right after the copying permissions, terminated by a
-@samp{Change Log}, @samp{History} or @samp{Code} comment line.  This
-text is used by the Finder package, so it should make sense in that
-context.
+Здесь начинаются вводные комментарии, объясняющие, как работает библиотека.
+Должно идти сразу после разрешений на копирование и завершаться строкой комментария
+@samp{Change Log}, @samp{History} или @samp{Code}.  Этот текст используется пакетом
+Finder, поэтому должен иметь смысл в этом контексте.
 
 @item ;;; Change Log:
-This begins an optional log of changes to the file over time.  Don't
-put too much information in this section---it is better to keep the
-detailed logs in a version control system (as Emacs does) or in a
-separate @file{ChangeLog} file.  @samp{History} is an alternative to
-@samp{Change Log}.
+Это начинает необязательный журнал изменений файла с течением времени.  Не помещать
+слишком много информации в этот раздел - лучше вести подробные журналы в системе
+контроля версий (как это делает Emacs) или в отдельном файле @file{ChangeLog}.
+@samp{History} - альтернатива @samp{Change Log}.
 
 @item ;;; Code:
-This begins the actual code of the program.
+Это начинает собственно код программы.
 
 @item ;;; @var{filename} ends here
-This is the @dfn{footer line}; it appears at the very end of the file.
-Its purpose is to enable people to detect truncated versions of the file
-from the lack of a footer line.
+Это @dfn{нижний колонтитул}; появляется в самом конце файла.  Его цель - позволить
+людям обнаруживать усеченные версии файла из-за отсутствия строки нижнего колонтитула.
 @end table
