@@ -3,137 +3,127 @@
 @c Copyright (C) 2010-2019 Free Software Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node Packaging
-@chapter Preparing Lisp code for distribution
+@chapter Подготовка Кода Lisp к Распространению
 @cindex package
 @cindex Lisp package
 
-  Emacs provides a standard way to distribute Emacs Lisp code to
-users.  A @dfn{package} is a collection of one or more files,
-formatted and bundled in such a way that users can easily download,
-install, uninstall, and upgrade it.
+  Emacs предоставляет стандартный способ распространения кода Emacs Lisp среди
+пользователей. @dfn{Пакет} - это набор из одного или нескольких файлов,
+отформатированных и объединенных таким образом, что пользователи могут легко
+загрузить, установить, удалить и обновить его.
 
-  The following sections describe how to create a package, and how to
-put it in a @dfn{package archive} for others to download.
-@xref{Packages,,, emacs, The GNU Emacs Manual}, for a description of
-user-level features of the packaging system.
+  В следующих разделах описывается, как создать пакет и как поместить его в
+@dfn{пакетный архив}, чтобы его могли загрузить другие.
+@xref{Packages,,, emacs, The GNU Emacs Manual}, для описания функций системы
+упаковки на уровне пользователя.
 
 @menu
-* Packaging Basics::        The basic concepts of Emacs Lisp packages.
-* Simple Packages::         How to package a single .el file.
-* Multi-file Packages::     How to package multiple files.
-* Package Archives::        Maintaining package archives.
+* Packaging Basics::        Основные концепции пакетов Emacs Lisp.
+* Simple Packages::         Как упаковать один файл .el.
+* Multi-file Packages::     Как упаковать несколько файлов.
+* Package Archives::        Ведение архивов пакетов.
 @end menu
 
 @node Packaging Basics
-@section Packaging Basics
+@section Основы Пакета
 @cindex package attributes
 @cindex package name
 @cindex package version
 @cindex dependencies
 @cindex package dependencies
 
-  A package is either a @dfn{simple package} or a @dfn{multi-file
-package}.  A simple package is stored in a package archive as a single
-Emacs Lisp file, while a multi-file package is stored as a tar file
-(containing multiple Lisp files, and possibly non-Lisp files such as a
-manual).
+  Пакет может быть либо @dfn{простым пакетом}, либо @dfn{многофайловым пакетом}.
+Простой пакет хранится в архиве пакетов как один файл Emacs Lisp, тогда как
+многофайловый пакет хранится как файл tar (содержащий несколько файлов Lisp и,
+возможно, файлы, не относящиеся к Lisp, такие как руководство).
 
-  In ordinary usage, the difference between simple packages and
-multi-file packages is relatively unimportant; the Package Menu
-interface makes no distinction between them.  However, the procedure
-for creating them differs, as explained in the following sections.
+  При обычном использовании разница между простыми пакетами и многофайловыми пакетами
+относительно несущественна; интерфейс меню пакета не делает различий между ними.
+Однако процедура их создания отличается, как описано в следующих разделах.
 
-  Each package (whether simple or multi-file) has certain
-@dfn{attributes}:
+  Каждый пакет (простой или многофайловый) имеет определенные @dfn{аттрибуты}:
 
 @table @asis
 @item Name
-A short word (e.g., @samp{auctex}).  This is usually also the symbol
-prefix used in the program (@pxref{Coding Conventions}).
+Короткое слово (например, @samp{auctex}).  Обычно это также префикс символа,
+используемый в программе (@pxref{Coding Conventions}).
 
 @item Version
-A version number, in a form that the function @code{version-to-list}
-understands (e.g., @samp{11.86}).  Each release of a package should be
-accompanied by an increase in the version number so that it will be
-recognized as an upgrade by users querying the package archive.
+Номер версии в форме, понятной функции @code{version-to-list}
+(например, @samp{11.86}).  Каждый выпуск пакета должен сопровождаться увеличением
+номера версии, чтобы пользователи, запрашивающие архив пакета, распознавали его как
+обновление.
 
 @item Brief description
-This is shown when the package is listed in the Package Menu.  It
-should occupy a single line, ideally in 36 characters or less.
+Отображается, когда пакет указан в меню «Пакет».  Должно занимать одну строку, в
+идеале не более 36 символов.
 
 @item Long description
-This is shown in the buffer created by @kbd{C-h P}
-(@code{describe-package}), following the package's brief description
-and installation status.  It normally spans multiple lines, and should
-fully describe the package's capabilities and how to begin using it
-once it is installed.
+Отображается в буфере, созданном @kbd{C-h P} (@code{describe-package}), после краткого
+описания пакета и статуса установки.  Обычно это занимает несколько строк и должно
+полностью описывать возможности пакета и то, как начать его использовать после его
+установки.
 
 @item Dependencies
-A list of other packages (possibly including minimal acceptable
-version numbers) on which this package depends.  The list may be
-empty, meaning this package has no dependencies.  Otherwise,
-installing this package also automatically installs its dependencies,
-recursively; if any dependency cannot be found, the package cannot be
-installed.
+Список других пакетов (возможно, включая минимально допустимые номера версий), от
+которых зависит этот пакет.  Список может быть пустым, что означает, что у этого
+пакета нет зависимостей.  В противном случае при установке этого пакета также
+рекурсивно автоматически устанавливаются его зависимости; если не удается найти
+какую-либо зависимость, пакет не может быть установлен.
 @end table
 
 @cindex content directory, package
-  Installing a package, either via the command @code{package-install-file},
-or via the Package Menu, creates a subdirectory of
-@code{package-user-dir} named @file{@var{name}-@var{version}}, where
-@var{name} is the package's name and @var{version} its version
-(e.g., @file{~/.emacs.d/elpa/auctex-11.86/}).  We call this the
-package's @dfn{content directory}.  It is where Emacs puts the
-package's contents (the single Lisp file for a simple package, or the
-files extracted from a multi-file package).
+  При установке пакета с помощью команды @code{package-install-file} или через меню
+пакетов создается подкаталог @code{package-user-dir} с именем
+@file{@var{name}-@var{version}}, где @var{name} - это имя пакета, а @var{version} -
+его версия (например, @file{~/.emacs.d/elpa/auctex-11.86/}).  Называется это в пакете
+@dfn{каталогом содержимого}.  Сюда Emacs помещает содержимое пакета (единственный
+файл Lisp для простого пакета или файлы, извлеченные из многофайлового пакета).
 
 @cindex package autoloads
-  Emacs then searches every Lisp file in the content directory for
-autoload magic comments (@pxref{Autoload}).  These autoload
-definitions are saved to a file named @file{@var{name}-autoloads.el}
-in the content directory.  They are typically used to autoload the
-principal user commands defined in the package, but they can also
-perform other tasks, such as adding an element to
-@code{auto-mode-alist} (@pxref{Auto Major Mode}).  Note that a package
-typically does @emph{not} autoload every function and variable defined
-within it---only the handful of commands typically called to begin
-using the package.  Emacs then byte-compiles every Lisp file in the
-package.
+  Затем Emacs ищет в каждом файле Lisp в каталоге содержимого магические комментарии
+автозагрузки (@pxref{Autoload}).  Эти определения автозагрузки сохраняются в файле с
+именем @file{@var{name}-autoloads.el} в каталоге содержимого.  Обычно они используются
+для автозагрузки основных пользовательских команд, определенных в пакете, но они также
+могут выполнять другие задачи, такие как добавление элемента в @code{auto-mode-alist}
+(@pxref{Auto Major Mode}).  Обратить внимание, что пакет обычно @emph{не}
+автоматически загружает все функции и переменные, определенные в нем - только
+несколько команд, которые обычно вызываются для начала использования пакета.  Затем
+Emacs компилирует побайтно каждый файл Лиспа в пакете.
 
-  After installation, the installed package is @dfn{loaded}: Emacs
-adds the package's content directory to @code{load-path}, and
-evaluates the autoload definitions in @file{@var{name}-autoloads.el}.
+  После установки установлен пакет @dfn{loaded}: Emacs добавляет каталог содержимого
+пакета в @code{load-path} и оценивает определения автозагрузки в
+@file{@var{name}-autoloads.el}.
 
-  Whenever Emacs starts up, it automatically calls the function
-@code{package-initialize} to load installed packages.  This is done
-after loading the init file and abbrev file (if any) and before
-running @code{after-init-hook} (@pxref{Startup Summary}).  Automatic
-package loading is disabled if the user option
-@code{package-enable-at-startup} is @code{nil}.
+  Каждый раз, когда запускается Emacs, автоматически вызывается функция
+@code{package-initialize} для загрузки установленных пакетов.  Это делается после
+загрузки файла инициализации и файла сокращений (если есть) и перед запуском
+@code{after-init-hook} (@pxref{Startup Summary}).  Автоматическая загрузка пакетов
+отключена, если пользовательская опция @code{package-enable-at-startup} имеет
+значение @code{nil}.
 
 @deffn Command package-initialize &optional no-activate
-This function initializes Emacs' internal record of which packages are
-installed, and loads them.  The user option @code{package-load-list}
-specifies which packages to load; by default, all installed packages
-are loaded.  If called during startup, this function also sets
-@code{package-enable-at-startup} to @code{nil}, to avoid accidentally
-loading the packages twice.  @xref{Package Installation,,, emacs, The
-GNU Emacs Manual}.
+Функция инициализирует внутреннюю запись Emacs о том, какие пакеты установлены, и
+загружает их.  Пользовательская опция @code{package-load-list} указывает, какие
+пакеты загружать; по умолчанию загружаются все установленные пакеты.  Если вызывается
+во время запуска, эта функция также устанавливает @code{package-enable-at-startup} в
+@code{nil}, чтобы избежать случайной загрузки пакетов дважды.
+@xref{Package Installation,,, emacs, The GNU Emacs Manual}.
 
-The optional argument @var{no-activate}, if non-@code{nil}, causes
-Emacs to update its record of installed packages without actually
-loading them; it is for internal use only.
+Необязательный аргумент @var{no-activate}, если не-@code{nil}, заставляет Emacs
+обновлять свою запись установленных пакетов без их фактической загрузки; это только
+для внутреннего использования.
 @end deffn
 
 @node Simple Packages
-@section Simple Packages
+@section Простые Пакеты
 @cindex single file package
 @cindex simple package
 
-  A simple package consists of a single Emacs Lisp source file.  The
-file must conform to the Emacs Lisp library header conventions
-(@pxref{Library Headers}).  The package's attributes are taken from
-the various headers, as illustrated by the following example:
+  Простой пакет состоит из одного исходного файла Emacs Lisp.  Файл должен
+соответствовать соглашению о заголовках библиотеки Emacs Lisp
+(@pxref{Library Headers}).  Атрибуты пакета берутся из различных заголовков, как
+показано в следующем примере:
 
 @example
 @group
@@ -152,8 +142,9 @@ the various headers, as illustrated by the following example:
 
 ;;; Commentary:
 
-;; This package provides a minor mode to frobnicate and/or
-;; bifurcate any flanges you desire.  To activate it, just type
+;; Этот пакет предоставляет дополнительный режим для разветвления и/или
+;; раздвоения любых фланцев по вашему желанию.
+;; Чтобы активировать его, просто введите
 @dots{}
 
 ;;;###autoload
@@ -161,105 +152,94 @@ the various headers, as illustrated by the following example:
 @dots{}
 @end example
 
-  The name of the package is the same as the base name of the file, as
-written on the first line.  Here, it is @samp{superfrobnicator}.
+  Имя пакета совпадает с базовым именем файла, написанным в первой строке.  Здесь
+это @samp{superfrobnicator}.
 
-  The brief description is also taken from the first line.  Here, it
-is @samp{Frobnicate and bifurcate flanges}.
+  Краткое описание также взято из первой строки.  Здесь это
+@samp{Frobnicate and bifurcate flanges}.
 
-  The version number comes from the @samp{Package-Version} header, if
-it exists, or from the @samp{Version} header otherwise.  One or the
-other @emph{must} be present.  Here, the version number is 1.3.
+  Номер версии берется из заголовка @samp{Package-Version}, если он существует, или из
+заголовка @samp{Version} в противном случае.  То или другое @emph{должно}
+присутствовать.  Здесь номер версии 1.3.
 
-  If the file has a @samp{;;; Commentary:} section, this section is
-used as the long description.  (When displaying the description, Emacs
-omits the @samp{;;; Commentary:} line, as well as the leading comment
-characters in the commentary itself.)
+  Если в файле есть раздел @samp{;;; Commentary:}, этот раздел используется как полное
+описание.  (При отображении описания Emacs опускает строку @samp{;;; Commentary:}, а
+также первые символы комментария в самом комментарии.)
 
-  If the file has a @samp{Package-Requires} header, that is used as
-the package dependencies.  In the above example, the package depends
-on the @samp{flange} package, version 1.0 or higher.  @xref{Library
-Headers}, for a description of the @samp{Package-Requires} header.  If
-the header is omitted, the package has no dependencies.
+  Если файл имеет заголовок @samp{Package-Requires}, это используется как зависимости
+пакета.  В приведенном выше примере пакет зависит от пакета @samp{flange} версии 1.0
+или выше.  @xref{Library Headers}, для описания заголовка @samp{Package-Requires}.
+Если заголовок опущен, у пакета нет зависимостей.
 
-  The @samp{Keywords} and @samp{URL} headers are optional, but recommended.
-The command @code{describe-package} uses these to add links to its
-output.  The @samp{Keywords} header should contain at least one
-standard keyword from the @code{finder-known-keywords} list.
+  Заголовки @samp{Keywords} и @samp{URL} необязательны, но рекомендуются.  Команда
+@code{describe-package} использует их для добавления ссылок в свой вывод.  Заголовок
+@samp{Keywords} должен содержать хотя бы одно стандартное ключевое слово из списка
+@code{finder-known-keywords}.
 
-  The file ought to also contain one or more autoload magic comments,
-as explained in @ref{Packaging Basics}.  In the above example, a magic
-comment autoloads @code{superfrobnicator-mode}.
+  Файл также должен содержать один или несколько магических комментариев автозагрузки,
+как описано в @ref{Packaging Basics}.  В приведенном выше примере магический
+комментарий автоматически загружает @code{superfrobnicator-mode}.
 
-  @xref{Package Archives}, for an explanation of how to add a
-single-file package to a package archive.
+  @xref{Package Archives}, для объяснения того, как добавить однофайловый пакет в
+архив пакетов.
 
 @node Multi-file Packages
-@section Multi-file Packages
+@section Многофайловые Пакеты
 @cindex multi-file package
 
-  A multi-file package is less convenient to create than a single-file
-package, but it offers more features: it can include multiple Emacs
-Lisp files, an Info manual, and other file types (such as images).
+  Многофайловый пакет менее удобно создавать, чем однофайловый пакет, но он предлагает
+больше возможностей: может включать несколько файлов Emacs Lisp, руководство по Info и
+другие типы файлов (например, изображения).
 
-  Prior to installation, a multi-file package is stored in a package
-archive as a tar file.  The tar file must be named
-@file{@var{name}-@var{version}.tar}, where @var{name} is the package
-name and @var{version} is the version number.  Its contents, once
-extracted, must all appear in a directory named
-@file{@var{name}-@var{version}}, the @dfn{content directory}
-(@pxref{Packaging Basics}).  Files may also extract into
-subdirectories of the content directory.
+  Перед установкой многофайловый пакет сохраняется в архиве пакетов в виде tar-файла.
+Файл tar должен называться @file{@var{name}-@var{version}.tar}, где @var{name} - это
+имя пакета, а @var{version} - номер версии.  После извлечения все его содержимое
+должно появиться в каталоге с именем @file{@var{name}-@var{version}},
+@dfn{content directory} (@pxref{Packaging Basics}).  Файлы также могут извлекаться в
+подкаталоги каталога содержимого.
 
-  One of the files in the content directory must be named
-@file{@var{name}-pkg.el}.  It must contain a single Lisp form,
-consisting of a call to the function @code{define-package}, described
-below.  This defines the package's attributes: version, brief
-description, and requirements.
+  Один из файлов в каталоге содержимого должен называться @file{@var{name}-pkg.el}.
+Должен содержать единственную форму Lisp, состоящую из вызова функции
+@code{define-package}, описанной ниже.  Это определяет атрибуты пакета: версию,
+краткое описание и требования.
 
-  For example, if we distribute version 1.3 of the superfrobnicator as
-a multi-file package, the tar file would be
-@file{superfrobnicator-1.3.tar}.  Its contents would extract into the
-directory @file{superfrobnicator-1.3}, and one of these would be the
-file @file{superfrobnicator-pkg.el}.
+  Например, если распространяется версия 1.3 superfrobnicator в виде многофайлового
+пакета, tar-файл будет иметь вид @file{superfrobnicator-1.3.tar}.  Его содержимое
+будет извлечено в каталог @file{superfrobnicator-1.3}, и одним из них будет файл
+@file{superfrobnicator-pkg.el}.
 
 @defun define-package name version &optional docstring requirements
-This function defines a package.  @var{name} is the package name, a
-string.  @var{version} is the version, as a string of a form that can
-be understood by the function @code{version-to-list}.  @var{docstring}
-is the brief description.
+Функция определяет пакет.  @var{name} - это имя пакета, строка.  @var{version} - это
+версия, как строка формы, которую может понять функция @code{version-to-list}.
+@var{docstring} - краткое описание.
 
-@var{requirements} is a list of required packages and their versions.
-Each element in this list should have the form @code{(@var{dep-name}
-@var{dep-version})}, where @var{dep-name} is a symbol whose name is
-the dependency's package name, and @var{dep-version} is the
-dependency's version (a string).
+@var{requirements} - это список необходимых пакетов и их версий.  Каждый элемент в
+этом списке должен иметь форму @code{(@var{dep-name} @var{dep-version})}, где
+@var{dep-name} - это символ, имя которого - имя пакета зависимости, а
+@var{dep-version} - версия зависимости (строка).
 @end defun
 
-  If the content directory contains a file named @file{README}, this
-file is used as the long description.
+  Если каталог содержимого содержит файл с именем @file{README}, этот файл
+используется как подробное описание.
 
-  If the content directory contains a file named @file{dir}, this is
-assumed to be an Info directory file made with @command{install-info}.
-@xref{Invoking install-info, Invoking install-info, Invoking
-install-info, texinfo, Texinfo}.  The relevant Info files should also
-be present in the content directory.  In this case, Emacs will
-automatically add the content directory to @code{Info-directory-list}
-when the package is activated.
+  Если каталог содержимого содержит файл с именем @file{dir}, предполагается, что это
+файл каталога Info, созданный с помощью @command{install-info}.
+@xref{Invoking install-info, Invoking install-info, Invoking install-info, texinfo, Texinfo}.  Соответствующие файлы Info также должны присутствовать в каталоге
+содержимого.  В этом случае Emacs автоматически добавит каталог содержимого в
+@code{Info-directory-list} при активации пакета.
 
-  Do not include any @file{.elc} files in the package.  Those are
-created when the package is installed.  Note that there is no way to
-control the order in which files are byte-compiled.
+  Не включать в пакет файлы @file{.elc}.  Они создаются при установке пакета.
+Обратить внимание, что нет способа контролировать порядок, в котором файлы
+компилируются по байтам.
 
-  Do not include any file named @file{@var{name}-autoloads.el}.  This
-file is reserved for the package's autoload definitions
-(@pxref{Packaging Basics}).  It is created automatically when the
-package is installed, by searching all the Lisp files in the package
-for autoload magic comments.
+  Не включать файлы с именем @file{@var{name}-autoloads.el}.  Этот файл зарезервирован
+для определений автозагрузки пакета (@pxref{Packaging Basics}).  Он создается
+автоматически при установке пакета путем поиска во всех файлах Lisp пакета магических
+комментариев автозагрузки.
 
-  If the multi-file package contains auxiliary data files (such as
-images), the package's Lisp code can refer to these files via the
-variable @code{load-file-name} (@pxref{Loading}).  Here is an example:
+  Если многофайловый пакет содержит вспомогательные файлы данных (такие как
+изображения), код Lisp пакета может ссылаться на эти файлы через переменную
+@code{load-file-name} (@pxref{Loading}).  Вот пример:
 
 @smallexample
 (defconst superfrobnicator-base (file-name-directory load-file-name))
@@ -269,80 +249,75 @@ variable @code{load-file-name} (@pxref{Loading}).  Here is an example:
 @end smallexample
 
 @node Package Archives
-@section Creating and Maintaining Package Archives
+@section Создание и Обслуживание Архива Пакетов
 @cindex package archive
 
-  Via the Package Menu, users may download packages from @dfn{package
-archives}.  Such archives are specified by the variable
-@code{package-archives}, whose default value contains a single entry:
-the archive hosted by the GNU project at @url{https://elpa.gnu.org}.  This
-section describes how to set up and maintain a package archive.
+  Через меню пакетов пользователи могут загружать пакеты из @dfn{архива пакетов}.
+Такие архивы задаются переменной @code{package-archives}, значение по умолчанию
+которой содержит единственную запись: архив, размещенный проектом GNU по адресу
+@url{https://elpa.gnu.org}.  В этом разделе описывается, как настроить и поддерживать
+архив пакетов.
 
 @cindex base location, package archive
 @defopt package-archives
-The value of this variable is an alist of package archives recognized
-by the Emacs package manager.
+Значение этой переменной - список архивов пакетов, распознаваемых менеджером пакетов
+Emacs.
 
-Each alist element corresponds to one archive, and should have the
-form @code{(@var{id} . @var{location})}, where @var{id} is the name of
-the archive (a string) and @var{location} is its @dfn{base location}
-(a string).
+Каждый элемент alist соответствует одному архиву и должен иметь вид
+@code{(@var{id} . @var{location})}, где @var{id} - имя архива (строка), а
+@var{location} - его @dfn{базовое местоположение} (строка).
 
-If the base location starts with @samp{http:} or @samp{https:}, it
-is treated as an HTTP(S) URL, and packages are downloaded from this
-archive via HTTP(S) (as is the case for the default GNU archive).
+Если базовое местоположение начинается с @samp{http:} или @samp{https:}, оно
+рассматривается как URL-адрес HTTP(S), и пакеты загружаются из этого архива через
+HTTP(S) (как в случае с архивом GNU по умолчанию).
 
-Otherwise, the base location should be a directory name.  In this
-case, Emacs retrieves packages from this archive via ordinary file
-access.  Such local archives are mainly useful for testing.
+В противном случае базовое местоположение должно быть именем каталога.  В этом случае
+Emacs извлекает пакеты из этого архива через обычный доступ к файлам.  Такие локальные
+архивы в основном полезны для тестирования.
 @end defopt
 
-  A package archive is simply a directory in which the package files,
-and associated files, are stored.  If you want the archive to be
-reachable via HTTP, this directory must be accessible to a web server.
-How to accomplish this is beyond the scope of this manual.
+  Архив пакетов - это просто каталог, в котором хранятся файлы пакетов и связанные с
+ними файлы.  Если требуется, чтобы архив был доступен через HTTP, этот каталог должен
+быть доступен для веб-сервера.  Как это сделать, выходит за рамки данного руководства.
 
-  A convenient way to set up and update a package archive is via the
-@code{package-x} library.  This is included with Emacs, but not loaded
-by default; type @kbd{M-x load-library @key{RET} package-x @key{RET}} to
-load it, or add @code{(require 'package-x)} to your init file.
+  Удобный способ настроить и обновить архив пакетов - использовать библиотеку
+@code{package-x}.  Это включено в Emacs, но не загружается по умолчанию; ввести
+@kbd{M-x load-library @key{RET} package-x @key{RET}}, чтобы загрузить её, или
+добавить @code{(require 'package-x)} в файл инициализации.
 @xref{Lisp Libraries,, Lisp Libraries, emacs, The GNU Emacs Manual}.
 
 @noindent
-After you create an archive, remember that it is not accessible in the
-Package Menu interface unless it is in @code{package-archives}.
+После создания архива помнить, что он недоступен в интерфейсе меню пакета, если
+не находится в @code{package-archives}.
 
 @cindex package archive security
 @cindex package signing
-Maintaining a public package archive entails a degree of responsibility.
-When Emacs users install packages from your archive, those packages
-can cause Emacs to run arbitrary code with the permissions of the
-installing user.  (This is true for Emacs code in general, not just
-for packages.)  So you should ensure that your archive is
-well-maintained and keep the hosting system secure.
+Поддержание общедоступного архива пакетов влечет за собой определенную
+ответственность.  Когда пользователи Emacs устанавливают пакеты из этого архива, эти
+пакеты могут заставить Emacs запускать произвольный код с разрешениями
+устанавливающего пользователя.  (Это верно для кода Emacs в целом, а не только для
+пакетов.)  Таким образом, потребуется убедиться, что архив находится в хорошем
+состоянии и обеспечивает безопасность системы хостинга.
 
-  One way to increase the security of your packages is to @dfn{sign}
-them using a cryptographic key.  If you have generated a
-private/public gpg key pair, you can use gpg to sign the package like
-this:
+  Один из способов повысить безопасность пакетов - скопировать их с помощью
+криптографического ключа.  Если сгенерировать пару приватных/публичных ключей gpg,
+можно использовать gpg для подписи пакета следующим образом:
 
-@c FIXME EasyPG / package-x way to do this.
+@c FIXME EasyPG / package-x способ сделать это.
 @example
 gpg -ba -o @var{file}.sig @var{file}
 @end example
 
 @noindent
-For a single-file package, @var{file} is the package Lisp file;
-for a multi-file package, it is the package tar file.
-You can also sign the archive's contents file in the same way.
-Make the @file{.sig} files available in the same location as the packages.
-You should also make your public key available for people to download;
-e.g., by uploading it to a key server such as @url{http://pgp.mit.edu/}.
-When people install packages from your archive, they can use
-your public key to verify the signatures.
+Для однофайлового пакета @var{file} - это файл пакета Lisp; для многофайлового пакета
+это tar-файл пакета.  Таким же образом можно подписать и файл содержимого архива.
+Сделать файлы @file{.sig} доступными в том же месте, что и пакеты.  Также потребуется
+сделать свой открытый ключ доступным для скачивания людьми; например, загрузив его на
+сервер ключей, такой как @url{http://pgp.mit.edu/}.  Когда люди устанавливают пакеты
+из такого архива, могут использовать открытый ключ для проверки подписей.
 
-A full explanation of these matters is outside the scope of this
-manual.  For more information on cryptographic keys and signing,
-@pxref{Top,, GnuPG, gnupg, The GNU Privacy Guard Manual}.  Emacs comes
-with an interface to GNU Privacy Guard, @pxref{Top,, EasyPG, epa,
-Emacs EasyPG Assistant Manual}.
+Полное объяснение этих вопросов выходит за рамки данного руководства.  Для получения
+дополнительной информации о криптографических ключах и подписи,
+@pxref{Top,, GnuPG, gnupg, The GNU Privacy Guard Manual}.  Emacs поставляется с
+интерфейсом к GNU Privacy Guard,
+@pxref{Top,, EasyPG, epa, Emacs EasyPG Assistant Manual}.
