@@ -4,317 +4,297 @@
 @c Foundation, Inc.
 @c See the file elisp.texi for copying conditions.
 @node GNU Emacs Internals
-@appendix GNU Emacs Internals
+@appendix Внутреннее Устройство GNU Emacs
 
-This chapter describes how the runnable Emacs executable is dumped with
-the preloaded Lisp libraries in it, how storage is allocated, and some
-internal aspects of GNU Emacs that may be of interest to C programmers.
+В этой главе описывается, как выполняется дамп исполняемого файла Emacs с
+предварительно загруженными библиотеками Lisp, как распределяется память и некоторые
+внутренние аспекты GNU Emacs, которые могут быть интересны программистам на C.
 
 @menu
-* Building Emacs::      How the dumped Emacs is made.
-* Pure Storage::        Kludge to make preloaded Lisp functions shareable.
-* Garbage Collection::  Reclaiming space for Lisp objects no longer used.
-* Stack-allocated Objects::    Temporary conses and strings on C stack.
-* Memory Usage::        Info about total size of Lisp objects made so far.
-* C Dialect::           What C variant Emacs is written in.
-* Writing Emacs Primitives::   Writing C code for Emacs.
-* Writing Dynamic Modules::    Writing loadable modules for Emacs.
-* Object Internals::    Data formats of buffers, windows, processes.
-* C Integer Types::     How C integer types are used inside Emacs.
+* Building Emacs::      Как происходит сборка Emacs.
+* Pure Storage::        Kludge, чтобы сделать предустановленные функции Lisp общими.
+* Garbage Collection::  Освобождение места для неиспользуемых объектов Lisp.
+* Stack-allocated Objects::    Временные cons и строки в стеке C.
+* Memory Usage::        Информация об общем размере созданных на данный момент
+                           Lisp-объектов.
+* C Dialect::           На каком варианте C написан Emacs.
+* Writing Emacs Primitives::   Написание кода C для Emacs.
+* Writing Dynamic Modules::    Написание загружаемых модулей для Emacs.
+* Object Internals::    Форматы данных буферов, окон, процессов.
+* C Integer Types::     Как целочисленные типы C используются в Emacs.
 @end menu
 
 @node Building Emacs
-@section Building Emacs
+@section Сборка Emacs
 @cindex building Emacs
 @pindex temacs
 
-  This section explains the steps involved in building the Emacs
-executable.  You don't have to know this material to build and install
-Emacs, since the makefiles do all these things automatically.  This
-information is pertinent to Emacs developers.
+  В этом разделе объясняются шаги, необходимые для создания исполняемого файла Emacs.
+Не обязательно знать этот материал для сборки и установки Emacs, поскольку make-файлы
+делают все это автоматически.  Информация имеет отношение к разработчикам Emacs.
 
-  Building Emacs requires GNU Make version 3.81 or later.
+  Для сборки Emacs требуется GNU Make версии 3.81 или новее.
 
-  Compilation of the C source files in the @file{src} directory
-produces an executable file called @file{temacs}, also called a
-@dfn{bare impure Emacs}.  It contains the Emacs Lisp interpreter and
-I/O routines, but not the editing commands.
+  Компиляция исходных файлов C в каталоге @file{src} создает исполняемый файл с именем
+@file{temacs}, также называемый @dfn{чистый нечистый Emacs}.  Cодержит интерпретатор
+Emacs Lisp и процедуры ввода-вывода, но без команд редактирования.
 
 @cindex @file{loadup.el}
-  The command @w{@command{temacs -l loadup}} would run @file{temacs}
-and direct it to load @file{loadup.el}.  The @code{loadup} library
-loads additional Lisp libraries, which set up the normal Emacs editing
-environment.  After this step, the Emacs executable is no longer
-@dfn{bare}.
+  Команда @w{@command{temacs -l loadup}} запустит @file{temacs} и направит его на
+загрузку @file{loadup.el}.  Библиотека @code{loadup} загружает дополнительные
+библиотеки Lisp, которые устанавливают обычную среду редактирования Emacs.  После
+этого шага исполняемый файл Emacs больше не является @dfn{голым}.
 
 @cindex dumping Emacs
-  Because it takes some time to load the standard Lisp files, the
-@file{temacs} executable usually isn't run directly by users.
-Instead, as one of the last steps of building Emacs, the command
-@samp{temacs -batch -l loadup dump} is run.  The special @samp{dump}
-argument causes @command{temacs} to dump out an executable program,
-called @file{emacs}, which has all the standard Lisp files preloaded.
-(The @samp{-batch} argument prevents @file{temacs} from trying to
-initialize any of its data on the terminal, so that the tables of
-terminal information are empty in the dumped Emacs.)
+  Поскольку загрузка стандартных файлов Lisp занимает некоторое время, исполняемый
+файл @file{temacs} обычно не запускается пользователями напрямую.  Вместо этого в
+качестве одного из последних шагов сборки Emacs запускается команда
+@samp{temacs -batch -l loadup dump}.  Специальный аргумент @samp{dump} заставляет
+@command{temacs} выгружать исполняемую программу, называемую @file{emacs}, в которую
+предварительно загружены все стандартные файлы Lisp.  (Аргумент @samp{-batch}
+предотвращает попытку @file{temacs} инициализировать какие-либо свои данные на
+терминале, так что таблицы информации о терминале остаются пустыми в выгруженном
+Emacs.)
 
 @cindex preloaded Lisp files
 @vindex preloaded-file-list
-  The dumped @file{emacs} executable (also called a @dfn{pure} Emacs)
-is the one which is installed.  The variable
-@code{preloaded-file-list} stores a list of the Lisp files preloaded
-into the dumped Emacs.  If you port Emacs to a new operating system,
-and are not able to implement dumping, then Emacs must load
-@file{loadup.el} each time it starts.
+  Установлен дамп исполняемый файл @file{emacs} (также называемый @dfn{чистый} Emacs).
+Переменная @code{preloaded-file-list} хранит список файлов Lisp, предварительно
+загруженных в выгруженный Emacs.  Если перенести Emacs в новую операционную систему
+и не иметь возможности реализовать дамп, то Emacs должен загружать @file{loadup.el}
+при каждом запуске.
 
 @cindex build details
 @cindex deterministic build
 @cindex @option{--disable-build-details} option to @command{configure}
-  By default the dumped @file{emacs} executable records details such
-as the build time and host name.  Use the
-@option{--disable-build-details} option of @command{configure} to
-suppress these details, so that building and installing Emacs twice
-from the same sources is more likely to result in identical copies of
-Emacs.
+  По умолчанию сбрасываемый исполняемый файл @file{emacs} записывает такие детали,
+как время сборки и имя хоста.  Использовать опцию @option{--disable-build-details}
+для @command{configure}, чтобы скрыть эти детали, так что сборка и установка Emacs
+дважды из одних и тех же источников с большей вероятностью приведет к созданию
+идентичных копий Emacs.
 
 @cindex @file{site-load.el}
-  You can specify additional files to preload by writing a library named
-@file{site-load.el} that loads them.  You may need to rebuild Emacs
-with an added definition
+  Можно указать дополнительные файлы для предварительной загрузки, написав библиотеку
+с именем @file{site-load.el}, которая их загружает.  Может потребоваться перестроить
+Emacs с добавленным определением
 
 @example
 #define SITELOAD_PURESIZE_EXTRA @var{n}
 @end example
 
 @noindent
-to make @var{n} added bytes of pure space to hold the additional files;
-see @file{src/puresize.h}.
-(Try adding increments of 20000 until it is big enough.)  However, the
-advantage of preloading additional files decreases as machines get
-faster.  On modern machines, it is usually not advisable.
+сделать @var{n} добавленными байтами чистого пространства для хранения дополнительных
+файлов; смотреть @file{src/puresize.h}.
+(Попробуйте добавить приращение 20000, пока оно не станет достаточно большим.)  Однако
+преимущество предварительной загрузки дополнительных файлов уменьшается по мере того,
+как машины становятся быстрее.  На современных машинах это обычно не рекомендуется.
 
-  After @file{loadup.el} reads @file{site-load.el}, it finds the
-documentation strings for primitive and preloaded functions (and
-variables) in the file @file{etc/DOC} where they are stored, by
-calling @code{Snarf-documentation} (@pxref{Definition of
-Snarf-documentation,, Accessing Documentation}).
+  После того, как @file{loadup.el} читает @file{site-load.el}, находятся строки
+документации для примитивных и предварительно загруженных функций (и переменных) в
+файле @file{etc/DOC}, где они хранятся, путем вызова @code{Snarf-documentation}
+(@pxref{Definition of Snarf-documentation,, Accessing Documentation}).
 
 @cindex @file{site-init.el}
 @cindex preloading additional functions and variables
-  You can specify other Lisp expressions to execute just before dumping
-by putting them in a library named @file{site-init.el}.  This file is
-executed after the documentation strings are found.
+  Можно указать другие выражения Lisp для выполнения непосредственно перед сбросом,
+поместив их в библиотеку с именем @file{site-init.el}.  Этот файл запускается после
+нахождения строк документации.
 
-  If you want to preload function or variable definitions, there are
-three ways you can do this and make their documentation strings
-accessible when you subsequently run Emacs:
+  Если требуется предварительно загрузить определения функций или переменных, есть три
+способа сделать это и сделать их строки документации доступными при последующем
+запуске Emacs:
 
 @itemize @bullet
 @item
-Arrange to scan these files when producing the @file{etc/DOC} file,
-and load them with @file{site-load.el}.
+Настроить сканирование этих файлов при создании файла @file{etc/DOC} и загрузите их
+с помощью @file{site-load.el}.
 
 @item
-Load the files with @file{site-init.el}, then copy the files into the
-installation directory for Lisp files when you install Emacs.
+Загрузить файлы с помощью @file{site-init.el}, затем скопировать файлы в каталог
+установки для файлов Lisp при установке Emacs.
 
 @item
-Specify a @code{nil} value for @code{byte-compile-dynamic-docstrings}
-as a local variable in each of these files, and load them with either
-@file{site-load.el} or @file{site-init.el}.  (This method has the
-drawback that the documentation strings take up space in Emacs all the
-time.)
+Задать значение @code{nil} для @code{byte-compile-dynamic-docstrings} как локальную
+переменную в каждом из этих файлов и загрузить их с помощью @file{site-load.el} или
+@file{site-init.el}.  (Этот метод имеет тот недостаток, что строки документации все
+время занимают место в Emacs.)
 @end itemize
 
 @cindex change @code{load-path} at configure time
 @cindex @option{--enable-locallisppath} option to @command{configure}
-  It is not advisable to put anything in @file{site-load.el} or
-@file{site-init.el} that would alter any of the features that users
-expect in an ordinary unmodified Emacs.  If you feel you must override
-normal features for your site, do it with @file{default.el}, so that
-users can override your changes if they wish.  @xref{Startup Summary}.
-Note that if either @file{site-load.el} or @file{site-init.el} changes
-@code{load-path}, the changes will be lost after dumping.
-@xref{Library Search}.  To make a permanent change to
-@code{load-path}, use the @option{--enable-locallisppath} option
-of @command{configure}.
+  Не рекомендуется помещать в @file{site-load.el} или @file{site-init.el} что-либо,
+что изменило бы какие-либо функции, которые пользователи ожидают от обычного
+немодифицированного Emacs.  Если чувствуется, что должны переопределиться обычные
+функции сайта, сделать это с помощью @file{default.el}, чтобы пользователи могли
+отменить изменения, если захочется.  @xref{Startup Summary}.  Обратить внимание, что
+если @file{site-load.el} или @file{site-init.el} изменяет @code{load-path}, изменения
+будут потеряны после сброса.  @xref{Library Search}.  Чтобы навсегда изменить
+@code{load-path}, использовать опцию @option{--enable-locallisppath} для
+@command{configure}.
 
-  In a package that can be preloaded, it is sometimes necessary (or
-useful) to delay certain evaluations until Emacs subsequently starts
-up.  The vast majority of such cases relate to the values of
-customizable variables.  For example, @code{tutorial-directory} is a
-variable defined in @file{startup.el}, which is preloaded.  The default
-value is set based on @code{data-directory}.  The variable needs to
-access the value of @code{data-directory} when Emacs starts, not when
-it is dumped, because the Emacs executable has probably been installed
-in a different location since it was dumped.
+  В пакете, который может быть предварительно загружен, иногда необходимо (или
+полезно) отложить определенные вычисления до последующего запуска Emacs.  Подавляющее
+большинство таких случаев связано со значениями настраиваемых переменных.  Например,
+@code{tutorial-directory} - это предварительно загруженная переменная, определенная в
+@file{startup.el}.  Значение по умолчанию устанавливается на основе
+@code{data-directory}.  Переменная должна получить доступ к значению
+@code{data-directory} при запуске Emacs, а не при его выгрузке, потому что исполняемый
+файл Emacs, вероятно, был установлен в другом месте с момента его выгрузки.
 
 @defun custom-initialize-delay symbol value
-This function delays the initialization of @var{symbol} to the next
-Emacs start.  You normally use this function by specifying it as the
-@code{:initialize} property of a customizable variable.  (The argument
-@var{value} is unused, and is provided only for compatibility with the
-form Custom expects.)
+Функция откладывает инициализацию @var{symbol} до следующего запуска Emacs.  Обычно
+используется эта функция, определённая со свойством @code{:initialize} настраиваемой
+переменной.  (Аргумент @var{value} не используется и предоставляется только для
+совместимости с формой, которую ожидает Custom.)
 @end defun
 
-In the unlikely event that you need a more general functionality than
-@code{custom-initialize-delay} provides, you can use
+В том маловероятном случае, если понадобится более общая функциональность, чем
+предоставляет @code{custom-initialize-delay}, можно использовать
 @code{before-init-hook} (@pxref{Startup Summary}).
 
 @defun dump-emacs to-file from-file
 @cindex unexec
-This function dumps the current state of Emacs into an executable file
-@var{to-file}.  It takes symbols from @var{from-file} (this is normally
-the executable file @file{temacs}).
+Функция выгружает текущее состояние Emacs в исполняемый файл @var{to-file}.  Берется
+символы из @var{from-file} (обычно это исполняемый файл @file{temacs}).
 
-If you want to use this function in an Emacs that was already dumped,
-you must run Emacs with @samp{-batch}.
+Если нужно использовать эту функцию в Emacs, который уже был выгружен, потребуется
+запустить Emacs с @samp{-batch}.
 @end defun
 
 @node Pure Storage
-@section Pure Storage
+@section Чистое Хранилище
 @cindex pure storage
 
-  Emacs Lisp uses two kinds of storage for user-created Lisp objects:
-@dfn{normal storage} and @dfn{pure storage}.  Normal storage is where
-all the new data created during an Emacs session are kept
-(@pxref{Garbage Collection}).  Pure storage is used for certain data
-in the preloaded standard Lisp files---data that should never change
-during actual use of Emacs.
+  Emacs Lisp использует два типа хранилища для созданных пользователем объектов Lisp:
+@dfn{нормальное хранение} и @dfn{чистое хранилище}.  Обычное хранилище - это место,
+где все новые данные, созданные во время сеанса Emacs, хранятся
+(@pxref{Garbage Collection}).  Чистое хранилище используется для определенных данных в
+предварительно загруженных стандартных файлах Lisp - данных, которые никогда не должны
+изменяться во время фактического использования Emacs.
 
-  Pure storage is allocated only while @command{temacs} is loading the
-standard preloaded Lisp libraries.  In the file @file{emacs}, it is
-marked as read-only (on operating systems that permit this), so that
-the memory space can be shared by all the Emacs jobs running on the
-machine at once.  Pure storage is not expandable; a fixed amount is
-allocated when Emacs is compiled, and if that is not sufficient for
-the preloaded libraries, @file{temacs} allocates dynamic memory for
-the part that didn't fit.  The resulting image will work, but garbage
-collection (@pxref{Garbage Collection}) is disabled in this situation,
-causing a memory leak.  Such an overflow normally won't happen unless
-you try to preload additional libraries or add features to the
-standard ones.  Emacs will display a warning about the overflow when
-it starts.  If this happens, you should increase the compilation
-parameter @code{SYSTEM_PURESIZE_EXTRA} in the file
-@file{src/puresize.h} and rebuild Emacs.
+  Чистое хранилище выделяется только тогда, когда @command{temacs} загружает
+стандартные предварительно загруженные библиотеки Lisp.  В файле @file{emacs} помечено
+как доступный только для чтения (в операционных системах, которые это разрешают), так
+что пространство памяти может совместно использоваться всеми заданиями Emacs,
+запущенными на машине одновременно.  Чистое хранилище не расширяется; фиксированная
+сумма выделяется при компиляции Emacs, и если этого недостаточно для предварительно
+загруженных библиотек, @file{temacs} выделяет динамическую память для той части,
+которая не подходит.  Полученное изображение будет работать, но сборщик мусора
+(@pxref{Garbage Collection}) в этой ситуации отключен, что приведет к утечке памяти.
+Такое переполнение обычно не происходит, если не попытаться предварительно загрузить
+дополнительные библиотеки или добавить функции к стандартным.  Emacs отобразит
+предупреждение о переполнении при запуске.  Если это произойдет, следует увеличить
+параметр компиляции @code{SYSTEM_PURESIZE_EXTRA} в файле @file{src/puresize.h} и
+пересобрать Emacs.
 
 @defun purecopy object
-This function makes a copy in pure storage of @var{object}, and returns
-it.  It copies a string by simply making a new string with the same
-characters, but without text properties, in pure storage.  It
-recursively copies the contents of vectors and cons cells.  It does
-not make copies of other objects such as symbols, but just returns
-them unchanged.  It signals an error if asked to copy markers.
+Функция делает копию в чистом хранилище @var{object} и возвращает ее.  Копируется
+строка, просто создавая новую строку с теми же символами, но без текстовых свойств, в
+чистом хранилище.  Рекурсивно копирует содержимое векторов и cons-ячеек.  Не
+копируются другие объекты, такие как символы, а просто возвращаются без изменений.
+Сигнализируется об ошибке, если задано скопировать маркеры.
 
-This function is a no-op except while Emacs is being built and dumped;
-it is usually called only in preloaded Lisp files.
+Функция не работает, кроме случаев, когда Emacs собирается и выгружается; обычно
+вызывается только в предварительно загруженных файлах Lisp.
 @end defun
 
 @defvar pure-bytes-used
-The value of this variable is the number of bytes of pure storage
-allocated so far.  Typically, in a dumped Emacs, this number is very
-close to the total amount of pure storage available---if it were not,
-we would preallocate less.
+Значение этой переменной - количество байтов чистой памяти, выделенной на данный
+момент.  Обычно в выгруженном Emacs это число очень близко к общему объему доступной
+чистой памяти - в противном случае предварительно бы распределилось меньше.
 @end defvar
 
 @defvar purify-flag
-This variable determines whether @code{defun} should make a copy of the
-function definition in pure storage.  If it is non-@code{nil}, then the
-function definition is copied into pure storage.
+Переменная определяет, должен ли @code{defun} делать копию определения функции в
+чистом хранилище.  Если это не-@code{nil}, то определение функции копируется в чистое
+хранилище.
 
-This flag is @code{t} while loading all of the basic functions for
-building Emacs initially (allowing those functions to be shareable and
-non-collectible).  Dumping Emacs as an executable always writes
-@code{nil} in this variable, regardless of the value it actually has
-before and after dumping.
+Флаг имеет значение @code{t} при первоначальной загрузке всех основных функций для
+сборки Emacs (что позволяет использовать эти функции совместно и не собирать).
+Выгрузка Emacs как исполняемого файла всегда записывает @code{nil} в эту переменную,
+независимо от того, какое значение она имеет до и после выгрузки.
 
-You should not change this flag in a running Emacs.
+Не нужно изменять этот флаг в работающем Emacs.
 @end defvar
 
 @node Garbage Collection
-@section Garbage Collection
+@section Сбор Мусора
 
 @cindex memory allocation
-  When a program creates a list or the user defines a new function
-(such as by loading a library), that data is placed in normal storage.
-If normal storage runs low, then Emacs asks the operating system to
-allocate more memory.  Different types of Lisp objects, such as
-symbols, cons cells, small vectors, markers, etc., are segregated in
-distinct blocks in memory.  (Large vectors, long strings, buffers and
-certain other editing types, which are fairly large, are allocated in
-individual blocks, one per object; small strings are packed into blocks
-of 8k bytes, and small vectors are packed into blocks of 4k bytes).
+  Когда программа создает список или пользователь определяет новую функцию (например,
+загружая библиотеку), эти данные помещаются в обычное хранилище.  Если нормального
+хранилища не хватает, Emacs просит операционную систему выделить больше памяти.
+Различные типы объектов Lisp, такие как символы, cons-ячейки, небольшие векторы,
+маркеры и так далее, разделены в отдельные блоки в памяти.  (Большие векторы, длинные
+строки, буферы и некоторые другие типы редактирования, которые довольно большие,
+выделяются отдельными блоками, по одному на объект; маленькие строки упаковываются в
+блоки по 8 Кбайт, а маленькие векторы упаковываются в блоки по 4 Кбайт) .
 
 @cindex vector-like objects, storage
 @cindex storage of vector-like Lisp objects
-  Beyond the basic vector, a lot of objects like window, buffer, and
-frame are managed as if they were vectors.  The corresponding C data
-structures include the @code{union vectorlike_header} field whose
-@code{size} member contains the subtype enumerated by @code{enum pvec_type}
-and an information about how many @code{Lisp_Object} fields this structure
-contains and what the size of the rest data is.  This information is
-needed to calculate the memory footprint of an object, and used
-by the vector allocation code while iterating over the vector blocks.
+  Помимо базового вектора, многие объекты, такие как окно, буфер и фрейм, управляются
+так, как если бы они были векторами.  Соответствующие структуры данных C включают поле
+@code{union vectorlike_header}, член @code{size} которого содержит подтип,
+перечисляемый @code{enum pvec_type}, и информацию о том, сколько полей
+@code{Lisp_Object} содержит эта структура и каков размер остальных данных.  Эта
+информация необходима для расчета объема памяти, занимаемого объектом, и используется
+кодом распределения векторов при итерации по векторным блокам.
 
 @cindex garbage collection
-  It is quite common to use some storage for a while, then release it
-by (for example) killing a buffer or deleting the last pointer to an
-object.  Emacs provides a @dfn{garbage collector} to reclaim this
-abandoned storage.  The garbage collector operates by finding and
-marking all Lisp objects that are still accessible to Lisp programs.
-To begin with, it assumes all the symbols, their values and associated
-function definitions, and any data presently on the stack, are
-accessible.  Any objects that can be reached indirectly through other
-accessible objects are also accessible.
+  Довольно распространено использовать какое-то хранилище на некоторое время, а затем
+освободить его, (например) уничтожив буфер или удалив последний указатель на объект.
+Emacs предоставляет @dfn{сборщик мусора} для восстановления этого заброшенного
+хранилища.  Сборщик мусора работает, находя и отмечая все объекты Lisp, которые все
+еще доступны для программ на Lisp.  Для начала предполагается, что все символы, их
+значения и соответствующие определения функций, а также любые данные, находящиеся в
+настоящее время в стеке, доступны.  Также доступны любые объекты, которые могут быть
+достигнуты косвенно через другие доступные объекты.
 
-  When marking is finished, all objects still unmarked are garbage.  No
-matter what the Lisp program or the user does, it is impossible to refer
-to them, since there is no longer a way to reach them.  Their space
-might as well be reused, since no one will miss them.  The second
-(sweep) phase of the garbage collector arranges to reuse them.
+  Когда маркировка закончена, все объекты, которые еще не помечены, являются мусором.
+Независимо от того, что делает программа на Lisp или пользователь, на них невозможно
+сослаться, поскольку больше нет способа связаться с ними.  Их пространство с таким же
+успехом можно использовать повторно, потому что никто не затронит больше их.  Вторая
+фаза (очистка) сборщика мусора предусматривает их повторное использование.
 
-@c ??? Maybe add something describing weak hash tables here?
+@c ??? Может быть, добавить сюда что-нибудь, описывающее слабые хеш-таблицы?
 
 @cindex free list
-  The sweep phase puts unused cons cells onto a @dfn{free list}
-for future allocation; likewise for symbols and markers.  It compacts
-the accessible strings so they occupy fewer 8k blocks; then it frees the
-other 8k blocks.  Unreachable vectors from vector blocks are coalesced
-to create largest possible free areas; if a free area spans a complete
-4k block, that block is freed.  Otherwise, the free area is recorded
-in a free list array, where each entry corresponds to a free list
-of areas of the same size.  Large vectors, buffers, and other large
-objects are allocated and freed individually.
+  Фаза развертки помещает неиспользуемые cons-ячейки в @dfn{свободный список} для
+будущего распределения; то же самое для символов и маркеров.  Сжимаются доступные
+строки, поэтому занимают меньше 8k блоков; затем освобождаются остальные 8k блоков.
+Недостижимые векторы из векторных блоков объединяются для создания максимально
+возможных свободных областей; если свободная область охватывает полный блок размером
+4 КБ, этот блок освобождается.  В противном случае свободная область записывается в
+массиве свободного списка, где каждая запись соответствует свободному списку областей
+того же размера.  Большие векторы, буферы и другие большие объекты выделяются и
+освобождаются индивидуально.
 
 @cindex CL note---allocate more storage
 @quotation
-@b{Common Lisp note:} Unlike other Lisps, GNU Emacs Lisp does not
-call the garbage collector when the free list is empty.  Instead, it
-simply requests the operating system to allocate more storage, and
-processing continues until @code{gc-cons-threshold} bytes have been
-used.
+@b{Common Lisp Примечание:} В отличие от других Lisp, GNU Emacs Lisp не вызывает
+сборщик мусора, когда список свободных мест пуст.  Вместо этого просто запрашивается у
+операционной системы выделение большего объема памяти, и обработка продолжается до
+тех пор, пока не будут использованы байты @code{gc-cons-threshold}.
 
-This means that you can make sure that the garbage collector will not
-run during a certain portion of a Lisp program by calling the garbage
-collector explicitly just before it (provided that portion of the
-program does not use so much space as to force a second garbage
-collection).
+Это означает, что можно убедиться, что сборщик мусора не будет запускаться во время
+определенной части программы Lisp, явно вызвав сборщик мусора непосредственно перед
+ним (при условии, что эта часть программы не использует столько места, чтобы
+запустить второй раз сборщик мусора).
 @end quotation
 
 @deffn Command garbage-collect
-This command runs a garbage collection, and returns information on
-the amount of space in use.  (Garbage collection can also occur
-spontaneously if you use more than @code{gc-cons-threshold} bytes of
-Lisp data since the previous garbage collection.)
+Команда запускает сборку мусора и возвращает информацию об объеме используемого
+пространства.  (Сборка мусора также может происходить спонтанно, если использовать
+более @code{gc-cons-threshold} байтов данных Lisp с момента предыдущей сборки мусора.)
 
-@code{garbage-collect} returns a list with information on amount of space in
-use, where each entry has the form @samp{(@var{name} @var{size} @var{used})}
-or @samp{(@var{name} @var{size} @var{used} @var{free})}.  In the entry,
-@var{name} is a symbol describing the kind of objects this entry represents,
-@var{size} is the number of bytes used by each one, @var{used} is the number
-of those objects that were found live in the heap, and optional @var{free} is
-the number of those objects that are not live but that Emacs keeps around for
-future allocations.  So an overall result is:
+@code{garbage-collect} возвращает список с информацией об объеме используемого
+пространства, где каждая запись имеет форму @samp{(@var{name} @var{size} @var{used})}
+или @samp{(@var{name} @var{size} @var{used} @var{free})}.  В записи @var{name} - это
+символ, описывающий тип объектов, которые представляет эта запись, @var{size} - это
+количество байтов, используемых каждым из них, @var{used} - это количество тех
+объектов, которые были обнаружены живыми в куче, а необязательный @var{free} -
+количество тех объектов, которые не являются активными, но которые Emacs хранит для
+будущих распределений.  Итак, общий результат:
 
 @example
 ((@code{conses} @var{cons-size} @var{used-conses} @var{free-conses})
@@ -330,7 +310,7 @@ future allocations.  So an overall result is:
  (@code{heap} @var{unit-size} @var{total-size} @var{free-size}))
 @end example
 
-Here is an example:
+Вот пример:
 
 @example
 (garbage-collect)
@@ -342,322 +322,304 @@ Here is an example:
                  (heap 1024 11715 2678))
 @end example
 
-Below is a table explaining each element.  Note that last @code{heap} entry
-is optional and present only if an underlying @code{malloc} implementation
-provides @code{mallinfo} function.
+Ниже приведена таблица, объясняющая каждый элемент.  Обратить внимание, что последняя
+запись @code{heap} является необязательной и присутствует только в том случае, если
+базовая реализация @code{malloc} предоставляет функцию @code{mallinfo}.
 
 @table @var
 @item cons-size
-Internal size of a cons cell, i.e., @code{sizeof (struct Lisp_Cons)}.
+Внутренний размер cons-ячейки, то есть @code{sizeof (struct Lisp_Cons)}.
 
 @item used-conses
-The number of cons cells in use.
+Количество используемых cons-ячеек.
 
 @item free-conses
-The number of cons cells for which space has been obtained from
-the operating system, but that are not currently being used.
+Количество cons-ячеек, пространство для которых было получено из операционной системы,
+но которые в настоящее время не используются.
 
 @item symbol-size
-Internal size of a symbol, i.e., @code{sizeof (struct Lisp_Symbol)}.
+Внутренний размер символа, то есть @code{sizeof (struct Lisp_Symbol)}.
 
 @item used-symbols
-The number of symbols in use.
+Количество используемых символов.
 
 @item free-symbols
-The number of symbols for which space has been obtained from
-the operating system, but that are not currently being used.
+Количество символов, пространство для которых было получено из операционной системы,
+но которые в настоящее время не используются.
 
 @item misc-size
-Internal size of a miscellaneous entity, i.e.,
-@code{sizeof (union Lisp_Misc)}, which is a size of the
-largest type enumerated in @code{enum Lisp_Misc_Type}.
+Внутренний размер другой сущности, то есть @code{sizeof (union Lisp_Misc)}, который
+является размером самого большого типа, перечисленного в @code{enum Lisp_Misc_Type}.
 
 @item used-miscs
-The number of miscellaneous objects in use.  These include markers
-and overlays, plus certain objects not visible to users.
+Количество используемых разных объектов.  К ним относятся маркеры и наложения, а
+также некоторые объекты, невидимые для пользователей.
 
 @item free-miscs
-The number of miscellaneous objects for which space has been obtained
-from the operating system, but that are not currently being used.
+Количество разных объектов, для которых из операционной системы было получено
+пространство, но которые в настоящее время не используются.
 
 @item string-size
-Internal size of a string header, i.e., @code{sizeof (struct Lisp_String)}.
+Внутренний размер заголовка строки, то есть @code{sizeof (struct Lisp_String)}.
 
 @item used-strings
-The number of string headers in use.
+Количество используемых заголовков строк.
 
 @item free-strings
-The number of string headers for which space has been obtained
-from the operating system, but that are not currently being used.
+Количество строковых заголовков, пространство для которых было получено из
+операционной системы, но которые в настоящее время не используются.
 
 @item byte-size
-This is used for convenience and equals to @code{sizeof (char)}.
+Используется для удобства и равно @code{sizeof (char)}.
 
 @item used-bytes
-The total size of all string data in bytes.
+Общий размер всех строковых данных в байтах.
 
 @item vector-size
-Internal size of a vector header, i.e., @code{sizeof (struct Lisp_Vector)}.
+Внутренний размер векторного заголовка, то есть @code{sizeof (struct Lisp_Vector)}.
 
 @item used-vectors
-The number of vector headers allocated from the vector blocks.
+Количество векторных заголовков, выделенных из векторных блоков.
 
 @item slot-size
-Internal size of a vector slot, always equal to @code{sizeof (Lisp_Object)}.
+Внутренний размер слота вектора, всегда равен @code{sizeof (Lisp_Object)}.
 
 @item used-slots
-The number of slots in all used vectors.
+Количество слотов во всех используемых векторах.
 
 @item free-slots
-The number of free slots in all vector blocks.
+Количество свободных слотов во всех векторных блоках.
 
 @item float-size
-Internal size of a float object, i.e., @code{sizeof (struct Lisp_Float)}.
-(Do not confuse it with the native platform @code{float} or @code{double}.)
+Внутренний размер объекта типа float, то есть @code{sizeof (struct Lisp_Float)}.
+(Не путать с родной платформой @code{float} или @code{double}.)
 
 @item used-floats
-The number of floats in use.
+Число использования floats.
 
 @item free-floats
-The number of floats for which space has been obtained from
-the operating system, but that are not currently being used.
+Число чисел с плавающей запятой, пространство для которых было получено из
+операционной системы, но которые в настоящее время не используются.
 
 @item interval-size
-Internal size of an interval object, i.e., @code{sizeof (struct interval)}.
+Внутренний размер интервального объекта, то есть @code{sizeof (struct interval)}.
 
 @item used-intervals
-The number of intervals in use.
+Количество используемых интервалов.
 
 @item free-intervals
-The number of intervals for which space has been obtained from
-the operating system, but that are not currently being used.
+Количество интервалов, для которых пространство было получено из операционной
+системы, но в настоящее время не используется.
 
 @item buffer-size
-Internal size of a buffer, i.e., @code{sizeof (struct buffer)}.
-(Do not confuse with the value returned by @code{buffer-size} function.)
+Внутренний размер буфера, то есть @code{sizeof (struct buffer)}.
+(Не путать со значением, возвращаемым функцией @code{buffer-size}.)
 
 @item used-buffers
-The number of buffer objects in use.  This includes killed buffers
-invisible to users, i.e., all buffers in @code{all_buffers} list.
+Количество используемых буферных объектов.  Это включает убитые буферы, невидимые
+для пользователей, то есть все буферы в списке @code{all_buffers}.
 
 @item unit-size
-The unit of heap space measurement, always equal to 1024 bytes.
+Единица измерения пространства кучи, всегда равная 1024 байтам.
 
 @item total-size
-Total heap size, in @var{unit-size} units.
+Общий размер кучи в единицах @var{unit-size}.
 
 @item free-size
-Heap space which is not currently used, in @var{unit-size} units.
+Пространство кучи, которое в настоящее время не используется, в единицах
+@var{unit-size}.
 @end table
 
-If there was overflow in pure space (@pxref{Pure Storage}),
-@code{garbage-collect} returns @code{nil}, because a real garbage
-collection cannot be done.
+Если было переполнение в чистом пространстве (@pxref{Pure Storage}),
+@code{garbage-collect} возвращает @code{nil}, потому что настоящая сборка мусора
+не может быть выполнена.
 @end deffn
 
 @defopt garbage-collection-messages
-If this variable is non-@code{nil}, Emacs displays a message at the
-beginning and end of garbage collection.  The default value is
-@code{nil}.
+Если переменная - не-@code{nil}, Emacs отображает сообщение в начале и в конце
+сборки мусора.  Значение по умолчанию - @code{nil}.
 @end defopt
 
 @defvar post-gc-hook
-This is a normal hook that is run at the end of garbage collection.
-Garbage collection is inhibited while the hook functions run, so be
-careful writing them.
+Нормальный перехватчик, который запускается в конце сборки мусора.  Сборка мусора
+запрещена во время выполнения функций перехватчика, поэтому буть осторожным при их
+написании.
 @end defvar
 
 @defopt gc-cons-threshold
-The value of this variable is the number of bytes of storage that must
-be allocated for Lisp objects after one garbage collection in order to
-trigger another garbage collection.  You can use the result returned by
-@code{garbage-collect} to get an information about size of the particular
-object type; space allocated to the contents of buffers does not count.
-Note that the subsequent garbage collection does not happen immediately
-when the threshold is exhausted, but only the next time the Lisp interpreter
-is called.
+Значение этой переменной - количество байтов памяти, которые должны быть выделены для
+объектов Lisp после одной сборки мусора, чтобы запустить другую сборку мусора.  Можно
+использовать результат, возвращаемый @code{garbage-collect}, для получения информации
+о размере конкретного типа объекта; пространство, выделенное для содержимого буферов,
+не учитывается.  Обратить внимание, что последующая сборка мусора не происходит сразу
+после того, как порог исчерпан, а только при следующем вызове интерпретатора Lisp.
 
-The initial threshold value is @code{GC_DEFAULT_THRESHOLD}, defined in
-@file{alloc.c}.  Since it's defined in @code{word_size} units, the value
-is 400,000 for the default 32-bit configuration and 800,000 for the 64-bit
-one.  If you specify a larger value, garbage collection will happen less
-often.  This reduces the amount of time spent garbage collecting, but
-increases total memory use.  You may want to do this when running a program
-that creates lots of Lisp data.
+Начальное пороговое значение - @code{GC_DEFAULT_THRESHOLD}, определенное в
+@file{alloc.c}.  Поскольку это определено в единицах @code{word_size}, значение
+составляет 400 000 для 32-битной конфигурации по умолчанию и 800 000 для 64-битной.
+Если указать большее значение, сборка мусора будет происходить реже.  Это сокращает
+время, затрачиваемое на сборку мусора, но увеличивает общее использование памяти.
+Можно захотеть сделать это при запуске программы, которая создает много данных на
+Lisp.
 
-You can make collections more frequent by specifying a smaller value, down
-to 1/10th of @code{GC_DEFAULT_THRESHOLD}.  A value less than this minimum
-will remain in effect only until the subsequent garbage collection, at which
-time @code{garbage-collect} will set the threshold back to the minimum.
+Можно сделать сборы более частыми, указав меньшее значение, вплоть до 1/10 от
+@code{GC_DEFAULT_THRESHOLD}.  Значение меньше этого минимума будет действовать только
+до следующей сборки мусора, после чего @code{garbage-collect} вернет порог обратно на
+минимум.
 @end defopt
 
 @defopt gc-cons-percentage
-The value of this variable specifies the amount of consing before a
-garbage collection occurs, as a fraction of the current heap size.
-This criterion and @code{gc-cons-threshold} apply in parallel, and
-garbage collection occurs only when both criteria are satisfied.
+Значение этой переменной указывает количество потребляемых ресурсов до того, как
+произойдет сборка мусора, как часть текущего размера кучи.  Этот критерий и
+@code{gc-cons-threshold} применяются параллельно, и сборка мусора происходит только
+тогда, когда оба критерия удовлетворяются.
 
-As the heap size increases, the time to perform a garbage collection
-increases.  Thus, it can be desirable to do them less frequently in
-proportion.
+По мере увеличения размера кучи время выполнения сборки мусора увеличивается.  Таким
+образом, может быть желательно делать их реже пропорционально.
 @end defopt
 
-  The value returned by @code{garbage-collect} describes the amount of
-memory used by Lisp data, broken down by data type.  By contrast, the
-function @code{memory-limit} provides information on the total amount of
-memory Emacs is currently using.
+  Значение, возвращаемое @code{garbage-collect}, описывает объем памяти, используемый
+данными Lisp, с разбивкой по типам данных.  Напротив, функция @code{memory-limit}
+предоставляет информацию об общем объеме памяти, используемой Emacs в настоящее время.
 
 @defun memory-limit
-This function returns the address of the last byte Emacs has allocated,
-divided by 1024.  We divide the value by 1024 to make sure it fits in a
-Lisp integer.
+Функция возвращает адрес последнего выделенного Emacs байта, деленный на 1024.
+Делится значение на 1024, чтобы убедиться, что оно соответствует целому числу Lisp.
 
-You can use this to get a general idea of how your actions affect the
-memory usage.
+Можно использовать это, чтобы получить общее представление о том, как действия влияют
+на использование памяти.
 @end defun
 
 @defvar memory-full
-This variable is @code{t} if Emacs is nearly out of memory for Lisp
-objects, and @code{nil} otherwise.
+Переменная @code{t}, если в Emacs почти не хватает памяти для объектов Lisp, и
+@code{nil} в противном случае.
 @end defvar
 
 @defun memory-use-counts
-This returns a list of numbers that count the number of objects
-created in this Emacs session.  Each of these counters increments for
-a certain kind of object.  See the documentation string for details.
+Возвращает список чисел, которые подсчитывают количество объектов, созданных в этом
+сеансе Emacs.  Каждый из этих счетчиков увеличивается для определенного типа объекта.
+Смотреть подробности в строке документации.
 @end defun
 
 @defun memory-info
-This functions returns an amount of total system memory and how much
-of it is free.  On an unsupported system, the value may be @code{nil}.
+Функция возвращает общий объем системной памяти и ее объем.  В неподдерживаемой
+системе значение может быть @code{nil}.
 @end defun
 
 @defvar gcs-done
-This variable contains the total number of garbage collections
-done so far in this Emacs session.
+Переменная содержит общее количество сборок мусора, выполненных на данный момент в
+этом сеансе Emacs.
 @end defvar
 
 @defvar gc-elapsed
-This variable contains the total number of seconds of elapsed time
-during garbage collection so far in this Emacs session, as a
-floating-point number.
+Переменная содержит общее количество секунд, прошедшее с момента сборки мусора в этом
+сеансе Emacs, в виде числа с плавающей запятой.
 @end defvar
 
 @node Stack-allocated Objects
-@section Stack-allocated Objects
+@section Объекты, Размещенные в Стеке
 
 @cindex stack allocated Lisp objects
 @cindex Lisp objects, stack-allocated
-  The garbage collector described above is used to manage data visible
-from Lisp programs, as well as most of the data internally used by the
-Lisp interpreter.  Sometimes it may be useful to allocate temporary
-internal objects using the C stack of the interpreter.  This can help
-performance, as stack allocation is typically faster than using heap
-memory to allocate and the garbage collector to free.  The downside is
-that using such objects after they are freed results in undefined
-behavior, so uses should be well thought out and carefully debugged by
-using the @code{GC_CHECK_MARKED_OBJECTS} feature (see
-@file{src/alloc.c}).  In particular, stack-allocated objects should
-never be made visible to user Lisp code.
+  Описанный выше сборщик мусора используется для управления данными, видимыми из
+программ Lisp, а также большей частью данных, используемых внутри интерпретатора Lisp.
+Иногда может быть полезно выделить временные внутренние объекты с помощью стека C
+интерпретатора.  Это может повысить производительность, поскольку выделение стека
+обычно происходит быстрее, чем использование памяти кучи для выделения сборщику
+мусора и для ее освобождения.  Обратной стороной является то, что использование таких
+объектов после их освобождения приводит к неопределенному поведению, поэтому
+использование должно быть хорошо продумано и тщательно отлажено с помощью функции
+@code{GC_CHECK_MARKED_OBJECTS} (смотреть @file{src/alloc.c}).  В частности, объекты,
+размещенные в стеке, никогда не должны быть видимыми для пользовательского кода Lisp.
 
-  Currently, cons cells and strings can be allocated this way.  This
-is implemented by C macros like @code{AUTO_CONS} and
-@code{AUTO_STRING} that define a named @code{Lisp_Object} with block
-lifetime.  These objects are not freed by the garbage collector;
-instead, they have automatic storage duration, i.e., they are
-allocated like local variables and are automatically freed at the end
-of execution of the C block that defined the object.
+  В настоящее время таким образом можно размещать cons-ячейки и строки.  Это
+реализовано макросами C, такими как @code{AUTO_CONS} и @code{AUTO_STRING}, которые
+определяют именованный @code{Lisp_Object} со временем жизни блока.  Сборщик мусора не
+освобождает эти объекты; вместо этого они имеют автоматическую продолжительность
+хранения, то есть они выделяются как локальные переменные и автоматически
+освобождаются в конце выполнения блока C, который определил объект.
 
-  For performance reasons, stack-allocated strings are limited to
-@acronym{ASCII} characters, and many of these strings are immutable,
-i.e., calling @code{ASET} on them produces undefined behavior.
+  По соображениям производительности строки, выделенные стеком, ограничены символами
+@acronym{ASCII}, и многие из этих строк являются неизменяемыми, то есть вызов
+@code{ASET} для них приводит к неопределенному поведению.
 
 @node Memory Usage
-@section Memory Usage
+@section Использование Памяти
 @cindex memory usage
 
-  These functions and variables give information about the total amount
-of memory allocation that Emacs has done, broken down by data type.
-Note the difference between these and the values returned by
-@code{garbage-collect}; those count objects that currently exist, but
-these count the number or size of all allocations, including those for
-objects that have since been freed.
+  Функции и переменные предоставляют информацию об общем объеме памяти, выделенной
+Emacs, с разбивкой по типам данных.  Обратить внимание на разницу между ними и
+значениями, возвращаемыми @code{garbage-collect}; эти подсчитывают объекты, которые в
+настоящее время существуют, но подсчитывают количество или размер всех выделений,
+в том числе для объектов, которые уже были освобождены.
 
 @defvar cons-cells-consed
-The total number of cons cells that have been allocated so far
-in this Emacs session.
+Общее количество cons-ячеек, выделенных на данный момент в этом сеансе Emacs.
 @end defvar
 
 @defvar floats-consed
-The total number of floats that have been allocated so far
-in this Emacs session.
+Общее количество чисел с плавающей запятой, выделенных на данный момент в этом
+сеансе Emacs.
 @end defvar
 
 @defvar vector-cells-consed
-The total number of vector cells that have been allocated so far
-in this Emacs session.
+Общее количество векторных ячеек, выделенных на данный момент в этом сеансе Emacs.
 @end defvar
 
 @defvar symbols-consed
-The total number of symbols that have been allocated so far
-in this Emacs session.
+Общее количество символов, выделенных на данный момент в этом сеансе Emacs.
 @end defvar
 
 @defvar string-chars-consed
-The total number of string characters that have been allocated so far
-in this session.
+Общее количество строковых символов, выделенных на данный момент в этом сеансе.
 @end defvar
 
 @defvar misc-objects-consed
-The total number of miscellaneous objects that have been allocated so
-far in this session.  These include markers and overlays, plus
-certain objects not visible to users.
+Общее количество разных объектов, выделенных на данный момент в этом сеансе.  К ним
+относятся маркеры и наложения, а также некоторые объекты, невидимые для пользователей.
 @end defvar
 
 @defvar intervals-consed
-The total number of intervals that have been allocated so far
-in this Emacs session.
+Общее количество интервалов, выделенных на данный момент в этом сеансе Emacs.
 @end defvar
 
 @defvar strings-consed
-The total number of strings that have been allocated so far in this
-Emacs session.
+Общее количество строк, выделенных на данный момент в этом сеансе Emacs.
 @end defvar
 
 @node C Dialect
-@section C Dialect
+@section C Диалект
 @cindex C programming language
 
-The C part of Emacs is portable to C99 or later: C11-specific features such
-as @samp{<stdalign.h>} and @samp{_Noreturn} are not used without a check,
-typically at configuration time, and the Emacs build procedure
-provides a substitute implementation if necessary.  Some C11 features,
-such as anonymous structures and unions, are too difficult to emulate,
-so they are avoided entirely.
+Часть C Emacs переносима на C99 или новее: специфичные для C11 особенности, такие как
+@samp{<stdalign.h>} и @samp{_Noreturn}, не используются без проверки, обычно во время
+настройки, а процедура сборки Emacs предоставляет заменяющую реализацию, если это
+необходимо.  Некоторые функции C11, такие как анонимные структуры и объединения,
+слишком сложно имитировать, поэтому их полностью избегают.
 
-At some point in the future the base C dialect will no doubt change to C11.
+В какой-то момент в будущем базовый диалект C, несомненно, изменится на C11.
 
 @node Writing Emacs Primitives
-@section Writing Emacs Primitives
+@section Написание Примитивов Emacs
 @cindex primitive function internals
 @cindex writing Emacs primitives
 
-  Lisp primitives are Lisp functions implemented in C@.  The details of
-interfacing the C function so that Lisp can call it are handled by a few
-C macros.  The only way to really understand how to write new C code is
-to read the source, but we can explain some things here.
+  Примитивы Lisp - это функции Lisp, реализованные в C@.  Детали взаимодействия с
+функцией C, чтобы Lisp мог ее вызывать, обрабатываются несколькими макросами C.
+Единственный способ понять, как писать новый код на C, - это прочитать исходный код,
+но можно объяснить некоторые вещи здесь.
 
-  An example of a special form is the definition of @code{or}, from
-@file{eval.c}.  (An ordinary function would have the same general
-appearance.)
+  Примером специальной формы является определение @code{or} из @file{eval.c}.
+(Обычная функция будет иметь такой же общий вид.)
 
 @smallexample
 @group
 DEFUN ("or", For, Sor, 0, UNEVALLED, 0,
-       doc: /* Eval args until one of them yields non-nil,
-then return that value.
-The remaining args are not evalled at all.
-If all args return nil, return nil.
+       doc: /* Вычислять аргументы,
+пока один из них не даст non-nil,
+затем вернуть это значение. Остальные аргументы
+вообще не вызываются.  Если все аргументы
+возвращают nil, возвращается nil.
 @end group
 @group
 usage: (or CONDITIONS...)  */)
@@ -683,9 +645,9 @@ usage: (or CONDITIONS...)  */)
 @end group
 @end smallexample
 
-@cindex @code{DEFUN}, C macro to define Lisp primitives
-  Let's start with a precise explanation of the arguments to the
-@code{DEFUN} macro.  Here is a template for them:
+@cindex @code{DEFUN}, макрос C для определения примитивов Lisp
+  Начнем с точного объяснения аргументов макроса @code{DEFUN}.
+Вот шаблон для них:
 
 @example
 DEFUN (@var{lname}, @var{fname}, @var{sname}, @var{min}, @var{max}, @var{interactive}, @var{doc})
@@ -693,47 +655,41 @@ DEFUN (@var{lname}, @var{fname}, @var{sname}, @var{min}, @var{max}, @var{interac
 
 @table @var
 @item lname
-This is the name of the Lisp symbol to define as the function name; in
-the example above, it is @code{or}.
+Имя символа Lisp, определяемого как имя функции; в приведенном выше примере это
+@code{or}.
 
 @item fname
-This is the C function name for this function.  This is the name that
-is used in C code for calling the function.  The name is, by
-convention, @samp{F} prepended to the Lisp name, with all dashes
-(@samp{-}) in the Lisp name changed to underscores.  Thus, to call
-this function from C code, call @code{For}.
+Имя функции C для функции.  Имя, которое используется в коде C для вызова функции.
+По соглашению, имя @samp{F} добавляется к имени Lisp, а все дефисы (@samp{-}) в имени
+Lisp заменены на символы подчеркивания.  Таким образом, чтобы вызвать эту функцию из
+кода C, вызвать @code{For}.
 
 @item sname
-This is a C variable name to use for a structure that holds the data for
-the subr object that represents the function in Lisp.  This structure
-conveys the Lisp symbol name to the initialization routine that will
-create the symbol and store the subr object as its definition.  By
-convention, this name is always @var{fname} with @samp{F} replaced with
-@samp{S}.
+Имя переменной C для использования в структуре, содержащей данные для объекта subr,
+представляющего функцию в Lisp.  Эта структура передает имя символа Lisp в процедуру
+инициализации, которая создаст символ и сохранит объект subr в качестве его
+определения.  По соглашению это имя всегда @var{fname} с заменой @samp{F} на @samp{S}.
 
 @item min
-This is the minimum number of arguments that the function requires.  The
-function @code{or} allows a minimum of zero arguments.
+Минимальное количество аргументов, которое требуется функции.  Функция @code{or}
+допускает минимум ноль аргументов.
 
 @item max
-This is the maximum number of arguments that the function accepts, if
-there is a fixed maximum.  Alternatively, it can be @code{UNEVALLED},
-indicating a special form that receives unevaluated arguments, or
-@code{MANY}, indicating an unlimited number of evaluated arguments (the
-equivalent of @code{&rest}).  Both @code{UNEVALLED} and @code{MANY} are
-macros.  If @var{max} is a number, it must be more than @var{min} but
-less than 8.
+Максимальное количество аргументов, которое принимает функция, если есть фиксированный
+максимум.  В качестве альтернативы это может быть @code{UNEVALLED}, указывающий на
+специальную форму, которая принимает неоцененные аргументы, или @code{MANY},
+указывающий неограниченное количество оцениваемых аргументов (эквивалент
+@code{&rest}).  Оба @code{UNEVALLED} и @code{MANY} - это макросы.  Если @var{max} -
+число, оно должно быть больше @var{min}, но меньше 8.
 
 @cindex interactive specification in primitives
 @item interactive
-This is an interactive specification, a string such as might be used
-as the argument of @code{interactive} in a Lisp function
-(@pxref{Using Interactive}).  In the case
-of @code{or}, it is @code{0} (a null pointer), indicating that @code{or}
-cannot be called interactively.  A value of @code{""} indicates a
-function that should receive no arguments when called interactively.
-If the value begins with a @samp{"(}, the string is evaluated as a
-Lisp form.  For example:
+Интерактивная спецификация, строка, которая может использоваться в качестве аргумента
+@code{interactive} в Lisp-функции (@pxref{Using Interactive}).  В случае @code{or}
+это @code{0} (нулевой указатель), указывающий на то, что @code{or} не может быть
+вызвано интерактивно.  Значение @code{""} указывает на функцию, которая не должна
+получать аргументов при интерактивном вызове.  Если значение начинается с @samp{"(},
+строка оценивается как форма Lisp.  Например:
 
 @example
 @group
@@ -746,27 +702,23 @@ DEFUN ("foo", Ffoo, Sfoo, 0, 3,
 @end example
 
 @item doc
-This is the documentation string.  It uses C comment syntax rather
-than C string syntax because comment syntax requires nothing special
-to include multiple lines.  The @samp{doc:} identifies the comment
-that follows as the documentation string.  The @samp{/*} and @samp{*/}
-delimiters that begin and end the comment are not part of the
-documentation string.
+Строка документации.  Используется синтаксис комментариев C, а не синтаксис строки C,
+потому что синтаксис комментариев не требует ничего особенного для включения
+нескольких строк.  @samp{doc:} идентифицирует следующий комментарий как строку
+документации.  Разделители @samp{/*} и @samp{*/}, которые начинают и заканчивают
+комментарий, не являются частью строки документации.
 
-If the last line of the documentation string begins with the keyword
-@samp{usage:}, the rest of the line is treated as the argument list
-for documentation purposes.  This way, you can use different argument
-names in the documentation string from the ones used in the C code.
-@samp{usage:} is required if the function has an unlimited number of
-arguments.
+Если последняя строка строки документации начинается с ключевого слова @samp{usage:},
+остальная часть строки рассматривается как список аргументов для целей документации.
+Таким образом, можно использовать в строке документации имена аргументов, отличные от
+тех, которые используются в коде C.  @samp{usage:} требуется, если функция имеет
+неограниченное количество аргументов.
 
-All the usual rules for documentation strings in Lisp code
-(@pxref{Documentation Tips}) apply to C code documentation strings
-too.
+Все обычные правила для строк документации в коде Lisp (@pxref{Documentation Tips})
+применимы и к строкам документации на языке C.
 
-The documentation string can be followed by a list of C function
-attributes for the C function that implements the primitive, like
-this:
+За строкой документации может следовать список атрибутов функции C для функции C,
+реализующей примитив, например:
 
 @example
 @group
@@ -777,134 +729,122 @@ DEFUN ("bar", Fbar, Sbar, 0, UNEVALLED, 0
 @end example
 
 @noindent
-You can specify more than a single attribute, one after the other.
-Currently, only the following attributes are recognized:
+Можно указать более одного атрибута один за другим.  В настоящее время распознаются
+только следующие атрибуты:
 
 @table @code
 @item noreturn
-Declares the C function as one that never returns.  This corresponds
-to the C11 keyword @code{_Noreturn} and to @w{@code{__attribute__
-((__noreturn__))}} attribute of GCC (@pxref{Function Attributes,,,
-gcc, Using the GNU Compiler Collection}).
+Объявляет функцию C как функцию, которая никогда не возвращается.  Это соответствует
+ключевому слову @code{_Noreturn} C11 и атрибуту
+@w{@code{__attribute__ ((__noreturn__))}} GCC
+(@pxref{Function Attributes,,, gcc, Using the GNU Compiler Collection}).
 
 @item const
-Declares that the function does not examine any values except its
-arguments, and has no effects except the return value.  This
-corresponds to @w{@code{__attribute__ ((__const__))}} attribute of
-GCC.
+Объявляет, что функция не проверяет никаких значений, кроме своих аргументов, и не
+имеет никаких эффектов, кроме возвращаемого значения.  Это соответствует атрибуту 
+@w{@code{__attribute__ ((__const__))}} GCC.
 
 @item noinline
-This corresponds to @w{@code{__attribute__ ((__noinline__))}}
-attribute of GCC, which prevents the function from being considered
-for inlining.  This might be needed, e.g., to countermand effects of
-link-time optimizations on stack-based variables.
+Соответствует атрибуту @w{@code{__attribute__ ((__noinline__))}} GCC, который
+предотвращает рассмотрение функции для встраивания.  Это может потребоваться,
+например, для предотвращения эффектов оптимизации времени компоновки для переменных
+на основе стека.
 @end table
 
 @end table
 
-  After the call to the @code{DEFUN} macro, you must write the
-argument list for the C function, including the types for the
-arguments.  If the primitive accepts a fixed maximum number of Lisp
-arguments, there must be one C argument for each Lisp argument, and
-each argument must be of type @code{Lisp_Object}.  (Various macros and
-functions for creating values of type @code{Lisp_Object} are declared
-in the file @file{lisp.h}.)  If the primitive is a special form, it
-must accept a Lisp list containing its unevaluated Lisp arguments as a
-single argument of type @code{Lisp_Object}.  If the primitive has no
-upper limit on the number of evaluated Lisp arguments, it must have
-exactly two C arguments: the first is the number of Lisp arguments,
-and the second is the address of a block containing their values.
-These have types @code{ptrdiff_t} and @w{@code{Lisp_Object *}},
-respectively.  Since @code{Lisp_Object} can hold any Lisp object of
-any data type, you can determine the actual data type only at run
-time; so if you want a primitive to accept only a certain type of
-argument, you must check the type explicitly using a suitable
-predicate (@pxref{Type Predicates}).
+  После вызова макроса @code{DEFUN} требуется написать список аргументов для функции
+C, включая типы для аргументов.  Если примитив принимает фиксированное максимальное
+количество аргументов Lisp, должен быть один аргумент C для каждого аргумента Lisp и
+каждый аргумент должен иметь тип @code{Lisp_Object}.  (Различные макросы и функции для
+создания значений типа @code{Lisp_Object} объявлены в файле @file{lisp.h}.)  Если
+примитив является специальной формой, должен принимать список Lisp, содержащий его
+неоцененные аргументы Lisp, как единственный аргумент типа @code{Lisp_Object}.  Если
+примитив не имеет верхнего предела на количество вычисляемых аргументов Lisp, должен
+иметь ровно два аргумента C: первый - это количество аргументов Lisp, а второй - это
+адрес блока, содержащего их значения.  У них есть типы @code{ptrdiff_t} и
+@w{@code{Lisp_Object *}} соответственно.  Поскольку @code{Lisp_Object} может содержать
+любой объект Lisp любого типа данных, можно определить фактический тип данных только
+во время выполнения; поэтому, если требуется, чтобы примитив принимал аргумент только
+определенного типа, нужно явно проверить тип, используя подходящий предикат
+(@pxref{Type Predicates}).
 @cindex type checking internals
 
 @cindex garbage collection protection
 @cindex protect C variables from garbage collection
-  Within the function @code{For} itself, the local variable
-@code{args} refers to objects controlled by Emacs's stack-marking
-garbage collector.  Although the garbage collector does not reclaim
-objects reachable from C @code{Lisp_Object} stack variables, it may
-move some of the components of an object, such as the contents of a
-string or the text of a buffer.  Therefore, functions that access
-these components must take care to refetch their addresses after
-performing Lisp evaluation.  This means that instead of keeping C
-pointers to string contents or buffer text, the code should keep the
-buffer or string position, and recompute the C pointer from the
-position after performing Lisp evaluation.  Lisp evaluation can occur
-via calls to @code{eval_sub} or @code{Feval}, either directly or
-indirectly.
+  Внутри самой функции @code{For} локальная переменная @code{args} ссылается на
+объекты, контролируемые сборщиком мусора Emacs с маркировкой стека.  Хотя сборщик
+мусора не восстанавливает объекты, доступные из переменных стека C @code{Lisp_Object},
+он может перемещать некоторые компоненты объекта, такие как содержимое строки или
+текст буфера.  Следовательно, функции, которые обращаются к этим компонентам, должны
+позаботиться о том, чтобы повторно получить их адреса после выполнения оценки Lisp.
+Это означает, что вместо сохранения указателей C на содержимое строки или текст
+буфера, код должен сохранять позицию буфера или строки и пересчитывать указатель C из
+этой позиции после выполнения оценки Lisp.  Оценка Lisp может происходить через
+вызовы @code{eval_sub} или @code{Feval}, прямо или косвенно.
 
 @cindex @code{maybe_quit}, use in Lisp primitives
-  Note the call to @code{maybe_quit} inside the loop: this function
-checks whether the user pressed @kbd{C-g}, and if so, aborts the
-processing.  You should do that in any loop that can potentially
-require a large number of iterations; in this case, the list of
-arguments could be very long.  This increases Emacs responsiveness and
-improves user experience.
+  Обратить внимание на вызов @code{maybe_quit} внутри цикла: эта функция проверяет,
+нажал ли пользователь @kbd{C-g}, и, если да, прерывает обработку.  Потребуется делать
+это в любом цикле, который потенциально может потребовать большого количества
+итераций; в этом случае список аргументов может быть очень длинным.  Это увеличивает
+скорость отклика Emacs и улучшает взаимодействие с пользователем.
 
-  You must not use C initializers for static or global variables unless
-the variables are never written once Emacs is dumped.  These variables
-with initializers are allocated in an area of memory that becomes
-read-only (on certain operating systems) as a result of dumping Emacs.
-@xref{Pure Storage}.
+  Не требуется использовать инициализаторы C для статических или глобальных
+переменных, если только переменные никогда не записываются после сброса Emacs.  Эти
+переменные с инициализаторами размещаются в области памяти, которая становится
+доступной только для чтения (в некоторых операционных системах) в результате сброса
+Emacs.  @xref{Pure Storage}.
 
 @cindex @code{defsubr}, Lisp symbol for a primitive
-  Defining the C function is not enough to make a Lisp primitive
-available; you must also create the Lisp symbol for the primitive and
-store a suitable subr object in its function cell.  The code looks like
-this:
+  Определения функции C недостаточно, чтобы сделать примитив Lisp доступным; также
+потребуется создать символ Lisp для примитива и сохранить подходящий объект subr в
+его функциональной ячейке.  Код выглядит так:
 
 @example
 defsubr (&@var{sname});
 @end example
 
 @noindent
-Here @var{sname} is the name you used as the third argument to @code{DEFUN}.
+Здесь @var{sname} - это имя, которое вы использовали в качестве третьего аргумента
+@code{DEFUN}.
 
-  If you add a new primitive to a file that already has Lisp primitives
-defined in it, find the function (near the end of the file) named
-@code{syms_of_@var{something}}, and add the call to @code{defsubr}
-there.  If the file doesn't have this function, or if you create a new
-file, add to it a @code{syms_of_@var{filename}} (e.g.,
-@code{syms_of_myfile}).  Then find the spot in @file{emacs.c} where all
-of these functions are called, and add a call to
-@code{syms_of_@var{filename}} there.
+  Если добавляется новый примитив в файл, в котором уже определены примитивы Lisp,
+найть функцию (в конце файла) с именем @code{syms_of_@var{something}} и добавить туда
+вызов @code{defsubr}.  Если в файле нет этой функции или если создаётся новый файл,
+добавить к нему @code{syms_of_@var{filename}} (например, @code{syms_of_myfile}).
+Затем найтидите место в @file{emacs.c}, где вызываются все эти функции, и добавьте туда вызов @code{syms_of_@var{filename}}.
 
 @anchor{Defining Lisp variables in C}
 @vindex byte-boolean-vars
 @cindex defining Lisp variables in C
 @cindex @code{DEFVAR_INT}, @code{DEFVAR_LISP}, @code{DEFVAR_BOOL}
-  The function @code{syms_of_@var{filename}} is also the place to define
-any C variables that are to be visible as Lisp variables.
-@code{DEFVAR_LISP} makes a C variable of type @code{Lisp_Object} visible
-in Lisp.  @code{DEFVAR_INT} makes a C variable of type @code{int}
-visible in Lisp with a value that is always an integer.
-@code{DEFVAR_BOOL} makes a C variable of type @code{int} visible in Lisp
-with a value that is either @code{t} or @code{nil}.  Note that variables
-defined with @code{DEFVAR_BOOL} are automatically added to the list
-@code{byte-boolean-vars} used by the byte compiler.
+  Функция @code{syms_of_@var{filename}} также является местом для определения любых
+переменных C, которые должны быть видны как переменные Lisp.  @code{DEFVAR_LISP}
+делает переменную C типа @code{Lisp_Object} видимой в Lisp.  @code{DEFVAR_INT} делает
+переменную C типа @code{int} видимой в Lisp со значением, которое всегда является
+целым числом.  @code{DEFVAR_BOOL} делает переменную C типа @code{int} видимой в Lisp
+со значением @code{t} или @code{nil}.  Обратить внимание, что переменные, определенные
+с помощью @code{DEFVAR_BOOL}, автоматически добавляются в список
+@code{byte-boolean-vars}, используемый компилятором байтов.
 
 @cindex defining customization variables in C
-  If you want to make a Lisp variable that is defined in C behave
-like one declared with @code{defcustom}, add an appropriate entry to
+  Если нужно, чтобы переменная Lisp, определенная в C, вела себя как переменная,
+объявленная с помощью @code{defcustom}, добавить соответствующую запись в
 @file{cus-start.el}.
 
 @cindex @code{staticpro}, protection from GC
-  If you define a file-scope C variable of type @code{Lisp_Object},
-you must protect it from garbage-collection by calling @code{staticpro}
-in @code{syms_of_@var{filename}}, like this:
+  Если определяется переменная C файловой области типа @code{Lisp_Object}, потребуется
+защитить ее от сборки мусора, вызвав @code{staticpro} в @code{syms_of_@var{filename}},
+например:
 
 @example
 staticpro (&@var{variable});
 @end example
 
-  Here is another example function, with more complicated arguments.
-This comes from the code in @file{window.c}, and it demonstrates the use
-of macros and functions to manipulate Lisp objects.
+  Вот еще один пример функции с более сложными аргументами.  Это происходит из кода в
+@file{window.c}, и он демонстрирует использование макросов и функций для управления
+объектами Lisp.
 
 @smallexample
 @group
@@ -965,72 +905,65 @@ DEFUN ("coordinates-in-window-p", Fcoordinates_in_window_p,
 @end group
 @end smallexample
 
-  Note that C code cannot call functions by name unless they are defined
-in C@.  The way to call a function written in Lisp is to use
-@code{Ffuncall}, which embodies the Lisp function @code{funcall}.  Since
-the Lisp function @code{funcall} accepts an unlimited number of
-arguments, in C it takes two: the number of Lisp-level arguments, and a
-one-dimensional array containing their values.  The first Lisp-level
-argument is the Lisp function to call, and the rest are the arguments to
-pass to it.
+  Обратить внимание, что код C не может вызывать функции по имени, если они не
+определены в C@.  Способ вызова функции, написанной на Lisp, заключается в
+использовании @code{Ffuncall}, который воплощает функцию Lisp @code{funcall}.
+Поскольку функция Lisp @code{funcall} принимает неограниченное количество аргументов,
+в C она принимает два: количество аргументов уровня Lisp и одномерный массив,
+содержащий их значения.  Первый аргумент уровня Lisp - это вызываемая функция Lisp,
+а остальные - аргументы, передаваемые ей.
 
-  The C functions @code{call0}, @code{call1}, @code{call2}, and so on,
-provide handy ways to call a Lisp function conveniently with a fixed
-number of arguments.  They work by calling @code{Ffuncall}.
+  Функции языка C @code{call0}, @code{call1}, @code{call2} и так далее предоставляют
+удобные способы вызова функции Lisp с фиксированным числом аргументов.  Работают,
+вызывая @code{Ffuncall}.
 
-  @file{eval.c} is a very good file to look through for examples;
-@file{lisp.h} contains the definitions for some important macros and
-functions.
+  @file{eval.c} - очень хороший файл для поиска примеров; @file{lisp.h} содержит
+определения некоторых важных макросов и функций.
 
-  If you define a function which is side-effect free or pure, give it
-a non-@code{nil} @code{side-effect-free} or @code{pure} property,
-respectively (@pxref{Standard Properties}).
+  Если определяется функция без побочных эффектов, присвоить ей свойство не-@code{nil}
+@code{side-effect-free} или @code{pure}, соответственно (@pxref{Standard Properties}).
 
 @node Writing Dynamic Modules
-@section Writing Dynamically-Loaded Modules
+@section Написание Динамически Загружаемых Модулей
 @cindex writing emacs modules
 @cindex dynamic modules, writing
 
 @cindex module @acronym{API}
-  This section describes the Emacs module @acronym{API} and how to use
-it as part of writing extension modules for Emacs.  The module
-@acronym{API} is defined in the C programming language, therefore the
-description and the examples in this section assume the module is
-written in C@.  For other programming languages, you will need to use
-the appropriate bindings, interfaces and facilities for calling C code.
-Emacs C code requires a C99 or later compiler (@pxref{C Dialect}), and
-so the code examples in this section also follow that standard.
+  В этом разделе описывается модуль @acronym{API} Emacs и его использование при
+написании модулей расширения для Emacs.  Модуль @acronym{API} определен на языке
+программирования C, поэтому описание и примеры в этом разделе предполагают, что
+модуль написан на C@.  Для других языков программирования нужно будет использовать
+соответствующие привязки, интерфейсы и средства для вызова кода C.  Для кода Emacs C
+требуется компилятор (@pxref{C Dialect}) C99 или более поздней версии, поэтому
+примеры кода в этом разделе также соответствуют этому стандарту.
 
-Writing a module and integrating it into Emacs comprises the following
-tasks:
+Написание модуля и его интеграция в Emacs включает следующие задачи:
 
 @itemize @bullet
 @item
-Writing initialization code for the module.
+Написание кода инициализации модуля.
 
 @item
-Writing one or more module functions.
+Написание одной или нескольких функций модуля.
 
 @item
-Communicating values and objects between Emacs and your module
-functions.
+Обмен значениями и объектами между Emacs и функциями вашего модуля.
 
 @item
-Handling of error conditions and nonlocal exits.
+Обработка ошибок и нелокальных выходов.
 @end itemize
 
 @noindent
-The following subsections describe these tasks and the @acronym{API}
-itself in more detail.
+В следующих подразделах более подробно описаны эти задачи и само @acronym{API}.
 
-Once your module is written, compile it to produce a shared library,
-according to the conventions of the underlying platform.  Then place
-the shared library in a directory mentioned in @code{load-path}
-(@pxref{Library Search}), where Emacs will find it.
+После того, как модуль написан, скомпилировать его для создания общей библиотеки в
+соответствии с соглашениями базовой платформы.  Затем поместить разделяемую библиотеку
+в каталог, упомянутый в @code{load-path} (@pxref{Library Search}), где Emacs найдет
+ее.
 
-If you wish to verify the conformance of a module to the Emacs dynamic
-module @acronym{API}, invoke Emacs with the @kbd{--module-assertions}
-option.  @xref{Initial Options,,,emacs, The GNU Emacs Manual}.
+Если требуется проверить соответствие модуля динамическому модулю Emacs @acronym{API},
+вызвать Emacs с опцией @kbd{--module-assertions}.
+@xref{Initial Options,,,emacs, The GNU Emacs Manual}.
 
 @menu
 * Module Initialization::
@@ -1041,11 +974,11 @@ option.  @xref{Initial Options,,,emacs, The GNU Emacs Manual}.
 @end menu
 
 @node Module Initialization
-@subsection Module Initialization Code
+@subsection Код Инициализации Модуля
 @cindex module initialization
 
-  Begin your module by including the header file @file{emacs-module.h}
-and defining the GPL compatibility symbol:
+  Начать свой модуль с включения заголовочного файла @file{emacs-module.h} и
+определения символа совместимости с GPL:
 
 @example
 #include <emacs-module.h>
@@ -1053,40 +986,37 @@ and defining the GPL compatibility symbol:
 int plugin_is_GPL_compatible;
 @end example
 
-The @file{emacs-module.h} file is installed into your system's include
-tree as part of the Emacs installation.  Alternatively, you can find
-it in the Emacs source tree.
+Файл @file{emacs-module.h} устанавливается в дерево включения системы как часть
+установки Emacs.  Кроме того, можно найти его в дереве исходных текстов Emacs.
 
 @anchor{module initialization function}
-Next, write an initialization function for the module.
+Затем пишется функцию инициализации для модуля.
 
 @deftypefn Function int emacs_module_init (struct emacs_runtime *@var{runtime})
-Emacs calls this function when it loads a module.  If a module does
-not export a function named @code{emacs_module_init}, trying to load
-the module will signal an error.  The initialization function should
-return zero if the initialization succeeds, non-zero otherwise.  In
-the latter case, Emacs will signal an error, and the loading of the
-module will fail.  If the user presses @kbd{C-g} during the
-initialization, Emacs ignores the return value of the initialization
-function and quits (@pxref{Quitting}).  (If needed, you can catch user
-quitting inside the initialization function, @pxref{should_quit}.)
+Emacs вызывает эту функцию, когда загружает модуль.  Если модуль не экспортирует
+функцию с именем @code{emacs_module_init}, попытка загрузить модуль будет
+сигнализировать об ошибке.  Функция инициализации должна возвращать ноль, если
+инициализация прошла успешно, в противном случае - ненулевое значение.  В последнем
+случае Emacs сообщит об ошибке, и загрузка модуля завершится неудачно.  Если
+пользователь нажимает @kbd{C-g} во время инициализации, Emacs игнорирует возвращаемое
+значение функции инициализации и выходит из (@pxref{Quitting}).  (При необходимости
+можно поймать завершение работы пользователя внутри функции инициализации
+@pxref{should_quit}.)
 
-The argument @var{runtime} is a pointer to a C @code{struct} that
-includes 2 public fields: @code{size}, which provides the size of the
-structure in bytes; and @code{get_environment}, which provides a
-pointer to a function that allows the module initialization function
-access to the Emacs environment object and its interfaces.
+Аргумент @var{runtime} - это указатель на объект C @code{struct}, который включает
+2 открытых поля: @code{size}, который предоставляет размер структуры в байтах; и
+@code{get_environment}, который предоставляет указатель на функцию, которая позволяет
+функции инициализации модуля получить доступ к объекту среды Emacs и его интерфейсам.
 
-The initialization function should perform whatever initialization is
-required for the module.  In addition, it can perform the following
-tasks:
+Функция инициализации должна выполнять любую инициализацию, необходимую для модуля.
+Кроме того, может выполнять следующие задачи:
 
 @table @asis
 @cindex compatibility, between modules and Emacs
 @item Compatibility verification
-A module can verify that the Emacs executable which loads the module
-is compatible with the module, by comparing the @code{size} member of
-the @var{runtime} structure with the value compiled into the module:
+Модуль может проверить, что исполняемый файл Emacs, который загружает модуль,
+совместим с модулем, сравнив член @code{size} структуры @var{runtime} со значением,
+скомпилированным в модуль:
 
 @example
 int
@@ -1098,15 +1028,14 @@ emacs_module_init (struct emacs_runtime *ert)
 @end example
 
 @noindent
-If the size of the runtime object passed to the module is smaller than
-what it expects, it means the module was compiled for an Emacs version
-newer (later) than the one which attempts to load it, i.e.@: the
-module might be incompatible with the Emacs binary.
+Если размер объекта среды выполнения, переданного модулю, меньше ожидаемого, это
+означает, что модуль был скомпилирован для более новой (более поздней) версии Emacs,
+чем та, которая пытается его загрузить, то есть@: модуль может быть несовместим с
+двоичным файлом Emacs.
 
-In addition, a module can verify the compatibility of the module
-@acronym{API} with what the module expects.  The following sample code
-assumes it is part of the @code{emacs_module_init} function shown
-above:
+Кроме того, модуль может проверить совместимость модуля @acronym{API} с тем, что
+модуль ожидает.  В следующем примере кода предполагается, что он является частью
+функции @code{emacs_module_init}, показанной выше:
 
 @example
   emacs_env *env = ert->get_environment (ert);
@@ -1116,14 +1045,13 @@ above:
 
 @noindent
 @cindex module runtime environment
-This calls the @code{get_environment} function using the pointer
-provided in the @code{runtime} structure to retrieve a pointer to the
-@acronym{API}'s @dfn{environment}, a C @code{struct} which also has a
-@code{size} field holding the size of the structure in bytes.
+Вызывает функцию @code{get_environment}, используя указатель, предоставленный в
+структуре @code{runtime}, для получения указателя на @acronym{API} @dfn{environment},
+C @code{struct}, который также имеет поле @code{size}, содержащее размер структуры в
+байтах.
 
-Finally, you can write a module that will work with older versions of
-Emacs, by comparing the size of the environment passed by Emacs with
-known sizes, like this:
+Наконец, можно написать модуль, который будет работать со старыми версиями Emacs,
+сравнив размер среды, передаваемой Emacs, с известными размерами, например:
 
 @example
   emacs_env *env = ert->get_environment (ert);
@@ -1136,107 +1064,97 @@ known sizes, like this:
 @end example
 
 @noindent
-This works because later Emacs versions always @emph{add} members to
-the environment, never @emph{remove} any members, so the size can only
-grow with new Emacs releases.  Given the version of Emacs, the module
-can use only the parts of the module @acronym{API} that existed in
-that version, since those parts are identical in later versions.
+Это работает, потому что более поздние версии Emacs всегда @emph{добавляют} члены в
+среду, никогда не @emph{удаляют} какие-либо члены , поэтому размер может увеличиваться
+только с новыми выпусками Emacs.  Учитывая версию Emacs, модуль может использовать
+только те части модуля @acronym{API}, которые существовали в этой версии, поскольку
+эти части идентичны в более поздних версиях.
 
-We recommend that modules always perform the compatibility
-verification, unless they do their job entirely in the initialization
-function, and don't access any Lisp objects or use any Emacs functions
-accessible through the environment structure.
+Рекомендуется, чтобы модули всегда выполняли проверку совместимости, если только они
+не выполняют свою работу полностью в функции инициализации, и не обращаются к
+каким-либо объектам Lisp и не используют какие-либо функции Emacs, доступные через
+структуру среды.
 
 @item Binding module functions to Lisp symbols
-This gives the module functions names so that Lisp code could call it
-by that name.  We describe how to do this in @ref{Module Functions}
-below.
+Дает имена функциям модуля, чтобы код Lisp мог вызывать их по этому имени.  Описано,
+как это сделать, в @ref{Module Functions} ниже.
 @end table
 @end deftypefn
 
 @node Module Functions
-@subsection Writing Module Functions
+@subsection Написание Функций Модуля
 @cindex writing module functions
 @cindex module functions
 
-  The main reason for writing an Emacs module is to make additional
-functions available to Lisp programs that load the module.  This
-subsection describes how to write such @dfn{module functions}.
+  Основная причина написания модуля Emacs - сделать дополнительные функции доступными
+для программ на Lisp, которые загружают модуль.  В этом подразделе описывается, как
+писать такие @dfn{функции модуля}.
 
-A module function has the following general form and signature:
+Функция модуля имеет следующую общую форму и подпись:
 
 @deftypefn Function emacs_value module_func (emacs_env *@var{env}, ptrdiff_t @var{nargs}, emacs_value *@var{args}, void *@var{data})
-The @var{env} argument provides a pointer to the @acronym{API}
-environment, needed to access Emacs objects and functions.  The
-@var{nargs} argument is the required number of arguments, which can be
-zero (see @code{make_function} below for more flexible specification
-of the argument number), and @var{args} is a pointer to the array of
-the function arguments.  The argument @var{data} points to additional
-data required by the function, which was arranged when
-@code{make_function} (see below) was called to create an Emacs
-function from @code{module_func}.
+Аргумент @var{env} предоставляет указатель на среду @acronym{API}, необходимый для
+доступа к объектам и функциям Emacs.  Аргумент @var{nargs} - это необходимое
+количество аргументов, которое может быть нулевым (смотреть @code{make_function} ниже
+для более гибкого указания номера аргумента), а @var{args} - указатель на массив
+аргументов функции.  Аргумент @var{data} указывает на дополнительные данные,
+необходимые для функции, которые были упорядочены при вызове @code{make_function}
+(смотреть ниже) для создания функции Emacs из @code{module_func}.
 
-Module functions use the type @code{emacs_value} to communicate Lisp
-objects between Emacs and the module (@pxref{Module Values}).  The
-@acronym{API}, described below and in the following subsections,
-provides facilities for conversion between basic C data types and the
-corresponding @code{emacs_value} objects.
+Функции модуля используют тип @code{emacs_value} для связи объектов Lisp между Emacs и
+модулем (@pxref{Module Values}).  @acronym{API}, описанный ниже и в следующих
+подразделах, предоставляет средства для преобразования между базовыми типами данных
+C и соответствующими объектами @code{emacs_value}.
 
-A module function always returns a value.  If the function returns
-normally, the Lisp code which called it will see the Lisp object
-corresponding to the @code{emacs_value} value the function returned.
-However, if the user typed @kbd{C-g}, or if the module function or its
-callees signaled an error or exited nonlocally (@pxref{Module
-Nonlocal}), Emacs will ignore the returned value and quit or throw as
-it does when Lisp code encounters the same situations.
+Функция модуля всегда возвращает значение.  Если функция возвращается нормально, код
+Lisp, который ее вызвал, увидит объект Lisp, соответствующий значению
+@code{emacs_value}, которое вернула функция.  Однако, если пользователь набрал
+@kbd{C-g}, или если функция модуля или ее вызываемые объекты сигнализировали об ошибке
+или выходили (@pxref{Module Nonlocal}) нелокально, Emacs проигнорирует возвращаемое
+значение и завершит работу или выбросит, как это происходит, когда код Lisp
+встречается с теми же ситуациями.
 @end deftypefn
 
-After writing your C code for a module function, you should make a
-Lisp function object from it using the @code{make_function} function,
-whose pointer is provided in the environment (recall that the pointer
-to the environment is returned by @code{get_environment}).  This is
-normally done in the module initialization function (@pxref{module
-initialization function}), after verifying the @acronym{API}
-compatibility.
+После написания кода C для функции модуля потребуется создать из него объект функции
+Lisp, используя функцию @code{make_function}, указатель которой предоставляется в
+среде (напоминается, что указатель на среду возвращается функцией
+@code{get_environment}).  Обычно это делается в функции инициализации модуля
+(@pxref{module initialization function}) после проверки совместимости @acronym{API}.
 
 @deftypefn Function emacs_value make_function (emacs_env *@var{env}, ptrdiff_t @var{min_arity}, ptrdiff_t @var{max_arity}, subr @var{func}, const char *@var{docstring}, void *@var{data})
 @vindex emacs_variadic_function
-This returns an Emacs function created from the C function @var{func},
-whose signature is as described for @code{module_func} above (assumed
-here to be @code{typedef}'ed as @code{subr}).  The arguments
-@var{min_arity} and @var{max_arity} specify the minimum and maximum
-number of arguments that @var{func} can accept.  The @var{max_arity}
-argument can have the special value @code{emacs_variadic_function},
-which makes the function accept an unlimited number of arguments, like
-the @code{&rest} keyword in Lisp (@pxref{Argument List}).
+Возвращает функцию Emacs, созданную из функции C @var{func}, сигнатура которой такая
+же, как описано для @code{module_func} выше (предполагается, что здесь @code{typedef}
+как @code{subr}).  Аргументы @var{min_arity} и @var{max_arity} определяют минимальное
+и максимальное количество аргументов, которые может принимать @var{func}.  Аргумент
+@var{max_arity} может иметь специальное значение @code{emacs_variadic_function},
+которое заставляет функцию принимать неограниченное количество аргументов, как
+ключевое слово @code{&rest} в Lisp (@pxref{Argument List}).
 
-The argument @var{data} is a way to arrange for arbitrary additional
-data to be passed to @var{func} when it is called.  Whatever pointer
-is passed to @code{make_function} will be passed unaltered to
-@var{func}.
+Аргумент @var{data} - это способ организовать передачу произвольных дополнительных
+данных в @var{func} при её вызове.  Любой указатель, переданный в
+@code{make_function}, будет передан в @var{func} без изменений.
 
-The argument @var{docstring} specifies the documentation string for
-the function.  It should be either an @acronym{ASCII} string, or a
-UTF-8 encoded non-@acronym{ASCII} string, or a @code{NULL} pointer; in
-the latter case the function will have no documentation.  The
-documentation string can end with a line that specifies the advertised
-calling convention, see @ref{Function Documentation}.
+Аргумент @var{docstring} указывает строку документации для функции.  Это должна быть
+либо строка @acronym{ASCII}, либо строка не-@acronym{ASCII} в кодировке UTF-8, либо
+указатель @code{NULL}; в последнем случае у функции не будет документации.  Строка
+документации может заканчиваться строкой, определяющей объявленное соглашение о
+вызовах, смотреть @ref{Function Documentation}.
 
-Since every module function must accept the pointer to the environment
-as its first argument, the call to @code{make_function} could be made
-from any module function, but you will normally want to do that from
-the module initialization function, so that all the module functions
-are known to Emacs once the module is loaded.
+Поскольку каждая функция модуля должна принимать указатель на среду в качестве своего
+первого аргумента, вызов @code{make_function} может быть выполнен из любой функции
+модуля, но обычно требуется сделать это из функции инициализации модуля, чтобы все
+функции модуля были известны в Emacs после загрузки модуля.
 @end deftypefn
 
-Finally, you should bind the Lisp function to a symbol, so that Lisp
-code could call your function by name.  For that, use the module
-@acronym{API} function @code{intern} (@pxref{intern}) whose pointer is
-also provided in the environment that module functions can access.
+Наконец, нужно привязать функцию Lisp к символу, чтобы код Lisp мог вызывать эту
+функцию по имени.  Для этого использовать модуль @acronym{API} функции @code{intern}
+(@pxref{intern}), указатель которого также предоставляется в среде, к которой могут
+обращаться функции модуля.
 
-Combining the above steps, code that arranges for a C function
-@code{module_func} to be callable as @code{module-func} from Lisp will
-look like this, as part of the module initialization function:
+Комбинируя вышеперечисленные шаги, код, который организует возможность вызова функции
+@code{module_func} в C как @code{module-func} из Lisp, будет выглядеть так, как часть
+функции инициализации модуля:
 
 @example
  emacs_env *env = ert->get_environment (ert);
@@ -1248,37 +1166,33 @@ look like this, as part of the module initialization function:
 @end example
 
 @noindent
-This makes the symbol @code{module-func} known to Emacs by calling
-@code{env->intern}, then invokes @code{defalias} from Emacs to bind
-the function to that symbol.  Note that it is possible to use
-@code{fset} instead of @code{defalias}; the differences are described
-in @ref{Defining Functions, defalias}.
+Это делает символ @code{module-func} известным Emacs, вызывая @code{env->intern}, а
+затем вызывается @code{defalias} из Emacs для привязки функции к этому символу.
+Обратить внимание, что можно использовать @code{fset} вместо @code{defalias};
+различия описаны в @ref{Defining Functions, defalias}.
 
-Using the module @acronym{API}, it is possible to define more complex
-function and data types: interactive functions, inline functions,
-macros, etc.  However, the resulting C code will be cumbersome and
-hard to read.  Therefore, we recommend that you limit the module code
-which creates functions and data structures to the absolute minimum,
-and leave the rest for a Lisp package that will accompany your module,
-because doing these additional tasks in Lisp is much easier, and will
-produce a much more readable code.  For example, given a module
-function @code{module-func} defined as above, one way of making an
-interactive command @code{module-cmd} based on it is with the
-following simple Lisp wrapper:
+Используя модуль @acronym{API}, можно определять более сложные функции и типы данных:
+интерактивные функции, встроенные функции, макросы и так далее.  Однако результирующий
+код C будет громоздким и трудным для чтения.  Поэтому рекомендуется ограничить код
+модуля, который создает функции и структуры данных, до абсолютного минимума, а
+остальное оставить для пакета Lisp, который будет сопровождать модуль, потому что
+выполнение этих дополнительных задач в Lisp намного проще и приведет к гораздо более
+читаемому коду.  Например, учитывая функцию модуля @code{module-func}, определенную,
+как указано выше, один из способов создания на ее основе интерактивной команды
+@code{module-cmd} - это использовать следующую простую оболочку Lisp:
 
 @lisp
 (defun module-cmd (&rest args)
-  "Documentation string for the command."
+  "Строка документации для команды."
   (interactive @var{spec})
   (apply 'module-func args))
 @end lisp
 
-The Lisp package which goes with your module could then load the
-module using the @code{module-load} primitive (@pxref{Dynamic
-Modules}) when the package is loaded into Emacs.
+Пакет Lisp, который идет с модулем, может затем загрузить модуль, используя примитив
+@code{module-load} (@pxref{Dynamic Modules}), когда пакет загружается в Emacs.
 
 @node Module Values
-@subsection Conversion Between Lisp and Module Values
+@subsection Преобразование Между Значениями Lisp и Модулем
 @cindex module values, conversion
 
 @cindex @code{emacs_value} data type
