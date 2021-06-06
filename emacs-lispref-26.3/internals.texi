@@ -1196,264 +1196,238 @@ Lisp, используя функцию @code{make_function}, указатель
 @cindex module values, conversion
 
 @cindex @code{emacs_value} data type
-  With very few exceptions, most modules need to exchange data with
-Lisp programs that call them: accept arguments to module functions and
-return values from module functions.  For this purpose, the module
-@acronym{API} provides the @code{emacs_value} type, which represents
-Emacs Lisp objects communicated via the @acronym{API}; it is the
-functional equivalent of the @code{Lisp_Object} type used in Emacs C
-primitives (@pxref{Writing Emacs Primitives}).  This section describes
-the parts of the module @acronym{API} that allow to create
-@code{emacs_value} objects corresponding to basic Lisp data types, and
-how to access from C data in @code{emacs_value} objects that
-correspond to Lisp objects.
+  За очень немногими исключениями, большинству модулей необходимо обмениваться данными
+с программами на Lisp, которые их вызывают: принимать аргументы для функций модуля и
+возвращать значения из функций модуля.  Для этой цели модуль @acronym{API}
+предоставляет тип @code{emacs_value}, который представляет объекты Emacs Lisp,
+передаваемые через @acronym{API}; это функциональный эквивалент типа
+@code{Lisp_Object}, который используется в примитивах языка Си в Emacs
+(@pxref{Writing Emacs Primitives}).  В этом разделе описываются части модуля
+@acronym{API}, которые позволяют создавать объекты @code{emacs_value}, соответствующие
+базовым типам данных Lisp, и как получить доступ из данных C в объектах
+@code{emacs_value}, которые соответствуют объектам Lisp.
 
-All of the functions described below are actually @emph{function
-pointers} provided via the pointer to the environment which every
-module function accepts.  Therefore, module code should call these
-functions through the environment pointer, like this:
+Все функции, описанные ниже, на самом деле являются @emph{указателями на функции},
+предоставляемыми через указатель на среду, которую принимает каждая функция модуля.
+Следовательно, код модуля должен вызывать эти функции через указатель среды, например:
 
 @example
-emacs_env *env;  /* the environment pointer */
+emacs_env *env;  /* указатель среды */
 env->some_function (arguments@dots{});
 @end example
 
 @noindent
-The @code{emacs_env} pointer will usually come from the first argument
-to the module function, or from the call to @code{get_environment} if
-you need the environment in the module initialization function.
+Указатель @code{emacs_env} обычно поступает из первого аргумента функции модуля или
+из вызова @code{get_environment}, если нужна среда в функции инициализации модуля.
 
-Most of the functions described below became available in Emacs 25,
-the first Emacs release that supported dynamic modules.  For the few
-functions that became available in later Emacs releases, we mention
-the first Emacs version that supported them.
+Большинство функций, описанных ниже, стали доступны в Emacs 25, первом выпуске Emacs,
+который поддерживал динамические модули.  Для тех немногих функций, которые стали
+доступны в более поздних выпусках Emacs, упоминается первая версия Emacs, которая их
+поддерживала.
 
-The following @acronym{API} functions extract values of various C data
-types from @code{emacs_value} objects.  They all raise the
-@code{wrong-type-argument} error condition (@pxref{Type Predicates})
-if the argument @code{emacs_value} object is not of the type expected
-by the function.  @xref{Module Nonlocal}, for details of how signaling
-errors works in Emacs modules, and how to catch error conditions
-inside the module before they are reported to Emacs.  The
-@acronym{API} function @code{type_of} (@pxref{Module Misc, type_of})
-can be used to obtain the type of a @code{emacs_value} object.
+Следующие функции @acronym{API} извлекают значения различных типов данных C из
+объектов @code{emacs_value}.  Все они вызывают условие ошибки
+@code{wrong-type-argument} (@pxref{Type Predicates}), если объект аргумента
+@code{emacs_value} не соответствует типу, ожидаемому функцией.
+@xref{Module Nonlocal}, где подробно описано, как сигнализация об ошибках работает в
+модулях Emacs и как перехватывать ошибки внутри модуля до того, как они будут
+переданы в Emacs.  Функция @acronym{API} @code{type_of} (@pxref{Module Misc, type_of})
+может использоваться для получения типа объекта @code{emacs_value}.
 
 @deftypefn Function intmax_t extract_integer (emacs_env *@var{env}, emacs_value @var{arg})
-This function returns the value of a Lisp integer specified by
-@var{arg}.  The C data type of the return value, @code{intmax_t}, is
-the widest integral data type supported by the C compiler, typically
-@w{@code{long long}}.
+Функция возвращает значение целого числа Lisp, заданное @var{arg}.  Тип данных C
+возвращаемого значения, @code{intmax_t}, является самым широким интегральным типом
+данных, поддерживаемым компилятором C, обычно @w{@code{long long}}.
 @end deftypefn
 
 @deftypefn Function double extract_float (emacs_env *@var{env}, emacs_value @var{arg})
-This function returns the value of a Lisp float specified by
-@var{arg}, as a C @code{double} value.
+Функция возвращает значение числа с плавающей запятой в Lisp, заданное @var{arg}, в
+виде значения C @code{double}.
 @end deftypefn
 
 @deftypefn Function bool copy_string_contents (emacs_env *@var{env}, emacs_value @var{arg}, char *@var{buf}, ptrdiff_t *@var{len})
-This function stores the UTF-8 encoded text of a Lisp string specified
-by @var{arg} in the array of @code{char} pointed by @var{buf}, which
-should have enough space to hold at least @code{*@var{len}} bytes,
-including the terminating null byte.  The argument @var{len} must not
-be a @code{NULL} pointer, and, when the function is called, it should
-point to a value that specifies the size of @var{buf} in bytes.
+Функция сохраняет текст в кодировке UTF-8 строки Lisp, заданной @var{arg}, в массиве
+@code{char}, на который указывает @var{buf}, который должен иметь достаточно места для
+хранения как минимум @code{*@var{len}} байтов, включая завершающий нулевой байт.
+Аргумент @var{len} не должен быть указателем @code{NULL}, и при вызове функции должен
+указывать на значение, определяющее размер @var{buf} в байтах.
 
-If the buffer size specified by @code{*@var{len}} is large enough to
-hold the string's text, the function stores in @code{*@var{len}} the
-actual number of bytes copied to @var{buf}, including the terminating
-null byte, and returns @code{true}.  If the buffer is too small, the
-function raises the @code{args-out-of-range} error condition, stores
-the required number of bytes in @code{*@var{len}}, and returns
-@code{false}.  @xref{Module Nonlocal}, for how to handle pending error
-conditions.
+Если размер буфера, указанный в @code{*@var{len}}, достаточно велик для хранения
+текста строки, функция сохраняет в @code{*@var{len}} фактическое количество байтов,
+скопированных в @var{buf}, включая завершающий нулевой байт, и возвращает @code{true}.
+Если буфер слишком мал, функция вызывает условие ошибки @code{args-out-of-range},
+сохраняет необходимое количество байтов в @code{*@var{len}} и возвращает @code{false}.
+@xref{Module Nonlocal}, как обрабатывать ошибки ожидания.
 
-The argument @var{buf} can be a @code{NULL} pointer, in which case the
-function stores in @code{*@var{len}} the number of bytes required for
-storing the contents of @var{arg}, and returns @code{true}.  This is
-how you can determine the size of @var{buf} needed to store a
-particular string: first call @code{copy_string_contents} with
-@code{NULL} as @var{buf}, then allocate enough memory to hold the
-number of bytes stored by the function in @code{*@var{len}}, and call
-the function again with non-@code{NULL} @var{buf} to actually perform
-the text copying.
+Аргумент @var{buf} может быть указателем @code{NULL}, и в этом случае функция
+сохраняет в @code{*@var{len}} количество байтов, необходимых для хранения содержимого
+@var{arg}, и возвращается @code{true}.  Вот как можно определить размер @var{buf},
+необходимый для хранения конкретной строки: сначала вызвать
+@code{copy_string_contents} с @code{NULL} как @var{buf}, затем выделить достаточно
+памяти для хранения количества байтов, хранимых функцией в @code{*@var{len}}, и снова
+вызвать функцию с @var{buf} установленное в не-@code{NULL}, чтобы собственно выполнить
+копирование текста.
 @end deftypefn
 
 @deftypefn Function emacs_value vec_get (emacs_env *@var{env}, emacs_value @var{vector}, ptrdiff_t @var{index})
-This function returns the element of @var{vector} at @var{index}.  The
-@var{index} of the first vector element is zero.  The function raises
-the @code{args-out-of-range} error condition if the value of
-@var{index} is invalid.  To extract C data from the value the function
-returns, use the other extraction functions described here, as
-appropriate for the Lisp data type stored in that element of the
-vector.
+Функция возвращает @var{index} элемента в @var{vector}.  @var{index} первого элемента
+вектора равен нулю.  Функция вызывает ошибку @code{args-out-of-range}, если значение
+@var{index} недопустимо.  Чтобы извлечь данные C из значения, возвращаемого функцией,
+использовать другие функции извлечения, описанные здесь, в зависимости от типа данных
+Lisp, хранящегося в этом элементе вектора.
 @end deftypefn
 
 @deftypefn Function ptrdiff_t vec_size (emacs_env *@var{env}, emacs_value @var{vector})
-This function returns the number of elements in @var{vector}.
+Функция возвращает количество элементов в @var{vector}.
 @end deftypefn
 
 @deftypefn Function void vec_set (emacs_env *@var{env}, emacs_value @var{vector}, ptrdiff_t @var{index}, emacs_value @var{value})
-This function stores @var{value} in the element of @var{vector} whose
-index is @var{index}.  It raises the @code{args-out-of-range} error
-condition if the value of @var{index} is invalid.
+Функция сохраняет @var{value} в элементе @var{vector} с индексом @var{index}.
+Вызывается ошибка @code{args-out-of-range}, если значение @var{index} недопустимо.
 @end deftypefn
 
-The following @acronym{API} functions create @code{emacs_value}
-objects from basic C data types.  They all return the created
-@code{emacs_value} object.
+Следующие функции @acronym{API} создают объекты @code{emacs_value} из базовых типов
+данных C.  Все они возвращают созданный объект @code{emacs_value}.
 
 @deftypefn Function emacs_value make_integer (emacs_env *@var{env}, intmax_t @var{n})
-This function takes an integer argument @var{n} and returns the
-corresponding @code{emacs_value} object.  It raises the
-@code{overflow-error} error condition if the value of @var{n} cannot
-be represented as an Emacs integer, i.e.@: is not inside the limits
-set by @code{most-negative-fixnum} and @code{most-positive-fixnum}
+Функция принимает целочисленный аргумент @var{n} и возвращает соответствующий объект
+@code{emacs_value}.  Это вызывает условие ошибки @code{overflow-error}, если значение
+@var{n} не может быть представлено как целое число Emacs, то есть@: не находится в
+пределах, установленных @code{most-negative-fixnum} и @code{most-positive-fixnum}.
 (@pxref{Integer Basics}).
 @end deftypefn
 
 @deftypefn Function emacs_value make_float (emacs_env *@var{env}, double @var{d})
-This function takes a @code{double} argument @var{d} and returns the
-corresponding Emacs floating-point value.
+Функция принимает аргумент @code{double} @var{d} и возвращает соответствующее значение
+Emacs с плавающей запятой.
 @end deftypefn
 
 @deftypefn Function emacs_value make_string (emacs_env *@var{env}, const char *@var{str}, ptrdiff_t @var{strlen})
-This function creates an Emacs string from C text string pointed by
-@var{str} whose length in bytes, not including the terminating null
-byte, is @var{strlen}.  The original string in @var{str} can be either
-an @acronym{ASCII} string or a UTF-8 encoded non-@acronym{ASCII}
-string; it can include embedded null bytes, and doesn't have to end in
-a terminating null byte at @code{@var{str}[@var{strlen}]}.  The
-function raises the @code{overflow-error} error condition if
-@var{strlen} is negative or exceeds the maximum length of an Emacs
-string.
+Функция создает строку Emacs из текстовой строки C, на которую указывает @var{str},
+длина которой в байтах, не включая завершающий нулевой байт, равна @var{strlen}.
+Исходная строка в @var{str} может быть строкой @acronym{ASCII} или строкой
+не-@acronym{ASCII} в кодировке UTF-8; может включать встроенные нулевые байты и не
+должна заканчиваться завершающим нулевым байтом в @code{@var{str}[@var{strlen}]}.
+Функция вызывает условие ошибки @code{overflow-error}, если @var{strlen} отрицательно
+или превышает максимальную длину строки Emacs.
 @end deftypefn
 
-The @acronym{API} does not provide functions to manipulate Lisp data
-structures, for example, create lists with @code{cons} and @code{list}
-(@pxref{Building Lists}), extract list members with @code{car} and
-@code{cdr} (@pxref{List Elements}), create vectors with @code{vector}
-(@pxref{Vector Functions}), etc.  For these, use @code{intern} and
-@code{funcall}, described in the next subsection, to call the
-corresponding Lisp functions.
+@acronym{API} не предоставляет функций для управления структурами данных Lisp,
+например, создания списков с помощью @code{cons} и @code{list}
+(@pxref{Building Lists}), извлечения членов списка с помощью @code{car} и @code{cdr}
+(@pxref{List Elements}), создания векторов с помощью @code{vector}
+(@pxref{Vector Functions}) и так далее.  Для этого использовать @code{intern} и
+@code{funcall}, описанно в следующем подразделе, для вызова соответствующих функций
+Lisp.
 
-Normally, @code{emacs_value} objects have a rather short lifetime: it
-ends when the @code{emacs_env} pointer used for their creation goes
-out of scope.  Occasionally, you may need to create @dfn{global
-references}: @code{emacs_value} objects that live as long as you
-wish.  Use the following two functions to manage such objects.
+Обычно у объектов @code{emacs_value} довольно короткое время жизни: оно заканчивается,
+когда указатель @code{emacs_env}, использованный для их создания, выходит за пределы
+области видимости.  Иногда может потребоваться создать объекты
+@dfn{глобальные ссылки}: @code{emacs_value}, которые живут столько, сколько нужно.
+Использовать следующие две функции для управления такими объектами.
 
 @deftypefn Function emacs_value make_global_ref (emacs_env *@var{env}, emacs_value @var{value})
-This function returns a global reference for @var{value}.
+Функция возвращает глобальную ссылку для @var{value}.
 @end deftypefn
 
 @deftypefn Function void free_global_ref (emacs_env *@var{env}, emacs_value @var{global_value})
-This function frees the @var{global_value} previously created by
-@code{make_global_ref}.  The @var{global_value} is no longer valid
-after the call.  Your module code should pair each call to
-@code{make_global_ref} with the corresponding @code{free_global_ref}.
+Функция освобождает @var{global_value}, ранее созданное @code{make_global_ref}.
+@var{global_value} больше не действует после вызова.  Код модуля должен связывать
+каждый вызов @code{make_global_ref} с соответствующим @code{free_global_ref}.
 @end deftypefn
 
 @cindex user pointer, using in module functions
-An alternative to keeping around C data structures that need to be
-passed to module functions later is to create @dfn{user pointer}
-objects.  A user pointer, or @code{user-ptr}, object is a Lisp object
-that encapsulates a C pointer and can have an associated finalizer
-function, which is called when the object is garbage-collected
-(@pxref{Garbage Collection}).  The module @acronym{API} provides
-functions to create and access @code{user-ptr} objects.  These
-functions raise the @code{wrong-type-argument} error condition if they
-are called on @code{emacs_value} that doesn't represent a
-@code{user-ptr} object.
+Альтернативой хранению структур данных C, которые необходимо передать функциям модуля
+позже, является создание объектов @dfn{пользовательские указатели}.  Пользовательский
+указатель или объект @code{user-ptr} - это объект Lisp, который инкапсулирует указатель C и может иметь связанную функцию финализатора, которая вызывается, когда объект
+(@pxref{Garbage Collection}) собирает мусор.  Модуль @acronym{API} предоставляет
+функции для создания и доступа к объектам @code{user-ptr}.  Эти функции вызывают
+состояние ошибки @code{wrong-type-argument}, если они вызываются со значением
+@code{emacs_value}, которым не представляется объект @code{user-ptr}.
 
 @deftypefn Function emacs_value make_user_ptr (emacs_env *@var{env}, emacs_finalizer @var{fin}, void *@var{ptr})
-This function creates and returns a @code{user-ptr} object which wraps
-the C pointer @var{ptr}.  The finalizer function @var{fin} can be a
-@code{NULL} pointer (meaning no finalizer), or it can be a function of
-the following signature:
+Функция создает и возвращает объект @code{user-ptr}, который обертывает указатель C
+@var{ptr}.  Функция финализатора @var{fin} может быть указателем @code{NULL} (что
+означает отсутствие финализатора) или может быть функцией следующей сигнатуры:
 
 @example
 typedef void (*emacs_finalizer) (void *@var{ptr});
 @end example
 
 @noindent
-If @var{fin} is not a @code{NULL} pointer, it will be called with the
-@var{ptr} as the argument when the @code{user-ptr} object is
-garbage-collected.  Don't run any expensive code in a finalizer,
-because GC must finish quickly to keep Emacs responsive.
+Если @var{fin} не является указателем @code{NULL}, будет вызываться с @var{ptr} в
+качестве аргумента при сборке мусора для объекта @code{user-ptr}.  Не запускать
+дорогостоящий код в финализаторе, потому что сборщик мусора должен завершать работу
+быстро, чтобы Emacs оставался отзывчивым.
 @end deftypefn
 
 @deftypefn Function void *get_user_ptr (emacs_env *@var{env}, emacs_value val)
-This function extracts the C pointer from the Lisp object represented
-by @var{val}.
+Функция извлекает указатель C из объекта Lisp, представленный значением @var{val}.
 @end deftypefn
 
 @deftypefn Function void set_user_ptr (emacs_env *@var{env}, emacs_value @var{value}, void *@var{ptr})
-This function sets the C pointer embedded in the @code{user-ptr}
-object represented by @var{value} to @var{ptr}.
+Функция устанавливает указатель C, встроенный в объект @code{user-ptr}, представленный
+@var{value}, указателем @var{ptr}.
 @end deftypefn
 
 @deftypefn Function emacs_finalizer get_user_finalizer (emacs_env *@var{env}, emacs_value val)
-This function returns the finalizer of the @code{user-ptr} object
-represented by @var{val}, or @code{NULL} if it doesn't have a finalizer.
+Функция возвращает финализатор объекта @code{user-ptr}, представленного значения
+@var{val}, или @code{NULL}, если у него нет финализатора.
 @end deftypefn
 
 @deftypefn Function void set_user_finalizer (emacs_env *@var{env}, emacs_value @var{val}, emacs_finalizer @var{fin})
-This function changes the finalizer of the @code{user-ptr} object
-represented by @var{val} to be @var{fin}.  If @var{fin} is a
-@code{NULL} pointer, the @code{user-ptr} object will have no finalizer.
+Функция изменяет финализатор объекта @code{user-ptr}, представленного значения
+@var{val}, на @var{fin}.  Если @var{fin} является указателем на @code{NULL}, объект
+@code{user-ptr} не будет иметь финализатора.
 @end deftypefn
 
 @node Module Misc
-@subsection Miscellaneous Convenience Functions for Modules
+@subsection Разные Удобные Функции для Модулей
 
-  This subsection describes a few convenience functions provided by
-the module @acronym{API}.  Like the functions described in previous
-subsections, all of them are actually function pointers, and need to
-be called via the @code{emacs_env} pointer.  Description of functions
-that were introduced after Emacs 25 calls out the first version where
-they became available.
+  В этом подразделе описываются несколько удобных функций, предоставляемых модулем
+@acronym{API}.  Как и функции, описанные в предыдущих подразделах, все они на самом
+деле являются указателями на функции и должны вызываться через указатель
+@code{emacs_env}.  Описание функций, которые были представлены после того, как Emacs
+25 вызывает первую версию, в которой они стали доступны.
 
 @deftypefn Function bool eq (emacs_env *@var{env}, emacs_value @var{val1}, emacs_value @var{val2})
-This function returns @code{true} if the Lisp objects represented by
-@var{val1} and @var{val2} are identical, @code{false} otherwise.  This
-is the same as the Lisp function @code{eq} (@pxref{Equality
-Predicates}), but avoids the need to intern the objects represented by
-the arguments.
+Функция возвращает @code{true}, если объекты Lisp, представленные @var{val1} и
+@var{val2}, идентичны, в противном случае - @code{false}.  Это то же самое, что и
+функция Lisp @code{eq} (@pxref{Equality Predicates}), но исключает необходимость
+интернировать объекты, представленные аргументами.
 
-There are no @acronym{API} functions for other equality predicates, so
-you will need to use @code{intern} and @code{funcall}, described
-below, to perform more complex equality tests.
+Для других предикатов равенства нет функций @acronym{API}, поэтому нужно будет
+использовать @code{intern} и @code{funcall}, описанный ниже, для выполнения более
+сложных тестов на равенство.
 @end deftypefn
 
 @deftypefn Function bool is_not_nil (emacs_env *@var{env}, emacs_value @var{val})
-This function tests whether the Lisp object represented by @var{val}
-is non-@code{nil}; it returns @code{true} or @code{false} accordingly.
+Функция проверяет, является ли объект Lisp, представленный @var{val}, не-@code{nil};
+это соответственно возвращает @code{true} или @code{false}.
 
-Note that you could implement an equivalent test by using
-@code{intern} to get an @code{emacs_value} representing @code{nil},
-then use @code{eq}, described above, to test for equality.  But using
-this function is more convenient.
+Обратить внимание, что можно реализовать эквивалентный тест, используя @code{intern},
+чтобы получить @code{emacs_value}, представляющий @code{nil}, а затем использовать
+@code{eq}, описанный выше, для проверки равенства.  Но пользоваться этой функцией
+удобнее.
 @end deftypefn
 
 @deftypefn Function emacs_value type_of (emacs_env *@var{env}, emacs_value @code{object})
-This function returns the type of @var{object} as a value that
-represents a symbol: @code{string} for a string, @code{integer} for an
-integer, @code{process} for a process, etc.  @xref{Type Predicates}.
-You can use @code{intern} and @code{eq} to compare against known type
-symbols, if your code needs to depend on the object type.
+Функция возвращает тип @var{object} как значение, представляющее символ: @code{string}
+для строки, @code{integer} для целого числа, @code{process} для процесса и так далее.
+Можно использовать @code{intern} и @code{eq} для сравнения с символами известного
+типа, если код должен зависеть от типа объекта.
 @end deftypefn
 
 @anchor{intern}
 @deftypefn Function emacs_value intern (emacs_env *@var{env}, const char *name)
-This function returns an interned Emacs symbol whose name is
-@var{name}, which should be an @acronym{ASCII} null-terminated string.
-It creates a new symbol if one does not already exist.
+Функция возвращает интернированный символ Emacs с именем @var{name}, который должен
+быть строкой @acronym{ASCII} с завершающим нулем.  Это создает новый символ, если он
+еще не существует.
 
-Together with @code{funcall}, described below, this function provides
-a means for invoking any Lisp-callable Emacs function, provided that
-its name is a pure @acronym{ASCII} string.  For example, here's how to
-intern a symbol whose name @code{name_str} is non-@acronym{ASCII}, by
-calling the more powerful Emacs @code{intern} function
+Вместе с @code{funcall}, описанным ниже, эта функция предоставляет средства для
+вызова любой функции Emacs, вызываемой Lisp, при условии, что ее имя является чистой
+строкой @acronym{ASCII}.  Например, вот как интернировать не-@acronym{ASCII} символ с
+именем @code{name_str} , вызвав более мощную функцию @code{intern} в Emacs
 (@pxref{Creating Symbols}):
 
 @example
@@ -1467,390 +1441,367 @@ emacs_value symbol = env->funcall (env, fintern, 2, intern_args);
 @end deftypefn
 
 @deftypefn Function emacs_value funcall (emacs_env *@var{env}, emacs_value @var{func}, ptrdiff_t @var{nargs}, emacs_value *@var{args})
-This function calls the specified @var{func} passing it @var{nargs}
-arguments from the array pointed to by @var{args}.  The argument
-@var{func} can be a function symbol (e.g., returned by @code{intern}
-described above), a module function returned by @code{make_function}
-(@pxref{Module Functions}), a subroutine written in C, etc.  If
-@var{nargs} is zero, @var{args} can be a @code{NULL} pointer.
+Функция вызывает указанную @var{func}, передавав аргументы @var{nargs} из массива, на
+который указывает @var{args}.  Аргумент @var{func} может быть символом функции
+(например, возвращенным @code{intern}, описанным выше), функцией модуля, возвращаемой
+@code{make_function} (@pxref{Module Functions}), подпрограммой, написанной на C, и так
+далее.  Если @var{nargs} равно нулю, @var{args} может быть указателем @code{NULL}.
 
-The function returns the value that @var{func} returned.
+Функция возвращает значение, возвращаемое @var{func}.
 @end deftypefn
 
-If your module includes potentially long-running code, it is a good
-idea to check from time to time in that code whether the user wants to
-quit, e.g., by typing @kbd{C-g} (@pxref{Quitting}).  The following
-function, which is available since Emacs 26.1, is provided for that
-purpose.
+Если модуль включает потенциально длительный код, рекомендуется время от времени
+проверять в этом коде, хочет ли пользователь выйти, например, набрав @kbd{C-g}
+(@pxref{Quitting}).  Для этой цели предусмотрена следующая функция, доступная начиная
+с Emacs 26.1.
 
 @anchor{should_quit}
 @deftypefn Function bool should_quit (emacs_env *@var{env})
-This function returns @code{true} if the user wants to quit.  In that
-case, we recommend that your module function aborts any on-going
-processing and returns as soon as possible.
+Функция возвращает @code{true}, если пользователь хочет выйти.  В этом случае
+рекомендуется, чтобы функция модуля прервала любую текущую обработку и вернулась как
+можно скорее.
 @end deftypefn
 
 @node Module Nonlocal
-@subsection Nonlocal Exits in Modules
+@subsection Нелокальные Выходы в Модулях
 @cindex nonlocal exits, in modules
 
-  Emacs Lisp supports nonlocal exits, whereby program control is
-transfered from one point in a program to another remote point.
-@xref{Nonlocal Exits}.  Thus, Lisp functions called by your module
-might exit nonlocally by calling @code{signal} or @code{throw}, and
-your module functions must handle such nonlocal exits properly.  Such
-handling is needed because C programs will not automatically release
-resources and perform other cleanups in these cases; your module code
-must itself do it.  The module @acronym{API} provides facilities for
-that, described in this subsection.  They are generally available
-since Emacs 25; those of them that became available in later releases
-explicitly call out the first Emacs version where they became part of
-the @acronym{API}.
+  Emacs Lisp поддерживает нелокальные выходы, посредством которых управление
+программой передается от одной точки программы к другой удаленной точке.
+@xref{Nonlocal Exits}.  Таким образом, функции Lisp, вызываемые модулем, могут
+завершаться нелокально, вызывая @code{signal} или @code{throw}, и функции модуля
+должны правильно обрабатывать такие нелокальные выходы.  Такая обработка необходима,
+потому что программы на C не будут автоматически освобождать ресурсы и выполнять
+другие операции очистки в этих случаях; код модуля должен это делать сам.  Модуль
+@acronym{API} предоставляет для этого средства, описанные в этом подразделе.  Это
+обычно доступно, начиная с Emacs 25; те из них, которые стали доступны в более поздних
+выпусках, явно вызывают первую версию Emacs, в которой они стали частью @acronym{API}.
 
-When some Lisp code called by a module function signals an error or
-throws, the nonlocal exit is trapped, and the pending exit and its
-associated data are stored in the environment.  Whenever a nonlocal
-exit is pending in the environment, any module @acronym{API} function
-called with a pointer to that environment will return immediately
-without any processing (the functions @code{non_local_exit_check},
-@code{non_local_exit_get}, and @code{non_local_exit_clear} are
-exceptions from this rule).  If your module function then does nothing
-and returns to Emacs, a pending nonlocal exit will cause Emacs to act
-on it: signal an error or throw to the corresponding @code{catch}.
+Когда некоторый код Lisp, вызываемый функцией модуля, сигнализирует об ошибке или
+выдает ошибку, нелокальный выход перехватывается, а ожидающий выход и связанные с ним
+данные сохраняются в среде.  Когда в среде ожидается нелокальный выход, любая функция
+модуля @acronym{API}, вызываемая с указателем на эту среду, немедленно вернется без
+какой-либо обработки (функции @code{non_local_exit_check}, @code{non_local_exit_get} и
+@code{non_local_exit_clear} являются исключениями из этого правила).  Если функция
+модуля затем ничего не делает и возвращается в Emacs, ожидающий нелокальный выход
+заставит Emacs действовать в соответствии с ней: сигнализировать об ошибке или
+перенаправлять в соответствующий @code{catch}.
 
-So the simplest ``handling'' of nonlocal exits in module functions is
-to do nothing special and let the rest of your code to run as if
-nothing happened.  However, this can cause two classes of problems:
+Итак, самым простым ``умением обращаться'' с нелокальными выходами в функциях модуля -
+это не делать ничего особенного и позволить остальной части кода работать, как будто
+ничего не произошло.  Однако это может вызвать два класса проблем:
 
 @itemize @minus
 @item
-Your module function might use uninitialized or undefined values,
-since @acronym{API} functions return immediately without producing the
-expected results.
+Функция модуля может использовать неинициализированные или неопределенные значения,
+поскольку функции @acronym{API} возвращаются немедленно, не давая ожидаемых
+результатов.
 
 @item
-Your module might leak resources, because it might not have the
-opportunity to release them.
+В модуле может произойти утечка ресурсов, потому что у него может не быть возможности
+освободить их.
 @end itemize
 
-Therefore, we recommend that your module functions check for nonlocal
-exit conditions and recover from them, using the functions described
-below.
+Поэтому рекомендуется, чтобы функции модуля проверяли наличие нелокальных условий
+выхода и восстанавливались после них, используя функции, описанные ниже.
 
 @deftypefn Function enum emacs_funcall_exit non_local_exit_check (emacs_env *@var{env})
-This function returns the kind of nonlocal exit condition stored in
-@var{env}.  The possible values are:
+Функция возвращает вид нелокального условия выхода, хранящегося в @var{env}.
+Возможные значения:
 
 @vindex emacs_funcall_exit@r{, enumeration}
 @vtable @code
 @item emacs_funcall_exit_return
-The last @acronym{API} function exited normally.
+Последняя функция @acronym{API} завершилась нормально.
 @item emacs_funcall_exit_signal
-The last @acronym{API} function signaled an error.
+Последняя функция @acronym{API} сообщила об ошибке.
 @item emacs_funcall_exit_throw
-The last @acronym{API} function exited via @code{throw}.
+Последняя функция @acronym{API} завершилась через @code{throw}.
 @end vtable
 @end deftypefn
 
 @deftypefn Function emacs_funcall_exit non_local_exit_get (emacs_env *@var{env}, emacs_value *@var{symbol}, emacs_value *@var{data})
-This function returns the kind of nonlocal exit condition stored in
-@var{env}, like @code{non_local_exit_check} does, but it also returns
-the full information about the nonlocal exit, if any.  If the return
-value is @code{emacs_funcall_exit_signal}, the function stores the
-error symbol in @code{*@var{symbol}} and the error data in
-@code{*@var{data}} (@pxref{Signaling Errors}).  If the return value is
-@code{emacs_funcall_exit_throw}, the function stores the @code{catch}
-tag symbol in @code{*@var{symbol}} and the @code{throw} value in
-@code{*@var{data}}.  The function doesn't store anything in memory
-pointed by these arguments when the return value is
-@code{emacs_funcall_exit_return}.
+Функция возвращает вид нелокального условия выхода, хранящегося в @var{env}, как и
+@code{non_local_exit_check}, но также возвращает полную информацию о нелокальном
+выходе, если таковая имеется.  Если возвращаемое значение -
+@code{emacs_funcall_exit_signal}, функция сохраняет символ ошибки в
+@code{*@var{symbol}}, а данные ошибки - в @code{*@var{data}}
+(@pxref{Signaling Errors}).  Если возвращаемое значение -
+@code{emacs_funcall_exit_throw}, функция сохраняет символ тега @code{catch} в
+@code{*@var{symbol}} и значение @code{throw} в @code{*@var{data}}.  Функция не
+сохраняет ничего в памяти, на которую указывают эти аргументы, если возвращаемое
+значение - @code{emacs_funcall_exit_return}.
 @end deftypefn
 
-You should check nonlocal exit conditions where it matters: before you
-allocated some resource or after you allocated a resource that might
-need freeing, or where a failure means further processing is
-impossible or infeasible.
+Потребуется проверять нелокальные условия выхода там, где это важно: перед выделением
+некоторого ресурса или после выделения ресурса, который может нуждаться в
+освобождении, или когда сбой означает, что дальнейшая обработка невозможна или
+неосуществима.
 
-Once your module function detected that a nonlocal exit is pending, it
-can either return to Emacs (after performing the necessary local
-cleanup), or it can attempt to recover from the nonlocal exit.  The
-following @acronym{API} functions will help with these tasks.
+Как только функция модуля обнаружила, что нелокальный выход ожидает обработки, она
+может либо вернуться в Emacs (после выполнения необходимой локальной очистки), либо
+попытаться восстановиться после нелокального выхода.  Следующие функции @acronym{API}
+помогут с этими задачами.
 
 @deftypefn Function void non_local_exit_clear (emacs_env *@var{env})
-This function clears the pending nonlocal exit conditions and data
-from @var{env}.  After calling it, the module @acronym{API} functions
-will work normally.  Use this function if your module function can
-recover from nonlocal exits of the Lisp functions it calls and
-continue, and also before calling any of the following two functions
-(or any other @acronym{API} functions, if you want them to perform
-their intended processing when a nonlocal exit is pending).
+Функция очищает отложенные нелокальные условия выхода и данные из @var{env}.  После
+её вызова функции модуля @acronym{API} будут работать нормально.  Использовать эту
+функцию, если функция модуля может восстанавливаться после нелокальных выходов функций
+Lisp, которые она вызывает и продолжает, а также перед вызовом любой из следующих двух
+функций (или любых других функций @acronym{API}, если требуется, чтобы они выполняли
+свою предполагаемую обработку, когда нелокальный ожидается выход).
 @end deftypefn
 
 @deftypefn Function void non_local_exit_throw (emacs_env *@var{env}, emacs_value @var{tag}, emacs_value @var{value})
-This function throws to the Lisp @code{catch} symbol represented by
-@var{tag}, passing it @var{value} as the value to return.  Your module
-function should in general return soon after calling this function.
-One use of this function is when you want to re-throw a non-local exit
-from one of the called @acronym{API} or Lisp functions.
+Функция бросает в Lisp символ @code{catch}, представленный @var{tag}, передавая ему
+@var{value} в качестве возвращаемого значения.  Как правило, функция модуля должна
+вернуться вскоре после вызова этой функции.  Одно из применений этой функции - когда
+требуется повторно вызвать нелокальный выход из одной из вызываемых функций
+@acronym{API} или Lisp.
 @end deftypefn
 
 @deftypefn Function void non_local_exit_signal (emacs_env *@var{env}, emacs_value @var{error}, emacs_value @var{data})
-This function signals the error represented by @var{error} with the
-specified error data @var{data}.  The module function should return
-soon after calling this function.  This function could be useful,
-e.g., for signaling errors from module functions to Emacs.
+Функция сигнализирует об ошибке, представленной @var{error}, с указанными данными об
+ошибке @var{data}.  Функция модуля должна вернуться вскоре после вызова этой функции.
+Функция может быть полезна, например, для передачи сообщений об ошибках от функций
+модуля в Emacs.
 @end deftypefn
 
 
 @node Object Internals
-@section Object Internals
+@section Внутреннее Устройство Объекта
 @cindex object internals
 
-  Emacs Lisp provides a rich set of the data types.  Some of them, like cons
-cells, integers and strings, are common to nearly all Lisp dialects.  Some
-others, like markers and buffers, are quite special and needed to provide
-the basic support to write editor commands in Lisp.  To implement such
-a variety of object types and provide an efficient way to pass objects between
-the subsystems of an interpreter, there is a set of C data structures and
-a special type to represent the pointers to all of them, which is known as
-@dfn{tagged pointer}.
+  Emacs Lisp предоставляет богатый набор типов данных.  Некоторые из них, например
+cons-ячейки, целые числа и строки, являются общими почти для всех диалектов Lisp.
+Некоторые другие, такие как маркеры и буферы, являются совершенно особенными и
+необходимы для обеспечения базовой поддержки для написания команд редактора в Lisp.
+Чтобы реализовать такое разнообразие типов объектов и обеспечить эффективный способ
+передачи объектов между подсистемами интерпретатора, существует набор структур данных
+C и специальный тип для представления указателей на все из них, известный как
+@dfn{помеченный указатель}.
 
-  In C, the tagged pointer is an object of type @code{Lisp_Object}.  Any
-initialized variable of such a type always holds the value of one of the
-following basic data types: integer, symbol, string, cons cell, float,
-vectorlike or miscellaneous object.  Each of these data types has the
-corresponding tag value.  All tags are enumerated by @code{enum Lisp_Type}
-and placed into a 3-bit bitfield of the @code{Lisp_Object}.  The rest of the
-bits is the value itself.  Integers are immediate, i.e., directly
-represented by those @dfn{value bits}, and all other objects are represented
-by the C pointers to a corresponding object allocated from the heap.  Width
-of the @code{Lisp_Object} is platform- and configuration-dependent: usually
-it's equal to the width of an underlying platform pointer (i.e., 32-bit on
-a 32-bit machine and 64-bit on a 64-bit one), but also there is a special
-configuration where @code{Lisp_Object} is 64-bit but all pointers are 32-bit.
-The latter trick was designed to overcome the limited range of values for
-Lisp integers on a 32-bit system by using 64-bit @code{long long} type for
-@code{Lisp_Object}.
+  В C помеченный указатель - это объект типа @code{Lisp_Object}.  Любая
+инициализированная переменная такого типа всегда содержит значение одного из следующих
+основных типов данных: целое число, символ, строка, cons-ячейка, float, векторный или
+другой объект.  Каждый из этих типов данных имеет соответствующее значение тега.  Все
+теги нумеруются @code{enum Lisp_Type} и помещаются в 3-битное битовое поле
+@code{Lisp_Object}.  Остальные биты - это само значение.  Целые числа являются
+немедленными, то есть непосредственно представлены этими @dfn{битовыми значениями}, а
+все другие объекты представлены указателями C на соответствующий объект, выделенный
+из среды.  Ширина @code{Lisp_Object} зависит от платформы и конфигурации: обычно она
+равна ширине указателя базовой платформы (то есть 32-битная на 32-битной машине и
+64-битная на 64-битной), но также и там. - это специальная конфигурация, в которой
+@code{Lisp_Object} является 64-битным, но все указатели 32-битными.  Последний прием
+был разработан для преодоления ограниченного диапазона значений целых чисел Lisp в
+32-битной системе с использованием 64-битного типа @code{long long} для
+@code{Lisp_Object}.\
 
-  The following C data structures are defined in @file{lisp.h} to represent
-the basic data types beyond integers:
+  Следующие структуры данных C определены в @file{lisp.h} для представления основных
+типов данных помимо целых чисел:
 
 @table @code
 @item struct Lisp_Cons
-Cons cell, an object used to construct lists.
+Cons-ячейка, объект, используемый для построения списков.
 
 @item struct Lisp_String
-String, the basic object to represent a sequence of characters.
+Строка, основной объект для представления последовательности символов.
 
 @item struct Lisp_Vector
-Array, a fixed-size set of Lisp objects which may be accessed by an index.
+Массив, набор объектов Lisp фиксированного размера, к которым можно получить доступ
+с помощью индекса.
 
 @item struct Lisp_Symbol
-Symbol, the unique-named entity commonly used as an identifier.
+Символ - объект с уникальным именем, обычно используемый в качестве идентификатора.
 
 @item struct Lisp_Float
-Floating-point value.
+Значение с плавающей запятой.
 
 @item union Lisp_Misc
-Miscellaneous kinds of objects which don't fit into any of the above.
+Разные типы объектов, не подходящие ни для одного из вышеперечисленных.
 @end table
 
-  These types are the first-class citizens of an internal type system.
-Since the tag space is limited, all other types are the subtypes of either
-@code{Lisp_Vectorlike} or @code{Lisp_Misc}.  Vector subtypes are enumerated
-by @code{enum pvec_type}, and nearly all complex objects like windows, buffers,
-frames, and processes fall into this category.  The rest of special types,
-including markers and overlays, are enumerated by @code{enum Lisp_Misc_Type}
-and form the set of subtypes of @code{Lisp_Misc}.
+  Эти типы являются первоклассными гражданами внутренней системы типов.  Поскольку
+пространство тегов ограничено, все остальные типы являются подтипами либо
+@code{Lisp_Vectorlike} либо @code{Lisp_Misc}.  Подтипы векторов перечислены
+@code{enum pvec_type}, и почти все сложные объекты, такие как окна, буферы, фреймы и
+процессы, попадают в эту категорию.  Остальные специальные типы, включая маркеры и
+наложения, нумеруются @code{enum Lisp_Misc_Type} и образуют набор подтипов
+@code{Lisp_Misc}.
 
-  Below there is a description of a few subtypes of @code{Lisp_Vectorlike}.
-Buffer object represents the text to display and edit.  Window is the part
-of display structure which shows the buffer or is used as a container to
-recursively place other windows on the same frame.  (Do not confuse Emacs Lisp
-window object with the window as an entity managed by the user interface
-system like X; in Emacs terminology, the latter is called frame.)  Finally,
-process object is used to manage the subprocesses.
+  Ниже приводится описание нескольких подтипов @code{Lisp_Vectorlike}.  Объект Buffer
+представляет текст для отображения и редактирования.  Окно - это часть структуры
+отображения, которая показывает буфер или используется как контейнер для рекурсивного
+размещения других окон в том же фрейме.  (Не путать объект окна Emacs Lisp с окном
+как объектом, управляемым системой пользовательского интерфейса, такой как X; в
+терминологии Emacs последний называется фреймом.)  Наконец, объект процесса
+используется для управления подпроцессами.
 
 @menu
-* Buffer Internals::    Components of a buffer structure.
-* Window Internals::    Components of a window structure.
-* Process Internals::   Components of a process structure.
+* Buffer Internals::    Компоненты буферной структуры.
+* Window Internals::    Компоненты оконной конструкции.
+* Process Internals::   Компоненты структуры процесса.
 @end menu
 
 @node Buffer Internals
-@subsection Buffer Internals
+@subsection Внутреннее Устройство Буфера
 @cindex internals, of buffer
 @cindex buffer internals
 
-  Two structures (see @file{buffer.h}) are used to represent buffers
-in C@.  The @code{buffer_text} structure contains fields describing the
-text of a buffer; the @code{buffer} structure holds other fields.  In
-the case of indirect buffers, two or more @code{buffer} structures
-reference the same @code{buffer_text} structure.
+  Две структуры (смотреть @file{buffer.h}) используются для представления буферов в
+C@.  Структура @code{buffer_text} содержит поля, описывающие текст буфера; структура
+@code{buffer} содержит другие поля.  В случае косвенных буферов две или более
+структуры @code{buffer} ссылаются на одну и ту же структуру @code{buffer_text}.
 
-Here are some of the fields in @code{struct buffer_text}:
+Вот некоторые из полей в @code{struct buffer_text}:
 
 @table @code
 @item beg
-The address of the buffer contents.  The buffer contents is a linear C
-array of @code{char}, with the gap somewhere in its midst.
+Адрес содержимого буфера.  Содержимое буфера представляет собой линейный C-массив
+@code{char} с промежутком где-то посередине.
 
 @item gpt
 @itemx gpt_byte
-The character and byte positions of the buffer gap.  @xref{Buffer
-Gap}.
+Позиции символа и байта в буферном пространстве.  @xref{Buffer Gap}.
 
 @item z
 @itemx z_byte
-The character and byte positions of the end of the buffer text.
+Позиции символа и байта конца текста буфера.
 
 @item gap_size
-The size of buffer's gap.  @xref{Buffer Gap}.
+Размер буферного пространства.  @xref{Buffer Gap}.
 
 @item modiff
 @itemx save_modiff
 @itemx chars_modiff
 @itemx overlay_modiff
-These fields count the number of buffer-modification events performed
-in this buffer.  @code{modiff} is incremented after each
-buffer-modification event, and is never otherwise changed;
-@code{save_modiff} contains the value of @code{modiff} the last time
-the buffer was visited or saved; @code{chars_modiff} counts only
-modifications to the characters in the buffer, ignoring all other
-kinds of changes (such as text properties); and @code{overlay_modiff}
-counts only modifications to the buffer's overlays.
+Эти поля подсчитывают количество событий модификации буфера, выполненных в этом
+буфере.  @code{modiff} увеличивается после каждого события модификации буфера и
+никогда не изменяется; @code{save_modiff} содержит значение @code{modiff} при
+последнем посещении или сохранении буфера; @code{chars_modiff} учитывает только
+модификации символов в буфере, игнорируя все другие виды изменений (например,
+свойства текста); а @code{overlay_modiff} учитывает только модификации наложения
+буфера.
 
 @item beg_unchanged
 @itemx end_unchanged
-The number of characters at the start and end of the text that are
-known to be unchanged since the last complete redisplay.
+Количество символов в начале и конце текста, которые, как известно, не изменились с
+момента последнего полного повторного отображения.
 
 @item unchanged_modified
 @itemx overlay_unchanged_modified
-The values of @code{modiff} and @code{overlay_modiff}, respectively,
-after the last complete redisplay.  If their current values match
-@code{modiff} or @code{overlay_modiff}, that means
-@code{beg_unchanged} and @code{end_unchanged} contain no useful
-information.
+Значения @code{modiff} и @code{overlay_modiff}, соответственно, после последнего
+полного повторного отображения.  Если их текущие значения совпадают с @code{modiff}
+или @code{overlay_modiff}, это означает, что @code{beg_unchanged} и
+@code{end_unchanged} не содержит полезной информации.
 
 @item markers
-The markers that refer to this buffer.  This is actually a single
-marker, and successive elements in its marker @code{chain} are the other
-markers referring to this buffer text.
+Маркеры, относящиеся к этому буферу.  На самом деле это единственный маркер, и
+последовательные элементы в его маркере @code{chain} являются другими маркерами,
+относящимися к этому тексту буфера.
 
 @item intervals
-The interval tree which records the text properties of this buffer.
+Дерево интервалов, которое записывает текстовые свойства этого буфера.
 @end table
 
-Some of the fields of @code{struct buffer} are:
+Вот некоторые из полей @code{struct buffer}:
 
 @table @code
 @item header
-A header of type @code{union vectorlike_header} is common to all
-vectorlike objects.
+Заголовок типа @code{union vectorlike_header} является общим для всех векторных
+объектов.
 
 @item own_text
-A @code{struct buffer_text} structure that ordinarily holds the buffer
-contents.  In indirect buffers, this field is not used.
+Структура @code{struct buffer_text}, которая обычно хранит содержимое буфера.  В
+косвенных буферах это поле не используется.
 
 @item text
-A pointer to the @code{buffer_text} structure for this buffer.  In an
-ordinary buffer, this is the @code{own_text} field above.  In an
-indirect buffer, this is the @code{own_text} field of the base buffer.
+Указатель на структуру @code{buffer_text} для этого буфера.  В обычном буфере это
+поле @code{own_text} описано выше.  В косвенном буфере это поле @code{own_text}
+базового буфера.
 
 @item next
-A pointer to the next buffer, in the chain of all buffers, including
-killed buffers.  This chain is used only for allocation and garbage
-collection, in order to collect killed buffers properly.
+Указатель на следующий буфер в цепочке всех буферов, включая уничтоженные буферы.  Эта
+цепочка используется только для выделения и сборки мусора, чтобы правильно собирать
+уничтоженные буферы.
 
 @item pt
 @itemx pt_byte
-The character and byte positions of point in a buffer.
+Позиции символа и байта точки в буфере.
 
 @item begv
 @itemx begv_byte
-The character and byte positions of the beginning of the accessible
-range of text in the buffer.
+Позиции символа и байта начала доступного диапазона текста в буфере.
 
 @item zv
 @itemx zv_byte
-The character and byte positions of the end of the accessible range of
-text in the buffer.
+Позиции символа и байта конца доступного диапазона текста в буфере.
 
 @item base_buffer
-In an indirect buffer, this points to the base buffer.  In an ordinary
-buffer, it is null.
+В косвенном буфере это указывает на базовый буфер.  В обычном буфере это равно нулю.
 
 @item local_flags
-This field contains flags indicating that certain variables are local
-in this buffer.  Such variables are declared in the C code using
-@code{DEFVAR_PER_BUFFER}, and their buffer-local bindings are stored
-in fields in the buffer structure itself.  (Some of these fields are
-described in this table.)
+Поле содержит флаги, указывающие, что определенные переменные являются локальными в
+этом буфере.  Такие переменные объявляются в коде C с помощью
+@code{DEFVAR_PER_BUFFER}, и их привязки к локальному буферу хранятся в полях самой
+структуры буфера.  (Некоторые из этих полей описаны в этой таблице.)
 
 @item modtime
-The modification time of the visited file.  It is set when the file is
-written or read.  Before writing the buffer into a file, this field is
-compared to the modification time of the file to see if the file has
-changed on disk.  @xref{Buffer Modification}.
+Время модификации посещенного файла.  Устанавливается, когда файл записывается или
+читается.  Перед записью буфера в файл это поле сравнивается со временем модификации
+файла, чтобы увидеть, изменился ли файл на диске.  @xref{Buffer Modification}.
 
 @item auto_save_modified
-The time when the buffer was last auto-saved.
+Время последнего автоматического сохранения буфера.
 
 @item last_window_start
-The @code{window-start} position in the buffer as of the last time the
-buffer was displayed in a window.
+@code{window-start} позиция в буфере на момент последнего отображения буфера в окне.
 
 @item clip_changed
-This flag indicates that narrowing has changed in the buffer.
+Флаг указывает, что в буфере изменилось сужение.
 @xref{Narrowing}.
 
 @item prevent_redisplay_optimizations_p
-This flag indicates that redisplay optimizations should not be used to
-display this buffer.
+Флаг указывает, что не следует использовать оптимизацию повторного отображения для
+отображения этого буфера.
 
 @item overlay_center
-This field holds the current overlay center position.  @xref{Managing
-Overlays}.
+Поле содержит текущее положение центра наложения.  @xref{Managing Overlays}.
 
 @item overlays_before
 @itemx overlays_after
-These fields hold, respectively, a list of overlays that end at or
-before the current overlay center, and a list of overlays that end
-after the current overlay center.  @xref{Managing Overlays}.
-@code{overlays_before} is sorted in order of decreasing end position,
-and @code{overlays_after} is sorted in order of increasing beginning
-position.
+Поля содержат, соответственно, список наложений, которые заканчиваются в текущем
+центре наложения или перед ним, и список наложений, которые заканчиваются после
+текущего центра наложения.  @xref{Managing Overlays}.  @code{overlays_before}
+сортируется в порядке убывания конечной позиции, а @code{overlays_after} сортируется
+в порядке увеличения начальной позиции.
 
-@c FIXME? the following are now all Lisp_Object BUFFER_INTERNAL_FIELD (foo).
+@c FIXME? следующие теперь все Lisp_Object BUFFER_INTERNAL_FIELD (foo).
 
 @item name
-A Lisp string that names the buffer.  It is guaranteed to be unique.
-@xref{Buffer Names}.  This and the following fields have their names
-in the C struct definition end in a @code{_} to indicate that they
-should not be accessed directly, but via the @code{BVAR} macro, like
-this:
+Строка Lisp, которая называет буфер.  Гарантируется уникальность.
+@xref{Buffer Names}.  Это и следующие поля имеют свои имена в определении структуры C,
+оканчивающиеся на @code{_}, чтобы указать, что к ним следует обращаться не напрямую, а
+через макрос @code{BVAR}, например:
 
 @example
   Lisp_Object buf_name = BVAR (buffer, name);
 @end example
 
 @item save_length
-The length of the file this buffer is visiting, when last read or
-saved.  It can have 2 special values: @minus{}1 means auto-saving was
-turned off in this buffer, and @minus{}2 means don't turn off
-auto-saving if buffer text shrinks a lot.  This and other fields
-concerned with saving are not kept in the @code{buffer_text} structure
-because indirect buffers are never saved.
+Длина файла, который посещает этот буфер, при последнем чтении или сохранении.  Может
+иметь 2 специальных значения: @minus{}1 означает, что автосохранение в этом буфере
+отключено, а @minus{}2 означает, что автосохранение не отключается, если текст в
+буфере сильно сжимается.  Это и другие поля, связанные с сохранением, не хранятся в
+структуре @code{buffer_text}, потому что косвенные буферы никогда не сохраняются.
 
 @item directory
-The directory for expanding relative file names.  This is the value of
-the buffer-local variable @code{default-directory} (@pxref{File Name Expansion}).
+Каталог для раскрытия относительных имен файлов.  Это значение переменной
+@code{default-directory} (@pxref{File Name Expansion}), локально в буфере.
 
 @item filename
-The name of the file visited in this buffer, or @code{nil}.  This is
-the value of the buffer-local variable @code{buffer-file-name}
-(@pxref{Buffer File Name}).
+Имя файла, посещенного в этом буфере, или @code{nil}.  Это значение переменной
+@code{buffer-file-name}, локально в буфере.  (@pxref{Buffer File Name}).
 
 @item undo_list
 @itemx backed_up
@@ -1862,55 +1813,53 @@ the value of the buffer-local variable @code{buffer-file-name}
 @itemx invisibility_spec
 @itemx display_count
 @itemx display_time
-These fields store the values of Lisp variables that are automatically
-buffer-local (@pxref{Buffer-Local Variables}), whose corresponding
-variable names have the additional prefix @code{buffer-} and have
-underscores replaced with dashes.  For instance, @code{undo_list}
-stores the value of @code{buffer-undo-list}.
+В этих полях хранятся значения переменных Lisp, которые автоматически становятся
+локальными в буфере (@pxref{Buffer-Local Variables}), чьи соответствующие имена
+переменных имеют дополнительный префикс @code{buffer-} и имеют символы подчеркивания,
+замененные дефисами.  Например, @code{undo_list} хранит значение
+@code{buffer-undo-list}.
 
 @item mark
-The mark for the buffer.  The mark is a marker, hence it is also
-included on the list @code{markers}.  @xref{The Mark}.
+Отметка для буфера.  Метка является маркером, поэтому она также включена в список
+@code{markers}.  @xref{The Mark}.
 
 @item local_var_alist
-The association list describing the buffer-local variable bindings of
-this buffer, not including the built-in buffer-local bindings that
-have special slots in the buffer object.  (Those slots are omitted
-from this table.)  @xref{Buffer-Local Variables}.
+Список ассоциаций, описывающий привязки локальных переменных этого буфера, за
+исключением встроенных локальных привязок буфера, которые имеют специальные слоты в
+объекте буфера.  (Эти слоты не указаны в этой таблице.)
+@xref{Buffer-Local Variables}.
 
 @item major_mode
-Symbol naming the major mode of this buffer, e.g., @code{lisp-mode}.
+Символ, обозначающий основной режим этого буфера, например, @code{lisp-mode}.
 
 @item mode_name
-Pretty name of the major mode, e.g., @code{"Lisp"}.
+Красивое название основного режима, например, @code{"Lisp"}.
 
 @item keymap
 @itemx abbrev_table
 @itemx syntax_table
 @itemx category_table
 @itemx display_table
-These fields store the buffer's local keymap (@pxref{Keymaps}), abbrev
-table (@pxref{Abbrev Tables}), syntax table (@pxref{Syntax Tables}),
-category table (@pxref{Categories}), and display table (@pxref{Display
-Tables}).
+В этих полях хранится локальная ключевая карта (@pxref{Keymaps}), таблица сокращений
+(@pxref{Abbrev Tables}), таблица синтаксиса (@pxref{Syntax Tables}), таблица
+категорий (@pxref{Categories}) и таблица отображения (@pxref{Display Tables}).
 
 @item downcase_table
 @itemx upcase_table
 @itemx case_canon_table
-These fields store the conversion tables for converting text to lower
-case, upper case, and for canonicalizing text for case-fold search.
+В этих полях хранятся таблицы преобразования для преобразования текста в нижний и
+верхний регистры, а также для канонизации текста для поиска по регистру.
 @xref{Case Tables}.
 
 @item minor_modes
-An alist of the minor modes of this buffer.
+Список второстепенных режимов этого буфера.
 
 @item pt_marker
 @itemx begv_marker
 @itemx zv_marker
-These fields are only used in an indirect buffer, or in a buffer that
-is the base of an indirect buffer.  Each holds a marker that records
-@code{pt}, @code{begv}, and @code{zv} respectively, for this buffer
-when the buffer is not current.
+Поля используются только в косвенном буфере или в буфере, который является основой
+косвенного буфера.  Каждый содержит маркер, который записывает @code{pt}, @code{begv}
+и @code{zv} соответственно для этого буфера, когда буфер не является текущим.
 
 @item mode_line_format
 @itemx header_line_format
@@ -1945,475 +1894,455 @@ when the buffer is not current.
 @itemx scroll_down_aggressively
 @itemx cursor_type
 @itemx cursor_in_non_selected_windows
-These fields store the values of Lisp variables that are automatically
-buffer-local (@pxref{Buffer-Local Variables}), whose corresponding
-variable names have underscores replaced with dashes.  For instance,
-@code{mode_line_format} stores the value of @code{mode-line-format}.
+В этих полях хранятся значения переменных Lisp, которые автоматически становятся
+локальными в буфере (@pxref{Buffer-Local Variables}), чьи соответствующие имена
+переменных имеют символы подчеркивания, замененные дефисами.  Например,
+@code{mode_line_format} хранит значение @code{mode-line-format}.
 
 @item last_selected_window
-This is the last window that was selected with this buffer in it, or @code{nil}
-if that window no longer displays this buffer.
+Это последнее окно, которое было выбрано с этим буфером в нем, или @code{nil}, если
+это окно больше не отображает этот буфер.
 @end table
 
 @node Window Internals
-@subsection Window Internals
+@subsection Внутреннее Устройство Окна
 @cindex internals, of window
 @cindex window internals
 
-  The fields of a window (for a complete list, see the definition of
-@code{struct window} in @file{window.h}) include:
+  Поля окна (полный список смотреть в определении @code{struct window} в
+@file{window.h}) включают:
 
 @table @code
 @item frame
-The frame that this window is on, as a Lisp object.
+Фрейм, на котором находится это окно, как объект Lisp.
 
 @item mini
-Non-zero if this window is a minibuffer window, a window showing the
-minibuffer or the echo area.
+Ненулевое значение, если это окно является окном минибуфера, окном, показывающим
+минибуфер или эхо-область.
 
 @item pseudo_window_p
 @cindex pseudo window
-Non-zero if this window is a @dfn{pseudo window}.  A pseudo window is
-either a window used to display the menu bar or the tool bar (when
-Emacs uses toolkits that don't display their own menu bar and tool
-bar) or a window showing a tooltip on a tooltip frame.  Pseudo windows
-are in general not accessible from Lisp code.
+Ненулевое значение, если это окно @dfn{псевдоокно}.  Псевдоокно - это либо окно,
+используемое для отображения строки меню или панели инструментов (когда Emacs
+использует наборы инструментов, которые не отображают собственную строку меню и
+панель инструментов), либо окно, показывающее всплывающую подсказку во фрейме
+всплывающей подсказки.  Псевдоокна обычно недоступны из кода Lisp.
 
 @item parent
-Internally, Emacs arranges windows in a tree; each group of siblings
-has a parent window whose area includes all the siblings.  This field
-points to the window's parent in that tree, as a Lisp object.  For the
-root window of the tree and a minibuffer window this is always
-@code{nil}.
+Внутри Emacs выстраивает окна в виде дерева; у каждой группы братьев и сестер есть
+родительское окно, область которого включает всех братьев и сестер.  Это поле
+указывает на родителя окна в этом дереве как на объект Lisp.  Для корневого окна
+дерева и окна минибуфера это всегда @code{nil}.
 
-Parent windows do not display buffers, and play little role in display
-except to shape their child windows.  Emacs Lisp programs cannot
-directly manipulate parent windows; they operate on the windows at the
-leaves of the tree, which actually display buffers.
+Родительские окна не отображают буферы и играют небольшую роль в отображении, за
+исключением формирования своих дочерних окон.  Программы Emacs Lisp не могут напрямую
+управлять родительскими окнами; они работают с окнами на листьях дерева, которые
+фактически отображают буферы.
 
 @item contents
-For a leaf window and windows showing a tooltip, this is the buffer,
-as a Lisp object, that the window is displaying.  For an internal
-(``parent'') window, this is its first child window.  For a pseudo
-window showing a menu or tool bar this is @code{nil}.  It is also
-@code{nil} for a window that has been deleted.
+Для оконного листа и окон, показывающих всплывающую подсказку, это буфер, как объект
+Lisp, который окно отображает.  Для внутреннего (родительского) окна это его первое
+дочернее окно.  Для псевдоокна, показывающего меню или панель инструментов, это
+@code{nil}.  Это также @code{nil} для окна, которое было удалено.
 
 @item next
 @itemx prev
-The next and previous sibling of this window as Lisp objects.
-@code{next} is @code{nil} if the window is the right-most or
-bottom-most in its group; @code{prev} is @code{nil} if it is the
-left-most or top-most in its group.  Whether the sibling is left/right
-or up/down is determined by the @code{horizontal} field of the
-sibling's parent: if it's non-zero, the siblings are arranged
-horizontally.
+Следующий и предыдущий брат этого окна как объекты Lisp.  @code{next} имеет значение
+@code{nil}, если окно является самым правым или самым нижним в своей группе;
+@code{prev} является @code{nil}, если самый левый или самый верхний член в своей
+группе.  То, находится ли брат левее/правее или выше/ниже, определяется полем
+@code{horizontal} родительского элемента: если оно не равно нулю, то братья и сестры
+располагаются горизонтально.
 
-As a special case, @code{next} of a frame's root window points to the
-frame's minibuffer window, provided this is not a minibuffer-only or
-minibuffer-less frame.  On such frames @code{prev} of the minibuffer
-window points to that frame's root window.  In any other case, the
-root window's @code{next} and the minibuffer window's (if present)
-@code{prev} fields are @code{nil}.
+В качестве особого случая @code{next} корневого окна фрейма указывает на окно
+минибуфера фрейма, при условии, что это не фрейм, состоящий только из минибуфера или
+который не имеет минибуфера.  На таких фреймах @code{prev} окна минибуфера указывает
+на корневое окно этого фрейма.  В любом другом случае поля @code{next} корневого окна
+и @code{prev} окна минибуфера (если есть) имеют значение @code{nil}.
 
 @item left_col
-The left-hand edge of the window, measured in columns, relative to the
-leftmost column (column 0) of the window's native frame.
+Левый край окна, измеряемый в столбцах, относительно самого левого столбца (столбец 0)
+собственного фрейма окна.
 
 @item top_line
-The top edge of the window, measured in lines, relative to the topmost
-line (line 0) of the window's native frame.
+Верхний край окна, измеряемый в строках, относительно самой верхней линии (строка 0)
+собственного фрейма окна.
 
 @item pixel_left
 @itemx pixel_top
-The left-hand and top edges of this window, measured in pixels,
-relative to the top-left corner (0, 0) of the window's native frame.
+Левый и верхний края этого окна, измеряемые в пикселях, относительно верхнего левого
+угла (0, 0) собственного фрейма окна.
 
 @item total_cols
 @itemx total_lines
-The total width and height of the window, measured in columns and
-lines respectively.  The values include scroll bars and fringes,
-dividers and/or the separator line on the right of the window (if
-any).
+Общая ширина и высота окна, измеренная в столбцах и строках соответственно.  Значения
+включают полосы прокрутки и полосы, разделители и/или разделительную линию в правой
+части окна (если есть).
 
 @item pixel_width;
 @itemx pixel_height;
-The total width and height of the window measured in pixels.
+Общая ширина и высота окна в пикселях.
 
 @item start
-A marker pointing to the position in the buffer that is the first
-character (in the logical order, @pxref{Bidirectional Display})
-displayed in the window.
+Маркер, указывающий на позицию в буфере, которая является первым символом (в
+логическом порядке @pxref{Bidirectional Display}), отображаемым в окне.
 
 @item pointm
 @cindex window point internals
-This is the value of point in the current buffer when this window is
-selected; when it is not selected, it retains its previous value.
+Значение точки в текущем буфере, когда выбрано это окно; когда не выбрано, сохраняется
+предыдущее значение.
 
 @item old_pointm
-The value of @code{pointm} at the last redisplay time.
+Значение @code{pointm} во время последнего повторного отображения.
 
 @item force_start
-If this flag is non-@code{nil}, it says that the window has been
-scrolled explicitly by the Lisp program, and the value of the the
-window's @code{start} was set for redisplay to honor.  This affects
-what the next redisplay does if point is off the screen: instead of
-scrolling the window to show the text around point, it moves point to
-a location that is on the screen.
+Если этот флаг - не-@code{nil}, это говорит о том, что окно было явно прокручено
+программой Lisp, и значение @code{start} окна было установлено для повторного
+отображения для согласования.  Это влияет на то, что делает следующее повторное
+отображение, если точка находится за пределами экрана: вместо прокрутки окна, чтобы
+показать текст вокруг точки, перемещается точка в место, которое находится на экране.
 
 @item optional_new_start
-This is similar to @code{force_start}, but the next redisplay will
-only obey it if point stays visible.
+Похоже на @code{force_start}, но следующее повторное отображение будет выполняться
+только в том случае, если точка остается видимой.
 
 @item start_at_line_beg
-Non-@code{nil} means current value of @code{start} was the beginning of a line
-when it was chosen.
+Не-@code{nil} означает, что текущее значение @code{start} было началом строки при
+его выборе.
 
 @item use_time
-This is the last time that the window was selected.  The function
-@code{get-lru-window} uses this field.
+Последний раз, когда было выбрано окно.  Функция @code{get-lru-window} использует это
+поле.
 
 @item sequence_number
-A unique number assigned to this window when it was created.
+Уникальный номер, присвоенный этому окну при его создании.
 
 @item last_modified
-The @code{modiff} field of the window's buffer, as of the last time
-a redisplay completed in this window.
+@code{modiff} буфера окна на момент последнего завершения повторного отображения в
+этом окне.
 
 @item last_overlay_modified
-The @code{overlay_modiff} field of the window's buffer, as of the last
-time a redisplay completed in this window.
+@code{overlay_modiff} буфера окна на момент последнего завершения повторного
+отображения в этом окне.
 
 @item last_point
-The buffer's value of point, as of the last time a redisplay completed
-in this window.
+Значение точки в буфере на момент последнего повторного отображения в этом окне.
 
 @item last_had_star
-A non-zero value means the window's buffer was modified when the
-window was last updated.
+Ненулевое значение означает, что буфер окна был изменен при последнем обновлении окна.
 
 @item vertical_scroll_bar_type
 @itemx horizontal_scroll_bar_type
-The types of this window's vertical and horizontal scroll bars.
+Типы вертикальной и горизонтальной полос прокрутки этого окна.
 
 @item scroll_bar_width
 @itemx scroll_bar_height
-The width of this window's vertical scroll bar and the height of this
-window's horizontal scroll bar, in pixels.
+Ширина вертикальной полосы прокрутки этого окна и высота горизонтальной полосы
+прокрутки этого окна в пикселях.
 
 @item left_margin_cols
 @itemx right_margin_cols
-The widths of the left and right margins in this window.  A value of
-zero means no margin.
+Ширина левого и правого полей в этом окне.  Нулевое значение означает отсутствие
+оконтовки.
 
 @item left_fringe_width
 @itemx right_fringe_width
-The pixel widths of the left and right fringes in this window.  A
-value of @minus{}1 means use the values of the frame.
+Ширина в пикселях левой и правой оконтовки в этом окне.  Значение @minus{}1 означает
+использование значений фрейма.
 
 @item fringes_outside_margins
-A non-zero value means the fringes outside the display margins;
-othersize they are between the margin and the text.
+Ненулевое значение означает полосы за пределами полей дисплея; в других положениях они
+находятся между полем и текстом.
 
 @item window_end_pos
-This is computed as @code{z} minus the buffer position of the last glyph
-in the current matrix of the window.  The value is only valid if
-@code{window_end_valid} is non-zero.
+Вычисляется как @code{z} минус буферная позиция последнего глифа в текущей матрице
+окна.  Значение допустимо, только если @code{window_end_valid} не равно нулю.
 
 @item window_end_bytepos
-The byte position corresponding to @code{window_end_pos}.
+Позиция байта, соответствующая @code{window_end_pos}.
 
 @item window_end_vpos
-The window-relative vertical position of the line containing
-@code{window_end_pos}.
+Вертикальное положение строки, содержащей @code{window_end_pos}.
 
 @item window_end_valid
-This field is set to a non-zero value if @code{window_end_pos} and
-@code{window_end_vpos} are truly valid.  This is zero if nontrivial
-redisplay is pre-empted, since in that case the display that
-@code{window_end_pos} was computed for did not get onto the screen.
+В этом поле устанавливается ненулевое значение, если @code{window_end_pos} и
+@code{window_end_vpos} являются действительными.  Это значение равно нулю, если
+нетривиальное повторное отображение отменяется, поскольку в этом случае отображение,
+для которого был вычислено @code{window_end_pos}, не попадает на экран.
 
 @item cursor
-A structure describing where the cursor is in this window.
+Структура, описывающая, где находится курсор в этом окне.
 
 @item last_cursor_vpos
-The window-relative vertical position of the line showing the cursor
-as of the last redisplay that finished.
+Вертикальное положение строки, показывающей курсор, относительно окна на момент
+последнего завершенного повторного отображения.
 
 @item phys_cursor
-A structure describing where the cursor of this window physically is.
+Структура, описывающая, где физически находится курсор этого окна.
 
 @item phys_cursor_type
-@c FIXME What is this?
+@c FIXME Что это?
 @c itemx phys_cursor_ascent
 @itemx phys_cursor_height
 @itemx phys_cursor_width
-The type, height, and width of the cursor that was last displayed on
-this window.
+Тип, высота и ширина курсора, с которыми последний раз отображался в этом окне.
 
 @item phys_cursor_on_p
-This field is non-zero if the cursor is physically on.
+Поле не равно нулю, если курсор физически включен.
 
 @item cursor_off_p
-Non-zero means the cursor in this window is logically off.  This is
-used for blinking the cursor.
+Ненулевое значение означает, что курсор в этом окне логически выключен.  Используется
+для мигания курсора.
 
 @item last_cursor_off_p
-This field contains the value of @code{cursor_off_p} as of the time of
-the last redisplay.
+Поле содержит значение @code{cursor_off_p} на момент последнего повторного
+отображения.
 
 @item must_be_updated_p
-This is set to 1 during redisplay when this window must be updated.
+Устанавливается в 1 во время повторного отображения, когда это окно необходимо
+обновить.
 
 @item hscroll
-This is the number of columns that the display in the window is
-scrolled horizontally to the left.  Normally, this is 0.  When only
-the current line is hscrolled, this describes how much the current
-line is scrolled.
+Количество столбцов, по которым изображение в окне прокручивается по горизонтали
+влево.  Обычно это 0.  Когда прокручивается только текущая строка, это описывает,
+насколько прокручивается текущая строка.
 
 @item min_hscroll
-Minimum value of @code{hscroll}, set by the user via
-@code{set-window-hscroll} (@pxref{Horizontal Scrolling}).  When only
-the current line is hscrolled, this describes the horizontal scrolling
-of lines other than the current one.
+Минимальное значение @code{hscroll}, задаваемое пользователем через
+@code{set-window-hscroll} (@pxref{Horizontal Scrolling}).  Когда прокручивается только
+текущая строка, это описывает горизонтальную прокрутку строк, отличных от текущей.
 
 @item vscroll
-Vertical scroll amount, in pixels.  Normally, this is 0.
+Величина вертикальной прокрутки в пикселях.  Обычно это 0.
 
 @item dedicated
-Non-@code{nil} if this window is dedicated to its buffer.
+Не-@code{nil}, если это окно предназначено для своего буфера.
 
 @item combination_limit
-This window's combination limit, meaningful only for a parent window.
-If this is @code{t}, then it is not allowed to delete this window and
-recombine its child windows with other siblings of this window.
+Предел комбинации этого окна, имеющий значение только для родительского окна.  Если
+это @code{t}, то нельзя удалить это окно и повторно объединить его дочерние окна с
+другими братьями и сестрами этого окна.
 
 @item window_parameters
-The alist of this window's parameters.
+Список параметров этого окна.
 
 @item display_table
-The window's display table, or @code{nil} if none is specified for it.
+Таблица отображения окна или @code{nil}, если для него ничего не указано.
 
 @item update_mode_line
-Non-zero means this window's mode line needs to be updated.
+Ненулевое значение означает, что строку режима этого окна необходимо обновить.
 
 @item mode_line_height
 @itemx header_line_height
-The height in pixels of the mode line and the header line, or
-@minus{}1 if not known.
+Высота в пикселях строки режима и строки заголовка или @minus{}1, если неизвестна.
 
 @item base_line_number
-The line number of a certain position in the buffer, or zero.
-This is used for displaying the line number of point in the mode line.
+Номер строки определенной позиции в буфере или ноль.
+Используется для отображения номера строки точки в строке режима.
 
 @item base_line_pos
-The position in the buffer for which the line number is known, or
-zero meaning none is known.  If it is @minus{}1, don't display
-the line number as long as the window shows that buffer.
+Позиция в буфере, для которой известен номер строки, или ноль, что означает, что
+ничего не известно.  Если это @minus{}1, не отображать номер строки, пока в окне
+отображается этот буфер.
 
 @item column_number_displayed
-The column number currently displayed in this window's mode line, or
-@minus{}1 if column numbers are not being displayed.
+Номер столбца, отображаемый в данный момент в строке режима этого окна, или @minus{}1,
+если номера столбцов не отображаются.
 
 @item current_matrix
 @itemx desired_matrix
-Glyph matrices describing the current and desired display of this window.
+Матрицы глифов, описывающие текущее и желаемое отображение этого окна.
 @end table
 
 @node Process Internals
-@subsection Process Internals
+@subsection Внутреннее Устройство Процесса
 @cindex internals, of process
 @cindex process internals
 
-  The fields of a process (for a complete list, see the definition of
-@code{struct Lisp_Process} in @file{process.h}) include:
+  Поля процесса (полный список смотреть в определении @code{struct Lisp_Process} в
+@file{process.h}) включают:
 
 @table @code
 @item name
-A Lisp string, the name of the process.
+Строка Lisp, имя процесса.
 
 @item command
-A list containing the command arguments that were used to start this
-process.  For a network or serial process, it is @code{nil} if the
-process is running or @code{t} if the process is stopped.
+Список, содержащий аргументы команды, которые использовались для запуска этого
+процесса.  Для сетевого или последовательного процесса это @code{nil}, если процесс
+запущен, или @code{t}, если процесс остановлен.
 
 @item filter
-A Lisp function used to accept output from the process.
+Функция Lisp, используемая для приема вывода от процесса.
 
 @item sentinel
-A Lisp function called whenever the state of the process changes.
+Функция Lisp, вызываемая всякий раз, когда изменяется состояние процесса.
 
 @item buffer
-The associated buffer of the process.
+Связанный буфер процесса.
 
 @item pid
-An integer, the operating system's process @acronym{ID}.
-Pseudo-processes such as network or serial connections use a value of 0.
+Целое число, процесс операционной системы @acronym{ID}.
+Псевдопроцессы, такие как сетевые или последовательные соединения, используют
+значение 0.
 
 @item childp
-A flag, @code{t} if this is really a child process.  For a network or
-serial connection, it is a plist based on the arguments to
-@code{make-network-process} or @code{make-serial-process}.
+Флаг @code{t}, если это действительно дочерний процесс.  Для сетевого или
+последовательного подключения это список на основе аргументов
+@code{make-network-process} или @code{make-serial-process}.
 
 @item mark
-A marker indicating the position of the end of the last output from this
-process inserted into the buffer.  This is often but not always the end
-of the buffer.
+Маркер, указывающий позицию конца последнего вывода этого процесса, вставленного в
+буфер.  Часто, но не всегда, это конец буфера.
 
 @item kill_without_query
-If this is non-zero, killing Emacs while this process is still running
-does not ask for confirmation about killing the process.
+Если это ненулевое значение, то при закрытии Emacs, пока этот процесс все еще запущен,
+не запрашивается подтверждение об удалении процесса.
 
 @item raw_status
-The raw process status, as returned by the @code{wait} system call.
+Необработанный статус процесса, возвращенный системным вызовом @code{wait}.
 
 @item status
-The process status, as @code{process-status} should return it.  This
-is a Lisp symbol, a cons cell, or a list.
+Статус процесса должен вернуть @code{process-status}.  Это символ Lisp, cons-ячейка
+или список.
 
 @item tick
 @itemx update_tick
-If these two fields are not equal, a change in the status of the process
-needs to be reported, either by running the sentinel or by inserting a
-message in the process buffer.
+Если эти два поля не равны, необходимо сообщить об изменении статуса процесса, либо
+запустив наблюдателя, либо вставив сообщение в буфер процесса.
 
 @item pty_flag
-Non-zero if communication with the subprocess uses a pty; zero if it
-uses a pipe.
+Ненулевое значение, если для связи с подпроцессом используется pty; ноль, если
+используется канал.
 
 @item infd
-The file descriptor for input from the process.
+Дескриптор файла для ввода из процесса.
 
 @item outfd
-The file descriptor for output to the process.
+Дескриптор файла для вывода в процесс.
 
 @item tty_name
-The name of the terminal that the subprocess is using,
-or @code{nil} if it is using pipes.
+Имя терминала, который использует подпроцесс, или @code{nil}, если используется
+каналы.
 
 @item decode_coding_system
-Coding-system for decoding the input from this process.
+Кодовая система для декодирования входных данных этого процесса.
 
 @item decoding_buf
-A working buffer for decoding.
+Рабочий буфер для декодирования.
 
 @item decoding_carryover
-Size of carryover in decoding.
+Размер переходящего остатка при декодировании.
 
 @item encode_coding_system
-Coding-system for encoding the output to this process.
+Система кодирования для кодирования вывода этого процесса.
 
 @item encoding_buf
-A working buffer for encoding.
+Рабочий буфер для кодирования.
 
 @item inherit_coding_system_flag
-Flag to set @code{coding-system} of the process buffer from the
-coding system used to decode process output.
+Флаг для установки @code{coding-system} буфера процесса из системы кодирования,
+используемой для декодирования вывода процесса.
 
 @item type
-Symbol indicating the type of process: @code{real}, @code{network},
-@code{serial}.
+Символ, обозначающий тип процесса: @code{real}, @code{network}, @code{serial}.
 
 @end table
 
 @node C Integer Types
-@section C Integer Types
+@section Cи Целочисленные Типы
 @cindex integer types (C programming language)
 
-Here are some guidelines for use of integer types in the Emacs C
-source code.  These guidelines sometimes give competing advice; common
-sense is advised.
+Вот несколько рекомендаций по использованию целочисленных типов в исходном коде Emacs
+C.  Эти руководящие принципы иногда дают разные советы; рекомендуется здравый смысл.
 
 @itemize @bullet
 @item
-Avoid arbitrary limits.  For example, avoid @code{int len = strlen
-(s);} unless the length of @code{s} is required for other reasons to
-fit in @code{int} range.
+Избегать произвольных ограничений.  Например, избегать @code{int len = strlen (s);},
+если длина @code{s} не требуется по другим причинам, чтобы соответствовать диапазону
+@code{int}.
 
 @item
-Do not assume that signed integer arithmetic wraps around on overflow.
-This is no longer true of Emacs porting targets: signed integer
-overflow has undefined behavior in practice, and can dump core or
-even cause earlier or later code to behave illogically.  Unsigned
-overflow does wrap around reliably, modulo a power of two.
+Не предполагать, что целочисленная арифметика со знаком завершается при переполнении.
+Это больше не верно для целей переноса Emacs: целочисленное переполнение со знаком на
+практике имеет неопределенное поведение и может сбрасывать ядро или даже вызывать
+нелогичное поведение более раннего или более позднего кода.  Беззнаковое переполнение
+надежно дополняется по модулю двойки.
 
 @item
-Prefer signed types to unsigned, as code gets confusing when signed
-and unsigned types are combined.  Many other guidelines assume that
-types are signed; in the rarer cases where unsigned types are needed,
-similar advice may apply to the unsigned counterparts (e.g.,
-@code{size_t} instead of @code{ptrdiff_t}, or @code{uintptr_t} instead
-of @code{intptr_t}).
+Предпочитать подписанные типы беззнаковым, так как код сбивает с толку при объединении
+подписанных и неподписанных типов.  Многие другие руководящие принципы предполагают,
+что типы подписаны; в более редких случаях, когда требуются беззнаковые типы,
+аналогичный совет может применяться к беззнаковым аналогам (например, @code{size_t}
+вместо @code{ptrdiff_t} или @code{uintptr_t} вместо @code{intptr_t}).
 
 @item
-Prefer @code{int} for Emacs character codes, in the range 0 ..@: 0x3FFFFF@.
-More generally, prefer @code{int} for integers known to be in
-@code{int} range, e.g., screen column counts.
+Предпочитать @code{int} для кодов символов Emacs в диапазоне 0 ..@: 0x3FFFFF@.  В
+более общем случае, предпочитать @code{int} для целых чисел, которые, как известно,
+находятся в диапазоне @code{int}, например, счетчиков столбцов экрана.
 
 @item
-Prefer @code{ptrdiff_t} for sizes, i.e., for integers bounded by the
-maximum size of any individual C object or by the maximum number of
-elements in any C array.  This is part of Emacs's general preference
-for signed types.  Using @code{ptrdiff_t} limits objects to
-@code{PTRDIFF_MAX} bytes, but larger objects would cause trouble
-anyway since they would break pointer subtraction, so this does not
-impose an arbitrary limit.
+Предпочитать @code{ptrdiff_t} для размеров, то есть для целых чисел, ограниченных
+максимальным размером любого отдельного объекта C или максимальным количеством
+элементов в любом массиве C.  Это часть общего предпочтения Emacs для подписанных
+типов.  Использование @code{ptrdiff_t} ограничивает объекты байтами
+@code{PTRDIFF_MAX}, но большие объекты в любом случае вызовут проблемы, поскольку они
+нарушат вычитание указателя, поэтому это не налагает произвольного ограничения.
 
 @item
-Avoid @code{ssize_t} except when communicating to low-level APIs that
-have @code{ssize_t}-related limitations.  Although it's equivalent to
-@code{ptrdiff_t} on typical platforms, @code{ssize_t} is occasionally
-narrower, so using it for size-related calculations could overflow.
-Also, @code{ptrdiff_t} is more ubiquitous and better-standardized, has
-standard @code{printf} formats, and is the basis for Emacs's internal
-size-overflow checking.  When using @code{ssize_t}, please note that
-POSIX requires support only for values in the range @minus{}1 ..@:
-@code{SSIZE_MAX}.
+Избегать @code{ssize_t}, кроме случаев взаимодействия с низкоуровневыми
+API-интерфейсами, которые имеют ограничения, связанные с @code{ssize_t}.  Хотя это
+эквивалентно @code{ptrdiff_t} на типичных платформах, @code{ssize_t} иногда уже,
+поэтому его использование для вычислений, связанных с размером, может вызвать
+переполнение.  Кроме того, @code{ptrdiff_t} более распространено и лучше
+стандартизировано, имеет стандартные форматы @code{printf} и является основой для
+внутренней проверки переполнения размера Emacs.  При использовании @code{ssize_t}
+обратить внимание, что POSIX требует поддержки только значений в диапазоне
+@minus{}1 ..@: @code{SSIZE_MAX}.
 
 @item
-Prefer @code{intptr_t} for internal representations of pointers, or
-for integers bounded only by the number of objects that can exist at
-any given time or by the total number of bytes that can be allocated.
-Currently Emacs sometimes uses other types when @code{intptr_t} would
-be better; fixing this is lower priority, as the code works as-is on
-Emacs's current porting targets.
+Предпочитать @code{intptr_t} для внутреннего представления указателей или для целых
+чисел, ограниченных только количеством объектов, которые могут существовать в любой
+момент времени, или общим количеством байтов, которые могут быть выделены.  В
+настоящее время Emacs иногда использует другие типы, когда лучше было бы
+@code{intptr_t}; исправление этого является более низким приоритетом, поскольку код
+работает как есть на текущих целях переноса Emacs.
 
 @item
-Prefer the Emacs-defined type @code{EMACS_INT} for representing values
-converted to or from Emacs Lisp fixnums, as fixnum arithmetic is based
-on @code{EMACS_INT}.
+Предпочитать определенный в Emacs тип @code{EMACS_INT} для представления значений,
+преобразованных в или из Emacs Lisp fixnums, поскольку арифметика fixnum основана на
+@code{EMACS_INT}.
 
 @item
-When representing a system value (such as a file size or a count of
-seconds since the Epoch), prefer the corresponding system type (e.g.,
-@code{off_t}, @code{time_t}).  Do not assume that a system type is
-signed, unless this assumption is known to be safe.  For example,
-although @code{off_t} is always signed, @code{time_t} need not be.
+При представлении системного значения (например, размера файла или количества секунд
+с начала эпохи) предпочтение следует отдавать соответствующему типу системы (например,
+@code{off_t}, @code{time_t}).  Не предполагать, что тип системы подписан, если только
+это предположение не является безопасным.  Например, хотя @code{off_t} всегда
+подписано, @code{time_t} не обязательно.
 
 @item
-Prefer the Emacs-defined type @code{printmax_t} for representing
-values that might be any signed integer that can be printed,
-using a @code{printf}-family function.
+Предпочитать определяемый Emacs тип @code{printmax_t} для представления значений,
+которые могут быть любым целым числом со знаком, которое может быть напечатано с
+помощью функции семейства @code{printf}.
 
 @item
-Prefer @code{intmax_t} for representing values that might be any
-signed integer value.
+Предпочитать @code{intmax_t} для представления значений, которые могут быть любым
+целым числом со знаком.
 
 @item
-Prefer @code{bool}, @code{false} and @code{true} for booleans.
-Using @code{bool} can make programs easier to read and a bit faster than
-using @code{int}.  Although it is also OK to use @code{int}, @code{0}
-and @code{1}, this older style is gradually being phased out.  When
-using @code{bool}, respect the limitations of the replacement
-implementation of @code{bool}, as documented in the source file
-@file{lib/stdbool.in.h}.  In particular, boolean bitfields should be of type
-@code{bool_bf}, not @code{bool}, so that they work correctly even when
-compiling Objective C with standard GCC.
+Предпочитать @code{bool}, @code{false} и @code{true} для логических значений.
+Использование @code{bool} может сделать программы более легкими для чтения и немного
+быстрее, чем использование @code{int}.  Хотя @code{int}, @code{0} и @code{1} тоже
+можно использовать, этот старый стиль постепенно отменяется.  При использовании
+@code{bool} соблюдать ограничения реализации замены @code{bool}, как описано в
+исходном файле @file{lib/stdbool.in.h}.  В частности, логические битовые поля должны
+иметь тип @code{bool_bf}, а не @code{bool}, чтобы они работали правильно даже при
+компиляции Objective C со стандартным GCC.
 
 @item
-In bitfields, prefer @code{unsigned int} or @code{signed int} to
-@code{int}, as @code{int} is less portable: it might be signed, and
-might not be.  Single-bit bit fields should be @code{unsigned int} or
-@code{bool_bf} so that their values are 0 or 1.
+В битовых полях предпочитать @code{unsigned int} или @code{signed int} @code{int},
+поскольку @code{int} менее переносимо: может быть подписаным, а может и не быть.
+Однобитовые поля должны иметь размер @code{unsigned int} или @code{bool_bf}, чтобы их
+значения были равны 0 или 1.
 @end itemize
 
-@c FIXME Mention src/globals.h somewhere in this file?
+@c FIXME Упоминание src/globals.h где-нибудь в этом файле?
