@@ -4,234 +4,229 @@
 @c Inc.
 @c See the file elisp.texi for copying conditions.
 @node Standard Errors
-@appendix Standard Errors
+@appendix Стандартные Ошибки
 @cindex standard errors
 
-  Here is a list of the more important error symbols in standard Emacs, grouped
-by concept.  The list includes each symbol's message and a cross reference
-to a description of how the error can occur.
+  Вот список наиболее важных символов ошибок в стандартном Emacs, сгруппированных по
+концепциям.  Список включает сообщение каждого символа и перекрестную ссылку на
+описание того, как может возникнуть ошибка.
 
-  Each error symbol has a set of parent error conditions that is a
-list of symbols.  Normally this list includes the error symbol itself
-and the symbol @code{error}.  Occasionally it includes additional
-symbols, which are intermediate classifications, narrower than
-@code{error} but broader than a single error symbol.  For example, all
-the errors in accessing files have the condition @code{file-error}.  If
-we do not say here that a certain error symbol has additional error
-conditions, that means it has none.
+  Каждый символ ошибки имеет набор родительских условий ошибки, который представляет
+собой список символов.  Обычно этот список включает сам символ ошибки и символ
+@code{error}.  Иногда включаются дополнительные символы, которые являются
+промежуточными классификациями, более узкими, чем @code{error}, но более широкими,
+чем одиночный символ ошибки.  Например, все ошибки доступа к файлам имеют условие
+@code{file-error}.  Если не говорится здесь, что у определенного символа ошибки есть
+дополнительные условия ошибки, это означает, что у него их нет.
 
-  As a special exception, the error symbol @code{quit} does not have the
-condition @code{error}, because quitting is not considered an error.
+  В качестве особого исключения символ ошибки @code{quit} не имеет условия
+@code{error}, потому что выход не считается ошибкой.
 
-  Most of these error symbols are defined in C (mainly @file{data.c}),
-but some are defined in Lisp.  For example, the file @file{userlock.el}
-defines the @code{file-locked} and @code{file-supersession} errors.
-Several of the specialized Lisp libraries distributed with Emacs
-define their own error symbols.  We do not attempt to list of all
-those here.
+  Большинство этих символов ошибок определены в C (в основном @file{data.c}), но
+некоторые определены в Lisp.  Например, файл @file{userlock.el} определяет ошибки
+@code{file-locked} и @code{file-supersession}.  Некоторые из специализированных
+библиотек Lisp, распространяемых с Emacs, определяют свои собственные символы ошибок.
+Не проводится попытки перечислять все это здесь.
 
-  @xref{Errors}, for an explanation of how errors are generated and
-handled.
+  @xref{Errors}, чтобы объяснить, как генерируются и обрабатываются ошибки.
 
 @table @code
 @item error
-The message is @samp{error}.  @xref{Errors}.
+Сообщение - @samp{error}.  @xref{Errors}.
 
 @item quit
-The message is @samp{Quit}.  @xref{Quitting}.
+Сообщение - @samp{Quit}.  @xref{Quitting}.
 
 @item args-out-of-range
-The message is @samp{Args out of range}.  This happens when trying to
-access an element beyond the range of a sequence, buffer, or other
-container-like object.  @xref{Sequences Arrays Vectors}, and
-@xref{Text}.
+Сообщение - @samp{Args out of range(Аргументы вне диапазона)}.  Происходит при
+попытке доступа к элементу за пределами диапазона последовательности, буфера или
+другого объекта, подобного контейнеру.  @xref{Sequences Arrays Vectors} и @xref{Text}.
 
 @item arith-error
-The message is @samp{Arithmetic error}.  This occurs when trying to
-perform integer division by zero.  @xref{Numeric Conversions}, and
+Сообщение - @samp{Arithmetic error(Арифметическая ошибка)}.  Происходит при попытке
+выполнить целочисленное деление на ноль.  @xref{Numeric Conversions} и
 @xref{Arithmetic Operations}.
 
 @item beginning-of-buffer
-The message is @samp{Beginning of buffer}.  @xref{Character Motion}.
+Сообщение - @samp{Beginning of buffer(Начало буфера)}.  @xref{Character Motion}.
 
 @item buffer-read-only
-The message is @samp{Buffer is read-only}.  @xref{Read Only Buffers}.
+Сообщение - @samp{Buffer is read-only(Буфер доступен только для чтения)}.
+@xref{Read Only Buffers}.
 
 @item circular-list
-The message is @samp{List contains a loop}.  This happens when a
-circular structure is encountered.  @xref{Circular Objects}.
+Сообщение - @samp{List contains a loop(Список содержит цикл)}.  Случается, когда
+встречается циклическая структура.  @xref{Circular Objects}.
 
 @item cl-assertion-failed
-The message is @samp{Assertion failed}.  This happens when the
-@code{cl-assert} macro fails a test.  @xref{Assertions,,, cl, Common Lisp
-Extensions}.
+Сообщение - @samp{Assertion failed(Утверждение не удалось)}.  Происходит, когда
+макрос @code{cl-assert} не проходит проверку.
+@xref{Assertions,,, cl, Common Lisp Extensions}.
 
 @item coding-system-error
-The message is @samp{Invalid coding system}.  @xref{Lisp and Coding
-Systems}.
+Сообщение - @samp{Invalid coding system(Неверная система кодирования)}.
+@xref{Lisp and Coding Systems}.
 
 @item cyclic-function-indirection
-The message is @samp{Symbol's chain of function indirections contains
-a loop}.  @xref{Function Indirection}.
+Сообщение @samp{Symbol's chain of function indirections contains a loop(Цепочка
+переадресации символа в функции содержит цикл)}.  @xref{Function Indirection}.
 
 @item cyclic-variable-indirection
-The message is @samp{Symbol's chain of variable indirections contains
-a loop}.  @xref{Variable Aliases}.
+Сообщение @samp{Symbol's chain of variable indirections contains a loop(Цепочка
+косвенных обращений к символу содержит цикл)}.  @xref{Variable Aliases}.
 
 @item dbus-error
-The message is @samp{D-Bus error}.  This is only defined if Emacs was
-compiled with D-Bus support.  @xref{Errors and Events,,, dbus, D-Bus
-integration in Emacs}.
+Сообщение - @samp{D-Bus error}.  Определено, только если Emacs был скомпилирован с
+поддержкой D-Bus.  @xref{Errors and Events,,, dbus, D-Bus integration in Emacs}.
 
 @item end-of-buffer
-The message is @samp{End of buffer}.  @xref{Character Motion}.
+Сообщение @samp{End of buffer(Конец буфера)}.  @xref{Character Motion}.
 
 @item end-of-file
-The message is @samp{End of file during parsing}.  Note that this is
-not a subcategory of @code{file-error}, because it pertains to the
-Lisp reader, not to file I/O@.  @xref{Input Functions}.
+Сообщение - @samp{End of file during parsing(Конец файла при разборе)}.  Обратить
+внимание, что это не подкатегория @code{file-error}, потому что она относится к
+читателю Lisp, а не к файловому вводу-выводу@.  @xref{Input Functions}.
 
 @item file-already-exists
-This is a subcategory of @code{file-error}.  @xref{Writing to Files}.
+Подкатегория @code{file-error}.  @xref{Writing to Files}.
 
 @item file-date-error
-This is a subcategory of @code{file-error}.  It occurs when
-@code{copy-file} tries and fails to set the last-modification time of
-the output file.  @xref{Changing Files}.
+Подкатегория @code{file-error}.  Происходит, когда @code{copy-file} пытается и не
+может установить время последней модификации выходного файла.  @xref{Changing Files}.
 
 @item file-error
-We do not list the error-strings of this error and its subcategories,
-because the error message is normally constructed from the data items
-alone when the error condition @code{file-error} is present.  Thus,
-the error-strings are not very relevant.  However, these error symbols
-do have @code{error-message} properties, and if no data is provided,
-the @code{error-message} property @emph{is} used.  @xref{Files}.
+Не перечислены строки ошибок этой ошибки и ее подкатегорий, потому что сообщение об
+ошибке обычно создается только из элементов данных, когда присутствует условие ошибки
+@code{file-error}.  Таким образом, строки ошибок не очень актуальны.  Однако эти
+символы ошибок имеют свойства @code{error-message}, и если данные не предоставлены,
+используется @emph{это} @code{error-message} свойство.  @xref{Files}.
 
 @item file-missing
-This is a subcategory of @code{file-error}.  It occurs when an
-operation attempts to act on a file that is missing.  @xref{Changing
-Files}.
+Подкатегория @code{file-error}.  Происходит, когда операция пытается воздействовать
+на отсутствующий файл.  @xref{Changing Files}.
 
 @c jka-compr.el
 @item compression-error
-This is a subcategory of @code{file-error}, which results from
-problems handling a compressed file.  @xref{How Programs Do Loading}.
+Подкатегория @code{file-error}, которая возникает из-за проблем с обработкой сжатого
+файла.  @xref{How Programs Do Loading}.
 
 @c userlock.el
 @item file-locked
-This is a subcategory of @code{file-error}.  @xref{File Locks}.
+Подкатегория @code{file-error}.  @xref{File Locks}.
 
 @c userlock.el
 @item file-supersession
-This is a subcategory of @code{file-error}.  @xref{Modification Time}.
+Подкатегория @code{file-error}.  @xref{Modification Time}.
 
 @c filenotify.el
 @item file-notify-error
-This is a subcategory of @code{file-error}.  It happens, when a file
-could not be watched for changes.  @xref{File Notifications}.
+Подкатегория @code{file-error}.  Случается, когда файл не может быть отслежен на
+предмет изменений.  @xref{File Notifications}.
 
 @c net/ange-ftp.el
 @item ftp-error
-This is a subcategory of @code{file-error}, which results from
-problems in accessing a remote file using ftp.  @xref{Remote Files,,,
-emacs, The GNU Emacs Manual}.
+Подкатегория @code{file-error}, которая возникает из-за проблем с доступом к
+удаленному файлу с помощью ftp.  @xref{Remote Files,,, emacs, The GNU Emacs Manual}.
 
 @item invalid-function
-The message is @samp{Invalid function}.  @xref{Function Indirection}.
+Сообщение - @samp{Invalid function(Неверная функция)}.  @xref{Function Indirection}.
 
 @item invalid-read-syntax
-The message is @samp{Invalid read syntax}.  @xref{Printed
-Representation}.
+Сообщение - @samp{Invalid read syntax(Неверный синтаксис чтения)}.
+@xref{Printed Representation}.
 
 @item invalid-regexp
-The message is @samp{Invalid regexp}.  @xref{Regular Expressions}.
+Сообщение - @samp{Invalid regexp(Неверное регулярное выражение)}.
+@xref{Regular Expressions}.
 
 @c simple.el
 @item mark-inactive
-The message is @samp{The mark is not active now}.  @xref{The Mark}.
+Сообщение - @samp{The mark is not active now(Маркер сейчас не активен)}.
+@xref{The Mark}.
 
 @item no-catch
-The message is @samp{No catch for tag}.  @xref{Catch and Throw}.
+Сообщение - @samp{No catch for tag(Нет перехватчика для тега)}.
+@xref{Catch and Throw}.
 
 @ignore
-@c Not actually used for anything?  Probably definition should be removed.
+@c На самом деле ни для чего не используется? Видимо определение надо убрать.
 @item protected-field
-The message is @samp{Attempt to modify a protected file}.
+Сообщение @samp{Attempt to modify a protected file(Попытка изменить защищенный файл)}.
 @end ignore
 
 @item scan-error
-The message is @samp{Scan error}.  This happens when certain
-syntax-parsing functions find invalid syntax or mismatched
-parentheses.  Conventionally raised with three argument: a
-human-readable error message, the start of the obstacle that cannot be
-moved over, and the end of the obstacle.  @xref{List Motion}, and
-@xref{Parsing Expressions}.
+Сообщение - @samp{Scan error(Ошибка сканирования)}.  Происходит, когда определенные
+функции синтаксического анализа обнаруживают недопустимый синтаксис или
+несбалансированные скобки.  Обычно возникает с тремя аргументами: удобочитаемое
+сообщение об ошибке, начало препятствия, которое нельзя переместить, и конец
+препятствия.  @xref{List Motion} и @xref{Parsing Expressions}.
 
 @item search-failed
-The message is @samp{Search failed}.  @xref{Searching and Matching}.
+Сообщение - @samp{Search failed(Поиск не удался)}.  @xref{Searching and Matching}.
 
 @item setting-constant
-The message is @samp{Attempt to set a constant symbol}.  This happens
-when attempting to assign values to @code{nil}, @code{t},
-@code{most-positive-fixnum}, @code{most-negative-fixnum}, and keyword
-symbols.  It also happens when attempting to assign values to
-@code{enable-multibyte-characters} and some other symbols whose direct
-assignment is not allowed for some reason.  @xref{Constant Variables}.
+Сообщение - @samp{Attempt to set a constant symbol
+(Попытка установить символ константу)}.  Происходит при попытке присвоить значения
+@code{nil}, @code{t}, @code{most-positive-fixnum}, @code{most-negative-fixnum} и
+ключевым словам.  Также происходит при попытке присвоить значения
+@code{enable-multibyte-characters} и некоторым другим символам, прямое присвоение
+которых по каким-то причинам запрещено.  @xref{Constant Variables}.
 
 @c simple.el
 @item text-read-only
-The message is @samp{Text is read-only}.  This is a subcategory of
+Сообщение - @samp{Text is read-only(Текст доступен только для чтения)}.  Подкатегория
 @code{buffer-read-only}.  @xref{Special Properties}.
 
 @item undefined-color
-The message is @samp{Undefined color}.  @xref{Color Names}.
+Сообщение @samp{Undefined color(Неопределенный цвет)}.  @xref{Color Names}.
 
 @item user-error
-The message is the empty string.  @xref{Signaling Errors}.
+Сообщение - пустая строка.  @xref{Signaling Errors}.
 
 @item user-search-failed
-This is like @samp{search-failed}, but doesn't trigger the debugger,
-like @samp{user-error}.  @xref{Signaling Errors}, and @xref{Searching
-and Matching}.  This is used for searching in Info files, @xref{Search
-Text,,,info,Info}.
+Это похоже на @samp{search-failed}, но не запускает отладчик, как @samp{user-error}.
+@xref{Signaling Errors} и @xref{Searching and Matching}.  Используется для поиска в
+Info-файлах., @xref{Search Text,,,info,Info}.
 
 @item void-function
-The message is @samp{Symbol's function definition is void}.
-@xref{Function Cells}.
+Сообщение @samp{Symbol's function definition is void
+(Определение функции символа недействительно)}.  @xref{Function Cells}.
 
 @item void-variable
-The message is @samp{Symbol's value as variable is void}.
-@xref{Accessing Variables}.
+Сообщение @samp{Symbol's value as variable is void
+(Значение символа как переменной недействительно)}.  @xref{Accessing Variables}.
 
 @item wrong-number-of-arguments
-The message is @samp{Wrong number of arguments}.  @xref{Argument List}.
+Сообщение @samp{Wrong number of arguments(Неверное количество аргументов)}.
+@xref{Argument List}.
 
 @item wrong-type-argument
-The message is @samp{Wrong type argument}.  @xref{Type Predicates}.
+Сообщение @samp{Wrong type argument(Аргумент неправильного типа)}.
+@xref{Type Predicates}.
 @end table
 
 @ignore    The following seem to be unused now.
-  The following kinds of error, which are classified as special cases of
-@code{arith-error}, can occur on certain systems for invalid use of
-mathematical functions.  @xref{Math Functions}.
+  Следующие виды ошибок, которые классифицируются как частные случаи
+@code{arith-error}, могут возникать в определенных системах из-за недопустимого
+использования математических функций.  @xref{Math Functions}.
 
 @table @code
 @item domain-error
-The message is @samp{Arithmetic domain error}.
+Сообщение @samp{Arithmetic domain error(Ошибка арифметического домена)}.
 
 @item overflow-error
-The message is @samp{Arithmetic overflow error}.  This is a subcategory
-of @code{domain-error}.
+Сообщение @samp{Arithmetic overflow error(Ошибка арифметического переполнения)}.
+Это подкатегория @code{domain-error}.
 
 @item range-error
-The message is @code{Arithmetic range error}.
+Сообщение @code{Arithmetic range error(Ошибка арифметического диапазона)}.
 
 @item singularity-error
-The message is @samp{Arithmetic singularity error}.  This is a
-subcategory of @code{domain-error}.
+Сообщение @samp{Arithmetic singularity error(Ошибка арифметической сингулярности)}.
+Это подкатегория @code{domain-error}.
 
 @item underflow-error
-The message is @samp{Arithmetic underflow error}.  This is a
-subcategory of @code{domain-error}.
+The message is @samp{Arithmetic underflow error(Ошибка арифметического переполнения)}.
+Это подкатегория @code{domain-error}.
 @end table
 @end ignore
