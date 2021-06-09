@@ -14,24 +14,23 @@
 @sp 1
 
 @quotation
-  Most of the GNU Emacs text editor is written in the programming
-language called Emacs Lisp.  You can write new code in Emacs Lisp and
-install it as an extension to the editor.  However, Emacs Lisp is more
-than a mere extension language; it is a full computer programming
-language in its own right.  You can use it as you would any other
-programming language.
+  Большая часть текстового редактора GNU Emacs написана на языке программирования
+Emacs Lisp.  Можно написать новый код в Emacs Lisp и установить его как расширение
+редактора.  Однако Emacs Lisp - это больше, чем просто язык расширения; это
+самостоятельный полноценный язык компьютерного программирования.  Можно использовать
+его, как любой другой язык программирования.
 
-  Because Emacs Lisp is designed for use in an editor, it has special
-features for scanning and parsing text as well as features for handling
-files, buffers, displays, subprocesses, and so on.  Emacs Lisp is
-closely integrated with the editing facilities; thus, editing commands
-are functions that can also conveniently be called from Lisp programs,
-and parameters for customization are ordinary Lisp variables.
+  Поскольку Emacs Lisp разработан для использования в редакторе, он имеет специальные
+функции для сканирования и анализа текста, а также функции для обработки файлов,
+буферов, дисплеев, подпроцессов и так далее.  Emacs Lisp тесно интегрирован со
+средствами редактирования; таким образом, команды редактирования - это функции,
+которые также можно удобно вызывать из программ на Lisp, а параметры для настройки -
+это обычные переменные Lisp.
 
-  This manual describes Emacs Lisp.  Generally speaking, the earlier
-chapters describe features of Emacs Lisp that have counterparts in
-many programming languages, and later chapters describe features that
-are peculiar to Emacs Lisp or relate specifically to editing.
+  Руководство описывает Emacs Lisp.  Вообще говоря, в предыдущих главах описываются
+возможности Emacs Lisp, которые имеют аналоги во многих языках программирования, а в
+последующих главах описываются особенности, присущие Emacs Lisp или относящиеся
+конкретно к редактированию.
 @end quotation
 
 @hfil

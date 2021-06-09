@@ -4,102 +4,103 @@
 @c Inc.
 @c See the file elisp.texi for copying conditions.
 @node Standard Keymaps
-@appendix Standard Keymaps
+@appendix Стандартные Ключевые Карты
 @cindex keymaps, standard
 
-In this section we list some of the more general keymaps.  Many of
-these exist when Emacs is first started, but some are loaded only when
-the respective feature is accessed.
+В этом разделе перечислены некоторые из наиболее общих ключевых карт.  Многие из них
+существуют при первом запуске Emacs, но некоторые загружаются только при доступе к
+соответствующей функции.
 
-There are many other, more specialized, maps than these; in particular
-those associated with major and minor modes.  The minibuffer uses
-several keymaps (@pxref{Completion Commands}).  For more details on
-keymaps, @pxref{Keymaps}.
+Есть много других, более специализированных карт, чем эти; в частности, связанные с
+основными и второстепенными режимами.  Минибуфер использует несколько карт
+(@pxref{Completion Commands}).  Для получения более подробной информации о ключевых
+картах, @pxref{Keymaps}.
 
-@c Don't list individual major mode keymaps here, only more general things.
-@c Only add vindex for things not covered elsewhere in this manual.
-@c Don't add xrefs to things covered in {Keymaps}.
+@c Не перечислять здесь отдельные карты основных режимов, только более общие вещи.
+@c Добавлять vindex только для вещей, не упомянутых в других разделах этого
+@c руководства.
+@c Не добавлять внешние ссылки к вещам, описанным в {Keymaps}.
 @table @code
 @item 2C-mode-map
-A sparse keymap for subcommands of the prefix @kbd{C-x 6}.@*
+Редкая карта для префиксных подкоманд @kbd{C-x 6}.@*
 @xref{Two-Column,, Two-Column Editing, emacs, The GNU Emacs Manual}.
 
 @item abbrev-map
 @vindex abbrev-map
-A sparse keymap for subcommands of the prefix @kbd{C-x a}.@*
+Редкая карта для префиксных подкоманд @kbd{C-x a}.@*
 @xref{Defining Abbrevs,,, emacs, The GNU Emacs Manual}.
 
 @item button-buffer-map
-A sparse keymap useful for buffers containing buffers.@*
-You may want to use this as a parent keymap.  @xref{Buttons}.
+Разреженная ключевая карта полезна для буферов, содержащих буферы.
+@* Можно использовать ее как родительскую карту.  @xref{Buttons}.
 
 @item button-map
-A sparse keymap used by buttons.
+Редкая ключевая карта, используемая клавишами.
 
 @item ctl-x-4-map
-A sparse keymap for subcommands of the prefix @kbd{C-x 4}.
+Редкая ключевая карта для префиксных подкоманд @kbd{C-x 4}.
 
 @item ctl-x-5-map
-A sparse keymap for subcommands of the prefix @kbd{C-x 5}.
+Редкая ключевая карта для префиксных подкоманд @kbd{C-x 5}.
 
 @item ctl-x-map
-A full keymap for @kbd{C-x} commands.
+Полная ключевая карта для команд @kbd{C-x}.
 
 @item ctl-x-r-map
 @vindex ctl-x-r-map
-A sparse keymap for subcommands of the prefix @kbd{C-x r}.@*
+Редкая ключевая карта для префиксных подкоманд @kbd{C-x r}.@*
 @xref{Registers,,, emacs, The GNU Emacs Manual}.
 
 @item esc-map
-A full keymap for @key{ESC} (or @key{Meta}) commands.
+Полная ключевая карта для команды @key{ESC} (или @key{Meta}).
 
 @item facemenu-keymap
-A sparse keymap used for the @kbd{M-o} prefix key.
+Редкая ключевая карта, используемая для префиксного ключа @kbd{M-o}.
 
 @item function-key-map
-The parent keymap of all @code{local-function-key-map} (q.v.@:) instances.
+Родительская ключевая карта всех экземпляров @code{local-function-key-map} (@:).
 
 @ignore
 @c Doesn't exist.
 @item fundamental-mode-map
 @vindex fundamental-mode-map
-The sparse keymap for Fundamental mode.@*
-It is empty and should not be changed.
+Разреженная ключевая карта для основного режима.@*
+Она пуста и не должна изменяться.
 @end ignore
 
 @item global-map
-The full keymap containing default global key bindings.@*
-Modes should not modify the Global map.
+Полная ключевая карта, содержащая привязки глобальных ключей по умолчанию.@*
+Режимы не должны изменять глобальную ключевую карту.
 
 @item goto-map
-A sparse keymap used for the @kbd{M-g} prefix key.
+Разряженная карта, используемая для префиксного ключа @kbd{M-g}.
 
 @item help-map
-A sparse keymap for the keys following the help character @kbd{C-h}.@*
+Разряженная карта для ключей, следующих за символом справки @kbd{C-h}.@*
 @xref{Help Functions}.
 
 @item Helper-help-map
-A full keymap used by the help utility package.@*
-It has the same keymap in its value cell and in its function cell.
+Полная ключевая карта, используемая пакетом служебной программы справки.@*
+Имеет одинаковую карту в ячейке значения и в ячейке функции.
 
 @item input-decode-map
-The keymap for translating keypad and function keys.@*
-If there are none, then it contains an empty sparse keymap.
+Ключевая карта для перевода клавиатуры и функциональных клавиш.@*
+Если этого нет, то содержится пустая разреженная ключевая карта.
 @xref{Translation Keymaps}.
 
 @item key-translation-map
-A keymap for translating keys.  This one overrides ordinary key
-bindings, unlike @code{local-function-key-map}.  @xref{Translation
-Keymaps}.
+Ключевая карта для перевода ключей.  Это отменяет обычные привязки ключей, в отличие
+от @code{local-function-key-map}.  @xref{Translation Keymaps}.
 
 @item kmacro-keymap
 @vindex kmacro-keymap
-A sparse keymap for keys that follows the @kbd{C-x C-k} prefix search.@*
+Разряженная ключевая карта для ключей после поиска по префиксу @kbd{C-x C-k}.@*
 @xref{Keyboard Macros,,, emacs, The GNU Emacs Manual}.
 
 @item local-function-key-map
-The keymap for translating key sequences to preferred alternatives.@*
-If there are none, then it contains an empty sparse keymap.
+Ключевая карта для преобразования ключевых последовательностей в предпочтительные
+альтернативы.@*
+Если этого, то содержится пустая разряженная ключевая карта.
 @xref{Translation Keymaps}.
 
 @item menu-bar-file-menu
@@ -114,22 +115,21 @@ If there are none, then it contains an empty sparse keymap.
 @vindex global-buffers-menu-map
 @vindex menu-bar-tools-menu
 @vindex menu-bar-help-menu
-These keymaps display the main, top-level menus in the menu bar.@*
-Some of them contain sub-menus.  For example, the Edit menu contains
-@code{menu-bar-search-menu}, etc.  @xref{Menu Bar}.
+Ключевый карты отображают главное меню верхнего уровня в строке меню.@*
+Некоторые из них содержат подменю.  Например, в меню «Правка» есть
+@code{menu-bar-search-menu} и так далее.  @xref{Menu Bar}.
 @ignore
-TODO list all submenus?
-There are probably too many, and it would not be useful to do so, e.g.:
-The Edit menu includes @code{yank-menu}, @code{menu-bar-search-menu},
-@code{menu-bar-replace-menu}, @code{menu-bar-goto-menu},
-@code{menu-bar-bookmark-map}, and @code{facemenu-menu}.
-There is also mule-menu-keymap, set-coding-system-map,
-setup-language-environment-map, describe-language-environment-map,
-menu-bar-epatch-menu, menu-bar-ediff-merge-menu, menu-bar-ediff-menu, etc.
+TODO перечислить все подменю?
+Вероятно, их слишком много, и это было бы бесполезно, например: Меню Правка включает
+@code{yank-menu}, @code{menu-bar-search-menu}, @code{menu-bar-replace-menu},
+@code{menu-bar-goto-menu}, @code{menu-bar-bookmark-map} и @code{facemenu-menu}.
+Также есть mule-menu-keymap, set-coding-system-map, setup-language-environment-map,
+describe-language-environment-map, menu-bar-epatch-menu, menu-bar-ediff-merge-menu,
+menu-bar-ediff-menu, и так далее.
 @end ignore
 
 @item minibuffer-inactive-mode-map
-A full keymap used in the minibuffer when it is not active.@*
+Полная ключевая карта, используемая в минибуфере, когда он не активен.@*
 @xref{Minibuffer Edit,, Editing in the Minibuffer, emacs, The GNU Emacs Manual}.
 
 @item mode-line-coding-system-map
@@ -138,62 +138,64 @@ A full keymap used in the minibuffer when it is not active.@*
 @vindex mode-line-coding-system-map
 @vindex mode-line-input-method-map
 @vindex mode-line-column-line-number-mode-map
-These keymaps control various areas of the mode line.@*
+Ключевые карты управляют различными областями строки режима.@*
 @xref{Mode Line Format}.
 
 @item mode-specific-map
-The keymap for characters following @kbd{C-c}.  Note, this is in the
-global map.  This map is not actually mode-specific: its name was chosen
-to be informative in @kbd{C-h b} (@code{display-bindings}),
-where it describes the main use of the @kbd{C-c} prefix key.
+Ключевая карта для символов, следующих за @kbd{C-c}.  Обратить внимание, это в
+глобальной карте.  Карта на самом деле не зависит от режима: ее имя было выбрано в
+качестве информативного для @kbd{C-h b} (@code{display-bindings}), где описывается
+основное использование префиксного ключа @kbd{C-c}.
 
-@c FIXME - don't mention this one?
+@c FIXME - не упоминать об этом?
 @item mouse-appearance-menu-map
 @vindex mouse-appearance-menu-map
-A sparse keymap used for the @kbd{S-mouse-1} key.
+Разряженная ключевая карта, используемая для ключа @kbd{S-mouse-1}.
 
 @item mule-keymap
-The global keymap used for the @kbd{C-x @key{RET}} prefix key.
+Глобальная ключевая карта, используемая для префиксного ключа @kbd{C-x @key{RET}}.
 
 @item narrow-map
 @vindex narrow-map
-A sparse keymap for subcommands of the prefix @kbd{C-x n}.
+Разряженная ключевая карта для подкоманд префикса @kbd{C-x n}.
 
 @item prog-mode-map
-The keymap used by Prog mode.@*
+Ключевая карта, используемая в режиме Prog.@*
 @xref{Basic Major Modes}.
 
 @item query-replace-map
 @itemx multi-query-replace-map
-A sparse keymap used for responses in @code{query-replace} and related
-commands; also for @code{y-or-n-p} and @code{map-y-or-n-p}.  The functions
-that use this map do not support prefix keys; they look up one event at a
-time.  @code{multi-query-replace-map} extends @code{query-replace-map}
-for multi-buffer replacements.  @xref{Search and Replace, query-replace-map}.
+Разряженная ключевая карта, используемая для ответов в @code{query-replace} и
+связанных командах; также для @code{y-or-n-p} и @code{map-y-or-n-p}.  Функции,
+использующие эту карту, не поддерживают префиксные ключи; они просматривают одно
+событие за раз.  @code{multi-query-replace-map} расширяет @code{query-replace-map}
+для замены нескольких буферов.  @xref{Search and Replace, query-replace-map}.
 
 @item search-map
-A sparse keymap that provides global bindings for search-related commands.
+Разряженная ключевая карта, которая обеспечивает глобальные привязки для команд,
+связанных с поиском.
 
 @item special-mode-map
-The keymap used by Special mode.@*
+Ключевая карта, используемая в специальном режиме.@*
 @xref{Basic Major Modes}.
 
 @item tool-bar-map
-The keymap defining the contents of the tool bar.@*
+Ключевая карта, определяющая содержимое панели инструментов.@*
 @xref{Tool Bar}.
 
 @item universal-argument-map
 @vindex universal-argument-map
-A sparse keymap used while processing @kbd{C-u}.@*
+Разряженная ключевая карта, используемая при обработке @kbd{C-u}.@*
 @xref{Prefix Command Arguments}.
 
 @item vc-prefix-map
-The global keymap used for the @kbd{C-x v} prefix key.
+Глобальная ключевая карта, используемая для префиксного ключа @kbd{C-x v}.
 
 @item x-alternatives-map
 @vindex x-alternatives-map
 @findex x-setup-function-keys
-A sparse keymap used to map certain keys under graphical frames.@*
-The function @code{x-setup-function-keys} uses this.
+Разреженная ключевая карта, используемая для отображения определенных ключей в
+графических фреймах.@*
+Функция @code{x-setup-function-keys} использует это.
 
 @end table

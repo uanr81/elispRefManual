@@ -4,158 +4,151 @@
 @c See the file elisp.texi for copying conditions.
 
 @node Introduction
-@chapter Introduction
+@chapter Вступление
 
-  Most of the GNU Emacs text editor is written in the programming
-language called Emacs Lisp.  You can write new code in Emacs Lisp and
-install it as an extension to the editor.  However, Emacs Lisp is more
-than a mere extension language; it is a full computer programming
-language in its own right.  You can use it as you would any other
-programming language.
+  Большая часть текстового редактора GNU Emacs написана на языке программирования
+Emacs Lisp. Можно написать новый код в Emacs Lisp и установить его как расширение
+редактора.  Однако Emacs Lisp - это больше, чем просто язык расширения; это
+самостоятельный полноценный язык компьютерного программирования.  Можно использовать
+его, как любой другой язык программирования.
 
-  Because Emacs Lisp is designed for use in an editor, it has special
-features for scanning and parsing text as well as features for handling
-files, buffers, displays, subprocesses, and so on.  Emacs Lisp is
-closely integrated with the editing facilities; thus, editing commands
-are functions that can also conveniently be called from Lisp programs,
-and parameters for customization are ordinary Lisp variables.
+  Поскольку Emacs Lisp разработан для использования в редакторе, он имеет специальные
+функции для сканирования и анализа текста, а также функции для обработки файлов,
+буферов, дисплеев, подпроцессов и так далее.  Emacs Lisp тесно интегрирован со
+средствами редактирования; таким образом, команды редактирования - это функции,
+которые также можно удобно вызывать из программ на Lisp, а параметры для настройки -
+это обычные переменные Lisp.
 
-  This manual attempts to be a full description of Emacs Lisp.  For a
-beginner's introduction to Emacs Lisp, see @cite{An Introduction to
-Emacs Lisp Programming}, by Bob Chassell, also published by the Free
-Software Foundation.  This manual presumes considerable familiarity with
-the use of Emacs for editing; see @cite{The GNU Emacs Manual} for this
-basic information.
+  Это руководство представляет собой полное описание Emacs Lisp.  Для ознакомления
+новичков с Emacs Lisp, смотреть @cite{Введение в программирование на Emacs Lisp},
+Боб Часселл, также опубликованный Free Software Foundation.  Это руководство
+предполагает значительное знакомство с использованием Emacs для редактирования;
+смотреть @cite{Руководство по GNU Emacs} для этой основной информации.
 
-  Generally speaking, the earlier chapters describe features of Emacs
-Lisp that have counterparts in many programming languages, and later
-chapters describe features that are peculiar to Emacs Lisp or relate
-specifically to editing.
+  Вообще говоря, в предыдущих главах описываются возможности Emacs Lisp, которые
+имеют аналоги во многих языках программирования, а в последующих главах описываются
+особенности, присущие Emacs Lisp или относящиеся конкретно к редактированию.
 
-  This is
+  Это
 @iftex
-edition @value{VERSION} of
+редакция @value{VERSION}
 @end iftex
-the @cite{GNU Emacs Lisp Reference Manual},
-corresponding to Emacs version @value{EMACSVER}.
+@cite{Справочное руководство GNU Emacs Lisp},
+соответствует версии Emacs @value{EMACSVER}.
 
 @menu
-* Caveats::             Flaws and a request for help.
-* Lisp History::        Emacs Lisp is descended from Maclisp.
-* Conventions::         How the manual is formatted.
-* Version Info::        Which Emacs version is running?
-* Acknowledgments::     The authors, editors, and sponsors of this manual.
+* Caveats::             Недостатки и просьба о помощи.
+* Lisp History::        Emacs Lisp происходит от Maclisp.
+* Conventions::         Как оформлено руководство.
+* Version Info::        Какая версия Emacs запущена?
+* Acknowledgments::     Авторы, редакторы и спонсоры этого руководства.
 @end menu
 
 @node Caveats
-@section Caveats
-@cindex bugs in this manual
+@section Предостережения
+@cindex ошибки в руководстве
 
-  This manual has gone through numerous drafts.  It is nearly complete
-but not flawless.  There are a few topics that are not covered, either
-because we consider them secondary (such as most of the individual
-modes) or because they are yet to be written.  Because we are not able
-to deal with them completely, we have left out several parts
-intentionally.
+  Руководство подверглось многочисленным проектам.  Оно почти готово, но не
+безупречно.  Есть несколько тем, которые не охвачены, либо потому, что считаются
+второстепенными (например, большинство отдельных режимов), либо потому, что они еще
+не написаны.  Поскольку не получается справиться с этим полностью, намеренно
+упускаются некоторые части.
 
-  The manual should be fully correct in what it does cover, and it is
-therefore open to criticism on anything it says---from specific examples
-and descriptive text, to the ordering of chapters and sections.  If
-something is confusing, or you find that you have to look at the sources
-or experiment to learn something not covered in the manual, then perhaps
-the manual should be fixed.  Please let us know.
+  Руководство должно быть полностью правильным в том, что оно охватывает, и поэтому
+открыто для критики по всему, что в нем говорится - от конкретных примеров и
+описательного текста до порядка глав и разделов.  Если что-то сбивает с толку, или
+обнаруживается, что нужно взглянуть на источники или поэкспериментировать, чтобы
+узнать что-то, что не описано в руководстве, то, возможно, руководство следует
+исправить.  Пожалуйста, дать знать.
 
 @iftex
-  As you use this manual, we ask that you mark pages with corrections so
-you can later look them up and send them to us.  If you think of a simple,
-real-life example for a function or group of functions, please make an
-effort to write it up and send it in.  Please reference any comments to
-the chapter name, section name, and function name, as appropriate, since
-page numbers and chapter and section numbers will change and we may have
-trouble finding the text you are talking about.  Also state the version
-of the edition you are criticizing.
+  При использовании этого руководства просьба отмечать страницы с исправлениями, чтобы
+впоследствии можно было найти их и отправить.  Если думать о простом, реальном примере
+функции или группы функций, постараться написать его и отправить.  Пожалуйста,
+ссылаться на любые комментарии к имени главы, имени раздела и имени функции, в
+зависимости от обстоятельств, поскольку номера страниц, а также номера глав и разделов
+изменятся, и у могут возникнуть проблемы с поиском текста, о котором идет речь.  Также
+указать версию издания, которое критикуется.
 @end iftex
 @ifnottex
 
-As you use this manual, we ask that you send corrections as soon as you
-find them.  If you think of a simple, real life example for a function
-or group of functions, please make an effort to write it up and send it
-in.  Please reference any comments to the node name and function or
-variable name, as appropriate.  Also state the number of the edition
-you are criticizing.
+При использовании этого руководства просьба присылать исправления, как только они
+найдены.  Если думать о простом примере из реальной жизни для функции или группы
+функций, пожалуйста, постарайться написать его и отправить.  Пожалуйста, дать ссылку
+на любые комментарии к имени узла и функции или имени переменной, в зависимости от
+обстоятельств.  Также указать номер редакции, которая критикуется.
 @end ifnottex
 
 @cindex bugs
 @cindex suggestions
-Please send comments and corrections using @kbd{M-x report-emacs-bug}.
+Пожалуйста, присылать комментарии и исправления, используя @kbd{M-x report-emacs-bug}.
 
 @node Lisp History
-@section Lisp History
+@section История Lisp
 @cindex Lisp history
 
-  Lisp (LISt Processing language) was first developed in the late 1950s
-at the Massachusetts Institute of Technology for research in artificial
-intelligence.  The great power of the Lisp language makes it ideal
-for other purposes as well, such as writing editing commands.
+  Lisp (язык обработки LISt) был впервые разработан в конце 1950-х годов в
+Массачусетском технологическом институте для исследований в области искусственного
+интеллекта.  Великая мощь языка Lisp делает его идеальным и для других целей,
+например, для написания команд редактирования.
 
 @cindex Maclisp
 @cindex Common Lisp
-  Dozens of Lisp implementations have been built over the years, each
-with its own idiosyncrasies.  Many of them were inspired by Maclisp,
-which was written in the 1960s at MIT's Project MAC@.  Eventually the
-implementers of the descendants of Maclisp came together and developed a
-standard for Lisp systems, called Common Lisp.  In the meantime, Gerry
-Sussman and Guy Steele at MIT developed a simplified but very powerful
-dialect of Lisp, called Scheme.
+  Десятки реализаций Lisp были созданы за годы, каждая со своими особенностями.
+Многие из них были вдохновлены Маклиспом, который был написан в 1960-х годах в MIT's
+Project MAC @.  В конце концов разработчики потомков Maclisp объединились и
+разработали стандарт для систем Lisp, названный Common Lisp.  Тем временем Джерри
+Сассман и Гай Стил из Массачусетского технологического института разработали
+упрощенный, но очень мощный диалект Lisp, названный Scheme.
 
-  GNU Emacs Lisp is largely inspired by Maclisp, and a little by Common
-Lisp.  If you know Common Lisp, you will notice many similarities.
-However, many features of Common Lisp have been omitted or
-simplified in order to reduce the memory requirements of GNU Emacs.
-Sometimes the simplifications are so drastic that a Common Lisp user
-might be very confused.  We will occasionally point out how GNU Emacs
-Lisp differs from Common Lisp.  If you don't know Common Lisp, don't
-worry about it; this manual is self-contained.
+  GNU Emacs Lisp во многом вдохновлен Maclisp и немного Common Lisp.  Если знать
+Common Lisp, заметно станет много общего.  Однако многие функции Common Lisp были
+опущены или упрощены, чтобы уменьшить требования к памяти для GNU Emacs.  Иногда
+упрощения настолько радикальны, что пользователь Common Lisp может сильно запутаться.
+Время от времени будет указано, чем GNU Emacs Lisp отличается от Common Lisp.  Если
+не знать Common Lisp, не беспокоиться об этом; это руководство является
+самостоятельным.
 
 @pindex cl
-  A certain amount of Common Lisp emulation is available via the
-@file{cl-lib} library.  @xref{Top,, Overview, cl, Common Lisp Extensions}.
+  Определенное количество эмуляции Common Lisp доступно через библиотеку
+@file{cl-lib}.  @xref{Top,, Overview, cl, Common Lisp Extensions}.
 
-  Emacs Lisp is not at all influenced by Scheme; but the GNU project has
-an implementation of Scheme, called Guile.  We use it in all new GNU
-software that calls for extensibility.
+  Emacs Lisp совершенно не зависит от Scheme; но в проекте GNU есть реализация Scheme,
+называемая Guile.  Используется она во всем новом программном обеспечении GNU, которое
+требует расширяемости.
 
 @node Conventions
-@section Conventions
+@section Условные Обозначения
 
-This section explains the notational conventions that are used in this
-manual.  You may want to skip this section and refer back to it later.
+В этом разделе объясняются условные обозначения, используемые в этом руководстве.
+Можно пропустить этот раздел и вернуться к нему позже.
 
 @menu
-* Some Terms::               Explanation of terms we use in this manual.
-* nil and t::                How the symbols @code{nil} and @code{t} are used.
-* Evaluation Notation::      The format we use for examples of evaluation.
-* Printing Notation::        The format we use when examples print text.
-* Error Messages::           The format we use for examples of errors.
-* Buffer Text Notation::     The format we use for buffer contents in examples.
-* Format of Descriptions::   Notation for describing functions, variables, etc.
+* Some Terms::           Объяснение терминов, которые используются в этом руководстве.
+* nil and t::                Как используются символы @code{nil} и @code{t}.
+* Evaluation Notation::      Формат, который используется для примеров оценки.
+* Printing Notation::      Формат, который используется, когда примеры печатают текст.
+* Error Messages::           Формат, который используется для примеров ошибок.
+* Buffer Text Notation::   Формат, который используется для содержимого буфера в
+                               примерах.
+* Format of Descriptions::   Обозначения для описания функций, переменных и так далее.
 @end menu
 
 @node Some Terms
-@subsection Some Terms
+@subsection Некоторые Термины
 
-  Throughout this manual, the phrases ``the Lisp reader'' and ``the Lisp
-printer'' refer to those routines in Lisp that convert textual
-representations of Lisp objects into actual Lisp objects, and vice
-versa.  @xref{Printed Representation}, for more details.  You, the
-person reading this manual, are thought of as the programmer and are
-addressed as ``you''.  The user is the person who uses Lisp
-programs, including those you write.
+  В этом руководстве фразы ``the Lisp reader(Lisp-читатель)'' и
+``the Lisp printer(Lisp-принтер)'' относятся к тем подпрограммам в Lisp, которые
+преобразуют текстовые представления объектов Lisp в реальные объекты Lisp, и наоборот.
+@xref{Printed Representation}, для деталей.  Человек, читающий это руководство,
+воспринимается как программист, и к нему обращаются так же.  Пользователь - это
+человек, который использует программы на Lisp, включая написанные этим человеком
+программистом.
 
 @cindex typographic conventions
-  Examples of Lisp code are formatted like this: @code{(list 1 2 3)}.
-Names that represent metasyntactic variables, or arguments to a function
-being described, are formatted like this: @var{first-number}.
+  Примеры кода на Lisp имеют такой формат: @code{(list 1 2 3)}.  Имена, которые
+представляют метасинтаксические переменные или аргументы описываемой функции,
+форматируются следующим образом: @var{first-number}.
 
 @node nil and t
 @subsection @code{nil} and @code{t}
@@ -164,57 +157,54 @@ being described, are formatted like this: @var{first-number}.
 
 @cindex @code{nil}
 @cindex false
-  In Emacs Lisp, the symbol @code{nil} has three separate meanings: it
-is a symbol with the name @samp{nil}; it is the logical truth value
-@var{false}; and it is the empty list---the list of zero elements.
-When used as a variable, @code{nil} always has the value @code{nil}.
+  В Emacs Lisp символ @code{nil} имеет три разных значения: это символ с именем
+@samp{nil}; это значение логической истинности @var{false}; и это пустой список ---
+список без элементов.  При использовании в качестве переменной @code{nil} всегда
+имеет значение @code{nil}.
 
-  As far as the Lisp reader is concerned, @samp{()} and @samp{nil} are
-identical: they stand for the same object, the symbol @code{nil}.  The
-different ways of writing the symbol are intended entirely for human
-readers.  After the Lisp reader has read either @samp{()} or @samp{nil},
-there is no way to determine which representation was actually written
-by the programmer.
+  Что касается Lisp-читателя, @samp{()} и @samp{nil} идентичны: они обозначают один и
+тот же объект, символ @code{nil}.  Различные способы написания символа предназначены
+исключительно для читателей.  После того, как Lisp-читатель прочитал либо @samp{()}
+или @samp{nil}, невозможно определить, какое представление на самом деле было написано
+программистом.
 
-  In this manual, we write @code{()} when we wish to emphasize that it
-means the empty list, and we write @code{nil} when we wish to emphasize
-that it means the truth value @var{false}.  That is a good convention to use
-in Lisp programs also.
+  В этом руководстве пишется @code{()}, когда требуется подчеркнуть, что это означает
+пустой список, и пишется @code{nil}, когда подчеркивается, что это означает истинное
+значение @var{false}.  Это хорошее соглашение также для использования в программах на
+Lisp.
 
 @example
-(cons 'foo ())                ; @r{Emphasize the empty list}
-(setq foo-flag nil)           ; @r{Emphasize the truth value @var{false}}
+(cons 'foo ())                ; @r{Подчеркивается пустой список}
+(setq foo-flag nil)           ; @r{Подчеркиватся значение истинности @var{false}}
 @end example
 
 @cindex @code{t}
 @cindex true
-  In contexts where a truth value is expected, any non-@code{nil} value
-is considered to be @var{true}.  However, @code{t} is the preferred way
-to represent the truth value @var{true}.  When you need to choose a
-value that represents @var{true}, and there is no other basis for
-choosing, use @code{t}.  The symbol @code{t} always has the value
-@code{t}.
+  В контекстах, где ожидается значение истинности, любое значение не-@code{nil}
+считается @var{true}.  Однако @code{t} является предпочтительным способом
+представления истинного значения @var{true}.  Если требуется выбрать значение,
+представляющее @var{true}, и нет другого основания для выбора, использовать @code{t}.
+Символ @code{t} всегда имеет значение @code{t}.
 
-  In Emacs Lisp, @code{nil} and @code{t} are special symbols that always
-evaluate to themselves.  This is so that you do not need to quote them
-to use them as constants in a program.  An attempt to change their
-values results in a @code{setting-constant} error.  @xref{Constant
-Variables}.
+  В Emacs Lisp @code{nil} и @code{t} - это специальные символы, которые всегда
+вычисляются сами по себе.  Это сделано для того, чтобы не нужно было заключать их в
+кавычки, чтобы использовать их в качестве констант в программе.  Попытка изменить их
+значения приводит к ошибке @code{setting-constant}.  @xref{Constant Variables}.
 
 @defun booleanp object
-Return non-@code{nil} if @var{object} is one of the two canonical
-boolean values: @code{t} or @code{nil}.
+Вернуть не-@code{nil}, если @var{object} - одно из двух канонических логических
+значений: @code{t} или @code{nil}.
 @end defun
 
 @node Evaluation Notation
-@subsection Evaluation Notation
+@subsection Обозначение Оценки
 @cindex evaluation notation
 @cindex documentation notation
 @cindex notation
 
-  A Lisp expression that you can evaluate is called a @dfn{form}.
-Evaluating a form always produces a result, which is a Lisp object.  In
-the examples in this manual, this is indicated with @samp{@result{}}:
+  Выражение Lisp, которое можно оценить, называется @dfn{формой}.  Оценка формы всегда
+дает результат, которым является объект Lisp.  В примерах в этом руководстве это
+обозначено как @samp{@result{}}:
 
 @example
 (car '(1 2))
@@ -222,12 +212,11 @@ the examples in this manual, this is indicated with @samp{@result{}}:
 @end example
 
 @noindent
-You can read this as ``@code{(car '(1 2))} evaluates to 1''.
+Можно прочесть это как ``@code{(car '(1 2))} оценивается в 1''.
 
-  When a form is a macro call, it expands into a new form for Lisp to
-evaluate.  We show the result of the expansion with
-@samp{@expansion{}}.  We may or may not show the result of the
-evaluation of the expanded form.
+  Когда форма является вызовом макроса, она раскрывается в новую форму для оценки
+Lisp.  Показывается результат расширения с помощью @samp{@expansion{}}.  Можно
+показываться или не показываться результат оценки расширенной формы.
 
 @example
 (third '(a b c))
@@ -235,29 +224,26 @@ evaluation of the expanded form.
      @result{} c
 @end example
 
-  To help describe one form, we sometimes show another form that
-produces identical results.  The exact equivalence of two forms is
-indicated with @samp{@equiv{}}.
+  Чтобы помочь описать одну форму, иногда показывается другая форма, которая дает
+идентичные результаты.  Точная эквивалентность двух форм обозначается @samp{@equiv{}}.
 
 @example
 (make-sparse-keymap) @equiv{} (list 'keymap)
 @end example
 
 @node Printing Notation
-@subsection Printing Notation
+@subsection Обозначение Печати
 @cindex printing notation
 
-  Many of the examples in this manual print text when they are
-evaluated.  If you execute example code in a Lisp Interaction buffer
-(such as the buffer @file{*scratch*}), the printed text is inserted into
-the buffer.  If you execute the example by other means (such as by
-evaluating the function @code{eval-region}), the printed text is
-displayed in the echo area.
+  Многие примеры в этом руководстве печатают текст после их оценки.  Если выполняется
+пример кода в буфере взаимодействия с Lisp (таком как буфер @file{*scratch*}),
+напечатанный текст вставляется в буфер.  Если выполняется пример другими способами
+(например, оценивая функцию @code{eval-region}), напечатанный текст отображается в
+эхо-области.
 
-  Examples in this manual indicate printed text with @samp{@print{}},
-irrespective of where that text goes.  The value returned by
-evaluating the form follows on a separate line with
-@samp{@result{}}.
+  Примеры в этом руководстве обозначают напечатанный текст с помощью @samp{@print{}},
+независимо от того, где находится этот текст.  Значение, возвращаемое при оценке
+формы, следует в отдельной строке с @samp{@result{}}.
 
 @example
 @group
@@ -269,30 +255,28 @@ evaluating the form follows on a separate line with
 @end example
 
 @node Error Messages
-@subsection Error Messages
+@subsection Сообщения об Ошибках
 @cindex error message notation
 
-  Some examples signal errors.  This normally displays an error message
-in the echo area.  We show the error message on a line starting with
-@samp{@error{}}.  Note that @samp{@error{}} itself does not appear in
-the echo area.
+  Некоторые примеры сигнализируют об ошибках.  Обычно это отображает сообщение об
+ошибке в эхо-области.  Показывается сообщение об ошибке в строке, начинающейся с
+@samp{@error{}}.  Обратить внимание, что само @samp{@error{}} не отображается в
+эхо-области.
 
 @example
 (+ 23 'x)
-@error{} Wrong type argument: number-or-marker-p, x
+@error{} Wrong type argument(Аргумент неправильного типа): number-or-marker-p, x
 @end example
 
 @node Buffer Text Notation
-@subsection Buffer Text Notation
+@subsection Обозначение Текста Буфера
 @cindex buffer text notation
 
-  Some examples describe modifications to the contents of a buffer, by
-showing the before and after versions of the text.  These
-examples show the contents of the buffer in question between two lines
-of dashes containing the buffer name.  In addition, @samp{@point{}}
-indicates the location of point.  (The symbol for point, of course, is
-not part of the text in the buffer; it indicates the place
-@emph{between} two characters where point is currently located.)
+  В некоторых примерах описываются модификации содержимого буфера, показывая версии
+текста до и после.  Эти примеры показывают содержимое рассматриваемого буфера между
+двумя строками тире, содержащими имя буфера.  Кроме того, @samp{@point{}} указывает
+местоположение точки.  (Символ точки, конечно, не является частью текста в буфере; он
+указывает место @emph{между} двумя символами, где в данный момент находится точка.)
 
 @example
 ---------- Buffer: foo ----------
@@ -307,60 +291,52 @@ This is the changed @point{}contents of foo.
 @end example
 
 @node Format of Descriptions
-@subsection Format of Descriptions
+@subsection Формат Описаний
 @cindex description format
 
-  Functions, variables, macros, commands, user options, and special
-forms are described in this manual in a uniform format.  The first
-line of a description contains the name of the item followed by its
-arguments, if any.
+  Функции, переменные, макросы, команды, параметры пользователя и специальные формы
+описаны в этом руководстве в едином формате.  Первая строка описания содержит имя
+элемента, за которым следуют его аргументы, если таковые имеются.
 @ifnottex
-The category---function, variable, or whatever---appears at the
-beginning of the line.
+Категория --- функция, переменная или что-то еще --- появляется в начале строки.
 @end ifnottex
 @iftex
-The category---function, variable, or whatever---is printed next to the
-right margin.
+Категория --- функция, переменная или что-то еще --- печатается рядом с правым полем.
 @end iftex
-The description follows on succeeding lines, sometimes with examples.
+Описание следует в следующих строках, иногда с примерами.
 
 @menu
-* A Sample Function Description::       A description of an imaginary
-                                          function, @code{foo}.
-* A Sample Variable Description::       A description of an imaginary
-                                          variable,
-                                          @code{electric-future-map}.
+* A Sample Function Description::       Описание мнимой функции, @code{foo}.
+* A Sample Variable Description::       Описание мнимой переменной,
+                                            @code{electric-future-map}.
 @end menu
 
 @node A Sample Function Description
-@subsubsection A Sample Function Description
+@subsubsection Пример Описания Функции
 @cindex function descriptions
 @cindex command descriptions
 @cindex macro descriptions
 @cindex special form descriptions
 
-  In a function description, the name of the function being described
-appears first.  It is followed on the same line by a list of argument
-names.  These names are also used in the body of the description, to
-stand for the values of the arguments.
+  В описании функции первым появляется имя описываемой функции.  За ним в той же
+строке следует список имен аргументов.  Эти имена также используются в теле описания
+для обозначения значений аргументов.
 
-  The appearance of the keyword @code{&optional} in the argument list
-indicates that the subsequent arguments may be omitted (omitted
-arguments default to @code{nil}).  Do not write @code{&optional} when
-you call the function.
+  Появление ключевого слова @code{&optional} в списке аргументов указывает на то, что
+последующие аргументы могут быть опущены (опущенные аргументы по умолчанию имеют
+значение @code{nil}).  Не писать @code{&optional} при вызове функции.
 
-  The keyword @code{&rest} (which must be followed by a single
-argument name) indicates that any number of arguments can follow.  The
-single argument name following @code{&rest} receives, as its
-value, a list of all the remaining arguments passed to the function.
-Do not write @code{&rest} when you call the function.
+  Ключевое слово @code{&rest} (за которым должно следовать одно имя аргумента)
+указывает, что может следовать любое количество аргументов.  Имя единственного
+аргумента, следующее за @code{&rest}, получает в качестве своего значения список всех
+оставшихся аргументов, переданных функции.  Не писать @code{&rest} при вызове функции.
 
-  Here is a description of an imaginary function @code{foo}:
+  Вот описание мнимой функции @code{foo}:
 
 @defun foo integer1 &optional integer2 &rest integers
-The function @code{foo} subtracts @var{integer1} from @var{integer2},
-then adds all the rest of the arguments to the result.  If @var{integer2}
-is not supplied, then the number 19 is used by default.
+Функция @code{foo} вычитает @var{integer1} из @var{integer2}, а затем добавляет все
+остальные аргументы к результату.  Если @var{integer2} не указано, то по умолчанию
+используется число 19.
 
 @example
 (foo 1 5 3 9)
@@ -379,42 +355,37 @@ More generally,
 @end example
 @end defun
 
-  By convention, any argument whose name contains the name of a type
-(e.g., @var{integer}, @var{integer1} or @var{buffer}) is expected to
-be of that type.  A plural of a type (such as @var{buffers}) often
-means a list of objects of that type.  An argument named @var{object}
-may be of any type.  (For a list of Emacs object types, @pxref{Lisp
-Data Types}.)  An argument with any other sort of name
-(e.g., @var{new-file}) is specific to the function; if the function
-has a documentation string, the type of the argument should be
-described there (@pxref{Documentation}).
+  По соглашению ожидается, что любой аргумент, имя которого содержит имя типа
+(например, @var{integer}, @var{integer1} или @var{buffer}), будет иметь этот тип.
+Множественное число типа (например, @var{buffers}) часто означает список объектов
+этого типа.  Аргумент с именем @var{object} может быть любого типа.  (Для списка типов
+объектов Emacs - @pxref{Lisp Data Types}.)  Аргумент с любым другим видом имени
+(например, @var{new-file}) специфичен для функции; если у функции есть строка
+документации, там должен быть описан тип аргумента (@pxref{Documentation}).
 
-  @xref{Lambda Expressions}, for a more complete description of
-arguments modified by @code{&optional} and @code{&rest}.
+  @xref{Lambda Expressions}, для более полного описания аргументов, модифицированных
+@code{&optional} и @code{&rest}.
 
-  Command, macro, and special form descriptions have the same format,
-but the word @samp{Function} is replaced by @samp{Command},
-@samp{Macro}, or @samp{Special Form}, respectively.  Commands are
-simply functions that may be called interactively; macros process
-their arguments differently from functions (the arguments are not
-evaluated), but are presented the same way.
+  Описания команд, макросов и специальных форм имеют одинаковый формат, но слово
+@samp{Function} заменяется на @samp{Command}, @samp{Macro} или @samp{Special Form}
+соответственно.  Команды - это просто функции, которые можно вызывать в интерактивном
+режиме; макросы обрабатывают свои аргументы иначе, чем функции (аргументы не
+оцениваются), но представлены таким же образом.
 
-  The descriptions of macros and special forms use a more complex
-notation to specify optional and repeated arguments, because they can
-break the argument list down into separate arguments in more
-complicated ways.  @samp{@r{[}@var{optional-arg}@r{]}} means that
-@var{optional-arg} is optional and @samp{@var{repeated-args}@dots{}}
-stands for zero or more arguments.  Parentheses are used when several
-arguments are grouped into additional levels of list structure.  Here
-is an example:
+  В описаниях макросов и специальных форм используется более сложная нотация для
+указания необязательных и повторяющихся аргументов, поскольку они могут разбить список
+аргументов на отдельные аргументы более сложными способами.
+@samp{@r{[}@var{optional-arg}@r{]}} означает, что @var{optional-arg} является
+необязательным, а @samp{@var{repeated-args}@dots{}} означает ноль или более
+аргументов.  Скобки используются, когда несколько аргументов сгруппированы в
+дополнительные уровни структуры списка.  Вот пример:
 
 @defspec count-loop (var [from to [inc]]) body@dots{}
-This imaginary special form implements a loop that executes the
-@var{body} forms and then increments the variable @var{var} on each
-iteration.  On the first iteration, the variable has the value
-@var{from}; on subsequent iterations, it is incremented by one (or by
-@var{inc} if that is given).  The loop exits before executing @var{body}
-if @var{var} equals @var{to}.  Here is an example:
+Эта воображаемая специальная форма реализует цикл, который выполняет формы @var{body}
+и затем увеличивает переменную @var{var} на каждой итерации.  На первой итерации
+переменная имеет значение @var{from}; при последующих итерациях оно увеличивается на
+единицу (или на @var{inc}, если задано).  Цикл завершается перед выполнением
+@var{body}, если @var{var} равно @var{to}.  Вот пример:
 
 @example
 (count-loop (i 0 10)
@@ -423,9 +394,9 @@ if @var{var} equals @var{to}.  Here is an example:
   (terpri))
 @end example
 
-If @var{from} and @var{to} are omitted, @var{var} is bound to
-@code{nil} before the loop begins, and the loop exits if @var{var} is
-non-@code{nil} at the beginning of an iteration.  Here is an example:
+Если @var{from} и @var{to} опущены, @var{var} привязывается к @code{nil} до начала
+цикла, и цикл завершается, если @var{var} имеет значение не-@code{nil} в начале
+итерации.  Вот пример:
 
 @example
 (count-loop (done)
@@ -434,48 +405,44 @@ non-@code{nil} at the beginning of an iteration.  Here is an example:
     (setq done t)))
 @end example
 
-In this special form, the arguments @var{from} and @var{to} are
-optional, but must both be present or both absent.  If they are present,
-@var{inc} may optionally be specified as well.  These arguments are
-grouped with the argument @var{var} into a list, to distinguish them
-from @var{body}, which includes all remaining elements of the form.
+В этой специальной форме аргументы @var{from} и @var{to} необязательны, но должны
+присутствовать оба или оба отсутствовать.  Если они есть, необязательно можно указать
+@var{inc}.  Эти аргументы сгруппированы с аргументом @var{var} в список, чтобы
+отличить их от @var{body}, что включает все остальные элементы формы.
 @end defspec
 
 @node A Sample Variable Description
-@subsubsection A Sample Variable Description
+@subsubsection Пример Описания Переменной
 @cindex variable descriptions
 @cindex option descriptions
 
-  A @dfn{variable} is a name that can be @dfn{bound} (or @dfn{set}) to
-an object.  The object to which a variable is bound is called a
-@dfn{value}; we say also that variable holds that value.
-Although nearly all variables can be set by the user, certain
-variables exist specifically so that users can change them; these are
-called @dfn{user options}.  Ordinary variables and user options are
-described using a format like that for functions, except that there
-are no arguments.
+  @dfn{variable} - это имя, которое может быть @dfn{bound} (или @dfn{set}) для
+объекта.  Объект, к которому привязана переменная, называется @dfn{value}; также
+говорится, что переменная содержит это значение.  Хотя почти все переменные могут быть
+установлены пользователем, некоторые переменные существуют специально, чтобы
+пользователи могли их изменять; они называются
+@dfn{user options(параметры пользователя)}.  Обычные переменные и пользовательские
+параметры описываются в формате, аналогичном формату функций, за исключением того, чтоздесь нет аргументов.
 
-  Here is a description of the imaginary @code{electric-future-map}
-variable.
+  Вот описание мнимой переменной @code{electric-future-map}.
 
 @defvar electric-future-map
-The value of this variable is a full keymap used by Electric Command
-Future mode.  The functions in this map allow you to edit commands you
-have not yet thought about executing.
+Значение этой переменной - полная ключевая карта, используемая режимом Electric
+Command Future.  Функции этой карты позволяют редактировать команды, о выполнении
+которых еще не задумывалось.
 @end defvar
 
-  User option descriptions have the same format, but @samp{Variable}
-is replaced by @samp{User Option}.
+  Описания пользовательских опций имеют тот же формат, но вместо @samp{Variable}
+используется @samp{User Option}.
 
 @node Version Info
-@section Version Information
+@section Информация о Версии
 
-  These facilities provide information about which version of Emacs is
-in use.
+  Эти средства предоставляют информацию о том, какая версия Emacs используется.
 
 @deffn Command emacs-version &optional here
-This function returns a string describing the version of Emacs that is
-running.  It is useful to include this string in bug reports.
+Функция возвращает строку, описывающую запущенную версию Emacs.  Строку полезно
+включать в отчеты об ошибках.
 
 @smallexample
 @group
@@ -485,17 +452,16 @@ running.  It is useful to include this string in bug reports.
 @end group
 @end smallexample
 
-If @var{here} is non-@code{nil}, it inserts the text in the buffer
-before point, and returns @code{nil}.  When this function is called
-interactively, it prints the same information in the echo area, but
-giving a prefix argument makes @var{here} non-@code{nil}.
+Если @var{here} равно не-@code{nil}, вставляется текст в буфер перед точкой и
+возвращается @code{nil}.  Когда функция вызывается в интерактивном режиме, печатается
+та же информация в эхо-области, но при указании префиксного аргумента @var{here}
+устанавливается в не-@code{nil}.
 @end deffn
 
 @defvar emacs-build-time
-The value of this variable indicates the time at which Emacs was
-built.  It is a list of four integers, like the value of
-@code{current-time} (@pxref{Time of Day}), or is @code{nil}
-if the information is not available.
+Значение этой переменной указывает время, когда был собран Emacs.  Список из четырех
+целых чисел, например значение @code{current-time} (@pxref{Time of Day}) или
+@code{nil}, если информация недоступна.
 
 @example
 @group
@@ -506,57 +472,52 @@ emacs-build-time
 @end defvar
 
 @defvar emacs-version
-The value of this variable is the version of Emacs being run.  It is a
-string such as @code{"26.1"}.  A value with three numeric components,
-such as @code{"26.0.91"}, indicates an unreleased test version.
-(Prior to Emacs 26.1, the string includes an extra final component
-with the integer that is now stored in @code{emacs-build-number};
-e.g., @code{"25.1.1"}.)
+Значение переменной - версия запущенного Emacs.  Строка, например @code{"26.1"}.
+Значение с тремя числовыми компонентами, например @code{"26.0.91"}, указывает на
+невыпущенную тестовую версию.  (До Emacs 26.1 строка включала дополнительный последний
+компонент с целым числом, которое теперь хранится в @code{emacs-build-number},
+например, @code{"25.1.1"}.)
 @end defvar
 
 @defvar emacs-major-version
-The major version number of Emacs, as an integer.  For Emacs version
-23.1, the value is 23.
+Основной номер версии Emacs в виде целого числа.  Для Emacs версии 23.1 значение
+равно 23.
 @end defvar
 
 @defvar emacs-minor-version
-The minor version number of Emacs, as an integer.  For Emacs version
-23.1, the value is 1.
+Младший номер версии Emacs в виде целого числа.  Для Emacs версии 23.1 значение
+равно 1.
 @end defvar
 
 @defvar emacs-build-number
-An integer that increments each time Emacs is built in the same
-directory (without cleaning).  This is only of relevance when
-developing Emacs.
+Целое число, которое увеличивается каждый раз, когда Emacs создается в том же
+каталоге (без очистки).  Это актуально только при разработке Emacs.
 @end defvar
 
 @node Acknowledgments
-@section Acknowledgments
+@section Благодарности
 
-  This manual was originally written by Robert Krawitz, Bil Lewis, Dan
-LaLiberte, Richard@tie{}M. Stallman and Chris Welty, the volunteers of
-the GNU manual group, in an effort extending over several years.
-Robert@tie{}J. Chassell helped to review and edit the manual, with the
-support of the Defense Advanced Research Projects Agency, ARPA Order
-6082, arranged by Warren@tie{}A. Hunt, Jr.@: of Computational Logic,
-Inc.  Additional sections have since been written by Miles Bader, Lars
-Brinkhoff, Chong Yidong, Kenichi Handa, Lute Kamstra, Juri Linkov,
-Glenn Morris, Thien-Thi Nguyen, Dan Nicolaescu, Martin Rudalics, Kim
-F. Storm, Luc Teirlinck, and Eli Zaretskii, and others.
+  Изначально это руководство было написано Робертом Кравицем, Биллом Льюисом, Дэном
+Лалиберте, Richard@tie{}M. Столлманом и Крис Велти, волонтеры группы руководств по
+GNU, работают над этим в течение нескольких лет.  Robert@tie{}J. Часселл помогал
+просматривать и редактировать руководство при поддержке управления перспективных
+исследовательских проектов министерства обороны США, приказ ARPA 6082, организованный
+Warren@tie{}A. Хант, Jr.@: компании Computational Logic, Inc. Дополнительные разделы
+с тех пор были написаны Майлзом Бадером, Ларсом Бринкоффом, Чонгом Идонгом, Кеничи
+Ханда, Лют Камстра, Юри Линьковым, Гленн Моррис, Тьен-Тхи Нгуен, Дэн Николаеску,
+Мартин Рудаликс, Ким Ф. Шторм, Люк Тейрлинк, Эли Зарецкий и другими.
 
-  Corrections were supplied by Drew Adams, Juanma Barranquero, Karl
-Berry, Jim Blandy, Bard Bloom, Stephane Boucher, David Boyes, Alan
-Carroll, Richard Davis, Lawrence R. Dodd, Peter Doornbosch, David
-A. Duff, Chris Eich, Beverly Erlebacher, David Eckelkamp, Ralf Fassel,
-Eirik Fuller, Stephen Gildea, Bob Glickstein, Eric Hanchrow, Jesper
-Harder, George Hartzell, Nathan Hess, Masayuki Ida, Dan Jacobson, Jak
-Kirman, Bob Knighten, Frederick M. Korz, Joe Lammens, Glenn M. Lewis,
-K. Richard Magill, Brian Marick, Roland McGrath, Stefan Monnier, Skip
-Montanaro, John Gardiner Myers, Thomas A. Peterson, Francesco Potortì,
-Friedrich Pukelsheim, Arnold D. Robbins, Raul Rockwell, Jason Rumney,
-Per Starbäck, Shinichirou Sugou, Kimmo Suominen, Edward Tharp, Bill
-Trost, Rickard Westman, Jean White, Eduard Wiebe, Matthew Wilding,
-Carl Witty, Dale Worley, Rusty Wright, and David D. Zuhn.
+  Исправления предоставили Дрю Адамс, Хуанма Барранкеро, Карл Берри, Джим Бланди,
+Бард Блум, Стефан Буше, Дэвид Бойс, Алан Кэрролл, Ричард Дэвис, Лоуренс Р. Додд,
+Питер Дорнбош, Дэвид А. Дафф, Крис Эйх, Беверли Эрлебахер, Дэвид Эккелькамп, Ральф
+Фассель, Эйрик Фуллер, Стивен Гилдеа, Боб Гликштейн, Эрик Хэнчроу, Джеспер Хардер,
+Джордж Харцелл, Натан Хесс, Масаюки Ида, Дэн Джейкобсон, Джек Кирман, Боб Найтен,
+Фредерик М. Корц, Джо Ламменс, Гленн М. Льюис, К. Ричард Мэджилл, Брайан Марик,
+Роланд МакГрат, Стефан Монье, Скип Монтанаро, Джон Гардинер Майерс, Томас А. Петерсон,
+Франческо Поторти, Фридрих Пукельсхайм, Арнольд Д. Роббинс, Рауль Роквелл, Джейсон
+Рамни, Пер Старбэк, Шиничироу Сугу , Киммо Суоминен, Эдвард Тарп, Билл Трост, Рикард
+Вестман, Джин Уайт, Эдуард Вибе, Мэтью Уилдинг, Карл Витти, Дейл Уорли, Расти Райт и
+Дэвид Д. Зун.
 
-  For a more complete list of contributors, please see the relevant
-change log entries in the Emacs source repository.
+  Для более полного списка участников смотрите соответствующие записи журнала
+изменений в исходном репозитории Emacs.
